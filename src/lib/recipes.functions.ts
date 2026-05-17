@@ -55,11 +55,10 @@ export const generateRecipes = createServerFn({ method: "POST" })
       return { ok: false, error: "AI service not configured.", code: "server" };
     }
 
-    const cuisineGuidance = /nepali|himalayan|south asian|indian/i.test(
-      data.cuisine
-    )
-      ? "Prioritize authentic South Asian / Nepali techniques and ingredients (tarka/tempering, jeera, haldi, hing, garam masala, achar, gundruk-style greens, paneer, dal varieties, basmati). Use accurate dish names."
-      : "Use authentic techniques for the requested cuisine.";
+    const cuisineGuidance =
+      data.cuisine === "Any / Surprise Me"
+        ? "Pick cuisines that best match the ingredients provided — be creative and global."
+        : `Use authentic techniques and flavor profiles for ${data.cuisine} cuisine.`;
 
     const dietary = data.dietary.length
       ? data.dietary.join(", ")
