@@ -42,16 +42,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [ingredients, setIngredients] = useState<string[]>([
-    "Rice",
-    "Eggs",
-    "Onion",
-    "Tomato",
-  ]);
+  const [ingredients, setIngredients] = useState<string[]>([]);
   const [dietary, setDietary] = useState<string[]>([]);
   const [cuisine, setCuisine] = useState("Any / Surprise Me");
   const [recipes, setRecipes] = useState<Recipe[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saved, setSaved] = useLocalStorage<Recipe[]>("fridge-chef-saved", []);
 
@@ -146,7 +142,7 @@ function Index() {
     setRecipes(null);
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine },
+        data: { ingredients, dietary, cuisine, exclude: [] },
       });
       if (!res.ok) {
         toast.error(res.error);
@@ -158,6 +154,33 @@ function Index() {
       toast.error("Couldn't reach the kitchen. Try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onLoadMore = async () => {
+    if (!recipes || ingredients.length === 0) return;
+    setLoadingMore(true);
+    try {
+      const res = await generate({
+        data: {
+          ingredients,
+          dietary,
+          cuisine,
+          exclude: recipes.map((r) => r.title),
+        },
+      });
+      if (!res.ok) {
+        toast.error(res.error);
+      } else {
+        const existing = new Set(recipes.map((r) => r.title.toLowerCase()));
+        const fresh = res.recipes.filter((r) => !existing.has(r.title.toLowerCase()));
+        setRecipes([...recipes, ...fresh]);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't reach the kitchen. Try again.");
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -412,7 +435,7 @@ function Index() {
                 {loading
                   ? cuisine && cuisine !== "Any / Surprise Me"
                     ? `Travelling to ${cuisine} for surprise receipe`
-                    : "Travelling around the global to find a perfect receipe for you"
+                    : "Travelling around the globe to find a perfect receipe for you"
                   : "Show me the cuisine"}
               </button>
             </div>
@@ -450,6 +473,17 @@ function Index() {
                   dietary={dietary}
                 />
               ))}
+
+            {!loading && recipes && recipes.length > 0 && (
+              <button
+                type="button"
+                onClick={onLoadMore}
+                disabled={loadingMore}
+                className="w-full bg-white border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
+              >
+                {loadingMore ? "Cooking up more…" : "Show more recipes"}
+              </button>
+            )}
           </section>
         </div>
 
