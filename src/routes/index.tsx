@@ -13,6 +13,13 @@ import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
+import dalImg from "@/assets/recipe-dal.jpg";
+import saagImg from "@/assets/recipe-saag.jpg";
+import riceImg from "@/assets/recipe-rice.jpg";
+import paneerImg from "@/assets/recipe-paneer.jpg";
+import momoImg from "@/assets/recipe-momo.jpg";
+import chanaImg from "@/assets/recipe-chana.jpg";
+import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
@@ -60,13 +67,6 @@ const CUISINE_TO_COUNTRY: Record<string, string> = {
 function cuisineToCountry(c: string): string {
   return CUISINE_TO_COUNTRY[c] ?? c;
 }
-import dalImg from "@/assets/recipe-dal.jpg";
-import saagImg from "@/assets/recipe-saag.jpg";
-import riceImg from "@/assets/recipe-rice.jpg";
-import paneerImg from "@/assets/recipe-paneer.jpg";
-import momoImg from "@/assets/recipe-momo.jpg";
-import chanaImg from "@/assets/recipe-chana.jpg";
-import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -485,7 +485,7 @@ function Index() {
               >
                 {loading
                   ? cuisine && cuisine !== "Any / Surprise Me"
-                    ? `Travelling to ${cuisine} for surprise receipe`
+                    ? `Travelling to ${cuisineToCountry(cuisine)} for surprise receipe. Please wait…`
                     : "Travelling around the globe to find a perfect receipe for you"
                   : "Show me the cuisine"}
               </button>
