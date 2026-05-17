@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listCommunityRecipes } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/community")({
+export const Route = createFileRoute("/community/")({
   head: () => ({
     meta: [
       { title: "Community Cookbook — FridgeCuisine" },
