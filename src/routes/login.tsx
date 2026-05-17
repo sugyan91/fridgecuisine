@@ -108,9 +108,12 @@ function LoginPage() {
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
       <Toaster />
       <div className="w-full max-w-md">
-        <Link to="/login" className="block text-center mb-6">
+        <Link to="/" className="block text-center text-xs font-black uppercase tracking-widest mb-4 opacity-60 hover:opacity-100">
+          ← Back to site
+        </Link>
+        <Link to="/" className="block text-center mb-6">
           <h1 className="font-display text-5xl md:text-6xl uppercase tracking-tighter text-paprika leading-none">
-            Fridge Chef
+            FridgeCuisine
           </h1>
           <p className="font-black uppercase tracking-widest text-[10px] mt-2">
             Global Kitchen AI

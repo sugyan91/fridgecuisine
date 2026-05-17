@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,8 +10,25 @@ import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
+import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "FridgeCuisine — Turn What's In Your Fridge Into Dinner" },
+      {
+        name: "description",
+        content:
+          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step recipes from any global cuisine.",
+      },
+      { property: "og:title", content: "FridgeCuisine — Global Kitchen AI" },
+      {
+        property: "og:description",
+        content:
+          "Free AI kitchen helper. Get ingredients and recipes for any dish, or cook from what you already have.",
+      },
+    ],
+  }),
   component: Index,
 });
 
@@ -38,6 +55,20 @@ function Index() {
     Extract<DishHelperResult, { ok: true }>["data"] | null
   >(null);
   const [showRecipe, setShowRecipe] = useState(false);
+
+  const navigate = useNavigate();
+  const [email, setEmail] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setEmail(session?.user?.email ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+  };
 
   const onDishSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +118,16 @@ function Index() {
 
   const isSaved = (title: string) => saved.some((s) => s.title === title);
   const toggleSave = (recipe: Recipe) => {
+    if (!email) {
+      toast("Sign in to save recipes", {
+        description: "Create a free account to keep recipes across devices.",
+        action: {
+          label: "Sign in",
+          onClick: () => navigate({ to: "/login" }),
+        },
+      });
+      return;
+    }
     if (isSaved(recipe.title)) {
       setSaved(saved.filter((s) => s.title !== recipe.title));
       toast("Removed from saved");
@@ -107,24 +148,55 @@ function Index() {
       />
 
       <main className="min-h-screen bg-background text-foreground p-4 md:p-8">
+        <div className="fixed top-3 right-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-full pl-3 pr-1 py-1 shadow-[3px_3px_0px_0px_var(--border)]">
+          {email ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(true)}
+                className="text-[11px] font-black uppercase tracking-wide"
+              >
+                Saved {saved.length}
+              </button>
+              <span className="hidden sm:inline text-xs font-bold truncate max-w-[140px] opacity-70">
+                {email}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2.5 py-1.5 rounded-full"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-[11px] font-black uppercase tracking-wide px-2"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/login"
+                className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 rounded-full"
+              >
+                Sign up
+              </Link>
+            </>
+          )}
+        </div>
+
         <header className="max-w-6xl mx-auto mb-8 md:mb-12 flex justify-between items-end gap-4">
           <div>
             <h1 className="font-display text-5xl md:text-8xl uppercase tracking-tighter text-paprika leading-none">
               Fridge
               <br />
-              Chef
+              Cuisine
             </h1>
             <p className="font-black uppercase tracking-widest text-[10px] md:text-sm mt-2 ml-1">
               Global Kitchen AI
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            className="hidden md:block bg-turmeric border-2 border-border p-4 rounded-2xl rotate-3 shadow-[6px_6px_0px_0px_var(--border)] hover:rotate-0 transition-transform"
-          >
-            <span className="font-black text-xl">SAVED: {saved.length}</span>
-          </button>
         </header>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
@@ -294,14 +366,16 @@ function Index() {
           </section>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Open saved recipes"
-          className="md:hidden fixed bottom-6 right-6 size-16 bg-turmeric border-4 border-border rounded-full shadow-[4px_4px_0px_0px_var(--border)] grid place-items-center z-40"
-        >
-          <span className="font-black text-xl">{saved.length}</span>
-        </button>
+        {email && (
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open saved recipes"
+            className="md:hidden fixed bottom-6 right-6 size-16 bg-turmeric border-4 border-border rounded-full shadow-[4px_4px_0px_0px_var(--border)] grid place-items-center z-40"
+          >
+            <span className="font-black text-xl">{saved.length}</span>
+          </button>
+        )}
       </main>
     </>
   );
