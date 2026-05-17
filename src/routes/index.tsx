@@ -13,6 +13,53 @@ import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
+
+const CUISINE_TO_COUNTRY: Record<string, string> = {
+  Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
+  Japanese: "Japan", Korean: "South Korea", Taiwanese: "Taiwan",
+  Mongolian: "Mongolia", Tibetan: "Tibet",
+  Thai: "Thailand", Vietnamese: "Vietnam", Filipino: "the Philippines",
+  Indonesian: "Indonesia", Malaysian: "Malaysia", Singaporean: "Singapore",
+  Burmese: "Myanmar", Cambodian: "Cambodia", Laotian: "Laos",
+  Indian: "India", Pakistani: "Pakistan", Bangladeshi: "Bangladesh",
+  "Sri Lankan": "Sri Lanka", "Nepali / Himalayan": "Nepal",
+  Bhutanese: "Bhutan", Afghan: "Afghanistan",
+  "South Asian Fusion": "South Asia",
+  "Persian / Iranian": "Iran", Turkish: "Turkey", Lebanese: "Lebanon",
+  Israeli: "Israel", Syrian: "Syria", Iraqi: "Iraq", Yemeni: "Yemen",
+  "Middle Eastern": "the Middle East",
+  Moroccan: "Morocco", Egyptian: "Egypt", Ethiopian: "Ethiopia",
+  Eritrean: "Eritrea", Nigerian: "Nigeria", Ghanaian: "Ghana",
+  Senegalese: "Senegal", Kenyan: "Kenya", "South African": "South Africa",
+  Tunisian: "Tunisia", Algerian: "Algeria", African: "Africa",
+  Italian: "Italy", French: "France", Spanish: "Spain",
+  Portuguese: "Portugal", Greek: "Greece", German: "Germany",
+  Austrian: "Austria", Swiss: "Switzerland", British: "the UK",
+  Scottish: "Scotland", Irish: "Ireland",
+  Polish: "Poland", Russian: "Russia", Ukrainian: "Ukraine",
+  Hungarian: "Hungary", Czech: "Czechia", Romanian: "Romania",
+  Bulgarian: "Bulgaria", Serbian: "Serbia", Croatian: "Croatia",
+  Swedish: "Sweden", Norwegian: "Norway", Danish: "Denmark",
+  Finnish: "Finland", Dutch: "the Netherlands", Belgian: "Belgium",
+  "Eastern European": "Eastern Europe", Mediterranean: "the Mediterranean",
+  Mexican: "Mexico", "Tex-Mex": "Texas",
+  "American Southern": "the American South",
+  "Cajun / Creole": "Louisiana", Hawaiian: "Hawaii",
+  "Soul Food": "the American South",
+  Peruvian: "Peru", Brazilian: "Brazil", Argentinian: "Argentina",
+  Colombian: "Colombia", Venezuelan: "Venezuela", Chilean: "Chile",
+  "Latin American": "Latin America",
+  Cuban: "Cuba", Jamaican: "Jamaica", "Puerto Rican": "Puerto Rico",
+  Dominican: "the Dominican Republic", Haitian: "Haiti",
+  Trinidadian: "Trinidad", Caribbean: "the Caribbean",
+  Australian: "Australia", "New Zealand": "New Zealand",
+  "Pacific Islander": "the Pacific Islands",
+  Fusion: "the world", "Street Food": "the world", "Comfort Food": "the world",
+};
+
+function cuisineToCountry(c: string): string {
+  return CUISINE_TO_COUNTRY[c] ?? c;
+}
 import dalImg from "@/assets/recipe-dal.jpg";
 import saagImg from "@/assets/recipe-saag.jpg";
 import riceImg from "@/assets/recipe-rice.jpg";
