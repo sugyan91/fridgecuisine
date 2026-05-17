@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { getCommunityRecipe, getMyVote, setRecipeVote } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/community/$recipeId")({
+export const Route = createFileRoute("/community/")({
   component: RecipePage,
 });
 
