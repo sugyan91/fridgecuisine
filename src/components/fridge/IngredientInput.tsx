@@ -11,8 +11,16 @@ const SUGGESTIONS = [
   "Ginger",
   "Garlic",
   "Yogurt",
-  "Achar",
   "Potato",
+  "Pasta",
+  "Chicken",
+  "Bell Pepper",
+  "Mushroom",
+  "Cheese",
+  "Avocado",
+  "Lemon",
+  "Coconut Milk",
+  "Soy Sauce",
 ];
 
 const ROTATIONS = ["-rotate-2", "-rotate-1", "rotate-1", "rotate-2"];

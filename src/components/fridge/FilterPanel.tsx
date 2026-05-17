@@ -1,10 +1,22 @@
 const DIETARY = ["Vegetarian", "Halal", "High Protein", "Quick Meal"] as const;
 const CUISINES = [
+  "Any / Surprise Me",
+  "Italian",
+  "Mexican",
+  "Chinese",
+  "Japanese",
+  "Thai",
+  "Indian",
+  "Mediterranean",
+  "French",
+  "Korean",
+  "Middle Eastern",
+  "African",
+  "Latin American",
+  "Caribbean",
+  "Eastern European",
   "Nepali / Himalayan",
-  "North Indian",
-  "South Indian",
   "South Asian Fusion",
-  "Global Fusion",
 ];
 
 type Props = {

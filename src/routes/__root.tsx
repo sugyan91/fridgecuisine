@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Type the ingredients in your fridge and get AI-generated recipes with steps, cook time, and substitutions. South Asian and Nepali cuisine ready.",
+          "Type the ingredients in your fridge and get AI-generated recipes with steps, cook time, and substitutions. Any cuisine, any diet.",
       },
       { name: "author", content: "Fridge Chef" },
       { property: "og:title", content: "Fridge Chef — Cook with what you have" },
