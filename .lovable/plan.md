@@ -1,51 +1,51 @@
-## Goal
+## Plan: Expandable Dietary & Cuisine + Community Recipe Sharing
 
-Make fridgecuisine.com a public site. Anyone visiting can use the full kitchen (search dishes, see ingredients, generate recipes from what's in their fridge). Login becomes a small button in the top-right. Only "save recipe" and "my saved recipes" require an account.
+### 1. FilterPanel UI updates (immediate)
+- Expand `DIETARY` list with 4 more items (e.g. Vegan, Gluten-Free, Keto, Dairy-Free, Low-Carb, Pescatarian, Nut-Free, Kosher) and switch grid to **3 columns** (`grid-cols-3`).
+- Expand `CUISINES` with ~50 more countries/regions (Vietnamese, Filipino, Indonesian, Malaysian, Burmese, Sri Lankan, Pakistani, Bangladeshi, Afghan, Persian/Iranian, Turkish, Lebanese, Israeli, Moroccan, Egyptian, Ethiopian, Nigerian, Ghanaian, South African, Kenyan, Spanish, Portuguese, Greek, German, Polish, Russian, Ukrainian, Hungarian, Czech, Swedish, Norwegian, Danish, Finnish, Irish, British, Scottish, American Southern, Cajun/Creole, Tex-Mex, Peruvian, Brazilian, Argentinian, Colombian, Venezuelan, Cuban, Jamaican, Hawaiian, Filipino, Mongolian, Tibetan, Bhutanese, Cambodian, Laotian, Singaporean, Taiwanese, Cantonese, Sichuan, Hunan…).
 
-## What changes
+### 2. Logged-in personalization
+When a Supabase session exists, show an **"+ Add your own"** input under both Dietary and Cuisine sections. Custom values merge with defaults and persist per-user.
 
-### 1. Make the homepage public
-- Move the current `/_authenticated/index.tsx` content to a public route at `/` (`src/routes/index.tsx`).
-- Remove the auth guard from the home page so visitors land directly on the working app — no login wall.
-- The dish search bar, ingredient input, filters, and recipe generator all work without an account.
+**DB (new migration):**
+- `user_preferences` — `user_id` (FK auth.users, unique), `custom_dietary text[]`, `custom_cuisines text[]`. RLS: user can select/insert/update their own row.
 
-### 2. Small login control in the top-right
-- Replace the current full-width auth bar with a compact pill in the top-right corner:
-  - **Logged out:** "Sign in" button (opens `/login`) + "Sign up" link.
-  - **Logged in:** user email + "Sign out" + a small "Saved (N)" button that opens the saved-recipes drawer.
-- Visible on every page, never blocks content.
+Logged-out users see defaults only (no add button, with a subtle "Sign in to customize" hint linking to /login).
 
-### 3. Gate only the "save" actions
-- The heart/save button on each recipe card stays visible to everyone.
-- If a logged-out user clicks it: show a toast "Sign in to save recipes" with a "Sign in" link, OR open a small modal prompting login. (I'd recommend the toast — less friction.)
-- The "Saved" drawer is only reachable when logged in.
+### 3. Community recipe sharing (logged-in users)
+Brainstorm → chosen approach: **"Community Cookbook"** — users publish recipes tagged by city/cuisine, browse a feed, like & save others'.
 
-### 4. Login page tweaks
-- Keep `/login` as-is but after successful login redirect back to `/` (not to `/_authenticated/`).
-- Add a "← Back to site" link so users can bail out of login without getting stuck.
+**DB tables:**
+- `community_recipes` — `id`, `user_id`, `title`, `city`, `country`, `cuisine`, `description`, `ingredients jsonb`, `steps jsonb`, `image_url`, `is_published bool`, `created_at`.
+  - RLS: anyone can SELECT where `is_published=true`; owners can SELECT/INSERT/UPDATE/DELETE their own.
+- `community_recipe_likes` — `recipe_id`, `user_id` (composite PK). RLS: users manage their own likes; anyone can count.
+- `profiles` — `user_id` (unique), `display_name`, `avatar_url`. Auto-created via trigger on signup.
 
-## Ideas worth considering (pick any)
+**New routes:**
+- `/community` — feed of published recipes, filter by city/cuisine/dietary, search bar, like button.
+- `/community/$recipeId` — full recipe view with author, ingredients, steps, likes count.
+- `/community/new` (auth-gated under `_authenticated`) — form to publish: title, city, country, cuisine dropdown (reuses expanded list), dietary tags (reuses expanded list), ingredients (reuse IngredientInput), steps (textarea list), optional image upload to Supabase Storage bucket `community-recipes`.
+- `/my-recipes` (auth-gated) — list/edit/delete own recipes; toggle publish.
 
-1. **Recipe history for logged-in users** — auto-save the last 20 generated recipes server-side so users can revisit them across devices. Logged-out users only get localStorage.
-2. **Shareable recipe links** — every generated recipe gets a public URL like `/recipe/nepali-momo-a1b2`. Great for SEO and social sharing. No login needed to view.
-3. **"Cook again" shortcut** — for logged-in users, one-click re-generate from a previous ingredient set.
-4. **Weekly meal plan** (logged-in only) — pick 5 saved recipes, get a combined shopping list.
-5. **Public "trending dishes" strip** on the homepage — shows what other visitors searched recently. Social proof + content for SEO.
-6. **Notes on saved recipes** (logged-in only) — "I doubled the garlic, used coconut milk instead of cream".
+**Server functions (`src/lib/community.functions.ts`):**
+- `listCommunityRecipes({ city?, cuisine?, dietary?, search?, limit, offset })` — public, uses `supabaseAdmin` for read.
+- `getCommunityRecipe(id)` — public read.
+- `createCommunityRecipe(...)` — `requireSupabaseAuth`.
+- `updateCommunityRecipe(...)`, `deleteCommunityRecipe(id)` — `requireSupabaseAuth`, owner check via RLS.
+- `toggleLike(recipeId)` — `requireSupabaseAuth`.
+- `getUserPreferences()` / `upsertUserPreferences({ custom_dietary, custom_cuisines })` — `requireSupabaseAuth`.
 
-My recommendation: do #1, #2, and #5 first — they directly reinforce the "public site, account adds value" model you're describing.
+**Storage:** create `community-recipes` public bucket with policy: authenticated users can upload to `{user_id}/*`; public read.
 
-## What I think
+### 4. Navigation
+Add header links: **Community** (always) and **My Recipes** + **Share Recipe** (when logged in).
 
-This is the right call. Forcing login before anyone sees the product is a conversion killer — most visitors bounce. Putting the whole app in front and asking for an account only when they want to keep something is the standard pattern (Pinterest, Spotify web, ChatGPT all work this way). The "save" action is the natural moment to ask for signup because the user has just expressed clear intent.
+### Tech notes
+- Auth/login flow already exists.
+- Reuse expanded DIETARY/CUISINES constants by moving them to `src/lib/taxonomy.ts` so both `FilterPanel` and community forms import them.
+- All new pages get proper `head()` meta for SEO; `/community` is SSR-friendly via a public server fn calling `supabaseAdmin`.
 
-## Technical notes
-
-- `generateRecipes` and `getDishHelper` server functions need their `requireSupabaseAuth` middleware removed (or made optional) so logged-out users can call them.
-- `_authenticated` layout is kept only for truly account-only pages (saved recipes drawer contents server-side, future meal plans).
-- SEO: add proper `head()` metadata to `/` so the public homepage indexes well on Google.
-
-## Confirm before I build
-
-1. Toast prompt vs modal when a logged-out user clicks "save" — toast OK?
-2. Which of the 5 extra ideas (history, share links, trending, meal plan, notes) do you want in this pass? I'd suggest just enabling the public homepage + small login button now, and adding shareable links + trending in a follow-up.
+### Open questions
+1. **Image uploads on community recipes — required, optional, or skip for v1?**
+2. **Comments on recipes** — include now, or just likes for v1?
+3. **Moderation** — auto-publish, or require a "report" flag system only?
