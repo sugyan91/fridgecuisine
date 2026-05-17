@@ -7,6 +7,7 @@ import { IngredientInput } from "@/components/fridge/IngredientInput";
 import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { RecipeCard } from "@/components/fridge/RecipeCard";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
+import { CommunityStrip } from "@/components/fridge/CommunityStrip";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
@@ -219,11 +220,11 @@ function Index() {
         onUnsave={(title) => setSaved(saved.filter((s) => s.title !== title))}
       />
 
-      <main className="min-h-screen bg-background text-foreground p-4 md:p-8">
-        <div className="fixed top-3 right-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-full pl-3 pr-1 py-1 shadow-[3px_3px_0px_0px_var(--border)]">
+      <main className="min-h-screen bg-background text-foreground p-4 pt-20 md:p-8 md:pt-8">
+        <div className="fixed top-3 right-3 z-50 flex items-center gap-1.5 md:gap-2 bg-white border-2 border-border rounded-full pl-2 md:pl-3 pr-1 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]">
           <Link
             to="/community"
-            className="text-[11px] font-black uppercase tracking-wide px-2"
+            className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1.5 md:px-2"
           >
             Community
           </Link>
@@ -263,14 +264,14 @@ function Index() {
               <Link
                 to="/login"
                 search={{ mode: "signin" }}
-                className="text-sm font-black uppercase tracking-wide bg-paprika text-white px-4 py-2 rounded-full shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+                className="text-[11px] md:text-sm font-black uppercase tracking-wide bg-paprika text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
               >
                 Sign in
               </Link>
               <Link
                 to="/login"
                 search={{ mode: "signup" }}
-                className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-3 py-2 rounded-full border-2 border-border"
+                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
               >
                 Sign up
               </Link>
@@ -474,6 +475,8 @@ function Index() {
               ))}
           </section>
         </div>
+
+        <CommunityStrip isAuthenticated={!!email} />
 
         {email && (
           <button

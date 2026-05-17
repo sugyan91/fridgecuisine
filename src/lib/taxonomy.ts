@@ -1,17 +1,22 @@
-export const DEFAULT_DIETARY = [
+export const CORE_DIETARY = [
   "Vegetarian",
   "Vegan",
-  "Halal",
-  "Kosher",
   "Gluten-Free",
   "Dairy-Free",
-  "Nut-Free",
   "High Protein",
   "Low-Carb",
   "Keto",
-  "Pescatarian",
   "Quick Meal",
 ] as const;
+
+export const EXTRA_DIETARY = [
+  "Halal",
+  "Kosher",
+  "Nut-Free",
+  "Pescatarian",
+] as const;
+
+export const DEFAULT_DIETARY = [...CORE_DIETARY, ...EXTRA_DIETARY] as const;
 
 export const DEFAULT_CUISINES = [
   "Any / Surprise Me",

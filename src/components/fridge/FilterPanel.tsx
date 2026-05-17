@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { DEFAULT_DIETARY, DEFAULT_CUISINES } from "@/lib/taxonomy";
+import { CORE_DIETARY, EXTRA_DIETARY, DEFAULT_DIETARY, DEFAULT_CUISINES } from "@/lib/taxonomy";
 import { getUserPreferences, saveUserPreferences } from "@/lib/user-preferences.functions";
 
 type Props = {
@@ -18,6 +18,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
   const [newDietary, setNewDietary] = useState("");
   const [newCuisine, setNewCuisine] = useState("");
+  const [showMoreDietary, setShowMoreDietary] = useState(false);
 
   const fetchPrefs = useServerFn(getUserPreferences);
   const savePrefs = useServerFn(saveUserPreferences);
@@ -32,7 +33,10 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
       .catch(() => {});
   }, [isAuthenticated, fetchPrefs]);
 
-  const allDietary = [...DEFAULT_DIETARY, ...customDietary];
+  const visibleDefaults = showMoreDietary
+    ? [...CORE_DIETARY, ...EXTRA_DIETARY]
+    : [...CORE_DIETARY];
+  const allDietary = [...visibleDefaults, ...customDietary];
   const allCuisines = [...DEFAULT_CUISINES, ...customCuisines];
 
   const toggle = (d: string) => {
@@ -124,6 +128,13 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
             );
           })}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowMoreDietary((v) => !v)}
+          className="mt-2 text-[11px] font-black uppercase tracking-wide underline opacity-70 hover:opacity-100"
+        >
+          {showMoreDietary ? "− Show less" : `+ ${EXTRA_DIETARY.length} more`}
+        </button>
         {isAuthenticated ? (
           <div className="mt-2 flex gap-2">
             <input
