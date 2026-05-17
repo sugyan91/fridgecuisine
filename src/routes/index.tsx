@@ -435,7 +435,7 @@ function Index() {
                 {loading
                   ? cuisine && cuisine !== "Any / Surprise Me"
                     ? `Travelling to ${cuisine} for surprise receipe`
-                    : "Travelling around the global to find a perfect receipe for you"
+                    : "Travelling around the globe to find a perfect receipe for you"
                   : "Show me the cuisine"}
               </button>
             </div>
@@ -473,6 +473,17 @@ function Index() {
                   dietary={dietary}
                 />
               ))}
+
+            {!loading && recipes && recipes.length > 0 && (
+              <button
+                type="button"
+                onClick={onLoadMore}
+                disabled={loadingMore}
+                className="w-full bg-white border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
+              >
+                {loadingMore ? "Cooking up more…" : "Show more recipes"}
+              </button>
+            )}
           </section>
         </div>
 
