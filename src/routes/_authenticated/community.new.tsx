@@ -121,7 +121,7 @@ function NewRecipe() {
                 </button>
               ))}
               {dietary
-                .filter((d) => !DEFAULT_DIETARY.includes(d))
+                .filter((d) => !(DEFAULT_DIETARY as readonly string[]).includes(d))
                 .map((d) => (
                   <button
                     key={d}
