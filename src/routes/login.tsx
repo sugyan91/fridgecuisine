@@ -121,7 +121,68 @@ function LoginPage() {
         </Link>
 
         <div className="bg-white border-4 border-border rounded-[32px] p-6 shadow-[8px_8px_0px_0px_var(--border)]">
-          {signupSent ? (
+          {forgotOpen ? (
+            forgotSent ? (
+              <div className="text-center py-4">
+                <div className="text-5xl mb-3">📬</div>
+                <h2 className="font-black text-2xl uppercase mb-2">Check your email</h2>
+                <p className="text-sm text-muted-foreground mb-1">
+                  We sent a password reset link to
+                </p>
+                <p className="font-black text-base mb-4 break-all">{forgotSent}</p>
+                <p className="text-xs text-muted-foreground mb-5">
+                  Open it to choose a new password. Don't see it? Check spam.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotOpen(false);
+                    setForgotSent(null);
+                    setForgotEmail("");
+                  }}
+                  className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h2 className="font-black text-xl uppercase mb-1">Reset password</h2>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Enter the email you signed up with — we'll send you a reset link.
+                </p>
+                <form onSubmit={onForgotPassword} className="space-y-3">
+                  <div>
+                    <label className="block font-bold text-xs uppercase mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                      autoFocus
+                      className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-lg uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
+                  >
+                    {loading ? "Sending…" : "Send reset link"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForgotOpen(false)}
+                    className="w-full text-xs font-bold underline text-muted-foreground"
+                  >
+                    Back to sign in
+                  </button>
+                </form>
+              </div>
+            )
+          ) : signupSent ? (
             <div className="text-center py-4">
               <div className="text-5xl mb-3">📬</div>
               <h2 className="font-black text-2xl uppercase mb-2">Check your email</h2>
@@ -205,7 +266,10 @@ function LoginPage() {
           {mode === "signin" && (
             <button
               type="button"
-              onClick={onForgotPassword}
+              onClick={() => {
+                setForgotEmail(email);
+                setForgotOpen(true);
+              }}
               disabled={loading}
               className="mt-2 w-full text-xs font-bold underline text-muted-foreground"
             >
