@@ -83,9 +83,49 @@ function Index() {
         setPromptIndex((i) => (i + 1) % dishPrompts.length);
         setPromptAnim("in");
       }, 600);
-    }, 20000);
+    }, 60000);
     return () => clearInterval(tick);
   }, [dishPrompts.length]);
+
+  const placeholderDishes = [
+    "e.g. Nepali-style momo",
+    "e.g. Thai green curry",
+    "e.g. Italian tiramisu",
+    "e.g. Japanese ramen",
+    "e.g. Mexican tacos al pastor",
+    "e.g. Indian butter chicken",
+    "e.g. French croissant",
+    "e.g. Korean bibimbap",
+    "e.g. Vietnamese pho",
+    "e.g. Spanish paella",
+    "e.g. Greek moussaka",
+    "e.g. Turkish baklava",
+    "e.g. Chinese kung pao chicken",
+    "e.g. Lebanese shawarma",
+    "e.g. Brazilian feijoada",
+    "e.g. Moroccan tagine",
+    "e.g. Ethiopian doro wat",
+    "e.g. American clam chowder",
+    "e.g. British fish and chips",
+    "e.g. German schnitzel",
+    "e.g. Russian borscht",
+    "e.g. Filipino adobo",
+    "e.g. Indonesian nasi goreng",
+    "e.g. Malaysian laksa",
+    "e.g. Argentinian empanadas",
+    "e.g. Peruvian ceviche",
+    "e.g. Polish pierogi",
+    "e.g. Nepali sel roti",
+    "e.g. Pakistani biryani",
+    "e.g. Sri Lankan kottu",
+  ];
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setPlaceholderIndex((i) => (i + 1) % placeholderDishes.length);
+    }, 60000);
+    return () => clearInterval(tick);
+  }, [placeholderDishes.length]);
 
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
