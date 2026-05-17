@@ -56,6 +56,31 @@ function Index() {
   >(null);
   const [showRecipe, setShowRecipe] = useState(false);
 
+  const dishPrompts = [
+    "See something that made you hungry? Tell me the dish — I'll give you the ingredients and recipe.",
+    "Caught drooling? Name the food and I'll spill the ingredients and recipe.",
+    "Food crush? Tell me what it was and I'll hand over the ingredients and recipe.",
+    "That dish got your attention, huh? Drop the name — I've got the recipe and ingredients.",
+    "If your stomach just said 'yes please,' tell me the dish and I'll generate the recipe and ingredients.",
+    "Name the dish you can't stop thinking about — I'll recreate it with ingredients and recipe.",
+    "Saw something delicious online? Tell me what it is and I'll break down the recipe and ingredients.",
+    "From craving to cooking — tell me the dish and I'll give you the ingredients and recipe.",
+    "That food looked dangerously good. Want the ingredients and recipe?",
+    "Tell me what made you hungry — I'll turn it into a recipe with ingredients.",
+  ];
+  const [promptIndex, setPromptIndex] = useState(0);
+  const [promptVisible, setPromptVisible] = useState(true);
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setPromptVisible(false);
+      setTimeout(() => {
+        setPromptIndex((i) => (i + 1) % dishPrompts.length);
+        setPromptVisible(true);
+      }, 300);
+    }, 3800);
+    return () => clearInterval(tick);
+  }, [dishPrompts.length]);
+
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
   useEffect(() => {
@@ -204,12 +229,19 @@ function Index() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           <section className="lg:col-span-12 animate-pop">
             <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)]">
-              <h2 className="font-black text-xl md:text-2xl uppercase mb-3">
-                Did something make you drool?
+              <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
+                Dish to recipe
               </h2>
-              <p className="text-sm text-muted-foreground mb-3">
-                Tell me what it is and I'll give you the ingredients.
-              </p>
+              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-4 flex items-start">
+                <p
+                  key={promptIndex}
+                  className={`font-display text-lg md:text-2xl leading-snug text-foreground transition-all duration-300 ${
+                    promptVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+                  }`}
+                >
+                  {dishPrompts[promptIndex]}
+                </p>
+              </div>
               <form onSubmit={onDishSubmit} className="flex flex-col md:flex-row gap-3">
                 <input
                   type="text"

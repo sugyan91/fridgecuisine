@@ -152,4 +152,10 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  a {
+    cursor: pointer;
+  }
 }
