@@ -96,7 +96,18 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
   return (
     <div className="space-y-4">
       <div>
-        <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">Dietary</p>
+        <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">
+          Dietary
+          {!isAuthenticated && (
+            <span className="normal-case tracking-normal font-medium opacity-90">
+              {" "}(
+              <Link to="/login" className="underline text-paprika font-black">
+                Sign in
+              </Link>{" "}
+              to add your own dietary tags)
+            </span>
+          )}
+        </p>
         <div className="grid grid-cols-3 gap-2">
           {allDietary.map((d) => {
             const active = dietary.includes(d);
@@ -135,6 +146,19 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
         >
           {showMoreDietary ? "− Show less" : `+ ${EXTRA_DIETARY.length} more`}
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            const pool = allCuisines.filter((c) => c !== "Any / Surprise Me");
+            if (pool.length === 0) return;
+            const pick = pool[Math.floor(Math.random() * pool.length)];
+            onCuisine(pick);
+            toast.success(`Pantry cuisine: ${pick}`);
+          }}
+          className="mt-3 w-full bg-cardamom text-white border-2 border-border py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-none transition-all"
+        >
+          🎲 Find my Pantry cuisine
+        </button>
         {isAuthenticated ? (
           <div className="mt-2 flex gap-2">
             <input
@@ -153,14 +177,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
               + Add
             </button>
           </div>
-        ) : (
-          <p className="mt-3 text-xs opacity-80">
-            <Link to="/login" className="underline font-black text-paprika text-sm">
-              Sign in
-            </Link>{" "}
-            to add your own dietary tags.
-          </p>
-        )}
+        ) : null}
       </div>
 
       <div>
