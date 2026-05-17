@@ -41,7 +41,7 @@ export function SavedDrawer({ open, onClose, saved, onUnsave }: Props) {
                 className="border-2 border-border rounded-2xl bg-white overflow-hidden flex shadow-[3px_3px_0px_0px_var(--border)]"
               >
                 <img
-                  src={pickRecipeImage(r.title, i)}
+                  src={pickRecipeImage(r.title, i, r.cuisine)}
                   alt={r.title}
                   width={80}
                   height={80}
