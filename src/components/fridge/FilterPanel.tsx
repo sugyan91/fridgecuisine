@@ -192,9 +192,6 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
         >
           Find my Pantry cuisine
         </button>
-        <p className="mt-1.5 text-[10px] opacity-60 leading-snug">
-          Picks a random cuisine for you. Separate from “Show me the cuisine”.
-        </p>
       </div>
 
       <div>
