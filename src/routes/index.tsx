@@ -259,7 +259,7 @@ function Index() {
           )}
         </div>
 
-        <header className="max-w-6xl mx-auto mb-8 md:mb-12 flex items-center gap-4 md:gap-5">
+        <header className="max-w-6xl mx-auto mb-6 md:mb-10 flex items-center gap-2.5 md:gap-3">
           <video
             src="/logo-animated.mp4"
             autoPlay
@@ -267,13 +267,13 @@ function Index() {
             muted
             playsInline
             aria-hidden="true"
-            className="size-16 md:size-24 rounded-2xl border-4 border-border object-cover shadow-[4px_4px_0px_0px_var(--border)] bg-white"
+            className="size-10 md:size-12 rounded-xl border-2 border-border object-cover shadow-[2px_2px_0px_0px_var(--border)] bg-white"
           />
           <div>
-            <h1 className="font-display text-3xl md:text-5xl uppercase tracking-tighter text-paprika leading-none">
+            <h1 className="font-display text-xl md:text-2xl uppercase tracking-tighter text-paprika leading-none">
               FridgeCuisine
             </h1>
-            <p className="font-black uppercase tracking-widest text-[9px] md:text-[11px] mt-1.5 opacity-70">
+            <p className="font-black uppercase tracking-widest text-[8px] md:text-[9px] mt-1 opacity-70">
               Global Kitchen AI
             </p>
           </div>
