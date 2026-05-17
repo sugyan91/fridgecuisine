@@ -1,32 +1,23 @@
 ## Problem
-The recipe cards always show "Missing N" badges and a "Missing" list. That makes sense when the user asked us to cook from their pantry, but not when they just picked a cuisine vibe to explore. The user wants:
+Dietary tags currently render only when the user has selected dietary filters, and only in the collapsed card. So on "Global Cuisine Vibe" runs (no filter selected) nothing shows, and even when filters are set, the expanded view has no Dietary label.
 
-- **Global Cuisine Vibe** (or "Any / Surprise Me") → show only recipe + ingredients (no "missing").
-- **Find my Pantry cuisine** → keep "missing" because it's pantry-driven.
-
-The two buttons currently feed the same `cuisine` state, so we lose intent. We'll track intent with a `pantryMode` flag.
+## Fix
+Make dietary tags a property of each recipe (returned by the AI), so every card shows what the dish actually is, regardless of whether the user picked filters. Render the tags in both the collapsed preview and the expanded detail view.
 
 ## Changes
 
-### 1. `src/routes/index.tsx`
-- Add `const [pantryMode, setPantryMode] = useState(false)`.
-- Reset `pantryMode` to `false` whenever the user changes the cuisine dropdown manually (via a new `onCuisine` wrapper passed to `FilterPanel`).
-- Pass `onPantryPick` callback to `FilterPanel` → sets `pantryMode=true` + `cuisine=<random>`.
-- Pass `pantryMode` to each `<RecipeCard>` as `showMissing={pantryMode && ingredients.length > 0}`.
+### 1. `src/lib/recipes.functions.ts`
+- Add `dietary: string[]` to the `Recipe` type and to `responseSchema.recipes[]` (default `[]`, max ~6 short tags).
+- Update the prompt so the model tags each recipe with applicable labels (e.g. `Vegan`, `Vegetarian`, `Gluten-Free`, `Dairy-Free`, `Halal`, `Kosher`, `Pescatarian`, `Contains Nuts`, `Contains Pork`). Must include tags the user filtered on, plus any other obviously-true tags.
 
-### 2. `src/components/fridge/FilterPanel.tsx`
-- New prop `onPantryPick: (cuisine: string) => void`.
-- The "Find my Pantry cuisine" button calls `onPantryPick(pick)` instead of `onCuisine(pick)`. Toast unchanged.
+### 2. `src/components/fridge/RecipeCard.tsx`
+- Stop using the `dietary` prop for display. Use `recipe.dietary ?? []` instead (keep the prop optional for backward compatibility, but ignore it).
+- Collapsed view: keep the existing `Dietary: <chips>` row, driven by `recipe.dietary`.
+- Expanded view: add the same `Dietary: <chips>` row under the title/meta block (above the blurb), styled to read well on the dark `bg-cardamom` background (use `text-white/70` for the label, keep paprika chips).
+- If `recipe.dietary` is empty, render nothing (no empty label).
 
-### 3. `src/components/fridge/RecipeCard.tsx`
-- New prop `showMissing?: boolean` (default `true` for backward compatibility in saved/community views).
-- When `showMissing` is `false`:
-  - Hide the rotated "MISSING N" / "ALL SET" badge entirely.
-  - In the expanded view, hide the "Missing" block.
-  - Add a new "Ingredients" block that lists `[...usedIngredients, ...missingIngredients]` so the user still sees the full ingredient list.
-- When `showMissing` is `true`, behavior is unchanged.
+### 3. `src/routes/index.tsx`
+- No logic change required. The existing `dietary={dietary}` prop can stay or be removed; the card now sources dietary from the recipe itself.
 
 ## Result
-- Picking a cuisine from "Global Cuisine Vibe" (including Surprise Me) gives clean recipe cards with title, blurb, cuisine, cook time, full Ingredients list, and Method. No "missing" callouts.
-- Clicking "Find my Pantry cuisine" still produces the pantry-aware cards with "MISSING N" / "ALL SET" badges and a Missing block, as today.
-- Saved Drawer / Community card usages stay unchanged (they don't pass the prop, so they default to showing missing as before).
+Every recipe card — whether produced by Global Cuisine Vibe, Surprise Me, or Find my Pantry cuisine — shows its dietary tags in both the preview and the expanded recipe view, even when the user picked no dietary filter.

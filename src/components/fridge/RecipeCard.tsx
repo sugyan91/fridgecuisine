@@ -11,10 +11,11 @@ type Props = {
   showMissing?: boolean;
 };
 
-export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [], showMissing = true }: Props) {
+export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = true }: Props) {
   const [open, setOpen] = useState(false);
   const img = pickRecipeImage(recipe.title, index);
   const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
+  const dietary = recipe.dietary ?? [];
 
   if (open) {
     return (
@@ -37,6 +38,21 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [], s
                 {recipe.cuisine}
               </span>
             </div>
+            {dietary.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/70 mr-1">
+                  Dietary:
+                </span>
+                {dietary.map((d) => (
+                  <span
+                    key={d}
+                    className="text-[10px] font-black uppercase tracking-wide bg-paprika text-white border-2 border-border rounded-full px-2 py-0.5"
+                  >
+                    {d}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <button
             type="button"
