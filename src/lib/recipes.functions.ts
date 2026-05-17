@@ -4,8 +4,8 @@ import { z } from "zod";
 const inputSchema = z.object({
   ingredients: z
     .array(z.string().trim().min(1).max(40))
-    .min(1, "Add at least one ingredient")
-    .max(30),
+    .max(30)
+    .default([]),
   dietary: z.array(z.string().max(40)).max(10).default([]),
   cuisine: z.string().min(1).max(40),
   exclude: z.array(z.string().max(120)).max(60).default([]),
@@ -65,10 +65,14 @@ export const generateRecipes = createServerFn({ method: "POST" })
       ? data.dietary.join(", ")
       : "no restrictions";
 
-    const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious recipes the user can cook with mostly the ingredients they have on hand. ${cuisineGuidance}
+    const hasIngredients = data.ingredients.length > 0;
+    const ingredientRule = hasIngredients
+      ? `Use as many of the user's ingredients as possible.\n- It's OK to require 1-3 missing pantry staples (oil, salt, common spices) - list them in missingIngredients.`
+      : `The user has not listed any pantry ingredients. Generate 10 classic, iconic, beloved recipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
+
+    const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious recipes${hasIngredients ? " the user can cook with mostly the ingredients they have on hand" : " for the selected cuisine"}. ${cuisineGuidance}
 Rules:
-- Use as many of the user's ingredients as possible.
-- It's OK to require 1-3 missing pantry staples (oil, salt, common spices) - list them in missingIngredients.
+- ${ingredientRule}
 - Steps must be concrete and ordered (4-8 short steps).
 - cookTimeMinutes must be realistic (5-90).
 - Honor dietary constraints STRICTLY: ${dietary}. Every single recipe MUST comply with ALL listed dietary tags. If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any recipe that would violate a tag — do not include it.
