@@ -26,6 +26,9 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [signupSent, setSignupSent] = useState<string | null>(null);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState<string | null>(null);
 
   const redirectTo = search.redirect || "/";
 
@@ -82,10 +85,11 @@ function LoginPage() {
     navigate({ to: redirectTo });
   };
 
-  const onForgotPassword = async () => {
-    const cleanEmail = email.trim().toLowerCase();
+  const onForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = forgotEmail.trim().toLowerCase();
     if (!z.string().email().safeParse(cleanEmail).success) {
-      toast.error("Enter your email above first");
+      toast.error("Enter a valid email");
       return;
     }
     setLoading(true);
@@ -93,8 +97,11 @@ function LoginPage() {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Password reset link sent.");
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setForgotSent(cleanEmail);
   };
 
   return (
