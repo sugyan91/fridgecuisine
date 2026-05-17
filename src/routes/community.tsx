@@ -25,6 +25,7 @@ function CommunityPage() {
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -63,9 +64,9 @@ function CommunityPage() {
           ) : (
             <Link
               to="/login"
-              className="bg-paprika text-white border-2 border-border px-4 md:px-5 py-2 md:py-2.5 rounded-full font-black text-sm md:text-base uppercase tracking-wide shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
+              className="bg-paprika text-white border-2 border-border px-4 md:px-5 py-2 md:py-2.5 rounded-full font-black text-sm md:text-base shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
             >
-              Sign in <span className="font-bold opacity-90 normal-case tracking-normal">to share recipe</span>
+              <span className="underline">Sign in</span> to share your own receipe
             </Link>
           )}
         </div>
@@ -75,29 +76,42 @@ function CommunityPage() {
           Recipes shared by home cooks. Discover by city or search a dish.
         </p>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            load();
-          }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8"
-        >
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search dish…"
-            className="border-2 border-border rounded-xl px-3 py-2 font-medium"
-          />
-          <input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="City (e.g. Kathmandu)"
-            className="border-2 border-border rounded-xl px-3 py-2 font-medium"
-          />
-          <button className="bg-paprika text-white border-2 border-border rounded-xl py-2 font-black uppercase text-sm">
-            Search
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <h2 className="font-display text-2xl md:text-3xl">Latest from the community</h2>
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            className="text-[11px] font-black uppercase tracking-wide bg-white border-2 border-border px-3 py-1.5 rounded-full shadow-[2px_2px_0px_0px_var(--border)]"
+          >
+            {showFilters ? "− Hide filters" : "🔎 Filter recipes"}
           </button>
-        </form>
+        </div>
+
+        {showFilters && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              load();
+            }}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8"
+          >
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search dish…"
+              className="border-2 border-border rounded-xl px-3 py-2 font-medium"
+            />
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="City (e.g. Kathmandu)"
+              className="border-2 border-border rounded-xl px-3 py-2 font-medium"
+            />
+            <button className="bg-paprika text-white border-2 border-border rounded-xl py-2 font-black uppercase text-sm">
+              Search
+            </button>
+          </form>
+        )}
 
         {loading ? (
           <p className="text-center opacity-60">Loading…</p>
@@ -124,7 +138,7 @@ function CommunityPage() {
                 )}
                 <div className="mt-3 flex items-center justify-between text-xs">
                   <span className="opacity-60">by {r.author_name}</span>
-                  <span className="font-black">♥ {r.like_count}</span>
+                  <span className="font-black">👍 {r.up_count ?? 0} · 👎 {r.down_count ?? 0}</span>
                 </div>
               </Link>
             ))}
