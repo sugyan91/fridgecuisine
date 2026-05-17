@@ -262,14 +262,14 @@ function Index() {
               <Link
                 to="/login"
                 search={{ mode: "signin" }}
-                className="text-[11px] font-black uppercase tracking-wide px-2"
+                className="text-sm font-black uppercase tracking-wide bg-paprika text-white px-4 py-2 rounded-full shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
               >
                 Sign in
               </Link>
               <Link
                 to="/login"
                 search={{ mode: "signup" }}
-                className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 rounded-full"
+                className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-3 py-2 rounded-full border-2 border-border"
               >
                 Sign up
               </Link>
