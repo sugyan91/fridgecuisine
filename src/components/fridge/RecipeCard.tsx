@@ -8,11 +8,13 @@ type Props = {
   saved: boolean;
   onToggleSave: () => void;
   dietary?: string[];
+  showMissing?: boolean;
 };
 
-export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [] }: Props) {
+export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [], showMissing = true }: Props) {
   const [open, setOpen] = useState(false);
   const img = pickRecipeImage(recipe.title, index);
+  const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
 
   if (open) {
     return (
@@ -61,7 +63,22 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [] }:
           </div>
 
           <div className="space-y-4">
-            {recipe.missingIngredients.length > 0 && (
+            {!showMissing && allIngredients.length > 0 && (
+              <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
+                <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
+                  Ingredients
+                </h5>
+                <ul className="text-sm space-y-1.5 font-medium">
+                  {allIngredients.map((m, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span className="size-1.5 bg-turmeric rounded-full" />
+                      {m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {showMissing && recipe.missingIngredients.length > 0 && (
               <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
                 <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
                   Missing
@@ -124,7 +141,8 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [] }:
           <h4 className="font-black text-xl md:text-2xl leading-tight">
             {recipe.title}
           </h4>
-          {recipe.missingIngredients.length > 0 ? (
+          {showMissing ? (
+            recipe.missingIngredients.length > 0 ? (
             <div className="bg-paprika text-white text-[10px] font-black px-2 py-1 rounded-sm rotate-3 flex-shrink-0">
               MISSING {recipe.missingIngredients.length}
             </div>
@@ -132,7 +150,8 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [] }:
             <div className="bg-cardamom text-white text-[10px] font-black px-2 py-1 rounded-sm -rotate-2 flex-shrink-0">
               ALL SET
             </div>
-          )}
+            )
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-3 font-mono text-[10px] font-bold mb-3 uppercase">
           <span className="flex items-center gap-1">
