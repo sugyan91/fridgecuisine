@@ -11,6 +11,12 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
+import dalImg from "@/assets/recipe-dal.jpg";
+import saagImg from "@/assets/recipe-saag.jpg";
+import riceImg from "@/assets/recipe-rice.jpg";
+import paneerImg from "@/assets/recipe-paneer.jpg";
+import momoImg from "@/assets/recipe-momo.jpg";
+import chanaImg from "@/assets/recipe-chana.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
