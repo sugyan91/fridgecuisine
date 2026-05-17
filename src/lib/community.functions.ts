@@ -97,6 +97,26 @@ export const createCommunityRecipe = createServerFn({ method: "POST" })
   .inputValidator((input) => recipeInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    // Ensure profile has a display_name so the recipe isn't shown as "Anonymous".
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!prof?.display_name) {
+      const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const u = userRes?.user;
+      const fallback =
+        (u?.user_metadata?.display_name as string | undefined) ||
+        (u?.user_metadata?.full_name as string | undefined) ||
+        (u?.user_metadata?.name as string | undefined) ||
+        (u?.email ? u.email.split("@")[0] : null);
+      if (fallback) {
+        await supabaseAdmin
+          .from("profiles")
+          .upsert({ user_id: userId, display_name: fallback }, { onConflict: "user_id" });
+      }
+    }
     const { data: row, error } = await supabase
       .from("community_recipes")
       .insert({ ...data, user_id: userId })

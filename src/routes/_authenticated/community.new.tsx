@@ -22,6 +22,7 @@ function NewRecipe() {
     image_url: "",
   });
   const [dietary, setDietary] = useState<string[]>([]);
+  const [customDiet, setCustomDiet] = useState("");
   const [ingredients, setIngredients] = useState("");
   const [steps, setSteps] = useState("");
   const [busy, setBusy] = useState(false);
@@ -29,12 +30,23 @@ function NewRecipe() {
   const toggleDiet = (d: string) =>
     setDietary((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
 
+  const addCustomDiet = () => {
+    const v = customDiet.trim().slice(0, 40);
+    if (!v) return;
+    if (!/^[\p{L}0-9 ()/&'\-]+$/u.test(v)) {
+      toast.error("Use letters, numbers, spaces only");
+      return;
+    }
+    if (!dietary.includes(v)) setDietary([...dietary, v]);
+    setCustomDiet("");
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const ing = ingredients.split("\n").map((s) => s.trim()).filter(Boolean);
     const stp = steps.split("\n").map((s) => s.trim()).filter(Boolean);
-    if (!form.title.trim() || ing.length === 0 || stp.length === 0) {
-      toast.error("Title, ingredients, and steps are required");
+    if (!form.title.trim() || !form.country.trim() || dietary.length === 0 || stp.length === 0) {
+      toast.error("Food name, country, dietary tags, and steps are required");
       return;
     }
     setBusy(true);
@@ -60,7 +72,7 @@ function NewRecipe() {
         <h1 className="font-display text-4xl md:text-5xl text-paprika mt-3 mb-6">Share a recipe</h1>
 
         <form onSubmit={submit} className="bg-white border-4 border-border rounded-3xl p-6 space-y-4 shadow-[6px_6px_0px_0px_var(--border)]">
-          <Field label="Food name">
+          <Field label="Food name" required>
             <input value={form.title} maxLength={120} required onChange={(e) => setForm({ ...form, title: e.target.value })} className={input} />
           </Field>
           <Field label="Tagline (one sentence)">
@@ -79,8 +91,8 @@ function NewRecipe() {
             <Field label="City">
               <input value={form.city} maxLength={80} onChange={(e) => setForm({ ...form, city: e.target.value })} className={input} />
             </Field>
-            <Field label="Country">
-              <input value={form.country} maxLength={80} onChange={(e) => setForm({ ...form, country: e.target.value })} className={input} />
+            <Field label="Country" required>
+              <input value={form.country} maxLength={80} required onChange={(e) => setForm({ ...form, country: e.target.value })} className={input} />
             </Field>
           </div>
           <Field label="Cuisine">
@@ -94,7 +106,7 @@ function NewRecipe() {
           <Field label="Image URL (optional)">
             <input value={form.image_url} maxLength={2000} placeholder="https://…" onChange={(e) => setForm({ ...form, image_url: e.target.value })} className={input} />
           </Field>
-          <Field label="Dietary tags">
+          <Field label="Dietary tags" required>
             <div className="flex flex-wrap gap-2">
               {DEFAULT_DIETARY.map((d) => (
                 <button
@@ -108,12 +120,47 @@ function NewRecipe() {
                   {d}
                 </button>
               ))}
+              {dietary
+                .filter((d) => !(DEFAULT_DIETARY as readonly string[]).includes(d))
+                .map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => toggleDiet(d)}
+                    className="border-2 border-border px-3 py-1 rounded-full text-[11px] font-black uppercase bg-paprika text-white"
+                    title="Click to remove"
+                  >
+                    {d} ×
+                  </button>
+                ))}
+            </div>
+            <div className="flex gap-2 mt-2">
+              <input
+                value={customDiet}
+                maxLength={40}
+                onChange={(e) => setCustomDiet(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addCustomDiet();
+                  }
+                }}
+                placeholder="Add custom (e.g. Low-FODMAP)"
+                className={input}
+              />
+              <button
+                type="button"
+                onClick={addCustomDiet}
+                className="border-2 border-border px-4 rounded-xl font-black text-xs uppercase bg-white whitespace-nowrap"
+              >
+                + Add
+              </button>
             </div>
           </Field>
           <Field label="Ingredients (one per line)">
             <textarea required value={ingredients} onChange={(e) => setIngredients(e.target.value)} className={`${input} h-32 font-mono`} placeholder="2 cups rice&#10;1 onion, diced" />
           </Field>
-          <Field label="Steps (one per line)">
+          <Field label="Steps (one per line)" required>
             <textarea required value={steps} onChange={(e) => setSteps(e.target.value)} className={`${input} h-40 font-mono`} placeholder="Heat oil…&#10;Add onions…" />
           </Field>
 
@@ -132,10 +179,13 @@ function NewRecipe() {
 
 const input = "w-full border-2 border-border rounded-xl px-3 py-2 font-medium bg-white";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <label className="block">
-      <span className="block text-xs font-black uppercase tracking-wider opacity-60 mb-1">{label}</span>
+      <span className="block text-xs font-black uppercase tracking-wider opacity-60 mb-1">
+        {label}
+        {required && <span className="text-paprika ml-1">*</span>}
+      </span>
       {children}
     </label>
   );
