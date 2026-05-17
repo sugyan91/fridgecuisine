@@ -130,14 +130,21 @@ function CommunityPage() {
                   <img src={r.image_url} alt={r.title} className="w-full h-40 object-cover rounded-xl mb-3 border-2 border-border" />
                 )}
                 <h3 className="font-display text-2xl text-paprika leading-tight mb-1">{r.title}</h3>
-                <p className="text-[11px] font-black uppercase tracking-wider opacity-60">
-                  {[r.city, r.country, r.cuisine].filter(Boolean).join(" · ")}
+                <p className="text-xs font-black uppercase tracking-wide mb-1">
+                  by <span className="text-foreground">{r.author_name}</span>
+                  {r.country && (
+                    <> · <span className="text-foreground">{r.country}</span></>
+                  )}
                 </p>
+                {(r.city || r.cuisine) && (
+                  <p className="text-[11px] font-black uppercase tracking-wider opacity-60">
+                    {[r.city, r.cuisine].filter(Boolean).join(" · ")}
+                  </p>
+                )}
                 {r.description && (
                   <p className="text-sm mt-2 line-clamp-2 opacity-80">{r.description}</p>
                 )}
                 <div className="mt-3 flex items-center justify-between text-xs">
-                  <span className="opacity-60">by {r.author_name}</span>
                   <span className="font-black">👍 {r.up_count ?? 0} · 👎 {r.down_count ?? 0}</span>
                 </div>
               </Link>
