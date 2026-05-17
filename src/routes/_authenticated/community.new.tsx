@@ -75,8 +75,14 @@ function NewRecipe() {
           <Field label="Food name" required>
             <input value={form.title} maxLength={120} required onChange={(e) => setForm({ ...form, title: e.target.value })} className={input} />
           </Field>
-          <Field label="Tagline (one sentence)">
-            <textarea value={form.description} maxLength={800} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${input} h-20`} />
+          <Field label="Tag">
+            <input
+              value={form.description}
+              maxLength={120}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Eg #comfortfood, #streetfood, #mom'sreceipe"
+              className={input}
+            />
           </Field>
           <Field label="History & background (origin story, family memory, what makes it special)">
             <textarea
