@@ -92,11 +92,11 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
       </div>
 
       {!isAuthenticated && (
-        <p className="mt-4 text-xs font-medium opacity-70 text-center">
-          <Link to="/login" className="underline font-bold text-paprika">
+        <p className="mt-5 text-sm font-medium opacity-80 text-center">
+          <Link to="/login" className="underline font-black text-paprika text-base">
             Sign in
           </Link>{" "}
-          to share your own recipe with the community.
+          to share recipe
         </p>
       )}
     </section>

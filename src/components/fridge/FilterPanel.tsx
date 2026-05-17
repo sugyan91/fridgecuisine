@@ -154,8 +154,8 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
             </button>
           </div>
         ) : (
-          <p className="mt-2 text-[11px] opacity-70">
-            <Link to="/login" className="underline font-bold text-paprika">
+          <p className="mt-3 text-xs opacity-80">
+            <Link to="/login" className="underline font-black text-paprika text-sm">
               Sign in
             </Link>{" "}
             to add your own dietary tags.
@@ -215,8 +215,8 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
             </div>
           </>
         ) : (
-          <p className="mt-2 text-[11px] opacity-70">
-            <Link to="/login" className="underline font-bold text-paprika">
+          <p className="mt-3 text-xs opacity-80">
+            <Link to="/login" className="underline font-black text-paprika text-sm">
               Sign in
             </Link>{" "}
             to add custom cuisines.
