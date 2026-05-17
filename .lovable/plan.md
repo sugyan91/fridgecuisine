@@ -1,20 +1,16 @@
-## What I found
+## Goal
 
-The recipe detail page (`/community/:recipeId`) is **already public in the app code** — no auth middleware, no `_authenticated` guard, and `getCommunityRecipe` uses the admin Supabase client (bypasses RLS). Likewise the `/community` list is public.
+The "eg: {Food} from {Country}" line currently sits as a separate paragraph between the tagline and the input. Move it **inside** the dish input box (as the input's rotating placeholder / hint), and change the rotation interval to **30 seconds**.
 
-The "Sign in" wall you're hitting is the **Lovable preview gate**, not your app's auth. The `id-preview--…lovable.app` URL is only reachable by people signed into your Lovable account because the project isn't published yet. Anyone you share that preview link with is forced through Lovable's login screen before your app even loads.
+## Changes (single file: `src/routes/index.tsx`)
 
-## Fix
+1. Remove the standalone `<div>` block that renders the rotating world-food paragraph below the tagline.
+2. Replace the input's current `placeholder` (which cycles `placeholderDishes` every 60s) with the world-food rotation, formatted as `eg: {Food} from {Country}` (e.g. `eg: Sushi from Japan`).
+3. Change the world-food rotation interval from 3.5s → **30s**.
+4. Remove the now-unused `placeholderDishes` array + `placeholderIndex` state + its interval to keep the file clean.
 
-1. **Publish the project.** Once published at `project--b3c5ce0d-…lovable.app` (or your custom domain), anonymous visitors can view `/community` and any `/community/:recipeId` page without signing in. Posting, voting, and "Share recipe" already correctly require sign-in.
-2. **No code changes are needed** — I verified:
-   - `src/routes/community.tsx` — public list ✅
-   - `src/routes/community.$recipeId.tsx` — public detail, vote buttons gated by `authed` state ✅
-   - `src/lib/community.functions.ts` — `listCommunityRecipes` and `getCommunityRecipe` have no auth middleware; only create/update/delete/vote do ✅
+## Result
 
-## Optional polish (only if you want)
-
-- Add a small "Sign in to vote" hint already present on the detail page — already there.
-- Add SEO `head()` to `community.$recipeId.tsx` so shared recipe links get proper title/description/og:image (currently inherits root metadata).
-
-Want me to (a) just walk you through publishing, or (b) also add the SEO head block to the recipe page in the same pass?
+- Inside the white dish-to-recipe box, the input field itself shows a rotating placeholder like `eg: Sushi from Japan` → `eg: Ramen from Japan` → … cycling through ~500 dishes every 30 seconds.
+- The standalone line outside/under the tagline is gone.
+- Tagline rotation (the larger sentence above the input) is unchanged.
