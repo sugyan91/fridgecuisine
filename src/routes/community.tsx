@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { listCommunityRecipes } from "@/lib/community.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/community")({
   head: () => ({
@@ -23,6 +24,15 @@ function CommunityPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setIsAuthenticated(!!session);
+    });
+    supabase.auth.getSession().then(({ data }) => setIsAuthenticated(!!data.session));
+    return () => subscription.unsubscribe();
+  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -43,12 +53,21 @@ function CommunityPage() {
           <Link to="/" className="font-black text-xs uppercase opacity-60 hover:opacity-100">
             ← Home
           </Link>
-          <Link
-            to="/community/new"
-            className="bg-turmeric border-2 border-border px-4 py-2 rounded-full font-black text-xs uppercase shadow-[2px_2px_0px_0px_var(--border)]"
-          >
-            + Share recipe
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              to="/community/new"
+              className="bg-turmeric border-2 border-border px-4 py-2 rounded-full font-black text-xs uppercase shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-all"
+            >
+              + Share recipe
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="bg-paprika text-white border-2 border-border px-4 md:px-5 py-2 md:py-2.5 rounded-full font-black text-sm md:text-base uppercase tracking-wide shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
+            >
+              Sign in <span className="font-bold opacity-90 normal-case tracking-normal">to share recipe</span>
+            </Link>
+          )}
         </div>
 
         <h1 className="font-display text-4xl md:text-5xl text-paprika mb-2">Community Cookbook</h1>
