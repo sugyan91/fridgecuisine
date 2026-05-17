@@ -19,16 +19,19 @@ export type Database = {
           created_at: string
           recipe_id: string
           user_id: string
+          vote_type: string
         }
         Insert: {
           created_at?: string
           recipe_id: string
           user_id: string
+          vote_type?: string
         }
         Update: {
           created_at?: string
           recipe_id?: string
           user_id?: string
+          vote_type?: string
         }
         Relationships: [
           {
@@ -48,6 +51,7 @@ export type Database = {
           cuisine: string | null
           description: string | null
           dietary: string[]
+          history: string | null
           id: string
           image_url: string | null
           ingredients: Json
@@ -64,6 +68,7 @@ export type Database = {
           cuisine?: string | null
           description?: string | null
           dietary?: string[]
+          history?: string | null
           id?: string
           image_url?: string | null
           ingredients?: Json
@@ -80,6 +85,7 @@ export type Database = {
           cuisine?: string | null
           description?: string | null
           dietary?: string[]
+          history?: string | null
           id?: string
           image_url?: string | null
           ingredients?: Json

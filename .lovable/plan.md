@@ -1,46 +1,76 @@
-## 1. Mobile header overlap
+## 1. Community page CTA polish
 
-**Problem:** The nav pill (`Community · Sign in · Sign up`) is `position: fixed` in the top-right and lives above the `Fridge Cuisine` logo. On narrow screens the pill grows wide enough to sit on top of the wordmark.
+- Underline "Sign in" in the paprika pill and change the text to "Sign in to share your own receipe" (keeping the user's spelling).
 
-**Fix:**
-- Add top padding to the page on mobile so the logo header starts below the nav pill (`pt-16 md:pt-8` on `<main>`).
-- Make the nav pill more compact on mobile: shrink "Sign in" to match "Sign up" sizing on small screens (drop `text-sm`/`px-4 py-2` down to `text-[11px]`/`px-3 py-1.5` under `sm`), and hide the "Community" link label on the smallest widths in favor of an icon, or move "Community" inline near the logo. Recommended: keep text, just tighten paddings + use `flex-wrap` safety.
-- Optional: on `< sm`, drop the pill out of `fixed` and put it as a normal flex row above the logo so nothing can overlap.
+## 2. Browse-by-default on `/community`
 
-I'll go with: tighten pill paddings on mobile + add `pt-16` on `<main>` so the fixed pill never overlaps the logo, regardless of viewport.
+The page already loads the latest recipes on mount, but the big "Search dish · City · Search" form at the top makes it look like browsing requires a search. Fixes:
 
-## 2. Dietary list — too long
+- Add a clear "Latest from the community" heading right above the grid so users see this is the default feed.
+- Move the search/filter row into a collapsible "Filter recipes" panel (closed by default) so the feed is the first thing visible.
+- Keep the empty-state copy ("No recipes yet — be the first to share!") for when the DB has nothing yet (currently the case).
 
-12 chips × 3 columns = 4 rows, which feels heavy. Recommended trim to the 8 most-used filters, keep the rest discoverable via an expander.
+## 3. Expand the share form
 
-**Default visible (8):**
-Vegetarian, Vegan, Gluten-Free, Dairy-Free, High Protein, Low-Carb, Keto, Quick Meal
+Add to `src/routes/_authenticated/community.new.tsx` (form already has food name / city / country / cuisine / dietary / short description):
 
-**Hidden under a `+ More` toggle:**
-Halal, Kosher, Nut-Free, Pescatarian
+- New big textarea: "History & background" — story behind the dish, origin, family memory, etc. Stored on a new `history` column.
+- Relabel existing "Short description" → "Tagline (one sentence)" so the two fields don't feel duplicated.
 
-Custom user-added tags continue to show inline.
+## 4. Thumbs up / thumbs down voting (replaces single heart like)
 
-## 3. Community preview on the homepage
+- Anyone can see up/down counts on a recipe.
+- Only signed-in users can vote; signed-out users get a "Sign in to vote" toast.
+- A user has one vote per recipe; clicking the same arrow again removes it; clicking the opposite arrow switches it.
 
-Yes — surface community activity on `/` so visitors immediately see the social proof, without forcing sign-in.
+UI lives on `/community/$recipeId` and as small "▲ N · ▼ N" badges on each card in the grid and the homepage strip.
 
-**Behavior:**
-- Public read: anyone (signed-in or not) sees a "From the community" strip on the homepage.
-- A horizontal scroll / 3-column grid of the 6 most recent published recipes (title, city · cuisine, author name, like count, thumbnail if `image_url`).
-- Each card links to `/community/$recipeId` — already public.
-- A "See all" link to `/community` (already public).
-- Posting still requires login — `+ Share` stays gated behind `/_authenticated/community.new`. Add a small "Sign in to share your recipe" CTA at the end of the strip for logged-out users.
+## Database changes (single migration)
 
-**Data:** `listCommunityRecipes` is already a public server fn (no auth middleware). Call it from a `useQuery` in `src/routes/index.tsx` with `limit: 6`. No DB / RLS changes needed (published recipes already have a public-read policy).
+```sql
+-- richer recipe story
+ALTER TABLE public.community_recipes
+  ADD COLUMN IF NOT EXISTS history text;
 
-**Placement:** New section between the recipe generator results area and the footer copy, titled "What the community is cooking".
+-- turn likes into votes
+ALTER TABLE public.community_recipe_likes
+  ADD COLUMN IF NOT EXISTS vote_type text NOT NULL DEFAULT 'up'
+  CHECK (vote_type IN ('up', 'down'));
 
-## Files to touch
+-- allow updating an existing row (flipping vote)
+CREATE POLICY "Users update own vote"
+ON public.community_recipe_likes
+FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+```
 
-- `src/routes/index.tsx` — main padding, slimmer mobile nav pill, new community preview section.
-- `src/components/fridge/FilterPanel.tsx` — split dietary into core + `+ More` collapsible.
-- `src/lib/taxonomy.ts` — export `CORE_DIETARY` (8) and `EXTRA_DIETARY` (4); keep `DEFAULT_DIETARY` as the union for backwards compatibility.
-- New small component `src/components/fridge/CommunityStrip.tsx` for the homepage preview.
+Existing rows become `up` votes (correct — they were likes). RLS already lets each user insert/delete only their own row; we add an UPDATE policy so flipping up→down doesn't require delete+insert.
 
-No database or auth changes required.
+## Server function changes (`src/lib/community.functions.ts`)
+
+- `recipeInput` schema: add `history: z.string().trim().max(4000).optional().default("")`.
+- `listCommunityRecipes`: return `up_count`, `down_count` per recipe (group-by on `community_recipe_likes`).
+- `getCommunityRecipe`: return `up_count`, `down_count`, and `user_vote` ('up' | 'down' | null) by reading the caller's session via `requireSupabaseAuth`-less optional auth — simplest path: split into a public `getCommunityRecipe` (counts only) + an auth-gated `getMyVote({recipe_id})` the page calls when signed in.
+- Replace `toggleRecipeLike` with `setRecipeVote({recipe_id, vote: 'up' | 'down' | null})`:
+  - `null` → delete row.
+  - existing row → update `vote_type`.
+  - no row → insert with `vote_type`.
+
+## Frontend wiring
+
+- `community.$recipeId.tsx`: swap the single heart button for two pill buttons (▲ up / ▼ down) showing counts; signed-out clicks toast "Sign in to vote".
+- `community.tsx`: card footer shows "▲ N · ▼ N" instead of "♥ N".
+- `CommunityStrip.tsx`: same swap on the homepage strip.
+- `community.$recipeId.tsx`: render the new "History" section between the description and the ingredients list when present.
+
+## Files touched
+
+- `supabase/migrations/<new>.sql` — schema + RLS update.
+- `src/lib/community.functions.ts` — schema, list/get/vote functions.
+- `src/routes/community.tsx` — underlined "Sign in to share your own receipe" CTA, latest-feed heading, collapsible search.
+- `src/routes/_authenticated/community.new.tsx` — history textarea, relabel tagline.
+- `src/routes/community.$recipeId.tsx` — thumbs up/down + history section.
+- `src/components/fridge/CommunityStrip.tsx` — vote badges.
+
+No new secrets or buckets needed.
