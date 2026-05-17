@@ -143,12 +143,17 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
             </button>
           </div>
         ) : (
-          <p className="mt-2 text-[11px] opacity-60">
-            <Link to="/login" className="underline font-bold">
+          <div className="mt-3 flex items-center gap-2 bg-turmeric/10 border-2 border-border rounded-xl px-3 py-2">
+            <Link
+              to="/login"
+              className="text-xs font-black uppercase tracking-wide bg-paprika text-white px-3 py-1.5 rounded-full shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+            >
               Sign in
-            </Link>{" "}
-            to add your own dietary tags.
-          </p>
+            </Link>
+            <span className="text-[11px] font-medium opacity-80">
+              to add your own dietary tags.
+            </span>
+          </div>
         )}
       </div>
 
@@ -204,12 +209,17 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
             </div>
           </>
         ) : (
-          <p className="mt-2 text-[11px] opacity-60">
-            <Link to="/login" className="underline font-bold">
+          <div className="mt-3 flex items-center gap-2 bg-turmeric/10 border-2 border-border rounded-xl px-3 py-2">
+            <Link
+              to="/login"
+              className="text-xs font-black uppercase tracking-wide bg-paprika text-white px-3 py-1.5 rounded-full shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+            >
               Sign in
-            </Link>{" "}
-            to add custom cuisines.
-          </p>
+            </Link>
+            <span className="text-[11px] font-medium opacity-80">
+              to add custom cuisines.
+            </span>
+          </div>
         )}
       </div>
     </div>
