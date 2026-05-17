@@ -22,7 +22,7 @@ function Index() {
     "Tomato",
   ]);
   const [dietary, setDietary] = useState<string[]>([]);
-  const [cuisine, setCuisine] = useState("Nepali / Himalayan");
+  const [cuisine, setCuisine] = useState("Any / Surprise Me");
   const [recipes, setRecipes] = useState<Recipe[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -84,7 +84,7 @@ function Index() {
               Chef
             </h1>
             <p className="font-black uppercase tracking-widest text-[10px] md:text-sm mt-2 ml-1">
-              The Spice-Market Engine
+              Global Kitchen AI
             </p>
           </div>
           <button
