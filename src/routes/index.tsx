@@ -205,14 +205,17 @@ function Index() {
           <section className="lg:col-span-12 animate-pop">
             <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)]">
               <h2 className="font-black text-xl md:text-2xl uppercase mb-3">
-                Know the dish? Get ingredients instantly
+                Did something make you drool?
               </h2>
+              <p className="text-sm text-muted-foreground mb-3">
+                Tell me what it is and I'll give you the ingredients.
+              </p>
               <form onSubmit={onDishSubmit} className="flex flex-col md:flex-row gap-3">
                 <input
                   type="text"
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
-                  placeholder='e.g. "I want to prepare nepali style momo. Give me ingredients"'
+                  placeholder="e.g. Nepali-style momo, Thai green curry, tiramisu…"
                   className="flex-1 border-2 border-border rounded-2xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
                 />
                 <button
