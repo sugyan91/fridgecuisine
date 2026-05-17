@@ -286,31 +286,12 @@ function Index() {
                   {dishPrompts[promptIndex]}
                 </p>
               </div>
-              <div className="min-h-[1.5rem] mb-3 flex items-center overflow-hidden">
-                <p
-                  key={worldFoodIndex}
-                  className={`text-xs md:text-sm font-bold text-muted-foreground ${
-                    worldFoodAnim === "in"
-                      ? "animate-fade-down-in"
-                      : "animate-fade-down-out"
-                  }`}
-                >
-                  eg:{" "}
-                  <span className="text-paprika">
-                    {worldFoods[worldFoodIndex].food}
-                  </span>{" "}
-                  from{" "}
-                  <span className="text-foreground">
-                    {worldFoods[worldFoodIndex].country}
-                  </span>
-                </p>
-              </div>
               <form onSubmit={onDishSubmit} className="flex flex-col md:flex-row gap-3">
                 <input
                   type="text"
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
-                  placeholder={placeholderDishes[placeholderIndex]}
+                  placeholder={`eg: ${worldFoods[worldFoodIndex].food} from ${worldFoods[worldFoodIndex].country}`}
                   className="flex-1 border-2 border-border rounded-2xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
                 />
                 <button
