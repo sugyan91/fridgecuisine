@@ -37,7 +37,11 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
     ? [...CORE_DIETARY, ...EXTRA_DIETARY]
     : [...CORE_DIETARY];
   const allDietary = [...visibleDefaults, ...customDietary];
-  const allCuisines = [...DEFAULT_CUISINES, ...customCuisines];
+  const sortedDefaults = [...DEFAULT_CUISINES]
+    .filter((c) => c !== "Any / Surprise Me")
+    .sort((a, b) => a.localeCompare(b));
+  const sortedCustom = [...customCuisines].sort((a, b) => a.localeCompare(b));
+  const allCuisines = ["Any / Surprise Me", ...sortedDefaults, ...sortedCustom];
 
   const toggle = (d: string) => {
     onDietary(dietary.includes(d) ? dietary.filter((x) => x !== d) : [...dietary, d]);
@@ -161,7 +165,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
           }}
           className="mt-3 w-full bg-cardamom text-white border-2 border-border py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-none transition-all"
         >
-          🎲 Find my Pantry cuisine
+          Find my Pantry cuisine
         </button>
         {isAuthenticated ? (
           <div className="mt-2 flex gap-2">
@@ -185,7 +189,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
       </div>
 
       <div>
-        <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">Cuisine Vibe</p>
+        <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">Global Cuisine Vibe</p>
         <select
           value={cuisine}
           onChange={(e) => onCuisine(e.target.value)}
