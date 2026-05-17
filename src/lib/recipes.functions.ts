@@ -83,7 +83,7 @@ Rules:
       ? `\n\nDo NOT repeat or closely resemble these recipes already shown:\n- ${data.exclude.join("\n- ")}`
       : "";
 
-    const userPrompt = `Ingredients on hand: ${data.ingredients.join(", ")}
+    const userPrompt = `Ingredients on hand: ${hasIngredients ? data.ingredients.join(", ") : "(none — user has not specified any)"}
 Cuisine preference: ${data.cuisine}
 Dietary: ${dietary}${excludeBlock}
 
