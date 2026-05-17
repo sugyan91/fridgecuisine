@@ -77,7 +77,7 @@ export const Route = createFileRoute("/")({
         content:
           "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step recipes from any global cuisine.",
       },
-      { property: "og:title", content: "FridgeCuisine — Global Kitchen AI" },
+      { property: "og:title", content: "FridgeCuisine — Global AI Kitchen" },
       {
         property: "og:description",
         content:
@@ -330,7 +330,7 @@ function Index() {
               <span className="text-turmeric">.</span>
             </h1>
             <p className="font-black uppercase tracking-widest text-[8px] md:text-[9px] mt-1 opacity-70">
-              Global Kitchen AI
+              Global AI Kitchen
             </p>
           </div>
         </header>
