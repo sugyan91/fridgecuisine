@@ -13,7 +13,7 @@ type Props = {
 
 export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = true }: Props) {
   const [open, setOpen] = useState(false);
-  const img = pickRecipeImage(recipe.title, index);
+  const img = pickRecipeImage(recipe.title, index, recipe.cuisine);
   const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
   const dietary = recipe.dietary ?? [];
 
