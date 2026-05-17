@@ -1,18 +1,27 @@
-// Generate a food photo on-demand from a free image generator that maps a
-// text prompt to an image. This keeps recipe images aligned with the actual
-// dish name + cuisine returned by the AI, instead of a fixed local library.
+// Pull a real food photo from LoremFlickr by keyword. Fast (cached CC photos
+// from Flickr), no API key, and a deterministic `lock` keeps the same dish
+// showing the same image across reloads.
 export function pickRecipeImage(
   title: string,
   index = 0,
   cuisine?: string,
 ): string {
-  const parts = [title, cuisine, "food photography, overhead, natural light"]
+  const titleTokens = title
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 2)
+    .slice(0, 3);
+  const cuisineToken = (cuisine ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .slice(0, 20);
+  const keywords = [...titleTokens, cuisineToken, "food"]
     .filter(Boolean)
-    .join(", ");
-  const prompt = encodeURIComponent(parts);
-  // Deterministic seed per recipe so the same dish keeps the same image.
-  const seed = hash(`${title}|${cuisine ?? ""}|${index}`);
-  return `https://image.pollinations.ai/prompt/${prompt}?width=512&height=512&nologo=true&seed=${seed}`;
+    .join(",");
+  const lock = hash(`${title}|${cuisine ?? ""}|${index}`);
+  return `https://loremflickr.com/512/512/${encodeURIComponent(keywords)}?lock=${lock}`;
 }
 
 function hash(s: string): number {

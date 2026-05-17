@@ -1,23 +1,17 @@
-## Problem
-Dietary tags currently render only when the user has selected dietary filters, and only in the collapsed card. So on "Global Cuisine Vibe" runs (no filter selected) nothing shows, and even when filters are set, the expanded view has no Dietary label.
+## Why images aren't loading
+Cards currently point at `https://image.pollinations.ai/prompt/...`. That endpoint generates an AI image on every unique prompt. First-time prompts can take 10–30s (often longer under load) and frequently time out, so the `<img>` either spins forever or fails. That's what you're seeing in the output.
 
 ## Fix
-Make dietary tags a property of each recipe (returned by the AI), so every card shows what the dish actually is, regardless of whether the user picked filters. Render the tags in both the collapsed preview and the expanded detail view.
+Switch the image source to **LoremFlickr** (`https://loremflickr.com/512/512/<keywords>?lock=<seed>`), which serves real, cached Creative-Commons food photos from Flickr by keyword. Responses are sub-second, the `lock` param makes each recipe's image stable across reloads, and it requires no API key.
 
-## Changes
+### Change
+**`src/lib/recipe-images.ts`** — replace the pollinations URL builder with a LoremFlickr URL builder:
+- Tokenize `title` into words, filter out parenthetical / non-alphanumeric junk.
+- Build keywords: `<title-words>,<cuisine>,food` (comma-separated, max ~5 tokens — LoremFlickr matches all listed tags).
+- Use a deterministic `lock` from a hash of `title|cuisine` so the same dish always shows the same photo.
+- Final URL: `https://loremflickr.com/512/512/<encoded keywords>?lock=<seed>`.
 
-### 1. `src/lib/recipes.functions.ts`
-- Add `dietary: string[]` to the `Recipe` type and to `responseSchema.recipes[]` (default `[]`, max ~6 short tags).
-- Update the prompt so the model tags each recipe with applicable labels (e.g. `Vegan`, `Vegetarian`, `Gluten-Free`, `Dairy-Free`, `Halal`, `Kosher`, `Pescatarian`, `Contains Nuts`, `Contains Pork`). Must include tags the user filtered on, plus any other obviously-true tags.
-
-### 2. `src/components/fridge/RecipeCard.tsx`
-- Stop using the `dietary` prop for display. Use `recipe.dietary ?? []` instead (keep the prop optional for backward compatibility, but ignore it).
-- Collapsed view: keep the existing `Dietary: <chips>` row, driven by `recipe.dietary`.
-- Expanded view: add the same `Dietary: <chips>` row under the title/meta block (above the blurb), styled to read well on the dark `bg-cardamom` background (use `text-white/70` for the label, keep paprika chips).
-- If `recipe.dietary` is empty, render nothing (no empty label).
-
-### 3. `src/routes/index.tsx`
-- No logic change required. The existing `dietary={dietary}` prop can stay or be removed; the card now sources dietary from the recipe itself.
+No other files change. `RecipeCard` and `SavedDrawer` already call `pickRecipeImage(title, index, cuisine)`.
 
 ## Result
-Every recipe card — whether produced by Global Cuisine Vibe, Surprise Me, or Find my Pantry cuisine — shows its dietary tags in both the preview and the expanded recipe view, even when the user picked no dietary filter.
+Recipe images load near-instantly with real, on-topic food photos for every dish (Butter Chicken, Frikadeller, Palak Paneer, etc.), and the same recipe keeps the same photo on every render.
