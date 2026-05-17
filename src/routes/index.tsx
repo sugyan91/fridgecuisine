@@ -220,8 +220,26 @@ function Index() {
 
       <main className="min-h-screen bg-background text-foreground p-4 md:p-8">
         <div className="fixed top-3 right-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-full pl-3 pr-1 py-1 shadow-[3px_3px_0px_0px_var(--border)]">
+          <Link
+            to="/community"
+            className="text-[11px] font-black uppercase tracking-wide px-2"
+          >
+            Community
+          </Link>
           {email ? (
             <>
+              <Link
+                to="/my-recipes"
+                className="text-[11px] font-black uppercase tracking-wide px-2 hidden sm:inline"
+              >
+                My Recipes
+              </Link>
+              <Link
+                to="/community/new"
+                className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 rounded-full"
+              >
+                + Share
+              </Link>
               <button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
