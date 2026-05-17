@@ -75,17 +75,31 @@ function Index() {
     "Tell me what made you hungry — I'll turn it into a recipe with ingredients.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
-  const [promptVisible, setPromptVisible] = useState(true);
+  const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
   useEffect(() => {
     const tick = setInterval(() => {
-      setPromptVisible(false);
+      setPromptAnim("out");
       setTimeout(() => {
         setPromptIndex((i) => (i + 1) % dishPrompts.length);
-        setPromptVisible(true);
-      }, 300);
-    }, 3800);
+        setPromptAnim("in");
+      }, 600);
+    }, 20000);
     return () => clearInterval(tick);
   }, [dishPrompts.length]);
+
+  const foodImages = [dalImg, saagImg, riceImg, paneerImg, momoImg, chanaImg];
+  const [foodIndex, setFoodIndex] = useState(0);
+  const [foodVisible, setFoodVisible] = useState(true);
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setFoodVisible(false);
+      setTimeout(() => {
+        setFoodIndex((i) => (i + 1) % foodImages.length);
+        setFoodVisible(true);
+      }, 800);
+    }, 10000);
+    return () => clearInterval(tick);
+  }, [foodImages.length]);
 
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
