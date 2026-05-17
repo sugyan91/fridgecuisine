@@ -1,27 +1,61 @@
-// Pull a real food photo from LoremFlickr by keyword. Fast (cached CC photos
-// from Flickr), no API key, and a deterministic `lock` keeps the same dish
-// showing the same image across reloads.
+import fallbackChana from "@/assets/recipe-chana.jpg";
+import fallbackDal from "@/assets/recipe-dal.jpg";
+import fallbackMomo from "@/assets/recipe-momo.jpg";
+import fallbackPaneer from "@/assets/recipe-paneer.jpg";
+import fallbackRice from "@/assets/recipe-rice.jpg";
+import fallbackSaag from "@/assets/recipe-saag.jpg";
+
+const FALLBACKS = [
+  fallbackChana,
+  fallbackDal,
+  fallbackMomo,
+  fallbackPaneer,
+  fallbackRice,
+  fallbackSaag,
+];
+
+const STOPWORDS = new Set([
+  "the", "and", "with", "from", "style", "your", "this", "that",
+  "for", "into", "made", "easy", "quick", "best", "homemade", "recipe",
+  "dish", "food", "cuisine", "any", "surprise", "me",
+]);
+
+// Build a dish-aware image URL. We use pollinations.ai to actually render
+// the specific dish (title + cuisine + a key ingredient) instead of a loose
+// keyword search that can return unrelated food. Deterministic seed keeps
+// the same recipe showing the same image across reloads.
 export function pickRecipeImage(
   title: string,
   index = 0,
   cuisine?: string,
+  ingredients?: string[],
 ): string {
-  const titleTokens = title
-    .toLowerCase()
-    .replace(/\([^)]*\)/g, " ")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter((w) => w.length > 2)
-    .slice(0, 3);
-  const cuisineToken = (cuisine ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .slice(0, 20);
-  const keywords = [...titleTokens, cuisineToken, "food"]
-    .filter(Boolean)
-    .join(",");
-  const lock = hash(`${title}|${cuisine ?? ""}|${index}`);
-  return `https://loremflickr.com/512/512/${encodeURIComponent(keywords)}?lock=${lock}`;
+  const cleanTitle = title.replace(/\([^)]*\)/g, " ").trim();
+  const cleanCuisine = (cuisine ?? "").replace(/\s*\/.*$/, "").trim();
+
+  const ingredientHint = (ingredients ?? [])
+    .map((i) => i.toLowerCase().replace(/[^a-z0-9\s]/g, " ").trim())
+    .flatMap((i) => i.split(/\s+/))
+    .filter((w) => w.length > 2 && !STOPWORDS.has(w))
+    .slice(0, 3)
+    .join(", ");
+
+  const parts = [
+    cleanTitle,
+    cleanCuisine && cleanCuisine.toLowerCase() !== "any" ? `${cleanCuisine} cuisine` : "",
+    ingredientHint,
+    "authentic plated food photography, overhead, natural daylight",
+  ].filter(Boolean);
+
+  const prompt = parts.join(", ");
+  const seed = hash(`${title}|${cuisine ?? ""}|${index}`);
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&nologo=true&seed=${seed}`;
+}
+
+// Deterministic fallback used when the remote image fails to load.
+export function pickFallbackImage(title: string, cuisine?: string, index = 0): string {
+  const i = hash(`${title}|${cuisine ?? ""}|${index}`) % FALLBACKS.length;
+  return FALLBACKS[i];
 }
 
 function hash(s: string): number {
