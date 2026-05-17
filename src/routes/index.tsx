@@ -284,10 +284,15 @@ function Index() {
             alt="Fridge Cuisine"
             className="h-16 md:h-20 w-auto rounded-xl border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] bg-background"
           />
-          <p className="font-black uppercase tracking-widest text-[8px] md:text-[9px] opacity-70">
-            Global Kitchen AI
-          </p>
-          <h1 className="sr-only">Fridge Cuisine</h1>
+          <div>
+            <h1 className="font-display md:text-3xl tracking-tight text-paprika leading-none text-4xl text-left my-px lowercase">
+              fridge <span className="text-foreground">cuisine</span>
+              <span className="text-turmeric">.</span>
+            </h1>
+            <p className="font-black uppercase tracking-widest text-[8px] md:text-[9px] mt-1 opacity-70">
+              Global Kitchen AI
+            </p>
+          </div>
         </header>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
