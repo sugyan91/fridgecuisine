@@ -90,59 +90,14 @@ function Index() {
     return () => clearInterval(tick);
   }, [dishPrompts.length]);
 
-  const placeholderDishes = [
-    "e.g. Nepali-style momo",
-    "e.g. Thai green curry",
-    "e.g. Italian tiramisu",
-    "e.g. Japanese ramen",
-    "e.g. Mexican tacos al pastor",
-    "e.g. Indian butter chicken",
-    "e.g. French croissant",
-    "e.g. Korean bibimbap",
-    "e.g. Vietnamese pho",
-    "e.g. Spanish paella",
-    "e.g. Greek moussaka",
-    "e.g. Turkish baklava",
-    "e.g. Chinese kung pao chicken",
-    "e.g. Lebanese shawarma",
-    "e.g. Brazilian feijoada",
-    "e.g. Moroccan tagine",
-    "e.g. Ethiopian doro wat",
-    "e.g. American clam chowder",
-    "e.g. British fish and chips",
-    "e.g. German schnitzel",
-    "e.g. Russian borscht",
-    "e.g. Filipino adobo",
-    "e.g. Indonesian nasi goreng",
-    "e.g. Malaysian laksa",
-    "e.g. Argentinian empanadas",
-    "e.g. Peruvian ceviche",
-    "e.g. Polish pierogi",
-    "e.g. Nepali sel roti",
-    "e.g. Pakistani biryani",
-    "e.g. Sri Lankan kottu",
-  ];
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  useEffect(() => {
-    const tick = setInterval(() => {
-      setPlaceholderIndex((i) => (i + 1) % placeholderDishes.length);
-    }, 60000);
-    return () => clearInterval(tick);
-  }, [placeholderDishes.length]);
-
-  // Rotating "food from country" inspiration line — 500 dishes worldwide
+  // Rotating "food from country" placeholder — 500 dishes worldwide, every 30s
   const [worldFoodIndex, setWorldFoodIndex] = useState(() =>
     Math.floor(Math.random() * worldFoods.length),
   );
-  const [worldFoodAnim, setWorldFoodAnim] = useState<"in" | "out">("in");
   useEffect(() => {
     const tick = setInterval(() => {
-      setWorldFoodAnim("out");
-      setTimeout(() => {
-        setWorldFoodIndex((i) => (i + 1) % worldFoods.length);
-        setWorldFoodAnim("in");
-      }, 500);
-    }, 3500);
+      setWorldFoodIndex((i) => (i + 1) % worldFoods.length);
+    }, 30000);
     return () => clearInterval(tick);
   }, []);
 
