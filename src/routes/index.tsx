@@ -252,11 +252,13 @@ function Index() {
               <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
                 Dish to recipe
               </h2>
-              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-4 flex items-start">
+              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-4 flex items-start overflow-hidden">
                 <p
                   key={promptIndex}
-                  className={`font-display text-lg md:text-2xl leading-snug text-foreground transition-all duration-300 ${
-                    promptVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+                  className={`font-display text-lg md:text-2xl leading-snug text-foreground ${
+                    promptAnim === "in"
+                      ? "animate-fade-down-in"
+                      : "animate-fade-down-out"
                   }`}
                 >
                   {dishPrompts[promptIndex]}
