@@ -83,9 +83,49 @@ function Index() {
         setPromptIndex((i) => (i + 1) % dishPrompts.length);
         setPromptAnim("in");
       }, 600);
-    }, 20000);
+    }, 60000);
     return () => clearInterval(tick);
   }, [dishPrompts.length]);
+
+  const placeholderDishes = [
+    "e.g. Nepali-style momo",
+    "e.g. Thai green curry",
+    "e.g. Italian tiramisu",
+    "e.g. Japanese ramen",
+    "e.g. Mexican tacos al pastor",
+    "e.g. Indian butter chicken",
+    "e.g. French croissant",
+    "e.g. Korean bibimbap",
+    "e.g. Vietnamese pho",
+    "e.g. Spanish paella",
+    "e.g. Greek moussaka",
+    "e.g. Turkish baklava",
+    "e.g. Chinese kung pao chicken",
+    "e.g. Lebanese shawarma",
+    "e.g. Brazilian feijoada",
+    "e.g. Moroccan tagine",
+    "e.g. Ethiopian doro wat",
+    "e.g. American clam chowder",
+    "e.g. British fish and chips",
+    "e.g. German schnitzel",
+    "e.g. Russian borscht",
+    "e.g. Filipino adobo",
+    "e.g. Indonesian nasi goreng",
+    "e.g. Malaysian laksa",
+    "e.g. Argentinian empanadas",
+    "e.g. Peruvian ceviche",
+    "e.g. Polish pierogi",
+    "e.g. Nepali sel roti",
+    "e.g. Pakistani biryani",
+    "e.g. Sri Lankan kottu",
+  ];
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setPlaceholderIndex((i) => (i + 1) % placeholderDishes.length);
+    }, 60000);
+    return () => clearInterval(tick);
+  }, [placeholderDishes.length]);
 
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
@@ -219,14 +259,21 @@ function Index() {
           )}
         </div>
 
-        <header className="max-w-6xl mx-auto mb-8 md:mb-12 flex justify-between items-end gap-4">
+        <header className="max-w-6xl mx-auto mb-8 md:mb-12 flex items-center gap-4 md:gap-5">
+          <video
+            src="/logo-animated.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            aria-hidden="true"
+            className="size-16 md:size-24 rounded-2xl border-4 border-border object-cover shadow-[4px_4px_0px_0px_var(--border)] bg-white"
+          />
           <div>
-            <h1 className="font-display text-5xl md:text-8xl uppercase tracking-tighter text-paprika leading-none">
-              Fridge
-              <br />
-              Cuisine
+            <h1 className="font-display text-3xl md:text-5xl uppercase tracking-tighter text-paprika leading-none">
+              FridgeCuisine
             </h1>
-            <p className="font-black uppercase tracking-widest text-[10px] md:text-sm mt-2 ml-1">
+            <p className="font-black uppercase tracking-widest text-[9px] md:text-[11px] mt-1.5 opacity-70">
               Global Kitchen AI
             </p>
           </div>
@@ -255,7 +302,7 @@ function Index() {
                   type="text"
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
-                  placeholder="e.g. Nepali-style momo, Thai green curry, tiramisu…"
+                  placeholder={placeholderDishes[placeholderIndex]}
                   className="flex-1 border-2 border-border rounded-2xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
                 />
                 <button
