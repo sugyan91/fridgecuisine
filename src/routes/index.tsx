@@ -11,6 +11,12 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
+import dalImg from "@/assets/recipe-dal.jpg";
+import saagImg from "@/assets/recipe-saag.jpg";
+import riceImg from "@/assets/recipe-rice.jpg";
+import paneerImg from "@/assets/recipe-paneer.jpg";
+import momoImg from "@/assets/recipe-momo.jpg";
+import chanaImg from "@/assets/recipe-chana.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -69,15 +75,15 @@ function Index() {
     "Tell me what made you hungry — I'll turn it into a recipe with ingredients.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
-  const [promptVisible, setPromptVisible] = useState(true);
+  const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
   useEffect(() => {
     const tick = setInterval(() => {
-      setPromptVisible(false);
+      setPromptAnim("out");
       setTimeout(() => {
         setPromptIndex((i) => (i + 1) % dishPrompts.length);
-        setPromptVisible(true);
-      }, 300);
-    }, 3800);
+        setPromptAnim("in");
+      }, 600);
+    }, 20000);
     return () => clearInterval(tick);
   }, [dishPrompts.length]);
 
@@ -232,11 +238,13 @@ function Index() {
               <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
                 Dish to recipe
               </h2>
-              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-4 flex items-start">
+              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-4 flex items-start overflow-hidden">
                 <p
                   key={promptIndex}
-                  className={`font-display text-lg md:text-2xl leading-snug text-foreground transition-all duration-300 ${
-                    promptVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+                  className={`font-display text-lg md:text-2xl leading-snug text-foreground ${
+                    promptAnim === "in"
+                      ? "animate-fade-down-in"
+                      : "animate-fade-down-out"
                   }`}
                 >
                   {dishPrompts[promptIndex]}
@@ -439,10 +447,31 @@ function LoadingSkeleton() {
 }
 
 function EmptyState() {
+  const foodImages = [dalImg, saagImg, riceImg, paneerImg, momoImg, chanaImg];
+  const [foodIndex, setFoodIndex] = useState(0);
+  const [foodVisible, setFoodVisible] = useState(true);
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setFoodVisible(false);
+      setTimeout(() => {
+        setFoodIndex((i) => (i + 1) % foodImages.length);
+        setFoodVisible(true);
+      }, 800);
+    }, 10000);
+    return () => clearInterval(tick);
+  }, [foodImages.length]);
+
   return (
     <div className="bg-white border-4 border-dashed border-border/40 rounded-[32px] p-10 text-center">
-      <div className="font-display text-5xl md:text-6xl text-turmeric mb-2">
-        🍳
+      <div className="relative w-40 h-40 mx-auto mb-4 rounded-[24px] overflow-hidden border-4 border-border shadow-[4px_4px_0px_0px_var(--border)]">
+        <img
+          key={foodIndex}
+          src={foodImages[foodIndex]}
+          alt="Food inspiration"
+          className={`w-full h-full object-cover ${
+            foodVisible ? "animate-food-fade" : "opacity-0"
+          }`}
+        />
       </div>
       <p className="font-black text-lg uppercase mb-2">
         Hit "Find My Feast"

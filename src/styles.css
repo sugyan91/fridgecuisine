@@ -153,9 +153,54 @@
     color: var(--color-foreground);
   }
 
-  button:not(:disabled),
+button:not(:disabled),
   [role="button"]:not(:disabled),
   a {
     cursor: pointer;
   }
+}
+
+@keyframes fade-down-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes fade-down-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes food-fade {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-down-out {
+  animation: fade-down-out 0.6s ease-in forwards;
+}
+
+.animate-fade-down-in {
+  animation: fade-down-in 0.6s ease-out forwards;
+}
+
+.animate-food-fade {
+  animation: food-fade 0.8s ease-out forwards;
 }
