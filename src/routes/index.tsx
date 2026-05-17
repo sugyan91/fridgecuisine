@@ -412,6 +412,7 @@ function Index() {
                 cuisine={cuisine}
                 onDietary={setDietary}
                 onCuisine={setCuisine}
+                isAuthenticated={!!email}
               />
 
               <button
