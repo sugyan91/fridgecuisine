@@ -139,7 +139,7 @@ function Index() {
 
   const onSubmit = async () => {
     if (ingredients.length === 0) {
-      toast.error("Add at least one ingredient first.");
+      toast.error("add ingredients from your pantry/fridge");
       return;
     }
     setLoading(true);
@@ -409,7 +409,11 @@ function Index() {
                 disabled={loading}
                 className="mt-5 w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_6px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {loading ? "Travelling to find you the surprise recipe…" : "Show me the cuisine"}
+                {loading
+                  ? cuisine && cuisine !== "Any / Surprise Me"
+                    ? `Travelling to ${cuisine} for surprise receipe`
+                    : "Travelling around the global to find a perfect receipe for you"
+                  : "Show me the cuisine"}
               </button>
             </div>
           </section>
