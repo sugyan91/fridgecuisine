@@ -101,7 +101,11 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
           {!isAuthenticated && (
             <span className="normal-case tracking-normal font-medium opacity-90">
               {" "}(
-              <Link to="/login" className="underline text-paprika font-black">
+              <Link
+                to="/login"
+                search={{ mode: "signin" }}
+                className="underline text-paprika font-black cursor-pointer"
+              >
                 Sign in
               </Link>{" "}
               to add your own dietary tags)
@@ -233,10 +237,14 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
           </>
         ) : (
           <p className="mt-3 text-xs opacity-80">
-            <Link to="/login" className="underline font-black text-paprika text-sm">
+            <Link
+              to="/login"
+              search={{ mode: "signin" }}
+              className="underline font-black text-paprika text-sm"
+            >
               Sign in
             </Link>{" "}
-            to add custom cuisines.
+            to add your own custom cuisines.
           </p>
         )}
       </div>
