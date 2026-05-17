@@ -46,9 +46,9 @@ const CommunityIndexRoute = CommunityIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommunityRecipeIdRoute = CommunityRecipeIdRouteImport.update({
-  id: '/$recipeId',
-  path: '/$recipeId',
-  getParentRoute: () => CommunityRoute,
+  id: '/community/$recipeId',
+  path: '/community/$recipeId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMyRecipesRoute = AuthenticatedMyRecipesRouteImport.update({
   id: '/my-recipes',
@@ -161,6 +161,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  CommunityRecipeIdRoute: typeof CommunityRecipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -206,10 +207,10 @@ declare module '@tanstack/react-router' {
     }
     '/community/$recipeId': {
       id: '/community/$recipeId'
-      path: '/$recipeId'
+      path: '/community/$recipeId'
       fullPath: '/community/$recipeId'
       preLoaderRoute: typeof CommunityRecipeIdRouteImport
-      parentRoute: typeof CommunityRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/my-recipes': {
       id: '/_authenticated/my-recipes'
@@ -268,6 +269,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  CommunityRecipeIdRoute: CommunityRecipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
