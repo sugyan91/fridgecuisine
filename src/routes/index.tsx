@@ -172,12 +172,14 @@ function Index() {
             <>
               <Link
                 to="/login"
+                search={{ mode: "signin" }}
                 className="text-[11px] font-black uppercase tracking-wide px-2"
               >
                 Sign in
               </Link>
               <Link
                 to="/login"
+                search={{ mode: "signup" }}
                 className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 rounded-full"
               >
                 Sign up
