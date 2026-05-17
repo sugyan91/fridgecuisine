@@ -164,7 +164,10 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [], s
           </span>
         </div>
         {dietary.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-1">
+              Dietary:
+            </span>
             {dietary.map((d) => (
               <span
                 key={d}
