@@ -140,7 +140,7 @@ function LoginPage() {
           ) : (
           <>
           <div className="flex gap-1 bg-muted/40 border-2 border-border rounded-full p-1 mb-5">
-            {(["signin", "signup", "magic"] as const).map((m) => (
+            {(["signin", "signup"] as const).map((m) => (
               <button
                 key={m}
                 type="button"
@@ -149,7 +149,7 @@ function LoginPage() {
                   mode === m ? "bg-turmeric text-foreground" : "text-muted-foreground"
                 }`}
               >
-                {m === "signin" ? "Sign in" : m === "signup" ? "Sign up" : "Magic link"}
+                {m === "signin" ? "Sign in" : "Sign up"}
               </button>
             ))}
           </div>
@@ -168,8 +168,7 @@ function LoginPage() {
               />
             </div>
 
-            {mode !== "magic" && (
-              <div>
+            <div>
                 <label className="block font-bold text-xs uppercase mb-1">Password</label>
                 <input
                   type="password"
@@ -181,8 +180,7 @@ function LoginPage() {
                   className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
                   placeholder="••••••••"
                 />
-              </div>
-            )}
+            </div>
 
             <button
               type="submit"
@@ -193,9 +191,7 @@ function LoginPage() {
                 ? "Working…"
                 : mode === "signin"
                   ? "Sign in"
-                  : mode === "signup"
-                    ? "Create account"
-                    : "Send magic link"}
+                  : "Create account"}
             </button>
           </form>
 
