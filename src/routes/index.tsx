@@ -461,10 +461,31 @@ function LoadingSkeleton() {
 }
 
 function EmptyState() {
+  const foodImages = [dalImg, saagImg, riceImg, paneerImg, momoImg, chanaImg];
+  const [foodIndex, setFoodIndex] = useState(0);
+  const [foodVisible, setFoodVisible] = useState(true);
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setFoodVisible(false);
+      setTimeout(() => {
+        setFoodIndex((i) => (i + 1) % foodImages.length);
+        setFoodVisible(true);
+      }, 800);
+    }, 10000);
+    return () => clearInterval(tick);
+  }, [foodImages.length]);
+
   return (
     <div className="bg-white border-4 border-dashed border-border/40 rounded-[32px] p-10 text-center">
-      <div className="font-display text-5xl md:text-6xl text-turmeric mb-2">
-        🍳
+      <div className="relative w-40 h-40 mx-auto mb-4 rounded-[24px] overflow-hidden border-4 border-border shadow-[4px_4px_0px_0px_var(--border)]">
+        <img
+          key={foodIndex}
+          src={foodImages[foodIndex]}
+          alt="Food inspiration"
+          className={`w-full h-full object-cover ${
+            foodVisible ? "animate-food-fade" : "opacity-0"
+          }`}
+        />
       </div>
       <p className="font-black text-lg uppercase mb-2">
         Hit "Find My Feast"
