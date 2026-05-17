@@ -12,6 +12,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { worldFoods } from "@/lib/world-foods";
 import dalImg from "@/assets/recipe-dal.jpg";
 import saagImg from "@/assets/recipe-saag.jpg";
 import riceImg from "@/assets/recipe-rice.jpg";
@@ -128,6 +129,22 @@ function Index() {
     }, 60000);
     return () => clearInterval(tick);
   }, [placeholderDishes.length]);
+
+  // Rotating "food from country" inspiration line — 500 dishes worldwide
+  const [worldFoodIndex, setWorldFoodIndex] = useState(() =>
+    Math.floor(Math.random() * worldFoods.length),
+  );
+  const [worldFoodAnim, setWorldFoodAnim] = useState<"in" | "out">("in");
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setWorldFoodAnim("out");
+      setTimeout(() => {
+        setWorldFoodIndex((i) => (i + 1) % worldFoods.length);
+        setWorldFoodAnim("in");
+      }, 500);
+    }, 3500);
+    return () => clearInterval(tick);
+  }, []);
 
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
@@ -312,6 +329,25 @@ function Index() {
                   }`}
                 >
                   {dishPrompts[promptIndex]}
+                </p>
+              </div>
+              <div className="min-h-[1.5rem] mb-3 flex items-center overflow-hidden">
+                <p
+                  key={worldFoodIndex}
+                  className={`text-xs md:text-sm font-bold text-muted-foreground ${
+                    worldFoodAnim === "in"
+                      ? "animate-fade-down-in"
+                      : "animate-fade-down-out"
+                  }`}
+                >
+                  eg:{" "}
+                  <span className="text-paprika">
+                    {worldFoods[worldFoodIndex].food}
+                  </span>{" "}
+                  from{" "}
+                  <span className="text-foreground">
+                    {worldFoods[worldFoodIndex].country}
+                  </span>
                 </p>
               </div>
               <form onSubmit={onDishSubmit} className="flex flex-col md:flex-row gap-3">
