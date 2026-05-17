@@ -16,7 +16,6 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CommunityRecipeIdRouteImport } from './routes/community.$recipeId'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
-import { Route as CommunityRouteImport } from './routes/community.'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -56,11 +55,6 @@ const AuthenticatedMyRecipesRoute = AuthenticatedMyRecipesRouteImport.update({
   path: '/my-recipes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const CommunityRoute = CommunityRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => CommunityRoute,
-} as any)
 const AuthenticatedCommunityNewRoute =
   AuthenticatedCommunityNewRouteImport.update({
     id: '/community/new',
@@ -89,7 +83,6 @@ export interface FileRoutesByFullPath {
   '/community': typeof CommunityRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/community/': typeof CommunityRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
@@ -99,9 +92,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/community': typeof CommunityRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/community': typeof CommunityRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
@@ -116,7 +109,6 @@ export interface FileRoutesById {
   '/community': typeof CommunityRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/community/': typeof CommunityRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
@@ -131,7 +123,6 @@ export interface FileRouteTypes {
     | '/community'
     | '/login'
     | '/reset-password'
-    | '/community/'
     | '/my-recipes'
     | '/community/$recipeId'
     | '/community/new'
@@ -141,9 +132,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/community'
     | '/login'
     | '/reset-password'
-    | '/community'
     | '/my-recipes'
     | '/community/$recipeId'
     | '/community/new'
@@ -157,7 +148,6 @@ export interface FileRouteTypes {
     | '/community'
     | '/login'
     | '/reset-password'
-    | '/community/'
     | '/_authenticated/my-recipes'
     | '/community/$recipeId'
     | '/_authenticated/community/new'
@@ -228,13 +218,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMyRecipesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/community/': {
-      id: '/community/'
-      path: '/'
-      fullPath: '/community/'
-      preLoaderRoute: typeof CommunityRouteImport
-      parentRoute: typeof CommunityRoute
-    }
     '/_authenticated/community/new': {
       id: '/_authenticated/community/new'
       path: '/community/new'
@@ -281,12 +264,10 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface CommunityRouteChildren {
-  CommunityRoute: typeof CommunityRoute
   CommunityRecipeIdRoute: typeof CommunityRecipeIdRoute
 }
 
 const CommunityRouteChildren: CommunityRouteChildren = {
-  CommunityRoute: CommunityRoute,
   CommunityRecipeIdRoute: CommunityRecipeIdRoute,
 }
 
@@ -307,3 +288,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
