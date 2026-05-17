@@ -10,10 +10,11 @@ type Props = {
   cuisine: string;
   onDietary: (next: string[]) => void;
   onCuisine: (next: string) => void;
+  onPantryPick?: (next: string) => void;
   isAuthenticated: boolean;
 };
 
-export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenticated }: Props) {
+export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPick, isAuthenticated }: Props) {
   const [customDietary, setCustomDietary] = useState<string[]>([]);
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
   const [newDietary, setNewDietary] = useState("");
@@ -185,7 +186,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, isAuthenti
             const pool = allCuisines.filter((c) => c !== "Any / Surprise Me");
             if (pool.length === 0) return;
             const pick = pool[Math.floor(Math.random() * pool.length)];
-            onCuisine(pick);
+            (onPantryPick ?? onCuisine)(pick);
             toast.success(`Pantry cuisine: ${pick}`);
           }}
           className="w-full bg-cardamom text-white border-2 border-border py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-none transition-all"

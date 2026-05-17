@@ -45,6 +45,7 @@ function Index() {
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [dietary, setDietary] = useState<string[]>([]);
   const [cuisine, setCuisine] = useState("Any / Surprise Me");
+  const [pantryMode, setPantryMode] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -418,7 +419,14 @@ function Index() {
                 dietary={dietary}
                 cuisine={cuisine}
                 onDietary={setDietary}
-                onCuisine={setCuisine}
+                onCuisine={(c) => {
+                  setPantryMode(false);
+                  setCuisine(c);
+                }}
+                onPantryPick={(c) => {
+                  setPantryMode(true);
+                  setCuisine(c);
+                }}
                 isAuthenticated={!!email}
               />
 
@@ -467,6 +475,7 @@ function Index() {
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
                   dietary={dietary}
+                  showMissing={pantryMode && ingredients.length > 0}
                 />
               ))}
 
