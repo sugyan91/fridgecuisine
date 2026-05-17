@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { Recipe } from "@/lib/recipes.functions";
-import { pickRecipeImage, pickFallbackImage } from "@/lib/recipe-images";
 
 type Props = {
   recipe: Recipe;
@@ -14,8 +13,6 @@ type Props = {
 export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = true }: Props) {
   const [open, setOpen] = useState(false);
   const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
-  const img = pickRecipeImage(recipe.title, index, recipe.cuisine, allIngredients);
-  const fallback = pickFallbackImage(recipe.title, recipe.cuisine, index);
   const dietary = recipe.dietary ?? [];
 
   if (open) {
@@ -140,23 +137,9 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
 
   return (
     <article
-      className="group bg-white border-4 border-border rounded-[32px] overflow-hidden flex flex-col md:flex-row shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
+      className="group bg-white border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="md:w-48 md:flex-shrink-0 border-b-4 md:border-b-0 md:border-r-4 border-border">
-        <img
-          src={img}
-          alt={recipe.title}
-          width={512}
-          height={512}
-          loading="lazy"
-          onError={(e) => {
-            const el = e.currentTarget;
-            if (el.src !== fallback) el.src = fallback;
-          }}
-          className="w-full h-48 md:h-full object-cover"
-        />
-      </div>
       <div className="p-5 flex-1">
         <div className="flex justify-between items-start mb-2 gap-3">
           <h4 className="font-black text-xl md:text-2xl leading-tight">
