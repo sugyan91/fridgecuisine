@@ -56,16 +56,18 @@ export const generateRecipes = createServerFn({ method: "POST" })
       return { ok: false, error: "AI service not configured.", code: "server" };
     }
 
+    const hasIngredients = data.ingredients.length > 0;
     const cuisineGuidance =
       data.cuisine === "Any / Surprise Me"
-        ? "Pick cuisines that best match the ingredients provided — be creative and global."
+        ? hasIngredients
+          ? "Pick cuisines that best match the ingredients provided — be creative and global. Mix up regions so the 10 recipes span different parts of the world."
+          : "Surprise the user with 10 iconic, beloved recipes from ALL OVER THE WORLD. Span different continents and cuisines (e.g. Asian, European, African, Latin American, Middle Eastern) — no two recipes from the same country."
         : `Use authentic techniques and flavor profiles for ${data.cuisine} cuisine.`;
 
     const dietary = data.dietary.length
       ? data.dietary.join(", ")
       : "no restrictions";
 
-    const hasIngredients = data.ingredients.length > 0;
     const ingredientRule = hasIngredients
       ? `Use as many of the user's ingredients as possible.\n- It's OK to require 1-3 missing pantry staples (oil, salt, common spices) - list them in missingIngredients.`
       : `The user has not listed any pantry ingredients. Generate 10 classic, iconic, beloved recipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
