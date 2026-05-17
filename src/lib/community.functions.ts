@@ -50,6 +50,27 @@ export const listCommunityRecipes = createServerFn({ method: "GET" })
         : Promise.resolve({ data: [] as { recipe_id: string; vote_type: string }[] }),
     ]);
     const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name]));
+    // Backfill any missing display names from auth metadata so authors aren't shown as Anonymous.
+    const missing = userIds.filter((uid) => !nameMap.get(uid));
+    if (missing.length) {
+      await Promise.all(
+        missing.map(async (uid) => {
+          const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(uid);
+          const u = userRes?.user;
+          const fallback =
+            (u?.user_metadata?.display_name as string | undefined) ||
+            (u?.user_metadata?.full_name as string | undefined) ||
+            (u?.user_metadata?.name as string | undefined) ||
+            (u?.email ? u.email.split("@")[0] : null);
+          if (fallback) {
+            nameMap.set(uid, fallback);
+            await supabaseAdmin
+              .from("profiles")
+              .upsert({ user_id: uid, display_name: fallback }, { onConflict: "user_id" });
+          }
+        }),
+      );
+    }
     const upCount = new Map<string, number>();
     const downCount = new Map<string, number>();
     (votes ?? []).forEach((v) => {
@@ -82,11 +103,26 @@ export const getCommunityRecipe = createServerFn({ method: "GET" })
       supabaseAdmin.from("profiles").select("display_name").eq("user_id", recipe.user_id).maybeSingle(),
       supabaseAdmin.from("community_recipe_likes").select("vote_type").eq("recipe_id", recipe.id),
     ]);
+    let author_name = profile?.display_name ?? null;
+    if (!author_name) {
+      const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(recipe.user_id);
+      const u = userRes?.user;
+      author_name =
+        (u?.user_metadata?.display_name as string | undefined) ||
+        (u?.user_metadata?.full_name as string | undefined) ||
+        (u?.user_metadata?.name as string | undefined) ||
+        (u?.email ? u.email.split("@")[0] : null);
+      if (author_name) {
+        await supabaseAdmin
+          .from("profiles")
+          .upsert({ user_id: recipe.user_id, display_name: author_name }, { onConflict: "user_id" });
+      }
+    }
     const up_count = (votes ?? []).filter((v) => v.vote_type !== "down").length;
     const down_count = (votes ?? []).filter((v) => v.vote_type === "down").length;
     return {
       recipe,
-      author_name: profile?.display_name ?? "Anonymous",
+      author_name: author_name ?? "Anonymous",
       up_count,
       down_count,
     };
