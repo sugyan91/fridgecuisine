@@ -8,6 +8,7 @@ import { lovable } from "@/integrations/lovable";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
+  mode: z.enum(["signin", "signup"]).optional(),
 });
 
 export const Route = createFileRoute("/login")({
@@ -15,12 +16,12 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-type Mode = "signin" | "signup" | "magic";
+type Mode = "signin" | "signup";
 
 function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,7 +52,7 @@ function LoginPage() {
         if (error) throw error;
         toast.success("Check your email to confirm your account.");
         setSignupSent(cleanEmail);
-      } else if (mode === "signin") {
+      } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password,
@@ -59,14 +60,6 @@ function LoginPage() {
         if (error) throw error;
         toast.success("Welcome back!");
         navigate({ to: redirectTo });
-      } else {
-        const { error } = await supabase.auth.signInWithOtp({
-          email: cleanEmail,
-          options: { emailRedirectTo: `${window.location.origin}/` },
-        });
-        if (error) throw error;
-        toast.success("Magic link sent — check your inbox.");
-        setSignupSent(cleanEmail);
       }
     } catch (err: any) {
       toast.error(err?.message || "Something went wrong");
