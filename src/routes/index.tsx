@@ -409,7 +409,7 @@ function Index() {
                 disabled={loading}
                 className="mt-5 w-full bg-turmeric border-4 border-border py-4 rounded-2xl font-black text-xl md:text-2xl uppercase shadow-[0px_6px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {loading ? "Cooking…" : "Find My Feast"}
+                {loading ? "Travelling to find you the surprise recipe…" : "Show me the cuisine"}
               </button>
             </div>
           </section>
@@ -443,6 +443,7 @@ function Index() {
                   index={i}
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
+                  dietary={dietary}
                 />
               ))}
           </section>
@@ -513,7 +514,7 @@ function EmptyState() {
         />
       </div>
       <p className="font-black text-lg uppercase mb-2">
-        Hit "Find My Feast"
+        Hit "Show me the cuisine"
       </p>
       <p className="text-sm text-muted-foreground max-w-sm mx-auto">
         Add what's in your fridge, pick your vibe, and we'll turn it into

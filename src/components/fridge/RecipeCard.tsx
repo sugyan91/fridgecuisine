@@ -7,9 +7,10 @@ type Props = {
   index: number;
   saved: boolean;
   onToggleSave: () => void;
+  dietary?: string[];
 };
 
-export function RecipeCard({ recipe, index, saved, onToggleSave }: Props) {
+export function RecipeCard({ recipe, index, saved, onToggleSave, dietary = [] }: Props) {
   const [open, setOpen] = useState(false);
   const img = pickRecipeImage(recipe.title, index);
 
@@ -143,6 +144,18 @@ export function RecipeCard({ recipe, index, saved, onToggleSave }: Props) {
             {recipe.cuisine}
           </span>
         </div>
+        {dietary.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {dietary.map((d) => (
+              <span
+                key={d}
+                className="text-[10px] font-black uppercase tracking-wide bg-paprika text-white border-2 border-border rounded-full px-2 py-0.5"
+              >
+                {d}
+              </span>
+            ))}
+          </div>
+        )}
         <p className="text-sm text-pretty mb-4 font-medium">{recipe.blurb}</p>
         <div className="flex justify-between items-center">
           <button
