@@ -8,6 +8,7 @@ const inputSchema = z.object({
     .max(30),
   dietary: z.array(z.string().max(40)).max(10).default([]),
   cuisine: z.string().min(1).max(40),
+  exclude: z.array(z.string().max(120)).max(60).default([]),
 });
 
 export type Recipe = {
@@ -44,7 +45,7 @@ const responseSchema = z.object({
       })
     )
     .min(1)
-    .max(6),
+    .max(10),
 });
 
 export const generateRecipes = createServerFn({ method: "POST" })
@@ -64,19 +65,23 @@ export const generateRecipes = createServerFn({ method: "POST" })
       ? data.dietary.join(", ")
       : "no restrictions";
 
-    const systemPrompt = `You are an expert home cook. Generate 4 realistic, delicious recipes the user can cook with mostly the ingredients they have on hand. ${cuisineGuidance}
+    const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious recipes the user can cook with mostly the ingredients they have on hand. ${cuisineGuidance}
 Rules:
 - Use as many of the user's ingredients as possible.
 - It's OK to require 1-3 missing pantry staples (oil, salt, common spices) - list them in missingIngredients.
 - Steps must be concrete and ordered (4-8 short steps).
 - cookTimeMinutes must be realistic (5-90).
-- Honor dietary constraints strictly: ${dietary}.
+- Honor dietary constraints STRICTLY: ${dietary}. Every single recipe MUST comply with ALL listed dietary tags. If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any recipe that would violate a tag — do not include it.
 - If "Quick Meal" is selected, all recipes must be <= 20 minutes.
 - Return ONLY valid JSON matching the schema. No prose.`;
 
+    const excludeBlock = data.exclude.length
+      ? `\n\nDo NOT repeat or closely resemble these recipes already shown:\n- ${data.exclude.join("\n- ")}`
+      : "";
+
     const userPrompt = `Ingredients on hand: ${data.ingredients.join(", ")}
 Cuisine preference: ${data.cuisine}
-Dietary: ${dietary}
+Dietary: ${dietary}${excludeBlock}
 
 Return JSON shaped exactly like:
 {
