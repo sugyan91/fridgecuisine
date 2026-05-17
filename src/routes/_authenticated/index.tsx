@@ -9,6 +9,7 @@ import { RecipeCard } from "@/components/fridge/RecipeCard";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
+import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 
 export const Route = createFileRoute("/_authenticated/")({
   component: Index,
@@ -29,6 +30,36 @@ function Index() {
   const [saved, setSaved] = useLocalStorage<Recipe[]>("fridge-chef-saved", []);
 
   const generate = useServerFn(generateRecipes);
+  const fetchDish = useServerFn(getDishHelper);
+
+  const [dishQuery, setDishQuery] = useState("");
+  const [dishLoading, setDishLoading] = useState(false);
+  const [dishResult, setDishResult] = useState<
+    Extract<DishHelperResult, { ok: true }>["data"] | null
+  >(null);
+  const [showRecipe, setShowRecipe] = useState(false);
+
+  const onDishSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = dishQuery.trim();
+    if (q.length < 2) {
+      toast.error("Tell me what dish you want to prepare.");
+      return;
+    }
+    setDishLoading(true);
+    setDishResult(null);
+    setShowRecipe(false);
+    try {
+      const res = await fetchDish({ data: { dish: q } });
+      if (!res.ok) toast.error(res.error);
+      else setDishResult(res.data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't reach the kitchen. Try again.");
+    } finally {
+      setDishLoading(false);
+    }
+  };
 
   const onSubmit = async () => {
     if (ingredients.length === 0) {
@@ -97,6 +128,107 @@ function Index() {
         </header>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+          <section className="lg:col-span-12 animate-pop">
+            <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)]">
+              <h2 className="font-black text-xl md:text-2xl uppercase mb-3">
+                Know the dish? Get ingredients instantly
+              </h2>
+              <form onSubmit={onDishSubmit} className="flex flex-col md:flex-row gap-3">
+                <input
+                  type="text"
+                  value={dishQuery}
+                  onChange={(e) => setDishQuery(e.target.value)}
+                  placeholder='e.g. "I want to prepare nepali style momo. Give me ingredients"'
+                  className="flex-1 border-2 border-border rounded-2xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                />
+                <button
+                  type="submit"
+                  disabled={dishLoading}
+                  className="bg-paprika text-white border-4 border-border py-3 px-6 rounded-2xl font-black uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
+                >
+                  {dishLoading ? "Thinking…" : "Get ingredients"}
+                </button>
+              </form>
+
+              {dishResult && (
+                <div className="mt-5 border-t-2 border-dashed border-border/40 pt-5">
+                  <h3 className="font-display text-2xl md:text-3xl uppercase text-paprika mb-2">
+                    {dishResult.dishName}
+                  </h3>
+                  <p className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
+                    Ingredients
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-5">
+                    {dishResult.ingredients.map((ing, i) => (
+                      <li
+                        key={i}
+                        className="text-sm font-medium before:content-['▸'] before:mr-2 before:text-turmeric"
+                      >
+                        {ing}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {!showRecipe ? (
+                    <div className="bg-turmeric/10 border-2 border-dashed border-border/50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <p className="font-bold text-sm">
+                        Do you want the recipe as well?
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowRecipe(true)}
+                          className="bg-turmeric border-2 border-border px-5 py-2 rounded-full font-black uppercase text-sm shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDishResult(null);
+                            setDishQuery("");
+                          }}
+                          className="bg-white border-2 border-border px-5 py-2 rounded-full font-black uppercase text-sm shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-background border-2 border-border rounded-2xl p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <p className="font-black text-xs uppercase tracking-widest">
+                          Recipe
+                        </p>
+                        <span className="font-mono text-xs bg-white border border-border px-2 py-0.5">
+                          {dishResult.recipe.cookTimeMinutes} min
+                          {dishResult.recipe.serves ? ` · serves ${dishResult.recipe.serves}` : ""}
+                        </span>
+                      </div>
+                      <ol className="space-y-2 list-decimal list-inside">
+                        {dishResult.recipe.steps.map((s, i) => (
+                          <li key={i} className="text-sm leading-relaxed">
+                            {s}
+                          </li>
+                        ))}
+                      </ol>
+                      {dishResult.recipe.tips.length > 0 && (
+                        <div className="mt-4 pt-3 border-t border-dashed border-border/40">
+                          <p className="font-black text-xs uppercase mb-1">Tips</p>
+                          <ul className="space-y-1">
+                            {dishResult.recipe.tips.map((t, i) => (
+                              <li key={i} className="text-xs text-muted-foreground">• {t}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+
           <section className="lg:col-span-5 animate-pop">
             <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)] lg:sticky lg:top-6">
               <h2 className="font-black text-xl md:text-2xl uppercase mb-4">
