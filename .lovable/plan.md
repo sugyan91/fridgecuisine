@@ -1,17 +1,27 @@
-## Why images aren't loading
-Cards currently point at `https://image.pollinations.ai/prompt/...`. That endpoint generates an AI image on every unique prompt. First-time prompts can take 10–30s (often longer under load) and frequently time out, so the `<img>` either spins forever or fails. That's what you're seeing in the output.
+## Why the current images mismatch
 
-## Fix
-Switch the image source to **LoremFlickr** (`https://loremflickr.com/512/512/<keywords>?lock=<seed>`), which serves real, cached Creative-Commons food photos from Flickr by keyword. Responses are sub-second, the `lock` param makes each recipe's image stable across reloads, and it requires no API key.
+The current image helper uses LoremFlickr with broad keywords from the recipe title/cuisine. That loads fast, but it cannot guarantee the photo is actually the dish. For specific cuisines like Bhutanese, it may return generic or unrelated food because Flickr has limited exact matches.
 
-### Change
-**`src/lib/recipe-images.ts`** — replace the pollinations URL builder with a LoremFlickr URL builder:
-- Tokenize `title` into words, filter out parenthetical / non-alphanumeric junk.
-- Build keywords: `<title-words>,<cuisine>,food` (comma-separated, max ~5 tokens — LoremFlickr matches all listed tags).
-- Use a deterministic `lock` from a hash of `title|cuisine` so the same dish always shows the same photo.
-- Final URL: `https://loremflickr.com/512/512/<encoded keywords>?lock=<seed>`.
+## Plan
 
-No other files change. `RecipeCard` and `SavedDrawer` already call `pickRecipeImage(title, index, cuisine)`.
+1. **Stop relying on loose keyword photo search for generated recipes**
+   - Replace the current external photo-search URL builder with a more reliable dish-aware image strategy.
 
-## Result
-Recipe images load near-instantly with real, on-topic food photos for every dish (Butter Chicken, Frikadeller, Palak Paneer, etc.), and the same recipe keeps the same photo on every render.
+2. **Generate/store a better image prompt from the actual recipe data**
+   - Build image keywords from the recipe title, cuisine, and key ingredients instead of only the first title words.
+   - Avoid vague fallback terms like just `food` unless no better fields exist.
+
+3. **Use a curated fallback for hard-to-match cuisines**
+   - If a dish/cuisine is too specific for the photo service, show a branded, appetizing cuisine illustration/placeholder rather than a wrong random food photo.
+   - This is better UX than showing unrelated food.
+
+4. **Keep image behavior consistent everywhere**
+   - Apply the same image helper to recipe cards and saved recipes so preview and full output match.
+   - Keep deterministic seeds/locks so the same recipe keeps the same visual.
+
+## Technical details
+
+- Update `src/lib/recipe-images.ts` so `pickRecipeImage` can accept optional ingredient data and produce tighter query terms.
+- Update `RecipeCard.tsx` and `SavedDrawer.tsx` calls to pass recipe ingredients into `pickRecipeImage`.
+- Add an `onError` fallback in image rendering so broken or irrelevant external URLs can degrade to a local styled placeholder instead of blank/wrong-looking output.
+- No database changes are needed.
