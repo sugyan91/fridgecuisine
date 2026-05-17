@@ -130,7 +130,7 @@ function LoginPage() {
             FridgeCuisine
           </h1>
           <p className="font-black uppercase tracking-widest text-[10px] mt-2">
-            Global Kitchen AI
+            Global AI Kitchen
           </p>
         </Link>
 
