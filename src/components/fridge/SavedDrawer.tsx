@@ -1,5 +1,5 @@
 import type { Recipe } from "@/lib/recipes.functions";
-import { pickRecipeImage } from "@/lib/recipe-images";
+import { pickRecipeImage, pickFallbackImage } from "@/lib/recipe-images";
 
 type Props = {
   open: boolean;
@@ -41,11 +41,15 @@ export function SavedDrawer({ open, onClose, saved, onUnsave }: Props) {
                 className="border-2 border-border rounded-2xl bg-white overflow-hidden flex shadow-[3px_3px_0px_0px_var(--border)]"
               >
                 <img
-                  src={pickRecipeImage(r.title, i, r.cuisine)}
+                  src={pickRecipeImage(r.title, i, r.cuisine, [...r.usedIngredients, ...r.missingIngredients])}
                   alt={r.title}
                   width={80}
                   height={80}
                   loading="lazy"
+                  onError={(e) => {
+                    const fb = pickFallbackImage(r.title, r.cuisine, i);
+                    if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                  }}
                   className="w-20 h-20 object-cover border-r-2 border-border"
                 />
                 <div className="flex-1 p-3 flex flex-col justify-between min-w-0">

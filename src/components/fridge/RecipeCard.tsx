@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Recipe } from "@/lib/recipes.functions";
-import { pickRecipeImage } from "@/lib/recipe-images";
+import { pickRecipeImage, pickFallbackImage } from "@/lib/recipe-images";
 
 type Props = {
   recipe: Recipe;
@@ -13,8 +13,9 @@ type Props = {
 
 export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = true }: Props) {
   const [open, setOpen] = useState(false);
-  const img = pickRecipeImage(recipe.title, index, recipe.cuisine);
   const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
+  const img = pickRecipeImage(recipe.title, index, recipe.cuisine, allIngredients);
+  const fallback = pickFallbackImage(recipe.title, recipe.cuisine, index);
   const dietary = recipe.dietary ?? [];
 
   if (open) {
@@ -149,6 +150,10 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
           width={512}
           height={512}
           loading="lazy"
+          onError={(e) => {
+            const el = e.currentTarget;
+            if (el.src !== fallback) el.src = fallback;
+          }}
           className="w-full h-48 md:h-full object-cover"
         />
       </div>
