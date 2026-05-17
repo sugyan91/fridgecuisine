@@ -15,6 +15,7 @@ function NewRecipe() {
   const [form, setForm] = useState({
     title: "",
     description: "",
+    history: "",
     city: "",
     country: "",
     cuisine: "",
@@ -59,11 +60,20 @@ function NewRecipe() {
         <h1 className="font-display text-4xl md:text-5xl text-paprika mt-3 mb-6">Share a recipe</h1>
 
         <form onSubmit={submit} className="bg-white border-4 border-border rounded-3xl p-6 space-y-4 shadow-[6px_6px_0px_0px_var(--border)]">
-          <Field label="Title">
+          <Field label="Food name">
             <input value={form.title} maxLength={120} required onChange={(e) => setForm({ ...form, title: e.target.value })} className={input} />
           </Field>
-          <Field label="Short description">
+          <Field label="Tagline (one sentence)">
             <textarea value={form.description} maxLength={800} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${input} h-20`} />
+          </Field>
+          <Field label="History & background (origin story, family memory, what makes it special)">
+            <textarea
+              value={form.history}
+              maxLength={4000}
+              onChange={(e) => setForm({ ...form, history: e.target.value })}
+              className={`${input} h-36`}
+              placeholder="Where does this dish come from? Who taught you to make it?"
+            />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="City">
