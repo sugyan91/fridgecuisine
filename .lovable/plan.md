@@ -1,16 +1,22 @@
-## Goal
+## Changes
 
-The "eg: {Food} from {Country}" line currently sits as a separate paragraph between the tagline and the input. Move it **inside** the dish input box (as the input's rotating placeholder / hint), and change the rotation interval to **30 seconds**.
+### 1. `src/routes/index.tsx` — `onSubmit`
+Remove the empty-pantry guard so "Show me the cuisine" works regardless of what's in the pantry. The generator already accepts an empty ingredient list conceptually — we'll send a sentinel/empty array and let the AI build recipes from the selected Global Cuisine Vibe alone.
 
-## Changes (single file: `src/routes/index.tsx`)
+- Drop the `if (ingredients.length === 0) { toast.error(...) }` block.
+- If `cuisine === "Any / Surprise Me"` AND `ingredients.length === 0`, show a gentle toast: "Pick a cuisine vibe or add a pantry ingredient." (only case where we still need *something*).
+- Otherwise call `generate({ data: { ingredients, dietary, cuisine, exclude: [] } })` as today.
 
-1. Remove the standalone `<div>` block that renders the rotating world-food paragraph below the tagline.
-2. Replace the input's current `placeholder` (which cycles `placeholderDishes` every 60s) with the world-food rotation, formatted as `eg: {Food} from {Country}` (e.g. `eg: Sushi from Japan`).
-3. Change the world-food rotation interval from 3.5s → **30s**.
-4. Remove the now-unused `placeholderDishes` array + `placeholderIndex` state + its interval to keep the file clean.
+### 2. `src/lib/recipes.functions.ts` — allow empty pantry
+- Change the input schema: `ingredients: z.array(...).max(30).default([])` (drop `.min(1)`).
+- Update the system prompt: when `data.ingredients.length === 0`, instruct the AI to generate 10 classic/iconic recipes for the selected cuisine using common pantry staples, and skip the "use as many of the user's ingredients as possible" rule.
+
+### 3. `src/components/fridge/FilterPanel.tsx` — remove helper text
+Delete the line:
+> "Picks a random cuisine for you. Separate from 'Show me the cuisine'."
+directly below the "Find my Pantry cuisine" button. Keep the button and its section heading.
 
 ## Result
-
-- Inside the white dish-to-recipe box, the input field itself shows a rotating placeholder like `eg: Sushi from Japan` → `eg: Ramen from Japan` → … cycling through ~500 dishes every 30 seconds.
-- The standalone line outside/under the tagline is gone.
-- Tagline rotation (the larger sentence above the input) is unchanged.
+- Clicking "Show me the cuisine" with an empty pantry but a selected cuisine returns 10 recipes for that cuisine.
+- No misleading "add ingredients" error.
+- The small italic note under the Pantry cuisine button is gone.

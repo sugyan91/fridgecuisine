@@ -134,8 +134,8 @@ function Index() {
   };
 
   const onSubmit = async () => {
-    if (ingredients.length === 0) {
-      toast.error("add ingredients from your pantry/fridge");
+    if (ingredients.length === 0 && cuisine === "Any / Surprise Me") {
+      toast.error("Pick a cuisine vibe or add a pantry ingredient.");
       return;
     }
     setLoading(true);
