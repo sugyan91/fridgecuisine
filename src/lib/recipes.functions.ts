@@ -20,6 +20,7 @@ export type Recipe = {
   missingIngredients: string[];
   steps: string[];
   substitutions: string[];
+  dietary: string[];
 };
 
 export type GenerateRecipesResult =
@@ -42,6 +43,7 @@ const responseSchema = z.object({
         missingIngredients: z.array(z.string()).default([]),
         steps: z.array(z.string()).min(1),
         substitutions: z.array(z.string()).default([]),
+        dietary: z.array(z.string().max(40)).max(6).default([]),
       })
     )
     .min(1)
@@ -79,6 +81,7 @@ Rules:
 - cookTimeMinutes must be realistic (5-90).
 - Honor dietary constraints STRICTLY: ${dietary}. Every single recipe MUST comply with ALL listed dietary tags. If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any recipe that would violate a tag — do not include it.
 - If "Quick Meal" is selected, all recipes must be <= 20 minutes.
+- For every recipe, set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy". Include any user-selected dietary tags that apply, plus any other tags that are obviously true for the dish. Max 6 tags. Use [] if none apply.
 - Return ONLY valid JSON matching the schema. No prose.`;
 
     const excludeBlock = data.exclude.length
@@ -100,7 +103,8 @@ Return JSON shaped exactly like:
       "usedIngredients": ["..."],
       "missingIngredients": ["..."],
       "steps": ["step 1", "step 2"],
-      "substitutions": ["No paneer? Use tofu."]
+      "substitutions": ["No paneer? Use tofu."],
+      "dietary": ["Vegetarian", "Gluten-Free"]
     }
   ]
 }`;
