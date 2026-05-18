@@ -19,7 +19,6 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
   const [customDietary, setCustomDietary] = useState<string[]>([]);
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
   const [newDietary, setNewDietary] = useState("");
-  const [newCuisine, setNewCuisine] = useState("");
   const [showMoreDietary, setShowMoreDietary] = useState(false);
 
   const fetchPrefs = useServerFn(getUserPreferences);
@@ -65,37 +64,12 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
     }
   };
 
-  const addCuisine = async () => {
-    const v = newCuisine.trim();
-    if (!v || customCuisines.includes(v) || DEFAULT_CUISINES.includes(v)) {
-      setNewCuisine("");
-      return;
-    }
-    const next = [...customCuisines, v];
-    setCustomCuisines(next);
-    setNewCuisine("");
-    try {
-      await savePrefs({ data: { custom_dietary: customDietary, custom_cuisines: next } });
-    } catch {
-      toast.error("Couldn't save");
-    }
-  };
-
   const removeCustomDietary = async (v: string) => {
     const next = customDietary.filter((x) => x !== v);
     setCustomDietary(next);
     if (dietary.includes(v)) onDietary(dietary.filter((d) => d !== v));
     try {
       await savePrefs({ data: { custom_dietary: next, custom_cuisines: customCuisines } });
-    } catch {}
-  };
-
-  const removeCustomCuisine = async (v: string) => {
-    const next = customCuisines.filter((x) => x !== v);
-    setCustomCuisines(next);
-    if (cuisine === v) onCuisine("Any / Surprise Me");
-    try {
-      await savePrefs({ data: { custom_dietary: customDietary, custom_cuisines: next } });
     } catch {}
   };
 
@@ -209,47 +183,6 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
             <option key={c}>{c}</option>
           ))}
         </select>
-        {isAuthenticated && (
-          <>
-            {customCuisines.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {customCuisines.map((c) => (
-                  <span
-                    key={c}
-                    className="inline-flex items-center gap-1 bg-white border-2 border-border rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
-                  >
-                    {c}
-                    <button
-                      type="button"
-                      onClick={() => removeCustomCuisine(c)}
-                      aria-label={`Remove ${c}`}
-                      className="size-3.5 rounded-full bg-paprika text-white flex items-center justify-center text-[9px] cursor-pointer"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="mt-2 flex gap-2">
-              <input
-                value={newCuisine}
-                onChange={(e) => setNewCuisine(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCuisine())}
-                placeholder="Add a cuisine…"
-                maxLength={40}
-                className="flex-1 border-2 border-border rounded-lg px-2 py-1.5 text-xs font-medium"
-              />
-              <button
-                type="button"
-                onClick={addCuisine}
-                className="bg-turmeric border-2 border-border px-3 rounded-lg font-black text-xs uppercase cursor-pointer"
-              >
-                + Add
-              </button>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
