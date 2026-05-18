@@ -285,7 +285,7 @@ function Index() {
         onUnsave={(title) => setSaved(saved.filter((s) => s.title !== title))}
       />
 
-      <main className="min-h-screen bg-background text-foreground p-4 pt-20 md:p-8 md:pt-8">
+      <main className="min-h-screen bg-background text-foreground p-4 pt-24 md:p-8 md:pt-28">
         <div className="fixed top-3 right-3 z-50 flex items-center gap-1.5 md:gap-2 bg-white border-2 border-border rounded-full pl-2 md:pl-3 pr-1 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]">
           <Link
             to="/community"
