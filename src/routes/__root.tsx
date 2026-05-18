@@ -129,6 +129,21 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    // Remember-me enforcement: if the user signed in without "Remember me",
+    // we set a sessionStorage marker. When the browser is closed the marker
+    // is gone, so on the next load we sign them out.
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) return;
+        const remembered = localStorage.getItem("fc-auth-remember") === "1";
+        const sessionMarker = sessionStorage.getItem("fc-auth-session") === "1";
+        if (!remembered && !sessionMarker) {
+          await supabase.auth.signOut();
+        }
+      } catch {}
+    })();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       router.invalidate();
       queryClient.invalidateQueries();
