@@ -132,10 +132,25 @@ export function IngredientInput({ ingredients, onChange }: Props) {
         <div className="flex justify-end mb-2">
           <button
             type="button"
-            onClick={() => onChange([])}
+            onClick={clearAll}
             className="text-[10px] font-black uppercase tracking-wide text-paprika hover:underline"
           >
             Clear all
+          </button>
+        </div>
+      )}
+
+      {previousIngredients && ingredients.length === 0 && (
+        <div className="flex items-center justify-between gap-3 bg-turmeric/15 border-2 border-dashed border-border/50 rounded-xl px-3 py-2 mb-3 animate-pop">
+          <span className="text-xs font-bold">
+            Cleared {previousIngredients.length} ingredient{previousIngredients.length > 1 ? 's' : ''}
+          </span>
+          <button
+            type="button"
+            onClick={undo}
+            className="text-[10px] font-black uppercase tracking-wide bg-paprika text-white px-2.5 py-1 rounded-full hover:opacity-90 transition-opacity"
+          >
+            Undo
           </button>
         </div>
       )}
