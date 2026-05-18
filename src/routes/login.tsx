@@ -35,6 +35,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(true);
+  // Accessible progress announcement (separate from visual spinner).
+  const [statusMessage, setStatusMessage] = useState("");
   // Synchronous lock to guard against duplicate submissions when the UI lags
   // (state updates are async; a ref flips immediately).
   const submitLockRef = useRef(false);
@@ -102,6 +104,11 @@ function LoginPage() {
     // so the UI reflects the lock even if the next render is delayed.
     if (submitBtnRef.current) submitBtnRef.current.disabled = true;
     setFormError(null);
+    setStatusMessage(
+      mode === "signin"
+        ? "Signing in, please wait…"
+        : "Creating your account, please wait…"
+    );
     setLoading(true);
     try {
       if (mode === "signup") {
@@ -137,6 +144,7 @@ function LoginPage() {
         });
         if (error) throw error;
         toast.success("Check your email to confirm your account.");
+        setStatusMessage("Account created. Check your email to confirm.");
         setSignupSent(cleanEmail);
       } else {
         const idRaw = identifier.trim();
@@ -193,6 +201,7 @@ function LoginPage() {
               ? `Wrong password for @${usedUsername}.`
               : "Email or password is incorrect.",
           });
+          setStatusMessage("Sign in failed.");
           setLoading(false);
           return;
         }
@@ -209,10 +218,12 @@ function LoginPage() {
           }
         } catch {}
         toast.success("Welcome back!");
+        setStatusMessage("Signed in successfully. Redirecting…");
         navigate({ to: redirectTo });
       }
     } catch (err: any) {
       setFormError({ message: err?.message || "Something went wrong" });
+      setStatusMessage("Request failed.");
     } finally {
       setLoading(false);
       // Small cooldown so rapid double-clicks after a fast response are also
@@ -544,13 +555,11 @@ function LoginPage() {
               type="submit"
               disabled={loading}
               aria-busy={loading}
-              aria-live="polite"
               aria-describedby={formError ? formErrorId : undefined}
               className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-lg uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
             >
               {loading ? (
                 <span className="inline-flex items-center justify-center gap-2">
-                  <span className="sr-only">Please wait. </span>
                   <span
                     aria-hidden="true"
                     className="h-5 w-5 rounded-full border-2 border-border border-t-transparent animate-spin"
@@ -563,6 +572,17 @@ function LoginPage() {
                 "Create account"
               )}
             </button>
+
+            {/* Accessible progress/status region. Visually hidden — announces
+                start and end of the request to assistive technology. */}
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+            >
+              {statusMessage}
+            </div>
           </form>
 
           {mode === "signin" && (
