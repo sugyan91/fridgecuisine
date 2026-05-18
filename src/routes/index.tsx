@@ -344,18 +344,18 @@ function Index() {
           )}
         </div>
 
-        <header className="max-w-6xl mx-auto mb-6 md:mb-10 flex items-center gap-3">
+        <header className="fixed top-3 left-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-2xl pl-1.5 pr-3 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]">
           <img
             src={logoImg}
             alt="Fridge Cuisine"
-            className="h-16 md:h-20 w-auto rounded-xl border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] bg-background"
+            className="h-9 md:h-11 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background"
           />
           <div>
-            <h1 className="font-display md:text-3xl tracking-tight text-paprika leading-none text-4xl text-left my-px lowercase">
+            <h1 className="font-display tracking-tight text-paprika leading-none text-lg md:text-xl text-left lowercase">
               fridge <span className="text-foreground">cuisine</span>
               <span className="text-turmeric">.</span>
             </h1>
-            <p className="font-black uppercase tracking-widest text-[8px] md:text-[9px] mt-1 opacity-70">
+            <p className="font-black uppercase tracking-widest text-[7px] md:text-[8px] opacity-70">
               Global AI Kitchen
             </p>
           </div>
