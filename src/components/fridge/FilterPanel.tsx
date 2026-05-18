@@ -183,7 +183,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
         ) : null}
       </div>
 
-      <div className="border-t-2 border-dashed border-border/30 pt-4">
+      <div>
         <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">
           Surprise me
         </p>
@@ -198,11 +198,11 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
           }}
           className="w-full bg-cardamom text-white border-2 border-border py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-none transition-all"
         >
-          Find my Pantry cuisine
+          Create a cuisine from the pantry list
         </button>
       </div>
 
-      <div>
+      <div className="border-t-2 border-dashed border-border/30 pt-4">
         <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">Global Cuisine Vibe</p>
         <select
           value={cuisine}
