@@ -289,7 +289,7 @@ function Index() {
           {email ? (
             <>
               <Link
-                to="/my-receipes"
+                to="/my-recipes"
                 className="text-[11px] font-black uppercase tracking-wide px-2 hidden sm:inline"
               >
                 My Receipes
