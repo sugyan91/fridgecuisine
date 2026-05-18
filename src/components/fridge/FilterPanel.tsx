@@ -19,7 +19,6 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
   const [customDietary, setCustomDietary] = useState<string[]>([]);
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
   const [newDietary, setNewDietary] = useState("");
-  const [newCuisine, setNewCuisine] = useState("");
   const [showMoreDietary, setShowMoreDietary] = useState(false);
 
   const fetchPrefs = useServerFn(getUserPreferences);
@@ -65,37 +64,12 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
     }
   };
 
-  const addCuisine = async () => {
-    const v = newCuisine.trim();
-    if (!v || customCuisines.includes(v) || DEFAULT_CUISINES.includes(v)) {
-      setNewCuisine("");
-      return;
-    }
-    const next = [...customCuisines, v];
-    setCustomCuisines(next);
-    setNewCuisine("");
-    try {
-      await savePrefs({ data: { custom_dietary: customDietary, custom_cuisines: next } });
-    } catch {
-      toast.error("Couldn't save");
-    }
-  };
-
   const removeCustomDietary = async (v: string) => {
     const next = customDietary.filter((x) => x !== v);
     setCustomDietary(next);
     if (dietary.includes(v)) onDietary(dietary.filter((d) => d !== v));
     try {
       await savePrefs({ data: { custom_dietary: next, custom_cuisines: customCuisines } });
-    } catch {}
-  };
-
-  const removeCustomCuisine = async (v: string) => {
-    const next = customCuisines.filter((x) => x !== v);
-    setCustomCuisines(next);
-    if (cuisine === v) onCuisine("Any / Surprise Me");
-    try {
-      await savePrefs({ data: { custom_dietary: customDietary, custom_cuisines: next } });
     } catch {}
   };
 
