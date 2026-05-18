@@ -471,6 +471,21 @@ function LoginPage() {
                 />
             </div>
 
+            {mode === "signin" && (
+              <label className="flex items-center gap-2 select-none cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="h-4 w-4 border-2 border-border rounded accent-turmeric cursor-pointer"
+                />
+                <span className="text-sm font-bold">Remember me</span>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {remember ? "— stay signed in" : "— sign out when I close the browser"}
+                </span>
+              </label>
+            )}
+
             <button
               type="submit"
               disabled={loading}
