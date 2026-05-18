@@ -63,6 +63,8 @@ type Props = {
 
 export function IngredientInput({ ingredients, onChange }: Props) {
   const [draft, setDraft] = useState("");
+  const [previousIngredients, setPreviousIngredients] = useState<string[] | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const add = (raw: string) => {
     const v = raw.trim().slice(0, 40);
@@ -75,6 +77,22 @@ export function IngredientInput({ ingredients, onChange }: Props) {
 
   const remove = (v: string) => {
     onChange(ingredients.filter((i) => i !== v));
+  };
+
+  const clearAll = () => {
+    if (ingredients.length === 0) return;
+    setPreviousIngredients(ingredients);
+    onChange([]);
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    undoTimerRef.current = setTimeout(() => setPreviousIngredients(null), 8000);
+  };
+
+  const undo = () => {
+    if (previousIngredients) {
+      onChange(previousIngredients);
+      setPreviousIngredients(null);
+    }
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
   };
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
