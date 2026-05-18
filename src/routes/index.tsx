@@ -13,12 +13,12 @@ import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
-import dalImg from "@/assets/receipe-dal.jpg";
-import saagImg from "@/assets/receipe-saag.jpg";
-import riceImg from "@/assets/receipe-rice.jpg";
-import paneerImg from "@/assets/receipe-paneer.jpg";
-import momoImg from "@/assets/receipe-momo.jpg";
-import chanaImg from "@/assets/receipe-chana.jpg";
+import dalImg from "@/assets/recipe-dal.jpg";
+import saagImg from "@/assets/recipe-saag.jpg";
+import riceImg from "@/assets/recipe-rice.jpg";
+import paneerImg from "@/assets/recipe-paneer.jpg";
+import momoImg from "@/assets/recipe-momo.jpg";
+import chanaImg from "@/assets/recipe-chana.jpg";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
