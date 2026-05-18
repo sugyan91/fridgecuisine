@@ -345,7 +345,7 @@ function Index() {
             <nav className="flex items-center gap-1.5 md:gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1 md:px-2 hidden xs:inline sm:inline"
+                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1 md:px-2"
               >
                 Community
               </Link>
