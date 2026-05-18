@@ -555,13 +555,11 @@ function LoginPage() {
               type="submit"
               disabled={loading}
               aria-busy={loading}
-              aria-live="polite"
               aria-describedby={formError ? formErrorId : undefined}
               className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-lg uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
             >
               {loading ? (
                 <span className="inline-flex items-center justify-center gap-2">
-                  <span className="sr-only">Please wait. </span>
                   <span
                     aria-hidden="true"
                     className="h-5 w-5 rounded-full border-2 border-border border-t-transparent animate-spin"
@@ -574,6 +572,17 @@ function LoginPage() {
                 "Create account"
               )}
             </button>
+
+            {/* Accessible progress/status region. Visually hidden — announces
+                start and end of the request to assistive technology. */}
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+            >
+              {statusMessage}
+            </div>
           </form>
 
           {mode === "signin" && (
