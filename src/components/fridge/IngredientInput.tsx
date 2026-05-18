@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useState, useRef, type KeyboardEvent } from "react";
 
 const SUGGESTIONS = [
   "Rice",
@@ -63,6 +63,8 @@ type Props = {
 
 export function IngredientInput({ ingredients, onChange }: Props) {
   const [draft, setDraft] = useState("");
+  const [previousIngredients, setPreviousIngredients] = useState<string[] | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const add = (raw: string) => {
     const v = raw.trim().slice(0, 40);
@@ -75,6 +77,22 @@ export function IngredientInput({ ingredients, onChange }: Props) {
 
   const remove = (v: string) => {
     onChange(ingredients.filter((i) => i !== v));
+  };
+
+  const clearAll = () => {
+    if (ingredients.length === 0) return;
+    setPreviousIngredients(ingredients);
+    onChange([]);
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    undoTimerRef.current = setTimeout(() => setPreviousIngredients(null), 8000);
+  };
+
+  const undo = () => {
+    if (previousIngredients) {
+      onChange(previousIngredients);
+      setPreviousIngredients(null);
+    }
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
   };
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -114,10 +132,25 @@ export function IngredientInput({ ingredients, onChange }: Props) {
         <div className="flex justify-end mb-2">
           <button
             type="button"
-            onClick={() => onChange([])}
+            onClick={clearAll}
             className="text-[10px] font-black uppercase tracking-wide text-paprika hover:underline"
           >
             Clear all
+          </button>
+        </div>
+      )}
+
+      {previousIngredients && ingredients.length === 0 && (
+        <div className="flex items-center justify-between gap-3 bg-turmeric/15 border-2 border-dashed border-border/50 rounded-xl px-3 py-2 mb-3 animate-pop">
+          <span className="text-xs font-bold">
+            Cleared {previousIngredients.length} ingredient{previousIngredients.length > 1 ? 's' : ''}
+          </span>
+          <button
+            type="button"
+            onClick={undo}
+            className="text-[10px] font-black uppercase tracking-wide bg-paprika text-white px-2.5 py-1 rounded-full hover:opacity-90 transition-opacity"
+          >
+            Undo
           </button>
         </div>
       )}
