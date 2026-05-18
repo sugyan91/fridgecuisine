@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listMyRecipes, deleteCommunityRecipe } from "@/lib/community.functions";
 
-export const Route = createFileRoute("/_authenticated/my-receipes")({
+export const Route = createFileRoute("/_authenticated/my-recipes")({
   component: MyRecipes,
 });
 
