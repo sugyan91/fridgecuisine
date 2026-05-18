@@ -35,6 +35,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(true);
+  // Accessible progress announcement (separate from visual spinner).
+  const [statusMessage, setStatusMessage] = useState("");
   // Synchronous lock to guard against duplicate submissions when the UI lags
   // (state updates are async; a ref flips immediately).
   const submitLockRef = useRef(false);
@@ -102,6 +104,11 @@ function LoginPage() {
     // so the UI reflects the lock even if the next render is delayed.
     if (submitBtnRef.current) submitBtnRef.current.disabled = true;
     setFormError(null);
+    setStatusMessage(
+      mode === "signin"
+        ? "Signing in, please wait…"
+        : "Creating your account, please wait…"
+    );
     setLoading(true);
     try {
       if (mode === "signup") {
