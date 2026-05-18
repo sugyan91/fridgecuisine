@@ -1,21 +1,17 @@
-## Problem
+## Plan
 
-In `src/routes/index.tsx`, the `onLoadMore` handler (lines ~250-275) silently fails in two cases, so clicking "Show more receipes" appears to do nothing:
+Make "Show more receipes" work in both modes — cuisine-only AND when ingredients are present.
 
-1. **Empty ingredients guard:** `if (!receipes || ingredients.length === 0) return;` — if the user cleared their ingredient pills after generating recipes (or generated them in a flow that doesn't require ingredients), the click is silently dropped with no toast and no loading state.
+## Change
 
-2. **All-duplicate response:** After fetching more, results are de-duplicated against existing titles with `fresh = res.receipes.filter(...)`. If the AI returns only titles already shown, `fresh` is empty, `setRecipes([...receipes, ...fresh])` is a no-op, and the UI shows nothing changed — no message to the user.
+In `src/routes/index.tsx`, update `onLoadMore`:
+- Remove the `ingredients.length === 0` guard that currently blocks the click and shows "Add some ingredients first…".
+- Call `generate` with whatever the user currently has: `ingredients` (possibly empty), `dietary`, `cuisine`, and `exclude: receipes.map(r => r.title)` so already-shown recipes aren't repeated.
+- Keep the existing de-duplication and the "No new receipes — try changing cuisine or dietary filters." toast for when the AI returns only duplicates.
 
-## Fix
+The backend (`generateRecipes`) already handles both cases: with ingredients it builds recipes around them; with no ingredients it generates classic recipes for the selected cuisine (or worldwide if "Any / Surprise Me").
 
-Update `onLoadMore` in `src/routes/index.tsx`:
+## Result
 
-- Remove the silent `ingredients.length === 0` early-return; instead, if ingredients are empty, show a toast asking the user to add ingredients (and skip the call). Keep the `!receipes` guard.
-- After de-duplication, if `fresh.length === 0`, show an info toast like "No new receipes — try changing cuisine or dietary filters" so the user gets feedback instead of a dead click.
-- Also log the response when `!res.ok` already happens (it does via `toast.error(res.error)`), no change needed there.
-
-No backend / server-function changes. UI-only fix in one file.
-
-## Files
-
-- `src/routes/index.tsx` — update `onLoadMore` (~lines 250-275).
+- Cuisine selected, no ingredients → "Show more" appends 10 more recipes from that cuisine.
+- Ingredients added (with or without cuisine) → "Show more" appends 10 more recipes using those ingredients.
