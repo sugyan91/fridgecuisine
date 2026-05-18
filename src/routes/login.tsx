@@ -351,6 +351,24 @@ function LoginPage() {
           </div>
 
           <form onSubmit={onSubmit} className="space-y-3">
+            {formError && (
+              <div role="alert" className="border-2 border-red-500 bg-red-50 text-red-900 rounded-xl px-3 py-2 text-xs font-bold">
+                {formError.message}
+                {formError.action && (
+                  <>
+                    {" "}
+                    <button
+                      type="button"
+                      onClick={formError.action.onClick}
+                      className="underline font-black"
+                    >
+                      {formError.action.label}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
             {mode === "signup" && (
               <div>
                 <label className="block font-bold text-xs uppercase mb-1">Username</label>
@@ -383,15 +401,47 @@ function LoginPage() {
               <label className="block font-bold text-xs uppercase mb-1">
                 {mode === "signup" ? "Email" : "Email or username"}
               </label>
-              <input
-                type={mode === "signup" ? "email" : "text"}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete={mode === "signup" ? "email" : "username"}
-                className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
-                placeholder={mode === "signup" ? "you@example.com" : "you@example.com or yourname"}
-              />
+              {mode === "signup" ? (
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                  placeholder="you@example.com"
+                />
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    required
+                    autoComplete="username"
+                    spellCheck={false}
+                    autoCapitalize="none"
+                    className={`w-full border-2 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric ${
+                      identifierKind === "invalid" ? "border-red-500" : "border-border"
+                    }`}
+                    placeholder="you@example.com  or  yourname"
+                  />
+                  <p className={`text-[10px] mt-1 ${
+                    identifierKind === "email" || identifierKind === "username"
+                      ? "text-muted-foreground"
+                      : identifierKind === "invalid"
+                        ? "text-red-600 font-bold"
+                        : "text-muted-foreground"
+                  }`}>
+                    {identifierKind === "empty" && "Use the email or username you signed up with."}
+                    {identifierKind === "email" && "Signing in with email"}
+                    {identifierKind === "username" && `Signing in as @${identifier.trim().toLowerCase()}`}
+                    {identifierKind === "invalid" && (identifier.includes("@")
+                      ? "That email doesn't look right."
+                      : "Usernames are 3–20 chars, letters/digits/_ , starting with a letter.")}
+                  </p>
+                </>
+              )}
             </div>
 
             <div>
@@ -425,7 +475,7 @@ function LoginPage() {
             <button
               type="button"
               onClick={() => {
-                setForgotEmail(email);
+                setForgotEmail(identifier.includes("@") ? identifier : "");
                 setForgotOpen(true);
               }}
               disabled={loading}
