@@ -614,6 +614,36 @@ function Index() {
 
         <CommunityStrip isAuthenticated={!!email} />
 
+        <section className="mt-10 bg-paprika text-background border-4 border-border rounded-[32px] p-6 md:p-10 shadow-[8px_8px_0px_0px_var(--border)]">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="space-y-2">
+              <p className="font-black uppercase tracking-widest text-[10px] md:text-xs opacity-80">
+                Go Premium
+              </p>
+              <h2 className="font-display text-3xl md:text-5xl leading-none lowercase">
+                unlimited recipes<span className="text-turmeric">.</span>
+              </h2>
+              <p className="font-bold text-sm md:text-base opacity-90 max-w-md">
+                Skip the 5/day limit. Cook anything, anytime.
+              </p>
+            </div>
+            <div className="flex items-center gap-5 shrink-0">
+              <div className="text-right">
+                <div className="font-display text-4xl md:text-6xl leading-none">$5.99</div>
+                <div className="font-black uppercase tracking-widest text-[10px] opacity-80">
+                  per month
+                </div>
+              </div>
+              <Link
+                to="/pricing"
+                className="font-black uppercase tracking-wide text-sm md:text-base bg-turmeric text-foreground px-5 py-3 md:px-6 md:py-4 rounded-full border-4 border-border shadow-[4px_4px_0px_0px_var(--border)] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_var(--border)] transition-transform"
+              >
+                Go Premium
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {email && (
           <button
             type="button"
