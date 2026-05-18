@@ -249,10 +249,6 @@ function Index() {
 
   const onLoadMore = async () => {
     if (!receipes) return;
-    if (ingredients.length === 0) {
-      toast.error("Add some ingredients first to get more receipes.");
-      return;
-    }
     setLoadingMore(true);
     try {
       const res = await generate({
