@@ -477,9 +477,12 @@ function Index() {
 
           <section className="lg:col-span-5 animate-pop">
             <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)] lg:sticky lg:top-6">
-              <h2 className="font-black text-xl md:text-2xl uppercase mb-4">
-                What's in the pantry?
+              <h2 className="font-black text-xl md:text-2xl uppercase mb-1">
+                What's in your Pantry
               </h2>
+              <p className="text-[11px] text-muted-foreground mb-4">
+                Add what food items you have in your pantry below
+              </p>
 
               <IngredientInput
                 ingredients={ingredients}
