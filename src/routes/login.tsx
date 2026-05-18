@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -35,6 +35,9 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(true);
+  // Synchronous lock to guard against duplicate submissions when the UI lags
+  // (state updates are async; a ref flips immediately).
+  const submitLockRef = useRef(false);
   const [signupSent, setSignupSent] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -81,6 +84,9 @@ function LoginPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Hard guard: ignore the call entirely if a request is already inflight.
+    if (submitLockRef.current || loading) return;
+    submitLockRef.current = true;
     setFormError(null);
     setLoading(true);
     try {
@@ -195,6 +201,9 @@ function LoginPage() {
       setFormError({ message: err?.message || "Something went wrong" });
     } finally {
       setLoading(false);
+      // Small cooldown so rapid double-clicks after a fast response are also
+      // swallowed, not just the in-flight window.
+      setTimeout(() => { submitLockRef.current = false; }, 400);
     }
   };
 
