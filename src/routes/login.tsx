@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -39,6 +39,16 @@ function LoginPage() {
   // (state updates are async; a ref flips immediately).
   const submitLockRef = useRef(false);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Stable ids for label/aria-describedby wiring (screen readers).
+  const usernameId = useId();
+  const usernameHintId = useId();
+  const identifierId = useId();
+  const identifierHintId = useId();
+  const emailId = useId();
+  const passwordId = useId();
+  const formErrorId = useId();
+  const rememberHintId = useId();
   const [signupSent, setSignupSent] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -370,6 +380,8 @@ function LoginPage() {
                 key={m}
                 type="button"
                 onClick={() => setMode(m)}
+                aria-pressed={mode === m}
+                aria-label={m === "signin" ? "Switch to sign in" : "Switch to sign up"}
                 className={`flex-1 text-[11px] md:text-xs font-black uppercase py-2 rounded-full transition-colors ${
                   mode === m ? "bg-turmeric text-foreground" : "text-muted-foreground"
                 }`}
@@ -379,9 +391,14 @@ function LoginPage() {
             ))}
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-3">
+          <form onSubmit={onSubmit} className="space-y-3" aria-busy={loading} noValidate>
             {formError && (
-              <div role="alert" className="border-2 border-red-500 bg-red-50 text-red-900 rounded-xl px-3 py-2 text-xs font-bold">
+              <div
+                id={formErrorId}
+                role="alert"
+                aria-live="assertive"
+                className="border-2 border-red-500 bg-red-50 text-red-900 rounded-xl px-3 py-2 text-xs font-bold"
+              >
                 {formError.message}
                 {formError.action && (
                   <>
@@ -400,8 +417,9 @@ function LoginPage() {
 
             {mode === "signup" && (
               <div>
-                <label className="block font-bold text-xs uppercase mb-1">Username</label>
+                <label htmlFor={usernameId} className="block font-bold text-xs uppercase mb-1">Username</label>
                 <input
+                  id={usernameId}
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase())}
@@ -409,10 +427,16 @@ function LoginPage() {
                   minLength={3}
                   maxLength={20}
                   autoComplete="username"
+                  aria-describedby={usernameHintId}
+                  aria-invalid={usernameStatus.state === "invalid" || usernameStatus.state === "taken"}
                   className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
                  placeholder="Your username"
                 />
-                <p className={`text-[10px] mt-1 ${
+                <p
+                  id={usernameHintId}
+                  role="status"
+                  aria-live="polite"
+                  className={`text-[10px] mt-1 ${
                   usernameStatus.state === "available" ? "text-green-600 font-bold" :
                   usernameStatus.state === "taken" || usernameStatus.state === "invalid" ? "text-red-600 font-bold" :
                   "text-muted-foreground"
@@ -427,11 +451,15 @@ function LoginPage() {
             )}
 
             <div>
-              <label className="block font-bold text-xs uppercase mb-1">
+              <label
+                htmlFor={mode === "signup" ? emailId : identifierId}
+                className="block font-bold text-xs uppercase mb-1"
+              >
                 {mode === "signup" ? "Email" : "Email or username"}
               </label>
               {mode === "signup" ? (
                 <input
+                  id={emailId}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -443,6 +471,7 @@ function LoginPage() {
               ) : (
                 <>
                   <input
+                    id={identifierId}
                     type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
@@ -450,12 +479,18 @@ function LoginPage() {
                     autoComplete="username"
                     spellCheck={false}
                     autoCapitalize="none"
+                    aria-describedby={identifierHintId}
+                    aria-invalid={identifierKind === "invalid"}
                     className={`w-full border-2 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric ${
                       identifierKind === "invalid" ? "border-red-500" : "border-border"
                     }`}
                    placeholder="you@example.com  or  Your username"
                   />
-                  <p className={`text-[10px] mt-1 ${
+                  <p
+                    id={identifierHintId}
+                    role="status"
+                    aria-live="polite"
+                    className={`text-[10px] mt-1 ${
                     identifierKind === "email" || identifierKind === "username"
                       ? "text-muted-foreground"
                       : identifierKind === "invalid"
@@ -474,8 +509,9 @@ function LoginPage() {
             </div>
 
             <div>
-                <label className="block font-bold text-xs uppercase mb-1">Password</label>
+                <label htmlFor={passwordId} className="block font-bold text-xs uppercase mb-1">Password</label>
                 <input
+                  id={passwordId}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -493,10 +529,11 @@ function LoginPage() {
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
+                  aria-describedby={rememberHintId}
                   className="h-4 w-4 border-2 border-border rounded accent-turmeric cursor-pointer"
                 />
                 <span className="text-sm font-bold">Remember me</span>
-                <span className="text-xs text-muted-foreground font-medium">
+                <span id={rememberHintId} className="text-xs text-muted-foreground font-medium">
                   {remember ? "— stay signed in" : "— sign out when I close the browser"}
                 </span>
               </label>
@@ -506,10 +543,14 @@ function LoginPage() {
               ref={submitBtnRef}
               type="submit"
               disabled={loading}
+              aria-busy={loading}
+              aria-live="polite"
+              aria-describedby={formError ? formErrorId : undefined}
               className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-lg uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
             >
               {loading ? (
                 <span className="inline-flex items-center justify-center gap-2">
+                  <span className="sr-only">Please wait. </span>
                   <span
                     aria-hidden="true"
                     className="h-5 w-5 rounded-full border-2 border-border border-t-transparent animate-spin"
