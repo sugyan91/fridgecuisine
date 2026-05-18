@@ -183,47 +183,6 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
             <option key={c}>{c}</option>
           ))}
         </select>
-        {isAuthenticated && (
-          <>
-            {customCuisines.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {customCuisines.map((c) => (
-                  <span
-                    key={c}
-                    className="inline-flex items-center gap-1 bg-white border-2 border-border rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
-                  >
-                    {c}
-                    <button
-                      type="button"
-                      onClick={() => removeCustomCuisine(c)}
-                      aria-label={`Remove ${c}`}
-                      className="size-3.5 rounded-full bg-paprika text-white flex items-center justify-center text-[9px] cursor-pointer"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="mt-2 flex gap-2">
-              <input
-                value={newCuisine}
-                onChange={(e) => setNewCuisine(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCuisine())}
-                placeholder="Add a cuisine…"
-                maxLength={40}
-                className="flex-1 border-2 border-border rounded-lg px-2 py-1.5 text-xs font-medium"
-              />
-              <button
-                type="button"
-                onClick={addCuisine}
-                className="bg-turmeric border-2 border-border px-3 rounded-lg font-black text-xs uppercase cursor-pointer"
-              >
-                + Add
-              </button>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
