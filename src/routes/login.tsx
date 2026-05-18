@@ -34,6 +34,7 @@ function LoginPage() {
   >({ state: "idle" });
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [signupSent, setSignupSent] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -175,6 +176,18 @@ function LoginPage() {
           setLoading(false);
           return;
         }
+        // Remember-me: mark this session as persistent or ephemeral so the
+        // root layout can sign the user out at the start of a new browser
+        // session when "Remember me" was unchecked.
+        try {
+          if (remember) {
+            localStorage.setItem("fc-auth-remember", "1");
+            sessionStorage.removeItem("fc-auth-session");
+          } else {
+            localStorage.removeItem("fc-auth-remember");
+            sessionStorage.setItem("fc-auth-session", "1");
+          }
+        } catch {}
         toast.success("Welcome back!");
         navigate({ to: redirectTo });
       }
