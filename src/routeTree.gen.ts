@@ -15,11 +15,15 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as CommunityRecipeIdRouteImport } from './routes/community.$recipeId'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
+import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -50,6 +54,21 @@ const CommunityRecipeIdRoute = CommunityRecipeIdRouteImport.update({
   path: '/community/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout/return',
+  path: '/checkout/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
+  id: '/checkout/cancel',
+  path: '/checkout/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMyRecipesRoute = AuthenticatedMyRecipesRouteImport.update({
   id: '/my-recipes',
   path: '/my-recipes',
@@ -77,15 +96,25 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/pricing': typeof AuthenticatedPricingRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -95,9 +124,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/pricing': typeof AuthenticatedPricingRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/community': typeof CommunityIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -109,9 +142,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/_authenticated/pricing': typeof AuthenticatedPricingRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -123,9 +160,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/my-recipes'
+    | '/pricing'
+    | '/checkout/cancel'
+    | '/checkout/return'
     | '/community/$recipeId'
     | '/community/'
     | '/community/new'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -135,9 +176,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/my-recipes'
+    | '/pricing'
+    | '/checkout/cancel'
+    | '/checkout/return'
     | '/community/$recipeId'
     | '/community'
     | '/community/new'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -148,9 +193,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/_authenticated/my-recipes'
+    | '/_authenticated/pricing'
+    | '/checkout/cancel'
+    | '/checkout/return'
     | '/community/$recipeId'
     | '/community/'
     | '/_authenticated/community/new'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -161,8 +210,11 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  CheckoutCancelRoute: typeof CheckoutCancelRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
   CommunityRecipeIdRoute: typeof CommunityRecipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -212,6 +264,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/cancel': {
+      id: '/checkout/cancel'
+      path: '/checkout/cancel'
+      fullPath: '/checkout/cancel'
+      preLoaderRoute: typeof CheckoutCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/pricing': {
+      id: '/_authenticated/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof AuthenticatedPricingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/my-recipes': {
       id: '/_authenticated/my-recipes'
       path: '/my-recipes'
@@ -247,16 +320,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
+  AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
+  AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
 }
 
@@ -269,8 +351,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  CheckoutCancelRoute: CheckoutCancelRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
   CommunityRecipeIdRoute: CommunityRecipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
