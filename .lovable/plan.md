@@ -1,29 +1,14 @@
-## Problem
-
-On mobile, the header packs the logo + "fridge cuisine." title next to 3–4 pill buttons (Community, Sign in, Sign up, or Saved/Share/Sign out). The title ends up squeezed against the nav, making it look congested.
-
 ## Fix
 
-Reduce header crowding so the brand has clear breathing room on small screens.
+Bring the logo back on mobile and shrink the nav buttons so everything fits without congestion.
 
-1. **Brand block**
-   - Drop the logo image on mobile (`hidden sm:block`) so just the wordmark shows — the wordmark is already the brand.
-   - Bump the title back up to `text-lg` on mobile (it's the focal element) and keep `md:text-xl`.
-   - Add a small right margin so it never touches the nav.
+1. **Logo** — remove `hidden sm:block`; show on all sizes. Keep `h-9` on mobile, `h-10` on `md:`.
+2. **Wordmark** — drop to `text-base` on mobile (back up to `text-lg sm:text-xl` from `sm:` upward) so it pairs nicely with the smaller logo.
+3. **Nav pill buttons (Community / Sign in / Sign up, plus Share / Saved / Sign out when logged in)** — shrink text from `text-[10px]` to `text-[9px]` on mobile and tighten padding to `px-1.5 py-1` (keep `sm:`+ sizes as they are). Keep all three pills the same size on mobile.
+4. **Container** — keep `px-2` mobile padding and `gap-1` between nav items.
 
-2. **Nav buttons on mobile**
-   - Shrink pill padding (`px-2 py-1` on mobile, current `px-2.5 py-1.5` on `sm:`+).
-   - Tighten gap between buttons (`gap-1` mobile, `gap-2` desktop).
-   - Logged-out: keep Community + Sign in + Sign up as pills (same size, as set previously).
-   - Logged-in: convert the bare "Saved {n}" text button into a compact icon-style pill so it visually matches the others, and hide "+ Share" label down to just "+" on mobile (full "Share" from `sm:`).
-
-3. **Header container**
-   - Reduce horizontal padding on mobile from `px-3` to `px-2` to reclaim a few pixels.
-
-## Result
-
-On a 375px viewport: wordmark "fridge cuisine." sits cleanly on the left with real whitespace before a tighter row of equally-sized pill buttons on the right. Logo reappears from `sm:` (≥640px) upward where there's room.
+Result on a 375px viewport: small logo + "fridge cuisine." wordmark on the left, three compact same-size pill buttons on the right, with comfortable spacing between brand and nav.
 
 ## Files
 
-- `src/routes/index.tsx` — header block (lines ~316–402) only. No logic changes.
+- `src/routes/index.tsx` — header block only (~lines 316–402). No logic changes.
