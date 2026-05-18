@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -22,7 +22,15 @@ function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(""); // signup: email; signin: email or username
+  const [username, setUsername] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<
+    | { state: "idle" }
+    | { state: "checking" }
+    | { state: "invalid"; message: string }
+    | { state: "taken" }
+    | { state: "available" }
+  >({ state: "idle" });
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [signupSent, setSignupSent] = useState<string | null>(null);
@@ -32,16 +40,53 @@ function LoginPage() {
 
   const redirectTo = search.redirect || "/";
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = email.trim().toLowerCase();
-    if (!z.string().email().safeParse(cleanEmail).success) {
-      toast.error("Enter a valid email");
+  const USERNAME_RE = /^[a-z][a-z0-9_]{2,19}$/;
+  const RESERVED = new Set(["admin","root","support","help","api","auth","login","signup","me","fridgecuisine"]);
+
+  // Debounced username availability check while typing on signup
+  useEffect(() => {
+    if (mode !== "signup") return;
+    const u = username.trim().toLowerCase();
+    if (!u) { setUsernameStatus({ state: "idle" }); return; }
+    if (!USERNAME_RE.test(u)) {
+      setUsernameStatus({ state: "invalid", message: "3–20 chars, lowercase letters/digits/_ , must start with a letter" });
       return;
     }
+    if (RESERVED.has(u)) {
+      setUsernameStatus({ state: "invalid", message: "That username is reserved" });
+      return;
+    }
+    setUsernameStatus({ state: "checking" });
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase.rpc("username_available", { _username: u });
+      if (error) { setUsernameStatus({ state: "idle" }); return; }
+      setUsernameStatus({ state: data ? "available" : "taken" });
+    }, 350);
+    return () => clearTimeout(t);
+  }, [username, mode]);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     try {
       if (mode === "signup") {
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanUsername = username.trim().toLowerCase();
+        if (!z.string().email().safeParse(cleanEmail).success) {
+          toast.error("Enter a valid email");
+          setLoading(false);
+          return;
+        }
+        if (!USERNAME_RE.test(cleanUsername) || RESERVED.has(cleanUsername)) {
+          toast.error("Choose a valid username");
+          setLoading(false);
+          return;
+        }
+        if (usernameStatus.state === "taken") {
+          toast.error("That username is taken");
+          setLoading(false);
+          return;
+        }
         if (password.length < 6) {
           toast.error("Password must be at least 6 characters");
           setLoading(false);
@@ -50,17 +95,46 @@ function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email: cleanEmail,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: { username: cleanUsername },
+          },
         });
         if (error) throw error;
         toast.success("Check your email to confirm your account.");
         setSignupSent(cleanEmail);
       } else {
+        const identifier = email.trim();
+        let loginEmail = identifier.toLowerCase();
+        if (!identifier.includes("@")) {
+          // treat as username — resolve to email
+          const uname = identifier.toLowerCase();
+          if (!USERNAME_RE.test(uname)) {
+            toast.error("Enter a valid email or username");
+            setLoading(false);
+            return;
+          }
+          const { data, error: rpcErr } = await supabase.rpc("email_for_username", { _username: uname });
+          if (rpcErr || !data) {
+            toast.error("Invalid credentials");
+            setLoading(false);
+            return;
+          }
+          loginEmail = data as string;
+        } else if (!z.string().email().safeParse(loginEmail).success) {
+          toast.error("Enter a valid email or username");
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signInWithPassword({
-          email: cleanEmail,
+          email: loginEmail,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          toast.error("Invalid credentials");
+          setLoading(false);
+          return;
+        }
         toast.success("Welcome back!");
         navigate({ to: redirectTo });
       }
@@ -237,16 +311,46 @@ function LoginPage() {
           </div>
 
           <form onSubmit={onSubmit} className="space-y-3">
+            {mode === "signup" && (
+              <div>
+                <label className="block font-bold text-xs uppercase mb-1">Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                  required
+                  minLength={3}
+                  maxLength={20}
+                  autoComplete="username"
+                  className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                  placeholder="yourname"
+                />
+                <p className={`text-[10px] mt-1 ${
+                  usernameStatus.state === "available" ? "text-green-600 font-bold" :
+                  usernameStatus.state === "taken" || usernameStatus.state === "invalid" ? "text-red-600 font-bold" :
+                  "text-muted-foreground"
+                }`}>
+                  {usernameStatus.state === "checking" && "Checking…"}
+                  {usernameStatus.state === "available" && "✓ Available"}
+                  {usernameStatus.state === "taken" && "✗ Already taken"}
+                  {usernameStatus.state === "invalid" && usernameStatus.message}
+                  {usernameStatus.state === "idle" && "3–20 chars, letters/digits/_ , starts with a letter"}
+                </p>
+              </div>
+            )}
+
             <div>
-              <label className="block font-bold text-xs uppercase mb-1">Email</label>
+              <label className="block font-bold text-xs uppercase mb-1">
+                {mode === "signup" ? "Email" : "Email or username"}
+              </label>
               <input
-                type="email"
+                type={mode === "signup" ? "email" : "text"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="email"
+                autoComplete={mode === "signup" ? "email" : "username"}
                 className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
-                placeholder="you@example.com"
+                placeholder={mode === "signup" ? "you@example.com" : "you@example.com or yourname"}
               />
             </div>
 
