@@ -11,10 +11,11 @@ type Props = {
   onDietary: (next: string[]) => void;
   onCuisine: (next: string) => void;
   onPantryGenerate?: () => void;
+  pantryLoading?: boolean;
   isAuthenticated: boolean;
 };
 
-export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGenerate, isAuthenticated }: Props) {
+export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGenerate, pantryLoading, isAuthenticated }: Props) {
   const [customDietary, setCustomDietary] = useState<string[]>([]);
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
   const [newDietary, setNewDietary] = useState("");
@@ -190,9 +191,10 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
         <button
           type="button"
           onClick={() => onPantryGenerate?.()}
-          className="w-full bg-cardamom text-white border-2 border-border py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-none transition-all"
+          disabled={pantryLoading}
+          className="w-full bg-cardamom text-white border-2 border-border py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-none transition-all disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Create a cuisine from the pantry list
+          {pantryLoading ? "Cooking up receipes from your pantry…" : "Create a cuisine from the pantry list"}
         </button>
       </div>
 
