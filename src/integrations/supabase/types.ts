@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      community_recipe_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          recipe_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          recipe_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          recipe_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_recipe_likes: {
         Row: {
           created_at: string
@@ -46,6 +73,7 @@ export type Database = {
       community_recipes: {
         Row: {
           city: string | null
+          comments_enabled: boolean
           country: string | null
           created_at: string
           cuisine: string | null
@@ -63,6 +91,7 @@ export type Database = {
         }
         Insert: {
           city?: string | null
+          comments_enabled?: boolean
           country?: string | null
           created_at?: string
           cuisine?: string | null
@@ -80,6 +109,7 @@ export type Database = {
         }
         Update: {
           city?: string | null
+          comments_enabled?: boolean
           country?: string | null
           created_at?: string
           cuisine?: string | null
@@ -267,6 +297,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_comment_on_recipe: { Args: { _recipe_id: string }; Returns: boolean }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -275,6 +306,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      is_recipe_owner: { Args: { _recipe_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
