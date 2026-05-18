@@ -54,7 +54,7 @@ function NewRecipe() {
       const res = await create({
         data: { ...form, dietary, ingredients: ing, steps: stp, is_published: true },
       });
-      toast.success("Recipe shared!");
+      toast.success("Receipe shared!");
       navigate({ to: "/community/$recipeId", params: { recipeId: res.id } });
     } catch (err: any) {
       toast.error(err?.message ?? "Couldn't save");
@@ -69,7 +69,7 @@ function NewRecipe() {
         <Link to="/community" className="font-black text-xs uppercase opacity-60">
           ← Back
         </Link>
-        <h1 className="font-display text-4xl md:text-5xl text-paprika mt-3 mb-6">Share a recipe</h1>
+        <h1 className="font-display text-4xl md:text-5xl text-paprika mt-3 mb-6">Share a receipe</h1>
 
         <form onSubmit={submit} className="bg-white border-4 border-border rounded-3xl p-6 space-y-4 shadow-[6px_6px_0px_0px_var(--border)]">
           <Field label="Food name" required>
@@ -175,7 +175,7 @@ function NewRecipe() {
             disabled={busy}
             className="w-full bg-turmeric border-4 border-border py-4 rounded-2xl font-black text-xl uppercase shadow-[0px_5px_0px_0px_var(--border)] disabled:opacity-60"
           >
-            {busy ? "Publishing…" : "Publish recipe"}
+            {busy ? "Publishing…" : "Publish receipe"}
           </button>
         </form>
       </div>

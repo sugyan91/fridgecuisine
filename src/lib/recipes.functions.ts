@@ -11,7 +11,7 @@ const inputSchema = z.object({
   exclude: z.array(z.string().max(120)).max(60).default([]),
 });
 
-export type Recipe = {
+export type Receipe = {
   title: string;
   blurb: string;
   cookTimeMinutes: number;
@@ -24,7 +24,7 @@ export type Recipe = {
 };
 
 export type GenerateRecipesResult =
-  | { ok: true; recipes: Recipe[] }
+  | { ok: true; receipes: Receipe[] }
   | {
       ok: false;
       error: string;
@@ -32,7 +32,7 @@ export type GenerateRecipesResult =
     };
 
 const responseSchema = z.object({
-  recipes: z
+  receipes: z
     .array(
       z.object({
         title: z.string(),
@@ -62,8 +62,8 @@ export const generateRecipes = createServerFn({ method: "POST" })
     const cuisineGuidance =
       data.cuisine === "Any / Surprise Me"
         ? hasIngredients
-          ? "Pick cuisines that best match the ingredients provided — be creative and global. Mix up regions so the 10 recipes span different parts of the world."
-          : "Surprise the user with 10 iconic, beloved recipes from ALL OVER THE WORLD. Span different continents and cuisines (e.g. Asian, European, African, Latin American, Middle Eastern) — no two recipes from the same country."
+          ? "Pick cuisines that best match the ingredients provided — be creative and global. Mix up regions so the 10 receipes span different parts of the world."
+          : "Surprise the user with 10 iconic, beloved receipes from ALL OVER THE WORLD. Span different continents and cuisines (e.g. Asian, European, African, Latin American, Middle Eastern) — no two receipes from the same country."
         : `Use authentic techniques and flavor profiles for ${data.cuisine} cuisine.`;
 
     const dietary = data.dietary.length
@@ -72,20 +72,20 @@ export const generateRecipes = createServerFn({ method: "POST" })
 
     const ingredientRule = hasIngredients
       ? `Use as many of the user's ingredients as possible.\n- It's OK to require 1-3 missing pantry staples (oil, salt, common spices) - list them in missingIngredients.`
-      : `The user has not listed any pantry ingredients. Generate 10 classic, iconic, beloved recipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
+      : `The user has not listed any pantry ingredients. Generate 10 classic, iconic, beloved receipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
 
-    const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious recipes${hasIngredients ? " the user can cook with mostly the ingredients they have on hand" : " for the selected cuisine"}. ${cuisineGuidance}
+    const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious receipes${hasIngredients ? " the user can cook with mostly the ingredients they have on hand" : " for the selected cuisine"}. ${cuisineGuidance}
 Rules:
 - ${ingredientRule}
 - Steps must be concrete and ordered (4-8 short steps).
 - cookTimeMinutes must be realistic (5-90).
-- Honor dietary constraints STRICTLY: ${dietary}. Every single recipe MUST comply with ALL listed dietary tags. Treat each tag as a hard allergy/diet constraint — if a tag names an ingredient or food family (e.g. "Peanut allergy", "No shellfish", "No mushrooms", "Lactose intolerant"), exclude that ingredient AND its derivatives/cross-contaminants entirely, and mention a safe swap in "substitutions". If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any recipe that would violate a tag — do not include it.
-- If "Quick Meal" is selected, all recipes must be <= 20 minutes.
-- For every recipe, set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy". Include any user-selected dietary tags that apply, plus any other tags that are obviously true for the dish. Max 6 tags. Use [] if none apply.
+- Honor dietary constraints STRICTLY: ${dietary}. Every single receipe MUST comply with ALL listed dietary tags. Treat each tag as a hard allergy/diet constraint — if a tag names an ingredient or food family (e.g. "Peanut allergy", "No shellfish", "No mushrooms", "Lactose intolerant"), exclude that ingredient AND its derivatives/cross-contaminants entirely, and mention a safe swap in "substitutions". If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any receipe that would violate a tag — do not include it.
+- If "Quick Meal" is selected, all receipes must be <= 20 minutes.
+- For every receipe, set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy". Include any user-selected dietary tags that apply, plus any other tags that are obviously true for the dish. Max 6 tags. Use [] if none apply.
 - Return ONLY valid JSON matching the schema. No prose.`;
 
     const excludeBlock = data.exclude.length
-      ? `\n\nDo NOT repeat or closely resemble these recipes already shown:\n- ${data.exclude.join("\n- ")}`
+      ? `\n\nDo NOT repeat or closely resemble these receipes already shown:\n- ${data.exclude.join("\n- ")}`
       : "";
 
     const userPrompt = `Ingredients on hand: ${hasIngredients ? data.ingredients.join(", ") : "(none — user has not specified any)"}
@@ -94,7 +94,7 @@ Dietary: ${dietary}${excludeBlock}
 
 Return JSON shaped exactly like:
 {
-  "recipes": [
+  "receipes": [
     {
       "title": "string",
       "blurb": "one-sentence description",
@@ -183,7 +183,7 @@ Return JSON shaped exactly like:
         };
       }
 
-      return { ok: true, recipes: result.data.recipes };
+      return { ok: true, receipes: result.data.receipes };
     } catch (err) {
       console.error("generateRecipes failed", err);
       return { ok: false, error: "Something went wrong. Try again.", code: "server" };

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import type { Recipe } from "@/lib/recipes.functions";
+import type { Receipe } from "@/lib/receipes.functions";
 
 type Props = {
-  recipe: Recipe;
+  receipe: Receipe;
   index: number;
   saved: boolean;
   onToggleSave: () => void;
@@ -10,10 +10,10 @@ type Props = {
   showMissing?: boolean;
 };
 
-export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = true }: Props) {
+export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = true }: Props) {
   const [open, setOpen] = useState(false);
-  const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
-  const dietary = recipe.dietary ?? [];
+  const allIngredients = [...receipe.usedIngredients, ...receipe.missingIngredients];
+  const dietary = receipe.dietary ?? [];
 
   if (open) {
     return (
@@ -24,16 +24,16 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
         <div className="flex justify-between items-start mb-6 gap-4">
           <div>
             <h4 className="font-display text-3xl md:text-4xl uppercase tracking-tight leading-none">
-              {recipe.title}
+              {receipe.title}
             </h4>
             <div className="flex flex-wrap gap-3 mt-3 font-mono text-[10px] font-bold uppercase">
               <span className="flex items-center gap-1">
                 <span className="size-2 rounded-full bg-turmeric" />
-                {recipe.cookTimeMinutes} min
+                {receipe.cookTimeMinutes} min
               </span>
               <span className="flex items-center gap-1">
                 <span className="size-2 rounded-full bg-saffron" />
-                {recipe.cuisine}
+                {receipe.cuisine}
               </span>
             </div>
             {dietary.length > 0 && (
@@ -55,14 +55,14 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Collapse recipe"
+            aria-label="Collapse receipe"
             className="size-10 bg-white text-foreground rounded-full font-black text-xl flex-shrink-0"
           >
             −
           </button>
         </div>
 
-        <p className="text-sm mb-6 opacity-90">{recipe.blurb}</p>
+        <p className="text-sm mb-6 opacity-90">{receipe.blurb}</p>
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
@@ -70,7 +70,7 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
               The Method
             </h5>
             <ol className="text-sm space-y-2.5 list-decimal list-inside font-medium">
-              {recipe.steps.map((s, i) => (
+              {receipe.steps.map((s, i) => (
                 <li key={i}>{s}</li>
               ))}
             </ol>
@@ -92,13 +92,13 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
                 </ul>
               </div>
             )}
-            {showMissing && recipe.missingIngredients.length > 0 && (
+            {showMissing && receipe.missingIngredients.length > 0 && (
               <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
                 <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
                   Missing
                 </h5>
                 <ul className="text-sm space-y-1.5 font-medium">
-                  {recipe.missingIngredients.map((m, i) => (
+                  {receipe.missingIngredients.map((m, i) => (
                     <li key={i} className="flex items-center gap-2">
                       <span className="size-1.5 bg-paprika rounded-full" />
                       {m}
@@ -107,13 +107,13 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
                 </ul>
               </div>
             )}
-            {recipe.substitutions.length > 0 && (
+            {receipe.substitutions.length > 0 && (
               <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
                 <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
                   Substitutions
                 </h5>
                 <ul className="text-sm space-y-1.5 font-medium">
-                  {recipe.substitutions.map((s, i) => (
+                  {receipe.substitutions.map((s, i) => (
                     <li key={i} className="flex items-center gap-2">
                       <span className="size-1.5 bg-saffron rounded-full" />
                       {s}
@@ -127,7 +127,7 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
               onClick={onToggleSave}
               className="w-full bg-white text-cardamom py-3 rounded-xl font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
             >
-              {saved ? "★ Saved" : "♡ Save Recipe"}
+              {saved ? "★ Saved" : "♡ Save Receipe"}
             </button>
           </div>
         </div>
@@ -143,12 +143,12 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
       <div className="p-5 flex-1">
         <div className="flex justify-between items-start mb-2 gap-3">
           <h4 className="font-black text-xl md:text-2xl leading-tight">
-            {recipe.title}
+            {receipe.title}
           </h4>
           {showMissing ? (
-            recipe.missingIngredients.length > 0 ? (
+            receipe.missingIngredients.length > 0 ? (
             <div className="bg-paprika text-white text-[10px] font-black px-2 py-1 rounded-sm rotate-3 flex-shrink-0">
-              MISSING {recipe.missingIngredients.length}
+              MISSING {receipe.missingIngredients.length}
             </div>
           ) : (
             <div className="bg-cardamom text-white text-[10px] font-black px-2 py-1 rounded-sm -rotate-2 flex-shrink-0">
@@ -160,11 +160,11 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
         <div className="flex flex-wrap gap-3 font-mono text-[10px] font-bold mb-3 uppercase">
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-turmeric" />
-            {recipe.cookTimeMinutes} min
+            {receipe.cookTimeMinutes} min
           </span>
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-cardamom" />
-            {recipe.cuisine}
+            {receipe.cuisine}
           </span>
         </div>
         {dietary.length > 0 && (
@@ -182,19 +182,19 @@ export function RecipeCard({ recipe, index, saved, onToggleSave, showMissing = t
             ))}
           </div>
         )}
-        <p className="text-sm text-pretty mb-4 font-medium">{recipe.blurb}</p>
+        <p className="text-sm text-pretty mb-4 font-medium">{receipe.blurb}</p>
         <div className="flex justify-between items-center">
           <button
             type="button"
             onClick={() => setOpen(true)}
             className="font-black text-sm uppercase underline decoration-4 decoration-turmeric underline-offset-4 hover:decoration-paprika"
           >
-            View Recipe
+            View Receipe
           </button>
           <button
             type="button"
             onClick={onToggleSave}
-            aria-label={saved ? "Unsave recipe" : "Save recipe"}
+            aria-label={saved ? "Unsave receipe" : "Save receipe"}
             className={`size-10 border-2 border-border rounded-full grid place-items-center transition-colors ${
               saved ? "bg-paprika text-white" : "bg-white hover:bg-paprika/10"
             }`}

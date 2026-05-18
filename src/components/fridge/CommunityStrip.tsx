@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { listCommunityRecipes } from "@/lib/community.functions";
 
-type Recipe = {
+type Receipe = {
   id: string;
   title: string;
   description: string | null;
@@ -18,15 +18,15 @@ type Recipe = {
 
 export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }) {
   const fetchRecipes = useServerFn(listCommunityRecipes);
-  const [recipes, setRecipes] = useState<Recipe[] | null>(null);
+  const [receipes, setRecipes] = useState<Receipe[] | null>(null);
 
   useEffect(() => {
     fetchRecipes({ data: { limit: 6 } })
-      .then((res) => setRecipes((res.recipes as Recipe[]) ?? []))
+      .then((res) => setRecipes((res.receipes as Receipe[]) ?? []))
       .catch(() => setRecipes([]));
   }, [fetchRecipes]);
 
-  if (recipes && recipes.length === 0) return null;
+  if (receipes && receipes.length === 0) return null;
 
   return (
     <section className="max-w-6xl mx-auto mt-10 md:mt-14">
@@ -48,7 +48,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(recipes ?? Array.from({ length: 3 })).map((r, i) => {
+        {(receipes ?? Array.from({ length: 3 })).map((r, i) => {
           if (!r) {
             return (
               <div
@@ -80,7 +80,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
                   {r.title}
                 </h3>
                 <p className="mt-1 text-[11px] font-bold uppercase tracking-wide opacity-60 truncate">
-                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community recipe"}
+                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community receipe"}
                 </p>
                 <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
                   <span className="opacity-70 truncate">by {r.author_name}</span>
@@ -97,7 +97,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
           <Link to="/login" className="underline font-black text-paprika text-base">
             Sign in
           </Link>{" "}
-          to share recipe
+          to share receipe
         </p>
       )}
     </section>

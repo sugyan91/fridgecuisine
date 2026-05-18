@@ -1,9 +1,9 @@
-import type { Recipe } from "@/lib/recipes.functions";
+import type { Receipe } from "@/lib/receipes.functions";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  saved: Recipe[];
+  saved: Receipe[];
   onUnsave: (title: string) => void;
 };
 
@@ -13,7 +13,7 @@ export function SavedDrawer({ open, onClose, saved, onUnsave }: Props) {
     <div className="fixed inset-0 z-50 flex">
       <button
         type="button"
-        aria-label="Close saved recipes"
+        aria-label="Close saved receipes"
         onClick={onClose}
         className="flex-1 bg-foreground/40 backdrop-blur-sm"
       />
@@ -30,7 +30,7 @@ export function SavedDrawer({ open, onClose, saved, onUnsave }: Props) {
         </div>
         {saved.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Nothing saved yet. Tap the heart on any recipe.
+            Nothing saved yet. Tap the heart on any receipe.
           </p>
         ) : (
           <ul className="space-y-3">

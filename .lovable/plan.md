@@ -1,4 +1,4 @@
-# Pantry-only recipe generation
+# Pantry-only receipe generation
 
 ## What's wrong today
 
@@ -8,7 +8,7 @@
 
 ## What you'll get
 
-- The pantry button generates recipes immediately in one click, using only the selected ingredients + dietary tags. No country chosen, no second click required.
+- The pantry button generates receipes immediately in one click, using only the selected ingredients + dietary tags. No country chosen, no second click required.
 - The results header replaces the cuisine badge with the dietary tags the user picked (e.g. `Vegan · Peanut allergy`). If nothing was selected, it shows `Pantry` / nothing.
 - The regular **"Show me the cuisine"** button keeps working exactly as today (with the cuisine dropdown).
 
@@ -22,8 +22,8 @@
 - Wire `onPantryGenerate` to a new handler that:
   - sets `pantryMode = true`,
   - sets `cuisine = "Any / Surprise Me"` (so the server prompt is not biased to a country),
-  - calls the existing `onSubmit()` to generate recipes.
-- Loading text: when `pantryMode` is on, always show *"Cooking up recipes from your pantry…"* instead of the "Travelling to {country}" copy.
+  - calls the existing `onSubmit()` to generate receipes.
+- Loading text: when `pantryMode` is on, always show *"Cooking up receipes from your pantry…"* instead of the "Travelling to {country}" copy.
 - Results header badge: when `pantryMode` is on, replace `AI · {cuisine}` with the selected dietary tags joined by `·` (e.g. `Vegan · Peanut allergy`); fall back to `Pantry` when no dietary tags are selected. Non-pantry generation keeps the current cuisine badge.
 
-No changes to `recipes.functions.ts`, the DB, or any other component. `"Any / Surprise Me"` already tells the server prompt not to lock to a region, so passing it through is enough.
+No changes to `receipes.functions.ts`, the DB, or any other component. `"Any / Surprise Me"` already tells the server prompt not to lock to a region, so passing it through is enough.
