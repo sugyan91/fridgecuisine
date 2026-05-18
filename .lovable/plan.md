@@ -1,55 +1,41 @@
-## Comments on community receipes
+## Add username to signup & sign-in
 
-Add a comments section to each community receipe page where signed-in users can post comments/questions, and the original poster (OP) can toggle comments on/off for their receipe.
+Let users pick a unique username at signup, then sign in with either email **or** username + password.
 
-### Database
+### Username rules
+- 3–20 characters
+- Lowercase letters, digits, and underscores only (`^[a-z0-9_]{3,20}$`)
+- Must start with a letter
+- Case-insensitive, stored lowercase, globally unique
+- Reserved list blocked: `admin`, `root`, `support`, `help`, `api`, `auth`, `login`, `signup`, `me`, `fridgecuisine`
 
-New migration:
+### Database changes (migration)
+- Add `username text` column to `profiles`, unique (case-insensitive via lowercase storage + unique index)
+- Add CHECK constraint enforcing the regex
+- Update `handle_new_user()` trigger to read `raw_user_meta_data->>'username'` and insert into `profiles.username` (fall back to email prefix if missing, e.g. for Google sign-in — appending a random suffix to guarantee uniqueness)
+- Add SECURITY DEFINER function `public.email_for_username(_username text)` returning the auth email for a given username, so sign-in by username can resolve to an email without exposing the auth table
 
-1. Add `comments_enabled boolean NOT NULL DEFAULT true` to `community_recipes`.
-2. Create `community_recipe_comments`:
-   - `id uuid pk default gen_random_uuid()`
-   - `recipe_id uuid not null` (matches existing pattern — no FK, like `community_recipe_likes`)
-   - `user_id uuid not null`
-   - `body text not null` (length-checked in app, 1–1000 chars)
-   - `created_at timestamptz not null default now()`
-   - `updated_at timestamptz not null default now()`
-   - index on `(recipe_id, created_at desc)`
-3. Enable RLS with policies:
-   - **SELECT**: public read (`true`) — comments visible to everyone, same as receipes.
-   - **INSERT**: `auth.uid() = user_id AND email_verified AND recipe allows comments` — enforced via a `SECURITY DEFINER` helper `public.can_comment_on_recipe(_recipe_id uuid)` that checks `community_recipes.comments_enabled = true` (avoids cross-table recursion in the policy).
-   - **UPDATE**: only own comment (`auth.uid() = user_id`).
-   - **DELETE**: own comment, OR the receipe owner can delete any comment on their receipe (via another `SECURITY DEFINER` helper `public.is_recipe_owner(_recipe_id uuid)`).
-4. `updated_at` trigger using the existing `public.update_updated_at_column()`.
+### Sign-up form (`/login?mode=signup`)
+- Add **Username** field above Email
+- Live validation: format check + "username taken" check (debounced, via a new public server fn `checkUsernameAvailable`)
+- On submit, pass `options.data.username` to `supabase.auth.signUp` so the trigger picks it up
+- Show inline error if username invalid/taken
 
-"Verified user" = `auth.users.email_confirmed_at IS NOT NULL`, checked in the server function (not RLS) so we can return a clear error.
+### Sign-in form (`/login?mode=signin`)
+- Rename label to **"Email or username"**
+- On submit: if input contains `@` → treat as email; otherwise call new server fn `resolveLoginIdentifier({ username })` → returns email → call `signInWithPassword` with that email
+- Errors surface as "No account with that username" / "Wrong password" without leaking which one failed (single "Invalid credentials" message)
 
-### Server functions (`src/lib/community.functions.ts`)
+### Google/Apple sign-in
+- OAuth users won't have a chosen username. The trigger auto-generates one from their email prefix + random suffix; they can change it later from a profile page (out of scope for this task — flag it as a follow-up)
 
-Add:
-- `listComments({ recipe_id })` — public; returns `[{ id, body, created_at, user_id, author_name, is_owner }]`, joined to `profiles.display_name`.
-- `addComment({ recipe_id, body })` — `requireSupabaseAuth`; validates body length, rejects if user's email is not confirmed, rejects if `comments_enabled = false`.
-- `deleteComment({ id })` — `requireSupabaseAuth`; lets the comment author or the receipe owner delete.
-- `setCommentsEnabled({ recipe_id, enabled })` — `requireSupabaseAuth`; verifies caller is the receipe owner, updates `community_recipes.comments_enabled`.
-
-All inputs validated with Zod (`body` trimmed, 1–1000 chars).
-
-### UI (`src/routes/community.$recipeId.tsx`)
-
-Below the voting row, add a "Comments" section:
-- Header: "Comments (N)". If caller is the OP, show a toggle "Comments: On / Off" that calls `setCommentsEnabled`.
-- If `comments_enabled = false`: show "Comments are turned off by the author." Hide the input but keep existing comments visible (read-only).
-- Comment composer:
-  - Signed-out: "Sign in to comment" link.
-  - Signed-in but email not verified: "Verify your email to comment." with a "Resend verification" button calling `supabase.auth.resend({ type: 'signup', email })`.
-  - Signed-in + verified + comments enabled: textarea (max 1000) + "Post" button.
-- Comment list: avatar/initial, author name, relative time, body. Each comment shows a "Delete" button when the viewer is the comment author or the OP.
-
-Optimistic add/delete with rollback on error. Toasts via `sonner`.
+### Files touched
+- `supabase/migrations/<new>.sql` — column, index, check, trigger update, helper function
+- `src/lib/auth.functions.ts` (new) — `checkUsernameAvailable`, `resolveLoginIdentifier`
+- `src/routes/login.tsx` — username field on signup, identifier label + resolution flow on signin
+- `src/integrations/supabase/types.ts` — regenerated automatically by migration
 
 ### Out of scope
-
-- Threaded replies / @-mentions.
-- Edit comment UI (DB allows it; not surfacing this turn).
-- Realtime updates.
-- Notifications to the OP.
+- Username change UI (post-signup)
+- Username availability check during the OAuth-auto-generated flow
+- Password reset by username (still email-only)
