@@ -349,6 +349,12 @@ function Index() {
               >
                 Community
               </Link>
+              <Link
+                to="/pricing"
+                className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-background px-1.5 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
+              >
+                Pricing
+              </Link>
               {email ? (
                 <>
                   <Link
