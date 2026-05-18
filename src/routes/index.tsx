@@ -319,20 +319,20 @@ function Index() {
         >
           <div
             ref={navRef}
-            className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-3 md:px-6 py-2"
+            className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-2 md:px-6 py-2"
           >
             <Link
               to="/"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-2 min-w-0"
+              className="flex items-center gap-2 min-w-0 mr-2"
             >
               <img
                 src={logoImg}
                 alt="Fridge Cuisine"
-                className="h-9 md:h-10 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background shrink-0"
+                className="hidden sm:block h-9 md:h-10 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="font-display tracking-tight text-paprika leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap">
+                <h1 className="font-display tracking-tight text-paprika leading-none text-lg md:text-xl text-left lowercase whitespace-nowrap">
                   fridge <span className="text-foreground">cuisine</span>
                   <span className="text-turmeric">.</span>
                 </h1>
@@ -342,10 +342,10 @@ function Index() {
               </div>
             </Link>
 
-            <nav className="flex items-center gap-1.5 md:gap-2 shrink-0">
+            <nav className="flex items-center gap-1 md:gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
+                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
               >
                 Community
               </Link>
@@ -359,14 +359,15 @@ function Index() {
                   </Link>
                   <Link
                     to="/community/new"
-                    className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 rounded-full border-2 border-border"
+                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
                   >
-                    + Share
+                    <span className="sm:hidden">+</span>
+                    <span className="hidden sm:inline">+ Share</span>
                   </Link>
                   <button
                     type="button"
                     onClick={() => setDrawerOpen(true)}
-                    className="text-[11px] font-black uppercase tracking-wide"
+                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-background px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
                   >
                     Saved {saved.length}
                   </button>
@@ -375,7 +376,7 @@ function Index() {
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2.5 py-1.5 rounded-full border-2 border-border"
+                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
                   >
                     Sign out
                   </button>
@@ -385,14 +386,14 @@ function Index() {
                   <Link
                     to="/login"
                     search={{ mode: "signin" }}
-                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
                   >
                     Sign in
                   </Link>
                   <Link
                     to="/login"
                     search={{ mode: "signup" }}
-                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
+                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
                   >
                     Sign up
                   </Link>
