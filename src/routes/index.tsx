@@ -317,7 +317,11 @@ function Index() {
             ref={navRef}
             className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-3 md:px-6 py-2"
           >
-            <Link to="/" className="flex items-center gap-2 min-w-0">
+            <Link
+              to="/"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex items-center gap-2 min-w-0"
+            >
               <img
                 src={logoImg}
                 alt="Fridge Cuisine"
