@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -153,6 +153,26 @@ function Index() {
 
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
+  const [headerOffset, setHeaderOffset] = useState(96);
+  useEffect(() => {
+    const compute = () => {
+      const h1 = headerRef.current?.offsetHeight ?? 0;
+      const h2 = navRef.current?.offsetHeight ?? 0;
+      // pills sit at top-3 (12px). Add a 16px breathing gap below the tallest pill.
+      setHeaderOffset(12 + Math.max(h1, h2) + 16);
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    if (headerRef.current) ro.observe(headerRef.current);
+    if (navRef.current) ro.observe(navRef.current);
+    window.addEventListener("resize", compute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", compute);
+    };
+  }, [email]);
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -285,8 +305,14 @@ function Index() {
         onUnsave={(title) => setSaved(saved.filter((s) => s.title !== title))}
       />
 
-      <main className="min-h-screen bg-background text-foreground p-4 pt-24 md:p-8 md:pt-28">
-        <div className="fixed top-3 right-3 z-50 flex items-center gap-1.5 md:gap-2 bg-white border-2 border-border rounded-full pl-2 md:pl-3 pr-1 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]">
+      <main
+        className="min-h-screen bg-background text-foreground px-4 pb-8 md:px-8"
+        style={{ paddingTop: `${headerOffset}px` }}
+      >
+        <div
+          ref={navRef}
+          className="fixed top-3 right-3 z-50 flex items-center gap-1.5 md:gap-2 bg-white border-2 border-border rounded-full pl-2 md:pl-3 pr-1 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]"
+        >
           <Link
             to="/community"
             className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1.5 md:px-2"
@@ -344,7 +370,10 @@ function Index() {
           )}
         </div>
 
-        <header className="fixed top-3 left-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-2xl pl-1.5 pr-3 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]">
+        <header
+          ref={headerRef}
+          className="fixed top-3 left-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-2xl pl-1.5 pr-3 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]"
+        >
           <img
             src={logoImg}
             alt="Fridge Cuisine"
