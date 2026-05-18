@@ -22,7 +22,8 @@ function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
-  const [email, setEmail] = useState(""); // signup: email; signin: email or username
+  const [email, setEmail] = useState("");           // signup only
+  const [identifier, setIdentifier] = useState(""); // signin: email or username
   const [username, setUsername] = useState("");
   const [usernameStatus, setUsernameStatus] = useState<
     | { state: "idle" }
@@ -37,11 +38,23 @@ function LoginPage() {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState<string | null>(null);
+  const [formError, setFormError] = useState<{ message: string; action?: { label: string; onClick: () => void } } | null>(null);
 
   const redirectTo = search.redirect || "/";
 
   const USERNAME_RE = /^[a-z][a-z0-9_]{2,19}$/;
   const RESERVED = new Set(["admin","root","support","help","api","auth","login","signup","me","fridgecuisine"]);
+
+  // Detect what the sign-in identifier looks like, for the inline hint
+  const identifierKind: "empty" | "email" | "username" | "invalid" = (() => {
+    const v = identifier.trim();
+    if (!v) return "empty";
+    if (v.includes("@")) return z.string().email().safeParse(v.toLowerCase()).success ? "email" : "invalid";
+    return USERNAME_RE.test(v.toLowerCase()) ? "username" : "invalid";
+  })();
+
+  // Clear inline error when user edits inputs
+  useEffect(() => { setFormError(null); }, [identifier, email, username, password, mode]);
 
   // Debounced username availability check while typing on signup
   useEffect(() => {
@@ -67,6 +80,7 @@ function LoginPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     setLoading(true);
     try {
       if (mode === "signup") {
@@ -104,25 +118,47 @@ function LoginPage() {
         toast.success("Check your email to confirm your account.");
         setSignupSent(cleanEmail);
       } else {
-        const identifier = email.trim();
-        let loginEmail = identifier.toLowerCase();
-        if (!identifier.includes("@")) {
+        const idRaw = identifier.trim();
+        if (!idRaw) {
+          setFormError({ message: "Enter your email or username to sign in." });
+          setLoading(false);
+          return;
+        }
+        let loginEmail = idRaw.toLowerCase();
+        let usedUsername: string | null = null;
+        if (!idRaw.includes("@")) {
           // treat as username — resolve to email
-          const uname = identifier.toLowerCase();
+          const uname = idRaw.toLowerCase();
           if (!USERNAME_RE.test(uname)) {
-            toast.error("Enter a valid email or username");
+            setFormError({
+              message: "That doesn't look like a valid email or username. Usernames are 3–20 chars, letters/digits/_ , starting with a letter.",
+            });
             setLoading(false);
             return;
           }
+          usedUsername = uname;
           const { data, error: rpcErr } = await supabase.rpc("email_for_username", { _username: uname });
-          if (rpcErr || !data) {
-            toast.error("Invalid credentials");
+          if (rpcErr) {
+            setFormError({ message: "Couldn't reach the server. Try again." });
+            setLoading(false);
+            return;
+          }
+          if (!data) {
+            setFormError({
+              message: `No account found with username "@${uname}".`,
+              action: { label: "Create one", onClick: () => setMode("signup") },
+            });
             setLoading(false);
             return;
           }
           loginEmail = data as string;
         } else if (!z.string().email().safeParse(loginEmail).success) {
-          toast.error("Enter a valid email or username");
+          setFormError({ message: "Enter a valid email address." });
+          setLoading(false);
+          return;
+        }
+        if (!password) {
+          setFormError({ message: "Enter your password." });
           setLoading(false);
           return;
         }
@@ -131,7 +167,11 @@ function LoginPage() {
           password,
         });
         if (error) {
-          toast.error("Invalid credentials");
+          setFormError({
+            message: usedUsername
+              ? `Wrong password for @${usedUsername}.`
+              : "Email or password is incorrect.",
+          });
           setLoading(false);
           return;
         }
@@ -139,7 +179,7 @@ function LoginPage() {
         navigate({ to: redirectTo });
       }
     } catch (err: any) {
-      toast.error(err?.message || "Something went wrong");
+      setFormError({ message: err?.message || "Something went wrong" });
     } finally {
       setLoading(false);
     }
@@ -311,6 +351,24 @@ function LoginPage() {
           </div>
 
           <form onSubmit={onSubmit} className="space-y-3">
+            {formError && (
+              <div role="alert" className="border-2 border-red-500 bg-red-50 text-red-900 rounded-xl px-3 py-2 text-xs font-bold">
+                {formError.message}
+                {formError.action && (
+                  <>
+                    {" "}
+                    <button
+                      type="button"
+                      onClick={formError.action.onClick}
+                      className="underline font-black"
+                    >
+                      {formError.action.label}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
             {mode === "signup" && (
               <div>
                 <label className="block font-bold text-xs uppercase mb-1">Username</label>
@@ -343,15 +401,47 @@ function LoginPage() {
               <label className="block font-bold text-xs uppercase mb-1">
                 {mode === "signup" ? "Email" : "Email or username"}
               </label>
-              <input
-                type={mode === "signup" ? "email" : "text"}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete={mode === "signup" ? "email" : "username"}
-                className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
-                placeholder={mode === "signup" ? "you@example.com" : "you@example.com or yourname"}
-              />
+              {mode === "signup" ? (
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                  placeholder="you@example.com"
+                />
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    required
+                    autoComplete="username"
+                    spellCheck={false}
+                    autoCapitalize="none"
+                    className={`w-full border-2 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric ${
+                      identifierKind === "invalid" ? "border-red-500" : "border-border"
+                    }`}
+                    placeholder="you@example.com  or  yourname"
+                  />
+                  <p className={`text-[10px] mt-1 ${
+                    identifierKind === "email" || identifierKind === "username"
+                      ? "text-muted-foreground"
+                      : identifierKind === "invalid"
+                        ? "text-red-600 font-bold"
+                        : "text-muted-foreground"
+                  }`}>
+                    {identifierKind === "empty" && "Use the email or username you signed up with."}
+                    {identifierKind === "email" && "Signing in with email"}
+                    {identifierKind === "username" && `Signing in as @${identifier.trim().toLowerCase()}`}
+                    {identifierKind === "invalid" && (identifier.includes("@")
+                      ? "That email doesn't look right."
+                      : "Usernames are 3–20 chars, letters/digits/_ , starting with a letter.")}
+                  </p>
+                </>
+              )}
             </div>
 
             <div>
@@ -385,7 +475,7 @@ function LoginPage() {
             <button
               type="button"
               onClick={() => {
-                setForgotEmail(email);
+                setForgotEmail(identifier.includes("@") ? identifier : "");
                 setForgotOpen(true);
               }}
               disabled={loading}
