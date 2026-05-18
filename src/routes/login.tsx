@@ -410,7 +410,7 @@ function LoginPage() {
                   maxLength={20}
                   autoComplete="username"
                   className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
-                  placeholder="yourname"
+                 placeholder="Your username"
                 />
                 <p className={`text-[10px] mt-1 ${
                   usernameStatus.state === "available" ? "text-green-600 font-bold" :
@@ -453,7 +453,7 @@ function LoginPage() {
                     className={`w-full border-2 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric ${
                       identifierKind === "invalid" ? "border-red-500" : "border-border"
                     }`}
-                    placeholder="you@example.com  or  yourname"
+                   placeholder="you@example.com  or  Your username"
                   />
                   <p className={`text-[10px] mt-1 ${
                     identifierKind === "email" || identifierKind === "username"
