@@ -496,6 +496,7 @@ function Index() {
                   setCuisine(c);
                 }}
                 onPantryGenerate={onPantryGenerate}
+                pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
               />
 
@@ -505,10 +506,8 @@ function Index() {
                 disabled={loading}
                 className="mt-5 w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_6px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {loading
-                  ? pantryMode
-                    ? "Cooking up receipes from your pantry…"
-                    : cuisine && cuisine !== "Any / Surprise Me"
+                {loading && !pantryMode
+                  ? cuisine && cuisine !== "Any / Surprise Me"
                     ? `Travelling to ${cuisineToCountry(cuisine)} for surprise receipe. Please wait…`
                     : "Travelling around the globe to find a perfect receipe for you"
                   : "Show me the cuisine"}
