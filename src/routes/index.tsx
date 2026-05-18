@@ -19,6 +19,12 @@ import riceImg from "@/assets/recipe-rice.jpg";
 import paneerImg from "@/assets/recipe-paneer.jpg";
 import momoImg from "@/assets/recipe-momo.jpg";
 import chanaImg from "@/assets/recipe-chana.jpg";
+import pastaImg from "@/assets/food-pasta.jpg";
+import sushiImg from "@/assets/food-sushi.jpg";
+import tacosImg from "@/assets/food-tacos.jpg";
+import curryImg from "@/assets/food-curry.jpg";
+import burgerImg from "@/assets/food-burger.jpg";
+import pizzaImg from "@/assets/food-pizza.jpg";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
