@@ -153,6 +153,26 @@ function Index() {
 
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
+  const [headerOffset, setHeaderOffset] = useState(96);
+  useEffect(() => {
+    const compute = () => {
+      const h1 = headerRef.current?.offsetHeight ?? 0;
+      const h2 = navRef.current?.offsetHeight ?? 0;
+      // pills sit at top-3 (12px). Add a 16px breathing gap below the tallest pill.
+      setHeaderOffset(12 + Math.max(h1, h2) + 16);
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    if (headerRef.current) ro.observe(headerRef.current);
+    if (navRef.current) ro.observe(navRef.current);
+    window.addEventListener("resize", compute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", compute);
+    };
+  }, [email]);
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
