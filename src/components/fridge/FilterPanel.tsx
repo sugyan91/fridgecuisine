@@ -10,11 +10,11 @@ type Props = {
   cuisine: string;
   onDietary: (next: string[]) => void;
   onCuisine: (next: string) => void;
-  onPantryPick?: (next: string) => void;
+  onPantryGenerate?: () => void;
   isAuthenticated: boolean;
 };
 
-export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPick, isAuthenticated }: Props) {
+export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGenerate, isAuthenticated }: Props) {
   const [customDietary, setCustomDietary] = useState<string[]>([]);
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
   const [newDietary, setNewDietary] = useState("");
@@ -189,13 +189,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
         </p>
         <button
           type="button"
-          onClick={() => {
-            const pool = allCuisines.filter((c) => c !== "Any / Surprise Me");
-            if (pool.length === 0) return;
-            const pick = pool[Math.floor(Math.random() * pool.length)];
-            (onPantryPick ?? onCuisine)(pick);
-            toast.success(`Pantry cuisine: ${pick}`);
-          }}
+          onClick={() => onPantryGenerate?.()}
           className="w-full bg-cardamom text-white border-2 border-border py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-none transition-all"
         >
           Create a cuisine from the pantry list
