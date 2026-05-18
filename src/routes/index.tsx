@@ -248,7 +248,11 @@ function Index() {
   };
 
   const onLoadMore = async () => {
-    if (!receipes || ingredients.length === 0) return;
+    if (!receipes) return;
+    if (ingredients.length === 0) {
+      toast.error("Add some ingredients first to get more receipes.");
+      return;
+    }
     setLoadingMore(true);
     try {
       const res = await generate({
@@ -264,7 +268,11 @@ function Index() {
       } else {
         const existing = new Set(receipes.map((r) => r.title.toLowerCase()));
         const fresh = res.receipes.filter((r) => !existing.has(r.title.toLowerCase()));
-        setRecipes([...receipes, ...fresh]);
+        if (fresh.length === 0) {
+          toast("No new receipes — try changing cuisine or dietary filters.");
+        } else {
+          setRecipes([...receipes, ...fresh]);
+        }
       }
     } catch (err) {
       console.error(err);
