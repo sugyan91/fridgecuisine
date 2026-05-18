@@ -1,27 +1,30 @@
-## Why the current images mismatch
+## Status: this already works — just hidden
 
-The current image helper uses LoremFlickr with broad keywords from the recipe title/cuisine. That loads fast, but it cannot guarantee the photo is actually the dish. For specific cuisines like Bhutanese, it may return generic or unrelated food because Flickr has limited exact matches.
+Signed-in users can already create their own dietary tags today:
 
-## Plan
+- The "Add your own…" input under the Dietary section saves to `user_preferences.custom_dietary` (per-user, RLS-protected).
+- Custom tags appear as selectable chips alongside the defaults (Vegan, Gluten-Free, etc.) in the same grid.
+- Selected custom tags flow into recipe generation exactly like built-in dietary tags — the AI honors them when cooking from pantry.
 
-1. **Stop relying on loose keyword photo search for generated recipes**
-   - Replace the current external photo-search URL builder with a more reliable dish-aware image strategy.
+So the underlying feature is built. The problem is it's not obvious that this is where you put allergies (e.g., "Peanut allergy", "No shellfish").
 
-2. **Generate/store a better image prompt from the actual recipe data**
-   - Build image keywords from the recipe title, cuisine, and key ingredients instead of only the first title words.
-   - Avoid vague fallback terms like just `food` unless no better fields exist.
+## Plan — make allergy intent obvious
 
-3. **Use a curated fallback for hard-to-match cuisines**
-   - If a dish/cuisine is too specific for the photo service, show a branded, appetizing cuisine illustration/placeholder rather than a wrong random food photo.
-   - This is better UX than showing unrelated food.
+1. **Reword the section** in `src/components/fridge/FilterPanel.tsx`:
+   - Header changes from "Dietary" → "Dietary & Allergies".
+   - Input placeholder changes from "Add your own…" → "Add allergy or diet (e.g. Peanut allergy)".
+   - Small helper line under the input for signed-in users: "Your custom tags are saved and reused every time."
 
-4. **Keep image behavior consistent everywhere**
-   - Apply the same image helper to recipe cards and saved recipes so preview and full output match.
-   - Keep deterministic seeds/locks so the same recipe keeps the same visual.
+2. **Style custom tags distinctly** so users can tell their own allergy tags from defaults:
+   - Custom tags get a small badge dot or a different border accent (e.g., paprika ring) while keeping the same toggle behavior.
+
+3. **Reinforce in the recipe prompt** (`src/lib/recipes.functions.ts`):
+   - When dietary tags are passed in, explicitly instruct the model to treat them as strict allergy/diet constraints — exclude any ingredient that conflicts and call out swaps in `substitutions`.
+
+No database or schema changes are needed — `user_preferences.custom_dietary` already exists and is used.
 
 ## Technical details
 
-- Update `src/lib/recipe-images.ts` so `pickRecipeImage` can accept optional ingredient data and produce tighter query terms.
-- Update `RecipeCard.tsx` and `SavedDrawer.tsx` calls to pass recipe ingredients into `pickRecipeImage`.
-- Add an `onError` fallback in image rendering so broken or irrelevant external URLs can degrade to a local styled placeholder instead of blank/wrong-looking output.
-- No database changes are needed.
+- Edit only `src/components/fridge/FilterPanel.tsx` for the UI/copy/styling tweaks.
+- Edit the system/user prompt in `src/lib/recipes.functions.ts` to harden allergy handling.
+- No new tables, no new server functions, no migrations.

@@ -102,7 +102,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
     <div className="space-y-4">
       <div>
         <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">
-          Dietary
+          Dietary & Allergies
           {!isAuthenticated && (
             <span className="normal-case tracking-normal font-medium opacity-90">
               {" "}(
@@ -113,7 +113,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
               >
                 Sign in
               </Link>{" "}
-              to add your own dietary tags)
+              to add your own allergies or diets)
             </span>
           )}
         </p>
@@ -129,7 +129,9 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
                   className={`w-full border-2 border-border py-2 px-2 rounded-xl font-black text-[11px] uppercase transition-all ${
                     active
                       ? "bg-paprika text-white shadow-[3px_3px_0px_0px_var(--border)]"
-                      : "bg-white hover:bg-turmeric/10"
+                      : isCustom
+                        ? "bg-turmeric/20 ring-2 ring-paprika/40 hover:bg-turmeric/30"
+                        : "bg-white hover:bg-turmeric/10"
                   }`}
                 >
                   {d}
@@ -156,12 +158,13 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
           {showMoreDietary ? "− Show less" : `+ ${EXTRA_DIETARY.length} more`}
         </button>
         {isAuthenticated ? (
+          <>
           <div className="mt-2 flex gap-2">
             <input
               value={newDietary}
               onChange={(e) => setNewDietary(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addDietary())}
-              placeholder="Add your own…"
+              placeholder="Add allergy or diet (e.g. Peanut allergy)"
               maxLength={40}
               className="flex-1 border-2 border-border rounded-lg px-2 py-1.5 text-xs font-medium"
             />
@@ -173,6 +176,10 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
               + Add
             </button>
           </div>
+          <p className="mt-1.5 text-[10px] opacity-60 font-medium">
+            Saved to your account and reused every time. Selected tags are honored strictly by the AI.
+          </p>
+          </>
         ) : null}
       </div>
 
