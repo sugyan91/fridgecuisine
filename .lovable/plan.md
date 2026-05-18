@@ -1,38 +1,21 @@
-## Goal
+## Problem
 
-Make the top of the page behave like airbnb.com: a full-width fixed header bar that has its own opaque background, so when the user scrolls, content slides underneath but is never visible *through* the header (no see-through, no overlap, no occlusion of text).
+In `src/routes/index.tsx`, the `onLoadMore` handler (lines ~250-275) silently fails in two cases, so clicking "Show more receipes" appears to do nothing:
 
-## Current behavior
+1. **Empty ingredients guard:** `if (!receipes || ingredients.length === 0) return;` — if the user cleared their ingredient pills after generating recipes (or generated them in a flow that doesn't require ingredients), the click is silently dropped with no toast and no loading state.
 
-The brand pill ("fridge cuisine") on the left and the nav pill (Community / Sign in / Sign up) on the right are two separate **floating fixed pills** with white backgrounds. The gap between them is transparent — when content scrolls past, you can see page content peeking through behind/between the pills.
+2. **All-duplicate response:** After fetching more, results are de-duplicated against existing titles with `fresh = res.receipes.filter(...)`. If the AI returns only titles already shown, `fresh` is empty, `setRecipes([...receipes, ...fresh])` is a no-op, and the UI shows nothing changed — no message to the user.
 
-## Proposed change
+## Fix
 
-Replace the two separate floating pills with a **single full-width fixed header bar** that spans the entire viewport width — exactly the Airbnb pattern.
+Update `onLoadMore` in `src/routes/index.tsx`:
 
-### Header bar
+- Remove the silent `ingredients.length === 0` early-return; instead, if ingredients are empty, show a toast asking the user to add ingredients (and skip the call). Keep the `!receipes` guard.
+- After de-duplication, if `fresh.length === 0`, show an info toast like "No new receipes — try changing cuisine or dietary filters" so the user gets feedback instead of a dead click.
+- Also log the response when `!res.ok` already happens (it does via `toast.error(res.error)`), no change needed there.
 
-- `position: fixed`, `top: 0`, full viewport width, high `z-index`.
-- Opaque white background with a subtle `backdrop-blur` and a thin bottom border (matches the project's bold-border style — `border-b-2 border-border`).
-- Inner layout: a `max-w-6xl mx-auto` flex row with horizontal padding.
-  - **Left cluster**: small logo + "fridge cuisine." wordmark.
-  - **Right cluster**: Community link, then either {My Recipes, + Share, Saved, email, Sign out} when signed in, or {Sign in, Sign up} when signed out — identical content to today's nav pill.
-- Height stays compact (around 56–64px) so it doesn't dominate the viewport.
+No backend / server-function changes. UI-only fix in one file.
 
-### Content offset
+## Files
 
-- Keep the existing `ResizeObserver`-based measurement so `main`'s `paddingTop` always equals the actual header height. No more guessing — content always starts cleanly below the bar at every breakpoint.
-
-### What stays the same
-
-- All routes, links, auth-conditional logic, sign-out behavior.
-- Brand styling (paprika/turmeric colors, display font, lowercase wordmark).
-- The Saved drawer trigger and behavior.
-
-### What's removed
-
-- The two separate floating pills and their individual `bg-white`, `rounded-full`, `shadow-[3px_3px_…]` wrappers.
-
-## Result
-
-Scrolling will feel like Airbnb: the header is always visible, content never bleeds through it, and the page content begins exactly where the header ends — no awkward gap, no occlusion.
+- `src/routes/index.tsx` — update `onLoadMore` (~lines 250-275).
