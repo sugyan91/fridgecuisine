@@ -332,7 +332,7 @@ function Index() {
                 className="h-9 md:h-10 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="font-display tracking-tight text-paprika leading-none text-lg md:text-xl text-left lowercase truncate">
+                <h1 className="font-display tracking-tight text-paprika leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap">
                   fridge <span className="text-foreground">cuisine</span>
                   <span className="text-turmeric">.</span>
                 </h1>
@@ -345,7 +345,7 @@ function Index() {
             <nav className="flex items-center gap-1.5 md:gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1.5 md:px-2"
+                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1 md:px-2 hidden xs:inline sm:inline"
               >
                 Community
               </Link>
