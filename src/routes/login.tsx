@@ -38,6 +38,7 @@ function LoginPage() {
   // Synchronous lock to guard against duplicate submissions when the UI lags
   // (state updates are async; a ref flips immediately).
   const submitLockRef = useRef(false);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
   const [signupSent, setSignupSent] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -87,6 +88,9 @@ function LoginPage() {
     // Hard guard: ignore the call entirely if a request is already inflight.
     if (submitLockRef.current || loading) return;
     submitLockRef.current = true;
+    // Imperatively disable the submit button NOW, before React re-renders,
+    // so the UI reflects the lock even if the next render is delayed.
+    if (submitBtnRef.current) submitBtnRef.current.disabled = true;
     setFormError(null);
     setLoading(true);
     try {
@@ -203,7 +207,10 @@ function LoginPage() {
       setLoading(false);
       // Small cooldown so rapid double-clicks after a fast response are also
       // swallowed, not just the in-flight window.
-      setTimeout(() => { submitLockRef.current = false; }, 400);
+      setTimeout(() => {
+        submitLockRef.current = false;
+        if (submitBtnRef.current) submitBtnRef.current.disabled = false;
+      }, 400);
     }
   };
 
@@ -496,6 +503,7 @@ function LoginPage() {
             )}
 
             <button
+              ref={submitBtnRef}
               type="submit"
               disabled={loading}
               className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-lg uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
