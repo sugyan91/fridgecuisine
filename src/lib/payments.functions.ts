@@ -72,7 +72,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         metadata: { userId: data.userId },
         ...(isRecurring && { subscription_data: { metadata: { userId: data.userId } } }),
       }),
-    });
+    } as any);
 
     return session.client_secret;
   });
