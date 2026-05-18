@@ -1,41 +1,38 @@
-## Add username to signup & sign-in
+## Goal
 
-Let users pick a unique username at signup, then sign in with either email **or** username + password.
+Make the top of the page behave like airbnb.com: a full-width fixed header bar that has its own opaque background, so when the user scrolls, content slides underneath but is never visible *through* the header (no see-through, no overlap, no occlusion of text).
 
-### Username rules
-- 3–20 characters
-- Lowercase letters, digits, and underscores only (`^[a-z0-9_]{3,20}$`)
-- Must start with a letter
-- Case-insensitive, stored lowercase, globally unique
-- Reserved list blocked: `admin`, `root`, `support`, `help`, `api`, `auth`, `login`, `signup`, `me`, `fridgecuisine`
+## Current behavior
 
-### Database changes (migration)
-- Add `username text` column to `profiles`, unique (case-insensitive via lowercase storage + unique index)
-- Add CHECK constraint enforcing the regex
-- Update `handle_new_user()` trigger to read `raw_user_meta_data->>'username'` and insert into `profiles.username` (fall back to email prefix if missing, e.g. for Google sign-in — appending a random suffix to guarantee uniqueness)
-- Add SECURITY DEFINER function `public.email_for_username(_username text)` returning the auth email for a given username, so sign-in by username can resolve to an email without exposing the auth table
+The brand pill ("fridge cuisine") on the left and the nav pill (Community / Sign in / Sign up) on the right are two separate **floating fixed pills** with white backgrounds. The gap between them is transparent — when content scrolls past, you can see page content peeking through behind/between the pills.
 
-### Sign-up form (`/login?mode=signup`)
-- Add **Username** field above Email
-- Live validation: format check + "username taken" check (debounced, via a new public server fn `checkUsernameAvailable`)
-- On submit, pass `options.data.username` to `supabase.auth.signUp` so the trigger picks it up
-- Show inline error if username invalid/taken
+## Proposed change
 
-### Sign-in form (`/login?mode=signin`)
-- Rename label to **"Email or username"**
-- On submit: if input contains `@` → treat as email; otherwise call new server fn `resolveLoginIdentifier({ username })` → returns email → call `signInWithPassword` with that email
-- Errors surface as "No account with that username" / "Wrong password" without leaking which one failed (single "Invalid credentials" message)
+Replace the two separate floating pills with a **single full-width fixed header bar** that spans the entire viewport width — exactly the Airbnb pattern.
 
-### Google/Apple sign-in
-- OAuth users won't have a chosen username. The trigger auto-generates one from their email prefix + random suffix; they can change it later from a profile page (out of scope for this task — flag it as a follow-up)
+### Header bar
 
-### Files touched
-- `supabase/migrations/<new>.sql` — column, index, check, trigger update, helper function
-- `src/lib/auth.functions.ts` (new) — `checkUsernameAvailable`, `resolveLoginIdentifier`
-- `src/routes/login.tsx` — username field on signup, identifier label + resolution flow on signin
-- `src/integrations/supabase/types.ts` — regenerated automatically by migration
+- `position: fixed`, `top: 0`, full viewport width, high `z-index`.
+- Opaque white background with a subtle `backdrop-blur` and a thin bottom border (matches the project's bold-border style — `border-b-2 border-border`).
+- Inner layout: a `max-w-6xl mx-auto` flex row with horizontal padding.
+  - **Left cluster**: small logo + "fridge cuisine." wordmark.
+  - **Right cluster**: Community link, then either {My Recipes, + Share, Saved, email, Sign out} when signed in, or {Sign in, Sign up} when signed out — identical content to today's nav pill.
+- Height stays compact (around 56–64px) so it doesn't dominate the viewport.
 
-### Out of scope
-- Username change UI (post-signup)
-- Username availability check during the OAuth-auto-generated flow
-- Password reset by username (still email-only)
+### Content offset
+
+- Keep the existing `ResizeObserver`-based measurement so `main`'s `paddingTop` always equals the actual header height. No more guessing — content always starts cleanly below the bar at every breakpoint.
+
+### What stays the same
+
+- All routes, links, auth-conditional logic, sign-out behavior.
+- Brand styling (paprika/turmeric colors, display font, lowercase wordmark).
+- The Saved drawer trigger and behavior.
+
+### What's removed
+
+- The two separate floating pills and their individual `bg-white`, `rounded-full`, `shadow-[3px_3px_…]` wrappers.
+
+## Result
+
+Scrolling will feel like Airbnb: the header is always visible, content never bleeds through it, and the page content begins exactly where the header ends — no awkward gap, no occlusion.
