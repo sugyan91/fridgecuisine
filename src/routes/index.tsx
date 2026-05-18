@@ -329,10 +329,10 @@ function Index() {
               <img
                 src={logoImg}
                 alt="Fridge Cuisine"
-                className="hidden sm:block h-9 md:h-10 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background shrink-0"
+                className="h-8 sm:h-9 md:h-10 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="font-display tracking-tight text-paprika leading-none text-lg md:text-xl text-left lowercase whitespace-nowrap">
+                <h1 className="font-display tracking-tight text-paprika leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap">
                   fridge <span className="text-foreground">cuisine</span>
                   <span className="text-turmeric">.</span>
                 </h1>
@@ -345,7 +345,7 @@ function Index() {
             <nav className="flex items-center gap-1 md:gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
+                className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-1.5 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
               >
                 Community
               </Link>
@@ -359,7 +359,7 @@ function Index() {
                   </Link>
                   <Link
                     to="/community/new"
-                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
+                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
                   >
                     <span className="sm:hidden">+</span>
                     <span className="hidden sm:inline">+ Share</span>
@@ -367,7 +367,7 @@ function Index() {
                   <button
                     type="button"
                     onClick={() => setDrawerOpen(true)}
-                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-background px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
+                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-background px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
                   >
                     Saved {saved.length}
                   </button>
@@ -376,7 +376,7 @@ function Index() {
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
+                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
                   >
                     Sign out
                   </button>
@@ -386,14 +386,14 @@ function Index() {
                   <Link
                     to="/login"
                     search={{ mode: "signin" }}
-                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-1.5 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
                   >
                     Sign in
                   </Link>
                   <Link
                     to="/login"
                     search={{ mode: "signup" }}
-                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
+                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-1.5 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
                   >
                     Sign up
                   </Link>
