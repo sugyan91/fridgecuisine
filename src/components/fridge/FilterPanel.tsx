@@ -206,7 +206,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
             <option key={c}>{c}</option>
           ))}
         </select>
-        {isAuthenticated ? (
+        {isAuthenticated && (
           <>
             {customCuisines.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -246,17 +246,6 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryPi
               </button>
             </div>
           </>
-        ) : (
-          <p className="mt-3 text-xs opacity-80">
-            <Link
-              to="/login"
-              search={{ mode: "signin" }}
-              className="underline font-black text-paprika text-sm"
-            >
-              Sign in
-            </Link>{" "}
-            to add your own custom cuisines.
-          </p>
         )}
       </div>
     </div>
