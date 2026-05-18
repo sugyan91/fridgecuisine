@@ -1,30 +1,29 @@
-## Status: this already works — just hidden
+# Pantry-only recipe generation
 
-Signed-in users can already create their own dietary tags today:
+## What's wrong today
 
-- The "Add your own…" input under the Dietary section saves to `user_preferences.custom_dietary` (per-user, RLS-protected).
-- Custom tags appear as selectable chips alongside the defaults (Vegan, Gluten-Free, etc.) in the same grid.
-- Selected custom tags flow into recipe generation exactly like built-in dietary tags — the AI honors them when cooking from pantry.
+1. Clicking **"Create a cuisine from the pantry list"** just picks a random country cuisine, sets it in state, and shows a toast "Pantry cuisine: Thai". The user still has to click **"Show me the cuisine"** afterwards.
+2. Because a cuisine is picked, the output header shows `AI · Thai` and the loading text says *"Travelling to Thailand…"* — the user does not want a country attached to pantry generation.
+3. The output never reflects the dietary tags the user selected.
 
-So the underlying feature is built. The problem is it's not obvious that this is where you put allergies (e.g., "Peanut allergy", "No shellfish").
+## What you'll get
 
-## Plan — make allergy intent obvious
+- The pantry button generates recipes immediately in one click, using only the selected ingredients + dietary tags. No country chosen, no second click required.
+- The results header replaces the cuisine badge with the dietary tags the user picked (e.g. `Vegan · Peanut allergy`). If nothing was selected, it shows `Pantry` / nothing.
+- The regular **"Show me the cuisine"** button keeps working exactly as today (with the cuisine dropdown).
 
-1. **Reword the section** in `src/components/fridge/FilterPanel.tsx`:
-   - Header changes from "Dietary" → "Dietary & Allergies".
-   - Input placeholder changes from "Add your own…" → "Add allergy or diet (e.g. Peanut allergy)".
-   - Small helper line under the input for signed-in users: "Your custom tags are saved and reused every time."
+## Changes
 
-2. **Style custom tags distinctly** so users can tell their own allergy tags from defaults:
-   - Custom tags get a small badge dot or a different border accent (e.g., paprika ring) while keeping the same toggle behavior.
+### `src/components/fridge/FilterPanel.tsx`
+- Replace the `onPantryPick` prop with `onPantryGenerate: () => void`.
+- The "Create a cuisine from the pantry list" button now calls `onPantryGenerate()` directly — no random pick, no toast about a country.
 
-3. **Reinforce in the recipe prompt** (`src/lib/recipes.functions.ts`):
-   - When dietary tags are passed in, explicitly instruct the model to treat them as strict allergy/diet constraints — exclude any ingredient that conflicts and call out swaps in `substitutions`.
+### `src/routes/index.tsx`
+- Wire `onPantryGenerate` to a new handler that:
+  - sets `pantryMode = true`,
+  - sets `cuisine = "Any / Surprise Me"` (so the server prompt is not biased to a country),
+  - calls the existing `onSubmit()` to generate recipes.
+- Loading text: when `pantryMode` is on, always show *"Cooking up recipes from your pantry…"* instead of the "Travelling to {country}" copy.
+- Results header badge: when `pantryMode` is on, replace `AI · {cuisine}` with the selected dietary tags joined by `·` (e.g. `Vegan · Peanut allergy`); fall back to `Pantry` when no dietary tags are selected. Non-pantry generation keeps the current cuisine badge.
 
-No database or schema changes are needed — `user_preferences.custom_dietary` already exists and is used.
-
-## Technical details
-
-- Edit only `src/components/fridge/FilterPanel.tsx` for the UI/copy/styling tweaks.
-- Edit the system/user prompt in `src/lib/recipes.functions.ts` to harden allergy handling.
-- No new tables, no new server functions, no migrations.
+No changes to `recipes.functions.ts`, the DB, or any other component. `"Any / Surprise Me"` already tells the server prompt not to lock to a region, so passing it through is enough.
