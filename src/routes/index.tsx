@@ -345,7 +345,7 @@ function Index() {
             <nav className="flex items-center gap-1.5 md:gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1 md:px-2"
+                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
               >
                 Community
               </Link>
@@ -385,7 +385,7 @@ function Index() {
                   <Link
                     to="/login"
                     search={{ mode: "signin" }}
-                    className="text-[11px] md:text-sm font-black uppercase tracking-wide bg-paprika text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
                   >
                     Sign in
                   </Link>
