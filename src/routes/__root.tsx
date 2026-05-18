@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Type the ingredients in your fridge and get AI-generated receipes with steps, cook time, and substitutions. Any cuisine, any diet.",
       },
       { name: "author", content: "Fridge Chef" },
-      { property: "og:title", content: "Fridge Chef — Cook with what you have" },
+      { property: "og:title", content: "Fridge Chef — What Can I Cook With What I Have?" },
       {
         property: "og:description",
         content:
@@ -90,6 +90,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Fridge Chef — What Can I Cook With What I Have?" },
+      { name: "description", content: "Your custom home-made chef!!" },
+      { property: "og:description", content: "Your custom home-made chef!!" },
+      { name: "twitter:description", content: "Your custom home-made chef!!" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Q2fhDCrVOphfKxIevHpm4F2c6Fu1/social-images/social-1779069681377-Screenshot_2026-05-17_at_4.37.34_PM.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Q2fhDCrVOphfKxIevHpm4F2c6Fu1/social-images/social-1779069681377-Screenshot_2026-05-17_at_4.37.34_PM.webp" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
