@@ -110,6 +110,18 @@ export function IngredientInput({ ingredients, onChange }: Props) {
         )}
       </div>
 
+      {ingredients.length > 0 && (
+        <div className="flex justify-end mb-2">
+          <button
+            type="button"
+            onClick={() => onChange([])}
+            className="text-[10px] font-black uppercase tracking-wide text-paprika hover:underline"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
       <input
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
