@@ -309,84 +309,88 @@ function Index() {
         className="min-h-screen bg-background text-foreground px-4 pb-8 md:px-8"
         style={{ paddingTop: `${headerOffset}px` }}
       >
-        <div
-          ref={navRef}
-          className="fixed top-3 right-3 z-50 flex items-center gap-1.5 md:gap-2 bg-white border-2 border-border rounded-full pl-2 md:pl-3 pr-1 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]"
-        >
-          <Link
-            to="/community"
-            className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1.5 md:px-2"
-          >
-            Community
-          </Link>
-          {email ? (
-            <>
-              <Link
-                to="/my-recipes"
-                className="text-[11px] font-black uppercase tracking-wide px-2 hidden sm:inline"
-              >
-                My Receipes
-              </Link>
-              <Link
-                to="/community/new"
-                className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 rounded-full"
-              >
-                + Share
-              </Link>
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(true)}
-                className="text-[11px] font-black uppercase tracking-wide"
-              >
-                Saved {saved.length}
-              </button>
-              <span className="hidden sm:inline text-xs font-bold truncate max-w-[140px] opacity-70">
-                {email}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2.5 py-1.5 rounded-full"
-              >
-                Sign out
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                search={{ mode: "signin" }}
-                className="text-[11px] md:text-sm font-black uppercase tracking-wide bg-paprika text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
-              >
-                Sign in
-              </Link>
-              <Link
-                to="/login"
-                search={{ mode: "signup" }}
-                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
-              >
-                Sign up
-              </Link>
-            </>
-          )}
-        </div>
-
         <header
           ref={headerRef}
-          className="fixed top-3 left-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-2xl pl-1.5 pr-3 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]"
+          className="fixed inset-x-0 top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-border"
         >
-          <img
-            src={logoImg}
-            alt="Fridge Cuisine"
-            className="h-9 md:h-11 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background"
-          />
-          <div>
-            <h1 className="font-display tracking-tight text-paprika leading-none text-lg md:text-xl text-left lowercase">
-              fridge <span className="text-foreground">cuisine</span>
-              <span className="text-turmeric">.</span>
-            </h1>
-            <p className="font-black uppercase tracking-widest text-[7px] md:text-[8px] opacity-70">
-              Global AI Kitchen
-            </p>
+          <div
+            ref={navRef}
+            className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-3 md:px-6 py-2"
+          >
+            <Link to="/" className="flex items-center gap-2 min-w-0">
+              <img
+                src={logoImg}
+                alt="Fridge Cuisine"
+                className="h-9 md:h-10 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background shrink-0"
+              />
+              <div className="min-w-0">
+                <h1 className="font-display tracking-tight text-paprika leading-none text-lg md:text-xl text-left lowercase truncate">
+                  fridge <span className="text-foreground">cuisine</span>
+                  <span className="text-turmeric">.</span>
+                </h1>
+                <p className="font-black uppercase tracking-widest text-[7px] md:text-[8px] opacity-70 hidden sm:block">
+                  Global AI Kitchen
+                </p>
+              </div>
+            </Link>
+
+            <nav className="flex items-center gap-1.5 md:gap-2 shrink-0">
+              <Link
+                to="/community"
+                className="text-[10px] md:text-[11px] font-black uppercase tracking-wide px-1.5 md:px-2"
+              >
+                Community
+              </Link>
+              {email ? (
+                <>
+                  <Link
+                    to="/my-recipes"
+                    className="text-[11px] font-black uppercase tracking-wide px-2 hidden sm:inline"
+                  >
+                    My Receipes
+                  </Link>
+                  <Link
+                    to="/community/new"
+                    className="text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 rounded-full border-2 border-border"
+                  >
+                    + Share
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerOpen(true)}
+                    className="text-[11px] font-black uppercase tracking-wide"
+                  >
+                    Saved {saved.length}
+                  </button>
+                  <span className="hidden md:inline text-xs font-bold truncate max-w-[140px] opacity-70">
+                    {email}
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-2.5 py-1.5 rounded-full border-2 border-border"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    search={{ mode: "signin" }}
+                    className="text-[11px] md:text-sm font-black uppercase tracking-wide bg-paprika text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/login"
+                    search={{ mode: "signup" }}
+                    className="text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+            </nav>
           </div>
         </header>
 
