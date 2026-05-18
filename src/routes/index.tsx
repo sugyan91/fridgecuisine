@@ -370,7 +370,10 @@ function Index() {
           )}
         </div>
 
-        <header className="fixed top-3 left-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-2xl pl-1.5 pr-3 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]">
+        <header
+          ref={headerRef}
+          className="fixed top-3 left-3 z-50 flex items-center gap-2 bg-white border-2 border-border rounded-2xl pl-1.5 pr-3 py-1 shadow-[3px_3px_0px_0px_var(--border)] max-w-[calc(100vw-1.5rem)]"
+        >
           <img
             src={logoImg}
             alt="Fridge Cuisine"
