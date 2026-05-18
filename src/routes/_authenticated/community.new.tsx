@@ -6,6 +6,34 @@ import { createCommunityRecipe } from "@/lib/community.functions";
 import { DEFAULT_CUISINES, DEFAULT_DIETARY } from "@/lib/taxonomy";
 import { supabase } from "@/integrations/supabase/client";
 
+async function compressImage(file: File, maxDim = 1600, quality = 0.82): Promise<Blob> {
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  const src: CanvasImageSource | HTMLImageElement = bitmap ?? await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+  const w = (src as any).width as number;
+  const h = (src as any).height as number;
+  const scale = Math.min(1, maxDim / Math.max(w, h));
+  const dw = Math.round(w * scale);
+  const dh = Math.round(h * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = dw;
+  canvas.height = dh;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas unsupported");
+  ctx.drawImage(src, 0, 0, dw, dh);
+  if ("close" in (src as any)) (src as ImageBitmap).close();
+  const blob: Blob | null = await new Promise((resolve) =>
+    canvas.toBlob(resolve, "image/webp", quality),
+  );
+  if (!blob) throw new Error("Compression failed");
+  // Fallback to JPEG if WebP unsupported (blob will still exist but type may differ)
+  return blob;
+}
+
 export const Route = createFileRoute("/_authenticated/community/new")({
   component: NewRecipe,
 });
@@ -34,19 +62,20 @@ function NewRecipe() {
       toast.error("Please pick an image file");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Image must be under 20MB");
       return;
     }
     setUploading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const compressed = await compressImage(file);
+      const ext = compressed.type.includes("webp") ? "webp" : "jpg";
       const path = `${user.id}/${Date.now()}.${ext}`;
       const { error } = await supabase.storage
         .from("recipe-photos")
-        .upload(path, file, { cacheControl: "3600", upsert: false });
+        .upload(path, compressed, { cacheControl: "3600", upsert: false, contentType: compressed.type });
       if (error) throw error;
       const { data } = supabase.storage.from("recipe-photos").getPublicUrl(path);
       setForm((f) => ({ ...f, image_url: data.publicUrl }));
