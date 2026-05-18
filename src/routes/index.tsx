@@ -201,6 +201,25 @@ function Index() {
     }
   };
 
+  const onPantryGenerate = async () => {
+    setPantryMode(true);
+    setCuisine("Any / Surprise Me");
+    setLoading(true);
+    setRecipes(null);
+    try {
+      const res = await generate({
+        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [] },
+      });
+      if (!res.ok) toast.error(res.error);
+      else setRecipes(res.recipes);
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't reach the kitchen. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onLoadMore = async () => {
     if (!recipes || ingredients.length === 0) return;
     setLoadingMore(true);
@@ -470,10 +489,7 @@ function Index() {
                   setPantryMode(false);
                   setCuisine(c);
                 }}
-                onPantryPick={(c) => {
-                  setPantryMode(true);
-                  setCuisine(c);
-                }}
+                onPantryGenerate={onPantryGenerate}
                 isAuthenticated={!!email}
               />
 
@@ -484,7 +500,9 @@ function Index() {
                 className="mt-5 w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_6px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading
-                  ? cuisine && cuisine !== "Any / Surprise Me"
+                  ? pantryMode
+                    ? "Cooking up recipes from your pantry…"
+                    : cuisine && cuisine !== "Any / Surprise Me"
                     ? `Travelling to ${cuisineToCountry(cuisine)} for surprise receipe. Please wait…`
                     : "Travelling around the globe to find a perfect receipe for you"
                   : "Show me the cuisine"}
@@ -503,7 +521,11 @@ function Index() {
               </h3>
               {recipes && (
                 <span className="font-mono text-xs font-bold bg-white border border-border px-2 py-0.5">
-                  AI · {cuisine.split(" /")[0]}
+                  {pantryMode
+                    ? dietary.length > 0
+                      ? dietary.join(" · ")
+                      : "Pantry"
+                    : `AI · ${cuisine.split(" /")[0]}`}
                 </span>
               )}
             </div>
