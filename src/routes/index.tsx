@@ -19,6 +19,12 @@ import riceImg from "@/assets/recipe-rice.jpg";
 import paneerImg from "@/assets/recipe-paneer.jpg";
 import momoImg from "@/assets/recipe-momo.jpg";
 import chanaImg from "@/assets/recipe-chana.jpg";
+import pastaImg from "@/assets/food-pasta.jpg";
+import sushiImg from "@/assets/food-sushi.jpg";
+import tacosImg from "@/assets/food-tacos.jpg";
+import curryImg from "@/assets/food-curry.jpg";
+import burgerImg from "@/assets/food-burger.jpg";
+import pizzaImg from "@/assets/food-pizza.jpg";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
@@ -182,6 +188,7 @@ function Index() {
   };
 
   const onSubmit = async () => {
+    setPantryMode(false);
     setLoading(true);
     setRecipes(null);
     try {
@@ -490,6 +497,7 @@ function Index() {
                   setCuisine(c);
                 }}
                 onPantryGenerate={onPantryGenerate}
+                pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
               />
 
@@ -499,10 +507,8 @@ function Index() {
                 disabled={loading}
                 className="mt-5 w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_6px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {loading
-                  ? pantryMode
-                    ? "Cooking up receipes from your pantry…"
-                    : cuisine && cuisine !== "Any / Surprise Me"
+                {loading && !pantryMode
+                  ? cuisine && cuisine !== "Any / Surprise Me"
                     ? `Travelling to ${cuisineToCountry(cuisine)} for surprise receipe. Please wait…`
                     : "Travelling around the globe to find a perfect receipe for you"
                   : "Show me the cuisine"}
@@ -599,38 +605,29 @@ function LoadingSkeleton() {
 }
 
 function EmptyState() {
-  const foodImages = [dalImg, saagImg, riceImg, paneerImg, momoImg, chanaImg];
-  const [foodIndex, setFoodIndex] = useState(0);
-  const [foodVisible, setFoodVisible] = useState(true);
-  useEffect(() => {
-    const tick = setInterval(() => {
-      setFoodVisible(false);
-      setTimeout(() => {
-        setFoodIndex((i) => (i + 1) % foodImages.length);
-        setFoodVisible(true);
-      }, 800);
-    }, 10000);
-    return () => clearInterval(tick);
-  }, [foodImages.length]);
-
+  const foodImages = [
+    dalImg, saagImg, riceImg, paneerImg, momoImg, chanaImg,
+    pastaImg, sushiImg, tacosImg, curryImg, burgerImg, pizzaImg,
+  ];
   return (
-    <div className="bg-white border-4 border-dashed border-border/40 rounded-[32px] p-10 text-center">
-      <div className="relative w-40 h-40 mx-auto mb-4 rounded-[24px] overflow-hidden border-4 border-border shadow-[4px_4px_0px_0px_var(--border)]">
-        <img
-          key={foodIndex}
-          src={foodImages[foodIndex]}
-          alt="Food inspiration"
-          className={`w-full h-full object-cover ${
-            foodVisible ? "animate-food-fade" : "opacity-0"
-          }`}
-        />
+    <div className="bg-white border-4 border-dashed border-border/40 rounded-[32px] p-8 text-center">
+      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-5 max-w-md mx-auto">
+        {foodImages.map((src, i) => (
+          <div
+            key={i}
+            className="aspect-square rounded-xl overflow-hidden border-2 border-border shadow-[2px_2px_0px_0px_var(--border)]"
+          >
+            <img
+              src={src}
+              alt="Food inspiration"
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
       </div>
-      <p className="font-black text-lg uppercase mb-2">
-        Hit "Show me the cuisine"
-      </p>
-      <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-        Add what's in your fridge, pick your vibe, and we'll turn it into
-        actual dinner — substitutions and all.
+      <p className="font-black text-lg uppercase">
+        Your global cuisine will be displayed here.
       </p>
     </div>
   );
