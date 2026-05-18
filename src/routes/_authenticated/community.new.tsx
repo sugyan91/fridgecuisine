@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { createCommunityRecipe } from "@/lib/community.functions";
 import { DEFAULT_CUISINES, DEFAULT_DIETARY } from "@/lib/taxonomy";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/community/new")({
   component: NewRecipe,
@@ -26,6 +27,36 @@ function NewRecipe() {
   const [ingredients, setIngredients] = useState("");
   const [steps, setSteps] = useState("");
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const uploadPhoto = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please pick an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("recipe-photos")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("recipe-photos").getPublicUrl(path);
+      setForm((f) => ({ ...f, image_url: data.publicUrl }));
+      toast.success("Photo uploaded");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const toggleDiet = (d: string) =>
     setDietary((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
@@ -109,8 +140,37 @@ function NewRecipe() {
               ))}
             </select>
           </Field>
-          <Field label="Image URL (optional)">
-            <input value={form.image_url} maxLength={2000} placeholder="https://…" onChange={(e) => setForm({ ...form, image_url: e.target.value })} className={input} />
+          <Field label="Photo of your dish (optional)">
+            <div className="space-y-2">
+              {form.image_url && (
+                <div className="relative">
+                  <img src={form.image_url} alt="Dish preview" className="w-full max-h-64 object-cover rounded-xl border-2 border-border" />
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, image_url: "" })}
+                    className="absolute top-2 right-2 bg-white border-2 border-border rounded-full px-3 py-1 text-xs font-black uppercase"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                disabled={uploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadPhoto(f);
+                  e.target.value = "";
+                }}
+                className="block w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-2 file:border-border file:bg-turmeric file:font-black file:text-xs file:uppercase file:cursor-pointer"
+              />
+              {uploading && <p className="text-xs font-black uppercase opacity-60">Uploading…</p>}
+              <details className="text-xs">
+                <summary className="cursor-pointer opacity-60 font-black uppercase">Or paste a URL</summary>
+                <input value={form.image_url} maxLength={2000} placeholder="https://…" onChange={(e) => setForm({ ...form, image_url: e.target.value })} className={`${input} mt-2`} />
+              </details>
+            </div>
           </Field>
           <Field label="Dietary tags" required>
             <div className="flex flex-wrap gap-2">
