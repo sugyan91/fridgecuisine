@@ -188,6 +188,7 @@ function Index() {
   };
 
   const onSubmit = async () => {
+    setPantryMode(false);
     setLoading(true);
     setRecipes(null);
     try {
