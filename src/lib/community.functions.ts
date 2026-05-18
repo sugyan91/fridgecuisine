@@ -248,3 +248,113 @@ export const setRecipeVote = createServerFn({ method: "POST" })
       .insert({ recipe_id: data.recipe_id, user_id: userId, vote_type: data.vote });
     return { vote: data.vote };
   });
+
+export const listRecipeComments = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ recipe_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { data: rows, error } = await supabaseAdmin
+      .from("community_recipe_comments")
+      .select("id, body, created_at, user_id")
+      .eq("recipe_id", data.recipe_id)
+      .order("created_at", { ascending: true });
+    if (error) return { comments: [], error: error.message };
+    const userIds = [...new Set((rows ?? []).map((r) => r.user_id))];
+    const { data: profiles } = userIds.length
+      ? await supabaseAdmin.from("profiles").select("user_id, display_name").in("user_id", userIds)
+      : { data: [] as { user_id: string; display_name: string | null }[] };
+    const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name]));
+    return {
+      comments: (rows ?? []).map((r) => ({
+        id: r.id,
+        body: r.body,
+        created_at: r.created_at,
+        user_id: r.user_id,
+        author_name: nameMap.get(r.user_id) ?? "Anonymous",
+      })),
+      error: null as string | null,
+    };
+  });
+
+export const addRecipeComment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({
+      recipe_id: z.string().uuid(),
+      body: z.string().trim().min(1).max(1000),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    // Verify email confirmed.
+    const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(userId);
+    if (!userRes?.user?.email_confirmed_at) {
+      throw new Error("Please verify your email before commenting.");
+    }
+    // Check receipe exists, is published, comments enabled.
+    const { data: r } = await supabaseAdmin
+      .from("community_recipes")
+      .select("comments_enabled, is_published")
+      .eq("id", data.recipe_id)
+      .maybeSingle();
+    if (!r || !r.is_published) throw new Error("Receipe not found.");
+    if (!r.comments_enabled) throw new Error("Comments are turned off for this receipe.");
+
+    const { data: row, error } = await supabase
+      .from("community_recipe_comments")
+      .insert({ recipe_id: data.recipe_id, user_id: userId, body: data.body })
+      .select("id, body, created_at, user_id")
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", userId)
+      .maybeSingle();
+    return {
+      comment: {
+        ...row,
+        author_name:
+          prof?.display_name ||
+          (userRes.user.user_metadata?.display_name as string | undefined) ||
+          userRes.user.email?.split("@")[0] ||
+          "Anonymous",
+      },
+    };
+  });
+
+export const deleteRecipeComment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("community_recipe_comments")
+      .delete()
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const setRecipeCommentsEnabled = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({
+      recipe_id: z.string().uuid(),
+      enabled: z.boolean(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: r } = await supabase
+      .from("community_recipes")
+      .select("user_id")
+      .eq("id", data.recipe_id)
+      .maybeSingle();
+    if (!r || r.user_id !== userId) throw new Error("Not authorized.");
+    const { error } = await supabase
+      .from("community_recipes")
+      .update({ comments_enabled: data.enabled })
+      .eq("id", data.recipe_id);
+    if (error) throw new Error(error.message);
+    return { ok: true, comments_enabled: data.enabled };
+  });

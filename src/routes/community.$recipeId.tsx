@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { getCommunityRecipe, getMyVote, setRecipeVote } from "@/lib/community.functions";
+import {
+  getCommunityRecipe,
+  getMyVote,
+  setRecipeVote,
+  listRecipeComments,
+  addRecipeComment,
+  deleteRecipeComment,
+  setRecipeCommentsEnabled,
+} from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/community/$recipeId")({
@@ -14,26 +22,45 @@ function RecipePage() {
   const get = useServerFn(getCommunityRecipe);
   const fetchVote = useServerFn(getMyVote);
   const submitVote = useServerFn(setRecipeVote);
+  const fetchComments = useServerFn(listRecipeComments);
+  const postComment = useServerFn(addRecipeComment);
+  const removeComment = useServerFn(deleteRecipeComment);
+  const toggleComments = useServerFn(setRecipeCommentsEnabled);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(false);
   const [myVote, setMyVote] = useState<"up" | "down" | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [comments, setComments] = useState<
+    { id: string; body: string; created_at: string; user_id: string; author_name: string }[]
+  >([]);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
 
   useEffect(() => {
     get({ data: { id: recipeId } }).then((r) => {
       setData(r);
       setLoading(false);
     });
+    fetchComments({ data: { recipe_id: recipeId } })
+      .then((r) => setComments(r.comments))
+      .catch(() => {});
     supabase.auth.getSession().then(({ data: s }) => {
       const isAuthed = !!s.session;
       setAuthed(isAuthed);
+      const u = s.session?.user;
+      setUserId(u?.id ?? null);
+      setUserEmail(u?.email ?? null);
+      setEmailVerified(!!u?.email_confirmed_at);
       if (isAuthed) {
         fetchVote({ data: { recipe_id: recipeId } })
           .then((v) => setMyVote(v.vote))
           .catch(() => {});
       }
     });
-  }, [get, fetchVote, recipeId]);
+  }, [get, fetchVote, fetchComments, recipeId]);
 
   const vote = async (next: "up" | "down") => {
     if (!authed) {
@@ -64,6 +91,54 @@ function RecipePage() {
   if (!data?.receipe) return <p className="p-8 text-center">Receipe not found.</p>;
 
   const r = data.receipe;
+  const isOwner = !!userId && userId === r.user_id;
+  const commentsEnabled = r.comments_enabled !== false;
+
+  const submitComment = async () => {
+    const body = commentDraft.trim();
+    if (body.length < 1) return;
+    setPostingComment(true);
+    try {
+      const res = await postComment({ data: { recipe_id: recipeId, body } });
+      setComments((c) => [...c, res.comment]);
+      setCommentDraft("");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Couldn't post comment");
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
+  const onDeleteComment = async (id: string) => {
+    const prev = comments;
+    setComments((c) => c.filter((x) => x.id !== id));
+    try {
+      await removeComment({ data: { id } });
+    } catch {
+      toast.error("Couldn't delete");
+      setComments(prev);
+    }
+  };
+
+  const onToggleComments = async (next: boolean) => {
+    const prev = data;
+    setData({ ...data, receipe: { ...r, comments_enabled: next } });
+    try {
+      await toggleComments({ data: { recipe_id: recipeId, enabled: next } });
+      toast.success(next ? "Comments turned on" : "Comments turned off");
+    } catch {
+      toast.error("Couldn't update");
+      setData(prev);
+    }
+  };
+
+  const resendVerification = async () => {
+    if (!userEmail) return;
+    const { error } = await supabase.auth.resend({ type: "signup", email: userEmail });
+    if (error) toast.error(error.message);
+    else toast.success("Verification email sent");
+  };
+
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-3xl mx-auto">
@@ -144,6 +219,118 @@ function RecipePage() {
                 </Link>{" "}
                 to vote
               </span>
+            )}
+          </div>
+
+          <div className="mt-8 pt-6 border-t-2 border-dashed border-border/40">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h2 className="font-black text-lg uppercase">
+                Comments ({comments.length})
+              </h2>
+              {isOwner && (
+                <button
+                  type="button"
+                  onClick={() => onToggleComments(!commentsEnabled)}
+                  className={`border-2 border-border rounded-full px-3 py-1 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] ${
+                    commentsEnabled ? "bg-cardamom text-white" : "bg-white"
+                  }`}
+                >
+                  Comments: {commentsEnabled ? "On" : "Off"}
+                </button>
+              )}
+            </div>
+
+            {!commentsEnabled && (
+              <p className="text-sm opacity-70 mb-4">
+                Comments are turned off by the author.
+              </p>
+            )}
+
+            {commentsEnabled && (
+              <div className="mb-5">
+                {!authed ? (
+                  <p className="text-sm opacity-70">
+                    <Link to="/login" className="underline font-black text-paprika">
+                      Sign in
+                    </Link>{" "}
+                    to comment or ask a question.
+                  </p>
+                ) : !emailVerified ? (
+                  <div className="bg-turmeric/10 border-2 border-dashed border-border/50 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-bold">Verify your email to comment.</p>
+                    <button
+                      type="button"
+                      onClick={resendVerification}
+                      className="bg-white border-2 border-border rounded-full px-3 py-1 text-[11px] font-black uppercase"
+                    >
+                      Resend verification
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <textarea
+                      value={commentDraft}
+                      onChange={(e) => setCommentDraft(e.target.value.slice(0, 1000))}
+                      placeholder="Share thoughts or ask a question…"
+                      rows={3}
+                      className="w-full border-2 border-border rounded-2xl p-3 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-turmeric"
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] opacity-60 font-bold">
+                        {commentDraft.length}/1000
+                      </span>
+                      <button
+                        type="button"
+                        onClick={submitComment}
+                        disabled={postingComment || commentDraft.trim().length < 1}
+                        className="bg-paprika text-white border-2 border-border rounded-full px-4 py-1.5 text-xs font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+                      >
+                        {postingComment ? "Posting…" : "Post"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {comments.length === 0 ? (
+              <p className="text-sm opacity-60">No comments yet.</p>
+            ) : (
+              <ul className="space-y-3">
+                {comments.map((c) => {
+                  const canDelete = userId === c.user_id || isOwner;
+                  return (
+                    <li
+                      key={c.id}
+                      className="bg-background border-2 border-border rounded-2xl p-3"
+                    >
+                      <div className="flex items-center justify-between mb-1 gap-2">
+                        <span className="font-black text-xs uppercase">
+                          {c.author_name}
+                          {c.user_id === r.user_id && (
+                            <span className="ml-2 bg-turmeric/40 border border-border rounded-full px-1.5 py-0.5 text-[9px]">
+                              Author
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-[10px] opacity-50 font-mono">
+                          {new Date(c.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap">{c.body}</p>
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteComment(c.id)}
+                          className="mt-2 text-[10px] font-black uppercase opacity-60 hover:opacity-100 hover:text-paprika"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </div>
