@@ -144,6 +144,7 @@ function LoginPage() {
         });
         if (error) throw error;
         toast.success("Check your email to confirm your account.");
+        setStatusMessage("Account created. Check your email to confirm.");
         setSignupSent(cleanEmail);
       } else {
         const idRaw = identifier.trim();
@@ -200,6 +201,7 @@ function LoginPage() {
               ? `Wrong password for @${usedUsername}.`
               : "Email or password is incorrect.",
           });
+          setStatusMessage("Sign in failed.");
           setLoading(false);
           return;
         }
@@ -216,10 +218,12 @@ function LoginPage() {
           }
         } catch {}
         toast.success("Welcome back!");
+        setStatusMessage("Signed in successfully. Redirecting…");
         navigate({ to: redirectTo });
       }
     } catch (err: any) {
       setFormError({ message: err?.message || "Something went wrong" });
+      setStatusMessage("Request failed.");
     } finally {
       setLoading(false);
       // Small cooldown so rapid double-clicks after a fast response are also
