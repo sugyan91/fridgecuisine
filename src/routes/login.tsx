@@ -22,7 +22,8 @@ function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
-  const [email, setEmail] = useState(""); // signup: email; signin: email or username
+  const [email, setEmail] = useState("");           // signup only
+  const [identifier, setIdentifier] = useState(""); // signin: email or username
   const [username, setUsername] = useState("");
   const [usernameStatus, setUsernameStatus] = useState<
     | { state: "idle" }
@@ -37,11 +38,23 @@ function LoginPage() {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState<string | null>(null);
+  const [formError, setFormError] = useState<{ message: string; action?: { label: string; onClick: () => void } } | null>(null);
 
   const redirectTo = search.redirect || "/";
 
   const USERNAME_RE = /^[a-z][a-z0-9_]{2,19}$/;
   const RESERVED = new Set(["admin","root","support","help","api","auth","login","signup","me","fridgecuisine"]);
+
+  // Detect what the sign-in identifier looks like, for the inline hint
+  const identifierKind: "empty" | "email" | "username" | "invalid" = (() => {
+    const v = identifier.trim();
+    if (!v) return "empty";
+    if (v.includes("@")) return z.string().email().safeParse(v.toLowerCase()).success ? "email" : "invalid";
+    return USERNAME_RE.test(v.toLowerCase()) ? "username" : "invalid";
+  })();
+
+  // Clear inline error when user edits inputs
+  useEffect(() => { setFormError(null); }, [identifier, email, username, password, mode]);
 
   // Debounced username availability check while typing on signup
   useEffect(() => {
@@ -67,6 +80,7 @@ function LoginPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     setLoading(true);
     try {
       if (mode === "signup") {
@@ -104,25 +118,47 @@ function LoginPage() {
         toast.success("Check your email to confirm your account.");
         setSignupSent(cleanEmail);
       } else {
-        const identifier = email.trim();
-        let loginEmail = identifier.toLowerCase();
-        if (!identifier.includes("@")) {
+        const idRaw = identifier.trim();
+        if (!idRaw) {
+          setFormError({ message: "Enter your email or username to sign in." });
+          setLoading(false);
+          return;
+        }
+        let loginEmail = idRaw.toLowerCase();
+        let usedUsername: string | null = null;
+        if (!idRaw.includes("@")) {
           // treat as username — resolve to email
-          const uname = identifier.toLowerCase();
+          const uname = idRaw.toLowerCase();
           if (!USERNAME_RE.test(uname)) {
-            toast.error("Enter a valid email or username");
+            setFormError({
+              message: "That doesn't look like a valid email or username. Usernames are 3–20 chars, letters/digits/_ , starting with a letter.",
+            });
             setLoading(false);
             return;
           }
+          usedUsername = uname;
           const { data, error: rpcErr } = await supabase.rpc("email_for_username", { _username: uname });
-          if (rpcErr || !data) {
-            toast.error("Invalid credentials");
+          if (rpcErr) {
+            setFormError({ message: "Couldn't reach the server. Try again." });
+            setLoading(false);
+            return;
+          }
+          if (!data) {
+            setFormError({
+              message: `No account found with username "@${uname}".`,
+              action: { label: "Create one", onClick: () => setMode("signup") },
+            });
             setLoading(false);
             return;
           }
           loginEmail = data as string;
         } else if (!z.string().email().safeParse(loginEmail).success) {
-          toast.error("Enter a valid email or username");
+          setFormError({ message: "Enter a valid email address." });
+          setLoading(false);
+          return;
+        }
+        if (!password) {
+          setFormError({ message: "Enter your password." });
           setLoading(false);
           return;
         }
@@ -131,7 +167,11 @@ function LoginPage() {
           password,
         });
         if (error) {
-          toast.error("Invalid credentials");
+          setFormError({
+            message: usedUsername
+              ? `Wrong password for @${usedUsername}.`
+              : "Email or password is incorrect.",
+          });
           setLoading(false);
           return;
         }
@@ -139,7 +179,7 @@ function LoginPage() {
         navigate({ to: redirectTo });
       }
     } catch (err: any) {
-      toast.error(err?.message || "Something went wrong");
+      setFormError({ message: err?.message || "Something went wrong" });
     } finally {
       setLoading(false);
     }
