@@ -17,13 +17,18 @@ export const Route = createFileRoute("/login")({
 });
 
 type Mode = "signin" | "signup";
+type Channel = "email" | "phone";
 
 function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
+  const [channel, setChannel] = useState<Channel>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signupSent, setSignupSent] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -34,6 +39,9 @@ function LoginPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (channel === "phone") {
+      return onPhoneSubmit();
+    }
     const cleanEmail = email.trim().toLowerCase();
     if (!z.string().email().safeParse(cleanEmail).success) {
       toast.error("Enter a valid email");
@@ -66,6 +74,58 @@ function LoginPage() {
       }
     } catch (err: any) {
       toast.error(err?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const normalizePhone = (raw: string) => {
+    const trimmed = raw.trim().replace(/[\s\-()]/g, "");
+    return trimmed.startsWith("+") ? trimmed : `+${trimmed.replace(/^0+/, "")}`;
+  };
+
+  const onPhoneSubmit = async () => {
+    const cleanPhone = normalizePhone(phone);
+    if (!/^\+[1-9]\d{6,14}$/.test(cleanPhone)) {
+      toast.error("Enter a valid phone number with country code (e.g. +14155551234)");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: cleanPhone,
+        options: { shouldCreateUser: mode === "signup" },
+      });
+      if (error) throw error;
+      setOtpSent(true);
+      toast.success("Verification code sent");
+    } catch (err: any) {
+      toast.error(err?.message || "Couldn't send code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPhone = normalizePhone(phone);
+    const code = otp.trim();
+    if (!/^\d{6}$/.test(code)) {
+      toast.error("Enter the 6-digit code");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        phone: cleanPhone,
+        token: code,
+        type: "sms",
+      });
+      if (error) throw error;
+      toast.success("Welcome!");
+      navigate({ to: redirectTo });
+    } catch (err: any) {
+      toast.error(err?.message || "Invalid or expired code");
     } finally {
       setLoading(false);
     }
@@ -226,7 +286,7 @@ function LoginPage() {
               <button
                 key={m}
                 type="button"
-                onClick={() => setMode(m)}
+                onClick={() => { setMode(m); setOtpSent(false); setOtp(""); }}
                 className={`flex-1 text-[11px] md:text-xs font-black uppercase py-2 rounded-full transition-colors ${
                   mode === m ? "bg-turmeric text-foreground" : "text-muted-foreground"
                 }`}
@@ -236,7 +296,65 @@ function LoginPage() {
             ))}
           </div>
 
+          <div className="flex gap-1 mb-3">
+            {(["email", "phone"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => { setChannel(c); setOtpSent(false); setOtp(""); }}
+                className={`flex-1 text-[10px] font-black uppercase py-1.5 rounded-lg border-2 transition-colors ${
+                  channel === c ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground"
+                }`}
+              >
+                {c === "email" ? "Email" : "Phone"}
+              </button>
+            ))}
+          </div>
+
+          {channel === "phone" && otpSent ? (
+          <form onSubmit={onVerifyOtp} className="space-y-3">
+            <div>
+              <label className="block font-bold text-xs uppercase mb-1">6-digit code</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                required
+                autoFocus
+                autoComplete="one-time-code"
+                className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-mono text-lg tracking-[0.5em] text-center focus:outline-none focus:ring-2 focus:ring-turmeric"
+                placeholder="••••••"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Sent to {normalizePhone(phone)}.{" "}
+                <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} className="underline font-bold">
+                  Change number
+                </button>
+              </p>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-lg uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
+            >
+              {loading ? "Verifying…" : "Verify & continue"}
+            </button>
+            <button
+              type="button"
+              onClick={onPhoneSubmit}
+              disabled={loading}
+              className="w-full text-xs font-bold underline text-muted-foreground"
+            >
+              Resend code
+            </button>
+          </form>
+          ) : (
           <form onSubmit={onSubmit} className="space-y-3">
+            {channel === "email" ? (
+              <>
             <div>
               <label className="block font-bold text-xs uppercase mb-1">Email</label>
               <input
@@ -263,6 +381,24 @@ function LoginPage() {
                   placeholder="••••••••"
                 />
             </div>
+              </>
+            ) : (
+              <div>
+                <label className="block font-bold text-xs uppercase mb-1">Phone number</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  autoComplete="tel"
+                  className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                  placeholder="+1 415 555 1234"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Include country code. We'll text you a 6-digit code.
+                </p>
+              </div>
+            )}
 
             <button
               type="submit"
@@ -271,13 +407,16 @@ function LoginPage() {
             >
               {loading
                 ? "Working…"
+                : channel === "phone"
+                  ? "Send code"
                 : mode === "signin"
                   ? "Sign in"
                   : "Create account"}
             </button>
           </form>
+          )}
 
-          {mode === "signin" && (
+          {mode === "signin" && channel === "email" && (
             <button
               type="button"
               onClick={() => {
