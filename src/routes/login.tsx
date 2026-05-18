@@ -17,13 +17,18 @@ export const Route = createFileRoute("/login")({
 });
 
 type Mode = "signin" | "signup";
+type Channel = "email" | "phone";
 
 function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
+  const [channel, setChannel] = useState<Channel>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signupSent, setSignupSent] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -34,6 +39,9 @@ function LoginPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (channel === "phone") {
+      return onPhoneSubmit();
+    }
     const cleanEmail = email.trim().toLowerCase();
     if (!z.string().email().safeParse(cleanEmail).success) {
       toast.error("Enter a valid email");
@@ -66,6 +74,58 @@ function LoginPage() {
       }
     } catch (err: any) {
       toast.error(err?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const normalizePhone = (raw: string) => {
+    const trimmed = raw.trim().replace(/[\s\-()]/g, "");
+    return trimmed.startsWith("+") ? trimmed : `+${trimmed.replace(/^0+/, "")}`;
+  };
+
+  const onPhoneSubmit = async () => {
+    const cleanPhone = normalizePhone(phone);
+    if (!/^\+[1-9]\d{6,14}$/.test(cleanPhone)) {
+      toast.error("Enter a valid phone number with country code (e.g. +14155551234)");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: cleanPhone,
+        options: { shouldCreateUser: mode === "signup" },
+      });
+      if (error) throw error;
+      setOtpSent(true);
+      toast.success("Verification code sent");
+    } catch (err: any) {
+      toast.error(err?.message || "Couldn't send code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPhone = normalizePhone(phone);
+    const code = otp.trim();
+    if (!/^\d{6}$/.test(code)) {
+      toast.error("Enter the 6-digit code");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        phone: cleanPhone,
+        token: code,
+        type: "sms",
+      });
+      if (error) throw error;
+      toast.success("Welcome!");
+      navigate({ to: redirectTo });
+    } catch (err: any) {
+      toast.error(err?.message || "Invalid or expired code");
     } finally {
       setLoading(false);
     }
