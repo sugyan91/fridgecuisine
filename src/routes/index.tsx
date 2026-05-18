@@ -9,7 +9,7 @@ import { RecipeCard } from "@/components/fridge/RecipeCard";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
+import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
@@ -75,13 +75,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step recipes from any global cuisine.",
+          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step receipes from any global cuisine.",
       },
       { property: "og:title", content: "FridgeCuisine — Global AI Kitchen" },
       {
         property: "og:description",
         content:
-          "Free AI kitchen helper. Get ingredients and recipes for any dish, or cook from what you already have.",
+          "Free AI kitchen helper. Get ingredients and receipes for any dish, or cook from what you already have.",
       },
     ],
   }),
@@ -93,11 +93,11 @@ function Index() {
   const [dietary, setDietary] = useState<string[]>([]);
   const [cuisine, setCuisine] = useState("Any / Surprise Me");
   const [pantryMode, setPantryMode] = useState(false);
-  const [recipes, setRecipes] = useState<Recipe[] | null>(null);
+  const [receipes, setRecipes] = useState<Receipe[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [saved, setSaved] = useLocalStorage<Recipe[]>("fridge-chef-saved", []);
+  const [saved, setSaved] = useLocalStorage<Receipe[]>("fridge-chef-saved", []);
 
   const generate = useServerFn(generateRecipes);
   const fetchDish = useServerFn(getDishHelper);
@@ -110,16 +110,16 @@ function Index() {
   const [showRecipe, setShowRecipe] = useState(false);
 
   const dishPrompts = [
-    "See something that made you hungry? Tell me the dish — I'll give you the ingredients and recipe.",
-    "Caught drooling? Name the food and I'll spill the ingredients and recipe.",
-    "Food crush? Tell me what it was and I'll hand over the ingredients and recipe.",
-    "That dish got your attention, huh? Drop the name — I've got the recipe and ingredients.",
-    "If your stomach just said 'yes please,' tell me the dish and I'll generate the recipe and ingredients.",
-    "Name the dish you can't stop thinking about — I'll recreate it with ingredients and recipe.",
-    "Saw something delicious online? Tell me what it is and I'll break down the recipe and ingredients.",
-    "From craving to cooking — tell me the dish and I'll give you the ingredients and recipe.",
-    "That food looked dangerously good. Want the ingredients and recipe?",
-    "Tell me what made you hungry — I'll turn it into a recipe with ingredients.",
+    "See something that made you hungry? Tell me the dish — I'll give you the ingredients and receipe.",
+    "Caught drooling? Name the food and I'll spill the ingredients and receipe.",
+    "Food crush? Tell me what it was and I'll hand over the ingredients and receipe.",
+    "That dish got your attention, huh? Drop the name — I've got the receipe and ingredients.",
+    "If your stomach just said 'yes please,' tell me the dish and I'll generate the receipe and ingredients.",
+    "Name the dish you can't stop thinking about — I'll recreate it with ingredients and receipe.",
+    "Saw something delicious online? Tell me what it is and I'll break down the receipe and ingredients.",
+    "From craving to cooking — tell me the dish and I'll give you the ingredients and receipe.",
+    "That food looked dangerously good. Want the ingredients and receipe?",
+    "Tell me what made you hungry — I'll turn it into a receipe with ingredients.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
   const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
@@ -191,7 +191,7 @@ function Index() {
       if (!res.ok) {
         toast.error(res.error);
       } else {
-        setRecipes(res.recipes);
+        setRecipes(res.receipes);
       }
     } catch (err) {
       console.error(err);
@@ -211,7 +211,7 @@ function Index() {
         data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [] },
       });
       if (!res.ok) toast.error(res.error);
-      else setRecipes(res.recipes);
+      else setRecipes(res.receipes);
     } catch (err) {
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
@@ -221,7 +221,7 @@ function Index() {
   };
 
   const onLoadMore = async () => {
-    if (!recipes || ingredients.length === 0) return;
+    if (!receipes || ingredients.length === 0) return;
     setLoadingMore(true);
     try {
       const res = await generate({
@@ -229,15 +229,15 @@ function Index() {
           ingredients,
           dietary,
           cuisine,
-          exclude: recipes.map((r) => r.title),
+          exclude: receipes.map((r) => r.title),
         },
       });
       if (!res.ok) {
         toast.error(res.error);
       } else {
-        const existing = new Set(recipes.map((r) => r.title.toLowerCase()));
-        const fresh = res.recipes.filter((r) => !existing.has(r.title.toLowerCase()));
-        setRecipes([...recipes, ...fresh]);
+        const existing = new Set(receipes.map((r) => r.title.toLowerCase()));
+        const fresh = res.receipes.filter((r) => !existing.has(r.title.toLowerCase()));
+        setRecipes([...receipes, ...fresh]);
       }
     } catch (err) {
       console.error(err);
@@ -248,10 +248,10 @@ function Index() {
   };
 
   const isSaved = (title: string) => saved.some((s) => s.title === title);
-  const toggleSave = (recipe: Recipe) => {
+  const toggleSave = (receipe: Receipe) => {
     if (!email) {
-      toast("Sign in to save recipes", {
-        description: "Create a free account to keep recipes across devices.",
+      toast("Sign in to save receipes", {
+        description: "Create a free account to keep receipes across devices.",
         action: {
           label: "Sign in",
           onClick: () => navigate({ to: "/login" }),
@@ -259,11 +259,11 @@ function Index() {
       });
       return;
     }
-    if (isSaved(recipe.title)) {
-      setSaved(saved.filter((s) => s.title !== recipe.title));
+    if (isSaved(receipe.title)) {
+      setSaved(saved.filter((s) => s.title !== receipe.title));
       toast("Removed from saved");
     } else {
-      setSaved([recipe, ...saved]);
+      setSaved([receipe, ...saved]);
       toast.success("Saved!");
     }
   };
@@ -292,7 +292,7 @@ function Index() {
                 to="/my-recipes"
                 className="text-[11px] font-black uppercase tracking-wide px-2 hidden sm:inline"
               >
-                My Recipes
+                My Receipes
               </Link>
               <Link
                 to="/community/new"
@@ -358,7 +358,7 @@ function Index() {
           <section className="lg:col-span-12 animate-pop">
             <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)]">
               <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
-                Dish to recipe
+                Dish to receipe
               </h2>
               <div className="min-h-[3.5rem] md:min-h-[3rem] mb-4 flex items-start overflow-hidden">
                 <p
@@ -411,7 +411,7 @@ function Index() {
                   {!showRecipe ? (
                     <div className="bg-turmeric/10 border-2 border-dashed border-border/50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <p className="font-bold text-sm">
-                        Do you want the recipe as well?
+                        Do you want the receipe as well?
                       </p>
                       <div className="flex gap-2">
                         <button
@@ -437,25 +437,25 @@ function Index() {
                     <div className="bg-background border-2 border-border rounded-2xl p-4">
                       <div className="flex items-center gap-3 mb-3">
                         <p className="font-black text-xs uppercase tracking-widest">
-                          Recipe
+                          Receipe
                         </p>
                         <span className="font-mono text-xs bg-white border border-border px-2 py-0.5">
-                          {dishResult.recipe.cookTimeMinutes} min
-                          {dishResult.recipe.serves ? ` · serves ${dishResult.recipe.serves}` : ""}
+                          {dishResult.receipe.cookTimeMinutes} min
+                          {dishResult.receipe.serves ? ` · serves ${dishResult.receipe.serves}` : ""}
                         </span>
                       </div>
                       <ol className="space-y-2 list-decimal list-inside">
-                        {dishResult.recipe.steps.map((s, i) => (
+                        {dishResult.receipe.steps.map((s, i) => (
                           <li key={i} className="text-sm leading-relaxed">
                             {s}
                           </li>
                         ))}
                       </ol>
-                      {dishResult.recipe.tips.length > 0 && (
+                      {dishResult.receipe.tips.length > 0 && (
                         <div className="mt-4 pt-3 border-t border-dashed border-border/40">
                           <p className="font-black text-xs uppercase mb-1">Tips</p>
                           <ul className="space-y-1">
-                            {dishResult.recipe.tips.map((t, i) => (
+                            {dishResult.receipe.tips.map((t, i) => (
                               <li key={i} className="text-xs text-muted-foreground">• {t}</li>
                             ))}
                           </ul>
@@ -501,7 +501,7 @@ function Index() {
               >
                 {loading
                   ? pantryMode
-                    ? "Cooking up recipes from your pantry…"
+                    ? "Cooking up receipes from your pantry…"
                     : cuisine && cuisine !== "Any / Surprise Me"
                     ? `Travelling to ${cuisineToCountry(cuisine)} for surprise receipe. Please wait…`
                     : "Travelling around the globe to find a perfect receipe for you"
@@ -515,11 +515,11 @@ function Index() {
               <h3 className="font-display text-3xl md:text-4xl uppercase">
                 {loading
                   ? "Searching…"
-                  : recipes
-                    ? `${recipes.length} Recipes Found`
+                  : receipes
+                    ? `${receipes.length} Receipes Found`
                     : "Ready when you are"}
               </h3>
-              {recipes && (
+              {receipes && (
                 <span className="font-mono text-xs font-bold bg-white border border-border px-2 py-0.5">
                   {pantryMode
                     ? dietary.length > 0
@@ -532,14 +532,14 @@ function Index() {
 
             {loading && <LoadingSkeleton />}
 
-            {!loading && !recipes && <EmptyState />}
+            {!loading && !receipes && <EmptyState />}
 
             {!loading &&
-              recipes &&
-              recipes.map((r, i) => (
+              receipes &&
+              receipes.map((r, i) => (
                 <RecipeCard
                   key={`${r.title}-${i}`}
-                  recipe={r}
+                  receipe={r}
                   index={i}
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
@@ -548,14 +548,14 @@ function Index() {
                 />
               ))}
 
-            {!loading && recipes && recipes.length > 0 && (
+            {!loading && receipes && receipes.length > 0 && (
               <button
                 type="button"
                 onClick={onLoadMore}
                 disabled={loadingMore}
                 className="w-full bg-white border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
               >
-                {loadingMore ? "Cooking up more…" : "Show more recipes"}
+                {loadingMore ? "Cooking up more…" : "Show more receipes"}
               </button>
             )}
           </section>
@@ -567,7 +567,7 @@ function Index() {
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            aria-label="Open saved recipes"
+            aria-label="Open saved receipes"
             className="md:hidden fixed bottom-6 right-6 size-16 bg-turmeric border-4 border-border rounded-full shadow-[4px_4px_0px_0px_var(--border)] grid place-items-center z-40"
           >
             <span className="font-black text-xl">{saved.length}</span>

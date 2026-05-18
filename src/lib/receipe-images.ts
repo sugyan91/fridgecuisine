@@ -1,9 +1,9 @@
-import fallbackChana from "@/assets/recipe-chana.jpg";
-import fallbackDal from "@/assets/recipe-dal.jpg";
-import fallbackMomo from "@/assets/recipe-momo.jpg";
-import fallbackPaneer from "@/assets/recipe-paneer.jpg";
-import fallbackRice from "@/assets/recipe-rice.jpg";
-import fallbackSaag from "@/assets/recipe-saag.jpg";
+import fallbackChana from "@/assets/receipe-chana.jpg";
+import fallbackDal from "@/assets/receipe-dal.jpg";
+import fallbackMomo from "@/assets/receipe-momo.jpg";
+import fallbackPaneer from "@/assets/receipe-paneer.jpg";
+import fallbackRice from "@/assets/receipe-rice.jpg";
+import fallbackSaag from "@/assets/receipe-saag.jpg";
 
 const FALLBACKS = [
   fallbackChana,
@@ -16,14 +16,14 @@ const FALLBACKS = [
 
 const STOPWORDS = new Set([
   "the", "and", "with", "from", "style", "your", "this", "that",
-  "for", "into", "made", "easy", "quick", "best", "homemade", "recipe",
+  "for", "into", "made", "easy", "quick", "best", "homemade", "receipe",
   "dish", "food", "cuisine", "any", "surprise", "me",
 ]);
 
 // Build a dish-aware image URL. We use pollinations.ai to actually render
 // the specific dish (title + cuisine + a key ingredient) instead of a loose
 // keyword search that can return unrelated food. Deterministic seed keeps
-// the same recipe showing the same image across reloads.
+// the same receipe showing the same image across reloads.
 export function pickRecipeImage(
   title: string,
   index = 0,

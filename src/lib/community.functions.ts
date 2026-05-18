@@ -37,7 +37,7 @@ export const listCommunityRecipes = createServerFn({ method: "GET" })
     if (data.cuisine) q = q.eq("cuisine", data.cuisine);
     if (data.city) q = q.ilike("city", `%${data.city}%`);
     const { data: rows, error } = await q;
-    if (error) return { recipes: [], error: error.message };
+    if (error) return { receipes: [], error: error.message };
 
     const userIds = [...new Set((rows ?? []).map((r) => r.user_id))];
     const ids = (rows ?? []).map((r) => r.id);
@@ -79,7 +79,7 @@ export const listCommunityRecipes = createServerFn({ method: "GET" })
     });
 
     return {
-      recipes: (rows ?? []).map((r) => ({
+      receipes: (rows ?? []).map((r) => ({
         ...r,
         author_name: nameMap.get(r.user_id) ?? "Anonymous",
         up_count: upCount.get(r.id) ?? 0,
@@ -92,20 +92,20 @@ export const listCommunityRecipes = createServerFn({ method: "GET" })
 export const getCommunityRecipe = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
-    const { data: recipe, error } = await supabaseAdmin
+    const { data: receipe, error } = await supabaseAdmin
       .from("community_recipes")
       .select("*")
       .eq("id", data.id)
       .eq("is_published", true)
       .maybeSingle();
-    if (error || !recipe) return { recipe: null, author_name: null, up_count: 0, down_count: 0 };
+    if (error || !receipe) return { receipe: null, author_name: null, up_count: 0, down_count: 0 };
     const [{ data: profile }, { data: votes }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("display_name").eq("user_id", recipe.user_id).maybeSingle(),
-      supabaseAdmin.from("community_recipe_likes").select("vote_type").eq("recipe_id", recipe.id),
+      supabaseAdmin.from("profiles").select("display_name").eq("user_id", receipe.user_id).maybeSingle(),
+      supabaseAdmin.from("community_recipe_likes").select("vote_type").eq("recipe_id", receipe.id),
     ]);
     let author_name = profile?.display_name ?? null;
     if (!author_name) {
-      const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(recipe.user_id);
+      const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(receipe.user_id);
       const u = userRes?.user;
       author_name =
         (u?.user_metadata?.display_name as string | undefined) ||
@@ -115,13 +115,13 @@ export const getCommunityRecipe = createServerFn({ method: "GET" })
       if (author_name) {
         await supabaseAdmin
           .from("profiles")
-          .upsert({ user_id: recipe.user_id, display_name: author_name }, { onConflict: "user_id" });
+          .upsert({ user_id: receipe.user_id, display_name: author_name }, { onConflict: "user_id" });
       }
     }
     const up_count = (votes ?? []).filter((v) => v.vote_type !== "down").length;
     const down_count = (votes ?? []).filter((v) => v.vote_type === "down").length;
     return {
-      recipe,
+      receipe,
       author_name: author_name ?? "Anonymous",
       up_count,
       down_count,
@@ -133,7 +133,7 @@ export const createCommunityRecipe = createServerFn({ method: "POST" })
   .inputValidator((input) => recipeInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    // Ensure profile has a display_name so the recipe isn't shown as "Anonymous".
+    // Ensure profile has a display_name so the receipe isn't shown as "Anonymous".
     const { data: prof } = await supabase
       .from("profiles")
       .select("display_name")
@@ -192,7 +192,7 @@ export const listMyRecipes = createServerFn({ method: "GET" })
       .select("id, title, city, cuisine, is_published, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { recipes: data ?? [] };
+    return { receipes: data ?? [] };
   });
 
 export const getMyVote = createServerFn({ method: "POST" })

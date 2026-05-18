@@ -78,14 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Type the ingredients in your fridge and get AI-generated recipes with steps, cook time, and substitutions. Any cuisine, any diet.",
+          "Type the ingredients in your fridge and get AI-generated receipes with steps, cook time, and substitutions. Any cuisine, any diet.",
       },
       { name: "author", content: "Fridge Chef" },
       { property: "og:title", content: "Fridge Chef — Cook with what you have" },
       {
         property: "og:description",
         content:
-          "Turn random ingredients into real meals. AI recipes with steps, substitutions, and cook time.",
+          "Turn random ingredients into real meals. AI receipes with steps, substitutions, and cook time.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

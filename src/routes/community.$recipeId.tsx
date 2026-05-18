@@ -61,9 +61,9 @@ function RecipePage() {
   };
 
   if (loading) return <p className="p-8 text-center">Loading…</p>;
-  if (!data?.recipe) return <p className="p-8 text-center">Recipe not found.</p>;
+  if (!data?.receipe) return <p className="p-8 text-center">Receipe not found.</p>;
 
-  const r = data.recipe;
+  const r = data.receipe;
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-3xl mx-auto">

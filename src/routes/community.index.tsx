@@ -11,7 +11,7 @@ export const Route = createFileRoute("/community/")({
       {
         name: "description",
         content:
-          "Browse recipes shared by home cooks around the world. Filter by city, cuisine, and dietary preference.",
+          "Browse receipes shared by home cooks around the world. Filter by city, cuisine, and dietary preference.",
       },
     ],
   }),
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/community/")({
 
 function CommunityPage() {
   const list = useServerFn(listCommunityRecipes);
-  const [recipes, setRecipes] = useState<any[]>([]);
+  const [receipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
@@ -38,7 +38,7 @@ function CommunityPage() {
   const load = async () => {
     setLoading(true);
     const res = await list({ data: { search: search || undefined, city: city || undefined, limit: 30 } });
-    setRecipes(res.recipes ?? []);
+    setRecipes(res.receipes ?? []);
     setLoading(false);
   };
 
@@ -59,7 +59,7 @@ function CommunityPage() {
               to="/community/new"
               className="bg-turmeric border-2 border-border px-4 py-2 rounded-full font-black text-xs uppercase shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-all"
             >
-              + Share recipe
+              + Share receipe
             </Link>
           ) : (
             <Link
@@ -73,7 +73,7 @@ function CommunityPage() {
 
         <h1 className="font-display text-4xl md:text-5xl text-paprika mb-2">Community Cookbook</h1>
         <p className="text-sm opacity-70 mb-6">
-          Recipes shared by home cooks. Discover by city or search a dish.
+          Receipes shared by home cooks. Discover by city or search a dish.
         </p>
 
         <div className="mb-6 flex items-center justify-between gap-3">
@@ -83,7 +83,7 @@ function CommunityPage() {
             onClick={() => setShowFilters((v) => !v)}
             className="text-[11px] font-black uppercase tracking-wide bg-white border-2 border-border px-3 py-1.5 rounded-full shadow-[2px_2px_0px_0px_var(--border)]"
           >
-            {showFilters ? "− Hide filters" : "🔎 Filter recipes"}
+            {showFilters ? "− Hide filters" : "🔎 Filter receipes"}
           </button>
         </div>
 
@@ -115,11 +115,11 @@ function CommunityPage() {
 
         {loading ? (
           <p className="text-center opacity-60">Loading…</p>
-        ) : recipes.length === 0 ? (
-          <p className="text-center opacity-60">No recipes yet. Be the first to share!</p>
+        ) : receipes.length === 0 ? (
+          <p className="text-center opacity-60">No receipes yet. Be the first to share!</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {recipes.map((r) => (
+            {receipes.map((r) => (
               <Link
                 key={r.id}
                 to="/community/$recipeId"

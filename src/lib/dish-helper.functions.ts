@@ -8,7 +8,7 @@ const inputSchema = z.object({
 const responseSchema = z.object({
   dishName: z.string(),
   ingredients: z.array(z.string()).min(1).max(40),
-  recipe: z.object({
+  receipe: z.object({
     cookTimeMinutes: z.number(),
     serves: z.string().optional().default(""),
     steps: z.array(z.string()).min(1).max(20),
@@ -26,7 +26,7 @@ export const getDishHelper = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) return { ok: false, error: "AI service not configured." };
 
-    const systemPrompt = `You are an expert global chef. Given a dish name (any cuisine, any style), return its ingredients AND a clean home-cook recipe.
+    const systemPrompt = `You are an expert global chef. Given a dish name (any cuisine, any style), return its ingredients AND a clean home-cook receipe.
 Rules:
 - Use authentic ingredients and techniques for the dish's cuisine.
 - Ingredients list should be specific (with quantities for a typical serving) and complete.
@@ -39,7 +39,7 @@ Return JSON shaped exactly like:
 {
   "dishName": "string",
   "ingredients": ["2 cups all-purpose flour", "1 tsp salt", "..."],
-  "recipe": {
+  "receipe": {
     "cookTimeMinutes": 45,
     "serves": "4",
     "steps": ["step 1", "step 2"],
