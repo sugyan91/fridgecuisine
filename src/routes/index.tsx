@@ -158,7 +158,15 @@ function Index() {
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium } = useSubscription(userId);
-  const { logGeneration } = useRecipeUsage(userId);
+  const { logGeneration, atLimit: usageAtLimit } = useRecipeUsage(userId);
+  const limitBlocked = !isPremium && usageAtLimit;
+  const limitToast = () => {
+    toast.error(
+      userId
+        ? "Daily limit reached (5/day). Upgrade for unlimited recipes."
+        : "Daily limit reached (5/day). Sign up or upgrade for more.",
+    );
+  };
   const headerRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const [headerOffset, setHeaderOffset] = useState(96);
@@ -202,6 +210,10 @@ function Index() {
       toast.error("Tell me what dish you want to prepare.");
       return;
     }
+    if (limitBlocked) {
+      limitToast();
+      return;
+    }
     setDishLoading(true);
     setDishResult(null);
     setShowRecipe(false);
@@ -221,6 +233,10 @@ function Index() {
   };
 
   const onSubmit = async () => {
+    if (limitBlocked) {
+      limitToast();
+      return;
+    }
     setPantryMode(false);
     setLoading(true);
     setRecipes(null);
@@ -243,6 +259,10 @@ function Index() {
   };
 
   const onPantryGenerate = async () => {
+    if (limitBlocked) {
+      limitToast();
+      return;
+    }
     setPantryMode(true);
     setCuisine("Any / Surprise Me");
     setLoading(true);
@@ -266,6 +286,10 @@ function Index() {
 
   const onLoadMore = async () => {
     if (!receipes) return;
+    if (limitBlocked) {
+      limitToast();
+      return;
+    }
     setLoadingMore(true);
     try {
       const res = await generate({
@@ -419,11 +443,9 @@ function Index() {
               )}
             </nav>
           </div>
-          {userId && (
-            <div className="flex justify-end mt-2">
-              <RecipeCounter userId={userId} isPremium={isPremium} />
-            </div>
-          )}
+          <div className="flex justify-end mt-2">
+            <RecipeCounter userId={userId} isPremium={isPremium} />
+          </div>
         </header>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">

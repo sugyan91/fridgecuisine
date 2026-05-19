@@ -7,11 +7,9 @@ type Props = {
 };
 
 export function RecipeCounter({ userId, isPremium }: Props) {
-  const { used, limit, countdown, loaded } = useRecipeUsage(userId);
+  const { used, limit, countdown, loaded, atLimit } = useRecipeUsage(userId);
 
-  if (!userId) return null;
-
-  if (isPremium) {
+  if (userId && isPremium) {
     return (
       <div className="flex flex-col items-end gap-1">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wide bg-turmeric text-foreground px-2 py-1 rounded-full border-2 border-border">
@@ -24,7 +22,6 @@ export function RecipeCounter({ userId, isPremium }: Props) {
     );
   }
 
-  const atLimit = loaded && used >= limit;
   const label = loaded ? `${used}/${limit} today` : `—/${limit} today`;
 
   return (
@@ -41,12 +38,22 @@ export function RecipeCounter({ userId, isPremium }: Props) {
         {atLimit ? (
           <>
             Limit reached ·{" "}
+            {!userId ? (
+              <Link
+                to="/login"
+                search={{ mode: "signup" }}
+                className="underline underline-offset-2 text-foreground"
+              >
+                Sign up
+              </Link>
+            ) : (
             <Link
               to="/pricing"
               className="underline underline-offset-2 text-foreground"
             >
               Upgrade
             </Link>
+            )}
           </>
         ) : (
           <>Resets in {countdown}</>
