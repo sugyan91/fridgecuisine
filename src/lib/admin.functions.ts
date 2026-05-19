@@ -208,15 +208,29 @@ export const adminGetUserSummary = createServerFn({ method: "POST" })
     return { usedToday: usedToday ?? 0, isPremium, subscriptions: subs ?? [] };
   });
 
-const PAGE = z.object({
+const PAGE_BASE = {
   page: z.number().int().min(1).max(1000).default(1),
   pageSize: z.number().int().min(1).max(200).default(50),
   search: z.string().trim().max(200).optional(),
-});
+};
+
+// Strip characters that would break a PostgREST `or=()` / `in.()` clause.
+function safeLike(q: string) {
+  return q.replace(/[,()*]/g, " ").trim();
+}
+
+const SENTINEL_UUID = "00000000-0000-0000-0000-000000000000";
 
 export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => PAGE.parse(i))
+  .inputValidator((i) =>
+    z
+      .object({
+        ...PAGE_BASE,
+        premium: z.enum(["all", "premium", "free"]).default("all"),
+      })
+      .parse(i),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({
@@ -273,12 +287,21 @@ export const adminListUsers = createServerFn({ method: "POST" })
           u.id.includes(q),
       );
     }
+    if (data.premium === "premium") users = users.filter((u) => u.isPremium);
+    else if (data.premium === "free") users = users.filter((u) => !u.isPremium);
     return { users, total: list.total ?? users.length };
   });
 
 export const adminListCommunityRecipes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => PAGE.parse(i))
+  .inputValidator((i) =>
+    z
+      .object({
+        ...PAGE_BASE,
+        published: z.enum(["all", "published", "unpublished"]).default("all"),
+      })
+      .parse(i),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const from = (data.page - 1) * data.pageSize;
@@ -288,7 +311,20 @@ export const adminListCommunityRecipes = createServerFn({ method: "POST" })
       .select("id, user_id, title, city, country, cuisine, created_at, is_published", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, to);
-    if (data.search) query = query.ilike("title", `%${data.search}%`);
+    if (data.published === "published") query = query.eq("is_published", true);
+    else if (data.published === "unpublished") query = query.eq("is_published", false);
+    if (data.search) {
+      const q = safeLike(data.search);
+      // Also match recipes whose author's username/display name matches.
+      const { data: matchProfiles } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id")
+        .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+        .limit(500);
+      const authorIds = (matchProfiles ?? []).map((p) => p.user_id);
+      const idList = authorIds.length ? authorIds.join(",") : SENTINEL_UUID;
+      query = query.or(`title.ilike.%${q}%,city.ilike.%${q}%,country.ilike.%${q}%,user_id.in.(${idList})`);
+    }
     const { data: rows, count, error } = await query;
     if (error) throw new Error(error.message);
     const ids = (rows ?? []).map((r) => r.user_id);
@@ -321,7 +357,7 @@ export const adminDeleteCommunityRecipe = createServerFn({ method: "POST" })
 
 export const adminListComments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => PAGE.parse(i))
+  .inputValidator((i) => z.object(PAGE_BASE).parse(i))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const from = (data.page - 1) * data.pageSize;
@@ -331,7 +367,26 @@ export const adminListComments = createServerFn({ method: "POST" })
       .select("id, user_id, recipe_id, body, created_at", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, to);
-    if (data.search) query = query.ilike("body", `%${data.search}%`);
+    if (data.search) {
+      const q = safeLike(data.search);
+      const [{ data: matchProfiles }, { data: matchRecipes }] = await Promise.all([
+        supabaseAdmin
+          .from("profiles")
+          .select("user_id")
+          .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+          .limit(500),
+        supabaseAdmin
+          .from("community_recipes")
+          .select("id")
+          .ilike("title", `%${q}%`)
+          .limit(500),
+      ]);
+      const uList = (matchProfiles ?? []).map((p) => p.user_id);
+      const rList = (matchRecipes ?? []).map((r) => r.id);
+      const uIn = uList.length ? uList.join(",") : SENTINEL_UUID;
+      const rIn = rList.length ? rList.join(",") : SENTINEL_UUID;
+      query = query.or(`body.ilike.%${q}%,user_id.in.(${uIn}),recipe_id.in.(${rIn})`);
+    }
     const { data: rows, count, error } = await query;
     if (error) throw new Error(error.message);
     const uids = (rows ?? []).map((r) => r.user_id);
