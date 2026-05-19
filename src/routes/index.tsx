@@ -447,6 +447,12 @@ function Index() {
                     My Receipes
                   </Link>
                   <Link
+                    to="/cookbook"
+                    className="text-[11px] font-black uppercase tracking-wide px-2 hidden sm:inline"
+                  >
+                    Cookbook
+                  </Link>
+                  <Link
                     to="/community/new"
                     className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
                   >
