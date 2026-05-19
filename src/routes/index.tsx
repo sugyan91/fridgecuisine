@@ -532,7 +532,7 @@ function Index() {
                   disabled={dishLoading}
                   className="bg-paprika text-white border-4 border-border py-3 px-6 rounded-2xl font-black uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
                 >
-                  {dishLoading ? "Thinking…" : "Get ingredients"}
+                  {dishLoading ? "Thinking…" : "Start Cooking"}
                 </button>
               </form>
 
