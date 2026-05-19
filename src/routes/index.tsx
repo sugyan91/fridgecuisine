@@ -8,8 +8,14 @@ import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { RecipeCard } from "@/components/fridge/RecipeCard";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
+import {
+  listSavedRecipes,
+  saveRecipe as saveRecipeFn,
+  unsaveRecipe as unsaveRecipeFn,
+  setCookedStatus,
+  type SavedRecipeRow,
+} from "@/lib/saved-recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
@@ -108,10 +114,14 @@ function Index() {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [saved, setSaved] = useLocalStorage<Receipe[]>("fridge-chef-saved", []);
+  const [saved, setSaved] = useState<SavedRecipeRow[]>([]);
 
   const generate = useServerFn(generateRecipes);
   const fetchDish = useServerFn(getDishHelper);
+  const listSaved = useServerFn(listSavedRecipes);
+  const saveRecipeRpc = useServerFn(saveRecipeFn);
+  const unsaveRecipeRpc = useServerFn(unsaveRecipeFn);
+  const setCookedRpc = useServerFn(setCookedStatus);
 
   const [dishQuery, setDishQuery] = useState("");
   const [dishLoading, setDishLoading] = useState(false);
@@ -200,6 +210,14 @@ function Index() {
     });
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!userId) {
+      setSaved([]);
+      return;
+    }
+    listSaved().then((res) => setSaved(res.rows)).catch(() => {});
+  }, [userId, listSaved]);
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast.success("Signed out");
@@ -323,7 +341,7 @@ function Index() {
   };
 
   const isSaved = (title: string) => saved.some((s) => s.title === title);
-  const toggleSave = (receipe: Receipe) => {
+  const toggleSave = async (receipe: Receipe) => {
     if (!email) {
       toast("Sign in to save receipes", {
         description: "Create a free account to keep receipes across devices.",
@@ -334,12 +352,31 @@ function Index() {
       });
       return;
     }
-    if (isSaved(receipe.title)) {
-      setSaved(saved.filter((s) => s.title !== receipe.title));
-      toast("Removed from saved");
-    } else {
-      setSaved([receipe, ...saved]);
-      toast.success("Saved!");
+    try {
+      if (isSaved(receipe.title)) {
+        await unsaveRecipeRpc({ data: { title: receipe.title } });
+        setSaved((prev) => prev.filter((s) => s.title !== receipe.title));
+        toast("Removed from saved");
+      } else {
+        const res = await saveRecipeRpc({ data: { recipe: receipe } });
+        setSaved((prev) => [res.row, ...prev.filter((s) => s.title !== receipe.title)]);
+        toast.success("Saved!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't update saved recipes.");
+    }
+  };
+
+  const onToggleCooked = async (row: SavedRecipeRow) => {
+    const nextCooked = !row.cooked_at;
+    try {
+      const res = await setCookedRpc({ data: { id: row.id, cooked: nextCooked } });
+      setSaved((prev) => prev.map((s) => (s.id === row.id ? res.row : s)));
+      toast.success(nextCooked ? "Logged to meal history" : "Removed from history");
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't update status.");
     }
   };
 
@@ -350,7 +387,15 @@ function Index() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         saved={saved}
-        onUnsave={(title) => setSaved(saved.filter((s) => s.title !== title))}
+        onUnsave={async (title) => {
+          try {
+            await unsaveRecipeRpc({ data: { title } });
+            setSaved((prev) => prev.filter((s) => s.title !== title));
+          } catch {
+            toast.error("Couldn't remove.");
+          }
+        }}
+        onToggleCooked={onToggleCooked}
       />
 
       <main
