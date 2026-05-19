@@ -1,54 +1,66 @@
-## What's happening
+## Getting your app on the App Store
 
-**1. "Weak password" message**
-That message comes from Supabase Auth itself — your project has "leaked password protection" turned on, so it checks every password against the HaveIBeenPwned database and rejects pwned ones with a 422 (visible in your auth logs as `Pwned passwords cache`). It's a server-side setting, not something in our code.
+Lovable builds web apps, not native iOS apps. To publish to the Apple App Store, you wrap your web app in a thin native shell using **Capacitor**. Apple will not accept a plain web URL or a PWA submission for most use cases.
 
-**2. Auto‑logout (the real bug)**
-In `src/routes/__root.tsx` there's a "Remember me" enforcement block: on every page load, if `localStorage.fc-auth-remember` is not `"1"` AND `sessionStorage.fc-auth-session` is not `"1"`, it calls `supabase.auth.signOut()`. Those flags are only set inside our email/password login form — so anyone who signs in with **Google** (or via the email confirmation link, or a password‑reset flow) has neither flag and gets force‑signed‑out on the next reload. Your logs confirm: Google login at 01:51:55Z immediately followed by a logout at 01:51:58Z.
+### What you'll need
+- A **Mac** with Xcode installed (App Store builds can only be produced on macOS)
+- An **Apple Developer account** ($99/year — sign up at developer.apple.com)
+- Your project exported to GitHub (Lovable → GitHub → Connect project)
+- About 1–2 hours for first-time setup, plus Apple's review time (typically 1–3 days)
 
-**3. Admin panel**
-Today it only supports "search one user → act on them." You want full browse + delete lists for users, recipes, comments, etc.
+### The full path, step by step
 
-## The plan
+**1. Prepare the app inside Lovable**
+- Make sure every page is responsive and works at iPhone widths
+- Add a proper app name, icon, splash screen assets
+- Test all flows on a narrow viewport in the preview
 
-### A. Stop the "weak password" rejection
-Call the Supabase auth config tool to set `password_hibp_enabled: false`. No code change. Users can then pick any password they want; the "Suggested: 6+ characters…" hint already on the form stays as guidance only.
+**2. Export to GitHub and clone locally on your Mac**
+- In Lovable: + menu → GitHub → Connect project
+- `git clone` your repo to your Mac
 
-### B. Fix the auto‑logout
-In `src/routes/__root.tsx`, change the enforcement so that the *absence* of both flags is treated as "this session was created outside our form (Google, magic link, reset) — assume remembered" instead of "sign them out." Concretely:
-- Only sign out when `sessionStorage.fc-auth-session === "1"` AND that marker is missing on a fresh tab (the original intent). 
-- If neither flag exists, do nothing — let the session persist.
+**3. Add Capacitor locally** (on your Mac, not in Lovable)
+```bash
+npm install @capacitor/core @capacitor/cli @capacitor/ios
+npx cap init "Your App Name" com.yourcompany.yourapp
+npm run build
+npx cap add ios
+npx cap sync ios
+npx cap open ios
+```
+This opens Xcode with a native iOS project that loads your built web app.
 
-Result: Google sign‑ins persist; "Remember me = off" still works for email/password sign‑ins because we set the session marker at that point.
+**4. Configure in Xcode**
+- Set bundle ID, version, signing team (your Apple Developer account)
+- Add app icons (1024×1024 master + generated sizes) and launch screen
+- Set required `Info.plist` permissions if you use camera, location, etc.
 
-### C. Rebuild the Admin panel as a real dashboard
-Replace the current single‑user search modal with a tabbed admin dashboard listing everything, each row with a Delete button. Tabs:
+**5. Submit through App Store Connect**
+- Create the app listing at appstoreconnect.apple.com
+- Fill in metadata: description, keywords, screenshots (6.7", 6.5", 5.5" required), privacy policy URL, support URL, age rating
+- In Xcode: Product → Archive → Distribute App → App Store Connect
+- Submit for review
 
-1. **Users** — list email, username, display name, signup date, today's usage, premium status. Actions per row: Reset usage · Send password reset · Grant/Revoke premium · Delete user.
-2. **Community recipes** — list title, author username, city/country, created date. Actions: Open · Delete.
-3. **Comments** — list body preview, author, recipe title, date. Action: Delete.
-4. **Saved recipes** (optional, read‑only count per user) — skip if you don't want it.
+**6. Keep updating**
+- Changes in Lovable → push to GitHub → pull on Mac → `npm run build && npx cap sync ios` → archive and resubmit
 
-A search box at the top of each tab filters that tab's list (client‑side over the loaded page). Pagination: 50 per page with Prev/Next.
+### Things Apple will check that often cause rejection
+- A working sign-in flow with a demo account they can use
+- A privacy policy URL (required)
+- "Sign in with Apple" if you offer any third-party social login (you currently have Google — Apple may require Apple sign-in too)
+- Account deletion must be available in-app, not just on the web
+- Any premium subscription **must use Apple's in-app purchase**, not Stripe. Stripe is fine for the web version, but the iOS build will be rejected if it sells subscriptions through Stripe. You'll need to either: (a) hide premium upgrade on iOS and let users subscribe on the web, or (b) implement StoreKit and Apple's IAP
 
-The existing per‑user search modal stays available as a "Quick find user" button at the top — but the default view is the full list.
+### Alternatives if the App Store is too heavy
+- **PWA / "Add to Home Screen"** — users open Safari, tap Share → Add to Home Screen. Looks like an app, no review, no fee, no Apple IAP rules. Trade-off: no App Store discovery.
+- **Wait on App Store**, ship the PWA path first, then add the native wrapper later when you have traction.
 
-### Technical details (for the build step)
+### What I can do for you inside Lovable right now
+None of the Capacitor work happens inside Lovable — it's all local on your Mac. But before you wrap, I can help you:
+- Audit and tighten mobile responsiveness
+- Add a web app manifest + icons so iOS users can "Add to Home Screen" cleanly
+- Add "Sign in with Apple" alongside Google (required by Apple if you keep Google sign-in)
+- Add in-app account deletion (required by Apple)
+- Replace or hide the Stripe upgrade flow on iOS builds
 
-- **Auth config:** `supabase--configure_auth` with `password_hibp_enabled: false` (keep `auto_confirm_email`, `disable_signup`, `external_anonymous_users_enabled` at their current values — false).
-- **Remember‑me fix in `src/routes/__root.tsx`:** change the condition from `if (!remembered && !sessionMarker)` to `if (!remembered && sessionMarker === false && localStorage.getItem("fc-auth-explicit-ephemeral") === "1")`. Simpler: set a third flag `fc-auth-explicit-ephemeral` in `login.tsx` when the user unchecks "Remember me", and only sign out when *that* flag is set but the session marker is gone. Remove the original ambiguous check.
-- **New server functions in `src/lib/admin.functions.ts`** (all behind existing `requireSupabaseAuth` + admin role check):
-  - `adminListUsers({ page, pageSize, search? })` — uses `supabaseAdmin.auth.admin.listUsers()` joined with `profiles`, `user_roles`, and a usage‑today count.
-  - `adminListCommunityRecipes({ page, pageSize, search? })` — selects from `community_recipes` joined with `profiles` for author username.
-  - `adminListComments({ page, pageSize, search? })` — selects from `community_recipe_comments` joined with `profiles` and `community_recipes`.
-  - `adminDeleteCommunityRecipe({ recipe_id })` and `adminDeleteComment({ comment_id })` — both already allowed by existing RLS admin policies; just wrap as serverFns using `supabaseAdmin`.
-- **`src/components/admin/AdminPanel.tsx`** rewritten as a tabbed dashboard (Users / Recipes / Comments). Each tab: search input, paginated table, row‑level Delete confirm. Existing "Find one user" panel becomes the Users tab's row expansion (click a row → show the current per‑user action buttons inline).
-
-No database migration is needed — admin RLS policies already exist for all three tables.
-
-### Out of scope
-- Bulk delete / multi‑select (can add later if you want).
-- Editing recipes/comments from admin (only delete).
-- Auditing/logging of admin actions.
-
-Reply "go" to implement, or tell me what to change (e.g. drop the Comments tab, add bulk delete, etc.).
+Tell me which of those you want me to start on, or if you'd rather I just walk you through the Capacitor setup in more detail.
