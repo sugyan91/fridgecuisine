@@ -160,7 +160,7 @@ function LoginPage() {
           const uname = idRaw.toLowerCase();
           if (!USERNAME_RE.test(uname)) {
             setFormError({
-              message: "That doesn't look like a valid email or username. Usernames are 3–20 chars, letters/digits/_ , starting with a letter.",
+              message: "Enter your email (you@example.com) or username (3–20 letters/digits/_ starting with a letter).",
             });
             setLoading(false);
             return;
@@ -181,10 +181,6 @@ function LoginPage() {
             return;
           }
           loginEmail = data as string;
-        } else if (!z.string().email().safeParse(loginEmail).success) {
-          setFormError({ message: "Enter a valid email address." });
-          setLoading(false);
-          return;
         }
         if (!password) {
           setFormError({ message: "Enter your password." });
