@@ -13,6 +13,7 @@ import {
   deleteCommunityRecipe,
 } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export const Route = createFileRoute("/community/$recipeId")({
   component: RecipePage,
@@ -35,6 +36,7 @@ function RecipePage() {
   const [authed, setAuthed] = useState(false);
   const [myVote, setMyVote] = useState<"up" | "down" | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const isAdmin = useIsAdmin(userId);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
   const [comments, setComments] = useState<
@@ -96,6 +98,7 @@ function RecipePage() {
 
   const r = data.receipe;
   const isOwner = !!userId && userId === r.user_id;
+  const canManageRecipe = isOwner || isAdmin;
   const commentsEnabled = r.comments_enabled !== false;
 
   const submitComment = async () => {
@@ -175,7 +178,7 @@ function RecipePage() {
             {[r.city, r.country, r.cuisine].filter(Boolean).join(" · ")} · by {data.author_name}
           </p>
           {r.description && <p className="mb-5 text-base">{r.description}</p>}
-          {isOwner && (
+          {canManageRecipe && (
             <div className="mb-5 flex justify-end">
               <button
                 type="button"
@@ -327,7 +330,7 @@ function RecipePage() {
             ) : (
               <ul className="space-y-3">
                 {comments.map((c) => {
-                  const canDelete = userId === c.user_id || isOwner;
+                  const canDelete = userId === c.user_id || isOwner || isAdmin;
                   return (
                     <li
                       key={c.id}

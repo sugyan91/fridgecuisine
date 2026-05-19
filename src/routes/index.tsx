@@ -22,6 +22,8 @@ import { worldFoods } from "@/lib/world-foods";
 import { RecipeCounter } from "@/components/RecipeCounter";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useIsAdmin } from "@/hooks/use-is-admin";
+import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import dalImg from "@/assets/recipe-dal.jpg";
@@ -171,6 +173,8 @@ function Index() {
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium } = useSubscription(userId);
   const { logGeneration, atLimit: usageAtLimit } = useRecipeUsage(userId);
+  const isAdmin = useIsAdmin(userId);
+  const [adminOpen, setAdminOpen] = useState(false);
   const limitBlocked = !isPremium && usageAtLimit;
   const limitToast = () => {
     toast.error(
@@ -383,6 +387,7 @@ function Index() {
   return (
     <>
       <Toaster />
+      <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
       <SavedDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -466,6 +471,15 @@ function Index() {
                   >
                     Saved {saved.length}
                   </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setAdminOpen(true)}
+                      className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-foreground text-background px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
+                    >
+                      Admin
+                    </button>
+                  )}
                   <span className="hidden xl:inline text-xs font-bold truncate max-w-[140px] opacity-70">
                     {email}
                   </span>
