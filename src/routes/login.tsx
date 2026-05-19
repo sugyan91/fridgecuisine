@@ -66,7 +66,7 @@ function LoginPage() {
   const identifierKind: "empty" | "email" | "username" | "invalid" = (() => {
     const v = identifier.trim();
     if (!v) return "empty";
-    if (v.includes("@")) return z.string().email().safeParse(v.toLowerCase()).success ? "email" : "invalid";
+    if (v.includes("@")) return "email";
     return USERNAME_RE.test(v.toLowerCase()) ? "username" : "invalid";
   })();
 
