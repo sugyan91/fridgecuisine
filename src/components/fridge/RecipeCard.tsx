@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { Receipe } from "@/lib/receipes.functions";
-import { DishPhoto } from "./DishPhoto";
 import { RecipeTimers } from "./RecipeTimers";
 import { StepTimer } from "./StepTimer";
 
@@ -27,12 +26,6 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
         className="bg-cardamom text-white border-4 border-border rounded-[32px] p-6 md:p-8 shadow-[8px_8px_0px_0px_var(--border)] animate-pop"
         style={{ animationDelay: `${index * 80}ms` }}
       >
-        <DishPhoto
-          title={receipe.title}
-          cuisine={receipe.cuisine}
-          ingredients={allIngredients}
-          className="mb-6 border-2 border-white/20 rounded-2xl overflow-hidden"
-        />
         <div className="flex justify-between items-start mb-6 gap-4">
           <div>
             <h4 className="font-display text-3xl md:text-4xl uppercase tracking-tight leading-none">
@@ -183,12 +176,6 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
       className="group bg-white border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <DishPhoto
-        title={receipe.title}
-        cuisine={receipe.cuisine}
-        ingredients={allIngredients}
-        className="border-b-4 border-border"
-      />
       <div className="p-5 flex-1">
         <div className="flex justify-between items-start mb-2 gap-3">
           <h4 className="font-black text-xl md:text-2xl leading-tight">
