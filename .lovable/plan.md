@@ -1,66 +1,54 @@
-## Goal
-1. Replace AI-generated dish illustrations with **real Unsplash photographs** of the finished dish.
-2. Add a **countdown timer system** with both total-recipe and per-step timers, each with Start / Pause / Skip / Stop / Reset controls.
+## What's happening
 
-## 1. Real Unsplash photos
+**1. "Weak password" message**
+That message comes from Supabase Auth itself — your project has "leaked password protection" turned on, so it checks every password against the HaveIBeenPwned database and rejects pwned ones with a 422 (visible in your auth logs as `Pwned passwords cache`). It's a server-side setting, not something in our code.
 
-### Secret
-Prompt for `UNSPLASH_ACCESS_KEY` via `add_secret`.
+**2. Auto‑logout (the real bug)**
+In `src/routes/__root.tsx` there's a "Remember me" enforcement block: on every page load, if `localStorage.fc-auth-remember` is not `"1"` AND `sessionStorage.fc-auth-session` is not `"1"`, it calls `supabase.auth.signOut()`. Those flags are only set inside our email/password login form — so anyone who signs in with **Google** (or via the email confirmation link, or a password‑reset flow) has neither flag and gets force‑signed‑out on the next reload. Your logs confirm: Google login at 01:51:55Z immediately followed by a logout at 01:51:58Z.
 
-### New server function `src/lib/dish-image.functions.ts`
-- `searchDishImage({ title, cuisine, ingredients })` — server fn that calls `https://api.unsplash.com/search/photos?query=<dish>&per_page=5&orientation=squarish&content_filter=high` with `Authorization: Client-ID <key>`.
-- Build the query smartly: `"<title> <cuisine> food"` plus a sanitized ingredient hint (same logic already in `receipe-images.ts`).
-- Return the `urls.small` (400px) of the first result + `user.name` + `links.html` (Unsplash attribution is required by their API guidelines).
-- Light in-memory LRU cache (Map, 200 entries) keyed by `title|cuisine` so we don't re-hit the API on every navigation.
-- On failure (no key, 401, 404, network), return `null` so callers can fall back.
+**3. Admin panel**
+Today it only supports "search one user → act on them." You want full browse + delete lists for users, recipes, comments, etc.
 
-### Update `src/lib/receipe-images.ts`
-- Keep `pickFallbackImage` for the hard fallback to bundled jpgs.
-- `pickRecipeImage` becomes async-resolved via the new server fn from the client, OR keep the existing pollinations URL as a secondary fallback before the bundled jpgs.
+## The plan
 
-### Frontend wiring
-- Add `src/hooks/use-dish-image.ts` that takes `{ title, cuisine, ingredients }`, calls the server fn once, caches by key, and returns `{ url, credit }`.
-- Update the recipe image renderers (in `RecipeCard.tsx` and the dish-helper card in `routes/index.tsx`) to:
-  1. Start with the bundled fallback while loading.
-  2. Swap to the Unsplash photo when it resolves.
-  3. Render the required "Photo by X on Unsplash" credit line beneath the image (small, muted).
-  4. If Unsplash returns nothing, keep the bundled fallback.
+### A. Stop the "weak password" rejection
+Call the Supabase auth config tool to set `password_hibp_enabled: false`. No code change. Users can then pick any password they want; the "Suggested: 6+ characters…" hint already on the form stays as guidance only.
 
-## 2. Countdown timers
+### B. Fix the auto‑logout
+In `src/routes/__root.tsx`, change the enforcement so that the *absence* of both flags is treated as "this session was created outside our form (Google, magic link, reset) — assume remembered" instead of "sign them out." Concretely:
+- Only sign out when `sessionStorage.fc-auth-session === "1"` AND that marker is missing on a fresh tab (the original intent). 
+- If neither flag exists, do nothing — let the session persist.
 
-### New hook `src/hooks/use-countdown.ts`
-- `useCountdown(initialSeconds)` returns `{ secondsLeft, isRunning, isFinished, start, pause, reset, skip }`.
-- `skip` immediately sets `secondsLeft` to 0 and marks finished.
-- Uses a single `setInterval` cleaned up on unmount; no drift correction needed for cooking-grade accuracy.
-- Plays a short beep (Web Audio API oscillator, ~600ms) when a timer reaches 0. No external asset.
+Result: Google sign‑ins persist; "Remember me = off" still works for email/password sign‑ins because we set the session marker at that point.
 
-### New component `src/components/fridge/StepTimer.tsx`
-- Props: `minutes: number`, `label?: string`, optional `onFinish` callback.
-- Renders a compact pill: `[▶ 5:00]` → when running `[⏸ 4:32]` plus `Skip` and `Reset` icons.
-- Uses semantic tokens (`bg-turmeric`, `border-border`) to match the brutalist look.
+### C. Rebuild the Admin panel as a real dashboard
+Replace the current single‑user search modal with a tabbed admin dashboard listing everything, each row with a Delete button. Tabs:
 
-### New component `src/components/fridge/RecipeTimers.tsx`
-- A small horizontal bar shown at the top of the expanded recipe card with **the total-recipe countdown** (uses `totalTimeMinutes` if present, else `cookTimeMinutes`).
-- Same Start / Pause / Skip / Reset controls.
+1. **Users** — list email, username, display name, signup date, today's usage, premium status. Actions per row: Reset usage · Send password reset · Grant/Revoke premium · Delete user.
+2. **Community recipes** — list title, author username, city/country, created date. Actions: Open · Delete.
+3. **Comments** — list body preview, author, recipe title, date. Action: Delete.
+4. **Saved recipes** (optional, read‑only count per user) — skip if you don't want it.
 
-### Integration in `RecipeCard.tsx`
-- In the expanded (open) state:
-  - Above "The Method" heading: render `<RecipeTimers totalMinutes={...} />`.
-  - Inside each step `<li>`: if `stepTimings[i]` is present, render `<StepTimer minutes={stepTimings[i]} />` next to the static `"5 min"` badge (the badge stays as a hint, the timer is the interactive control).
+A search box at the top of each tab filters that tab's list (client‑side over the loaded page). Pagination: 50 per page with Prev/Next.
 
-### Integration in dish-helper card (`routes/index.tsx`)
-- Same two additions: total timer at the top of the receipe block, per-step timer inline with each step.
+The existing per‑user search modal stays available as a "Quick find user" button at the top — but the default view is the full list.
 
-## 3. Out of scope
-- No DB changes. Image URL is fetched on demand and cached in memory; not persisted.
-- No background/notification timers (only runs while the card is open) — keeps scope tight and avoids permission prompts.
+### Technical details (for the build step)
 
-## Files touched
-- `src/lib/dish-image.functions.ts` (new)
-- `src/lib/receipe-images.ts` (small tweak / keep as fallback)
-- `src/hooks/use-dish-image.ts` (new)
-- `src/hooks/use-countdown.ts` (new)
-- `src/components/fridge/StepTimer.tsx` (new)
-- `src/components/fridge/RecipeTimers.tsx` (new)
-- `src/components/fridge/RecipeCard.tsx` (render photo + credit + timers)
-- `src/routes/index.tsx` (dish-helper card: photo + timers)
+- **Auth config:** `supabase--configure_auth` with `password_hibp_enabled: false` (keep `auto_confirm_email`, `disable_signup`, `external_anonymous_users_enabled` at their current values — false).
+- **Remember‑me fix in `src/routes/__root.tsx`:** change the condition from `if (!remembered && !sessionMarker)` to `if (!remembered && sessionMarker === false && localStorage.getItem("fc-auth-explicit-ephemeral") === "1")`. Simpler: set a third flag `fc-auth-explicit-ephemeral` in `login.tsx` when the user unchecks "Remember me", and only sign out when *that* flag is set but the session marker is gone. Remove the original ambiguous check.
+- **New server functions in `src/lib/admin.functions.ts`** (all behind existing `requireSupabaseAuth` + admin role check):
+  - `adminListUsers({ page, pageSize, search? })` — uses `supabaseAdmin.auth.admin.listUsers()` joined with `profiles`, `user_roles`, and a usage‑today count.
+  - `adminListCommunityRecipes({ page, pageSize, search? })` — selects from `community_recipes` joined with `profiles` for author username.
+  - `adminListComments({ page, pageSize, search? })` — selects from `community_recipe_comments` joined with `profiles` and `community_recipes`.
+  - `adminDeleteCommunityRecipe({ recipe_id })` and `adminDeleteComment({ comment_id })` — both already allowed by existing RLS admin policies; just wrap as serverFns using `supabaseAdmin`.
+- **`src/components/admin/AdminPanel.tsx`** rewritten as a tabbed dashboard (Users / Recipes / Comments). Each tab: search input, paginated table, row‑level Delete confirm. Existing "Find one user" panel becomes the Users tab's row expansion (click a row → show the current per‑user action buttons inline).
+
+No database migration is needed — admin RLS policies already exist for all three tables.
+
+### Out of scope
+- Bulk delete / multi‑select (can add later if you want).
+- Editing recipes/comments from admin (only delete).
+- Auditing/logging of admin actions.
+
+Reply "go" to implement, or tell me what to change (e.g. drop the Comments tab, add bulk delete, etc.).
