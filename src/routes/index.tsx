@@ -13,6 +13,9 @@ import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
+import { RecipeCounter } from "@/components/RecipeCounter";
+import { useRecipeUsage } from "@/hooks/use-recipe-usage";
+import { useSubscription } from "@/hooks/use-subscription";
 import dalImg from "@/assets/recipe-dal.jpg";
 import saagImg from "@/assets/recipe-saag.jpg";
 import riceImg from "@/assets/recipe-rice.jpg";
@@ -153,6 +156,9 @@ function Index() {
 
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const { isPremium } = useSubscription(userId);
+  const { logGeneration } = useRecipeUsage(userId);
   const headerRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const [headerOffset, setHeaderOffset] = useState(96);
@@ -174,9 +180,13 @@ function Index() {
     };
   }, [email]);
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
+      setUserId(data.user?.id);
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setEmail(session?.user?.email ?? null);
+      setUserId(session?.user?.id);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -198,7 +208,10 @@ function Index() {
     try {
       const res = await fetchDish({ data: { dish: q } });
       if (!res.ok) toast.error(res.error);
-      else setDishResult(res.data);
+      else {
+        setDishResult(res.data);
+        logGeneration();
+      }
     } catch (err) {
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
@@ -219,6 +232,7 @@ function Index() {
         toast.error(res.error);
       } else {
         setRecipes(res.receipes);
+        logGeneration();
       }
     } catch (err) {
       console.error(err);
@@ -238,7 +252,10 @@ function Index() {
         data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [] },
       });
       if (!res.ok) toast.error(res.error);
-      else setRecipes(res.receipes);
+      else {
+        setRecipes(res.receipes);
+        logGeneration();
+      }
     } catch (err) {
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
