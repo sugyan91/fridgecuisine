@@ -187,7 +187,7 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
         <div className="flex flex-wrap gap-3 font-mono text-[10px] font-bold mb-3 uppercase">
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-turmeric" />
-            {receipe.cookTimeMinutes} min
+            {total != null ? `${total} min total` : `${receipe.cookTimeMinutes} min`}
           </span>
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-cardamom" />
