@@ -72,7 +72,7 @@ function LoginPage() {
   })();
 
   // Clear inline error when user edits inputs
-  useEffect(() => { setFormError(null); }, [identifier, email, username, password, mode]);
+  useEffect(() => { setFormError(null); }, [identifier, email, username, password, confirmPassword, mode]);
 
   // Debounced username availability check while typing on signup
   useEffect(() => {
