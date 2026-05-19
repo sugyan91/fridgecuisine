@@ -285,6 +285,7 @@ function Index() {
           toast("No new receipes — try changing cuisine or dietary filters.");
         } else {
           setRecipes([...receipes, ...fresh]);
+          logGeneration();
         }
       }
     } catch (err) {
