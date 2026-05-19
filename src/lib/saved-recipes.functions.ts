@@ -69,7 +69,7 @@ export const saveRecipe = createServerFn({ method: "POST" })
           title: r.title,
           cuisine: r.cuisine ?? null,
           cook_time_minutes: r.cookTimeMinutes ?? null,
-          recipe: r as unknown as Record<string, unknown>,
+          recipe: r as never,
         },
         { onConflict: "user_id,title" },
       )
