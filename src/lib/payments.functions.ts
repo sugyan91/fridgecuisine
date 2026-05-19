@@ -36,17 +36,17 @@ async function resolveOrCreateCustomer(
 }
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: {
     priceId: string;
-    customerEmail?: string;
-    userId?: string;
     returnUrl: string;
     environment: StripeEnv;
   }) => {
     if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) throw new Error("Invalid priceId");
     return data;
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
     const stripe = createStripeClient(data.environment);
 
     const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
@@ -54,12 +54,13 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const stripePrice = prices.data[0];
     const isRecurring = stripePrice.type === "recurring";
 
-    const customerId = (data.customerEmail || data.userId)
-      ? await resolveOrCreateCustomer(stripe, {
-          email: data.customerEmail,
-          userId: data.userId,
-        })
-      : undefined;
+    const { data: userResp } = await supabase.auth.getUser();
+    const customerEmail = userResp?.user?.email ?? undefined;
+
+    const customerId = await resolveOrCreateCustomer(stripe, {
+      email: customerEmail,
+      userId,
+    });
 
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: stripePrice.id, quantity: 1 }],
@@ -67,11 +68,9 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       ui_mode: "embedded_page",
       return_url: data.returnUrl,
       managed_payments: { enabled: true },
-      ...(customerId && { customer: customerId }),
-      ...(data.userId && {
-        metadata: { userId: data.userId },
-        ...(isRecurring && { subscription_data: { metadata: { userId: data.userId } } }),
-      }),
+      customer: customerId,
+      metadata: { userId },
+      ...(isRecurring && { subscription_data: { metadata: { userId } } }),
     } as any);
 
     return session.client_secret;

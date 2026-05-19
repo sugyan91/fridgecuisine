@@ -33,8 +33,6 @@ function PricingPage() {
     const secret = await createCheckoutSession({
       data: {
         priceId: "premium_monthly",
-        customerEmail: user.email,
-        userId: user.id,
         returnUrl,
         environment: getStripeEnvironment(),
       },
