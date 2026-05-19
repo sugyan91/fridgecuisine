@@ -419,6 +419,11 @@ function Index() {
               )}
             </nav>
           </div>
+          {userId && (
+            <div className="flex justify-end mt-2">
+              <RecipeCounter userId={userId} isPremium={isPremium} />
+            </div>
+          )}
         </header>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
