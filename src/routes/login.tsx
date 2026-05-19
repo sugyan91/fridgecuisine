@@ -526,12 +526,35 @@ function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
                   autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
                   placeholder="••••••••"
                 />
+                {mode === "signup" && (
+                  <p className="text-[10px] mt-1 text-muted-foreground">
+                    Suggested: 6+ characters with letters and numbers
+                  </p>
+                )}
             </div>
+
+            {mode === "signup" && (
+              <div>
+                <label htmlFor="confirm-password" className="block font-bold text-xs uppercase mb-1">Confirm password</label>
+                <input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                  placeholder="Retype your password"
+                />
+                {confirmPassword && password !== confirmPassword && (
+                  <p className="text-[10px] mt-1 text-red-600 font-bold">Passwords do not match</p>
+                )}
+              </div>
+            )}
 
             {mode === "signin" && (
               <label className="flex items-center gap-2 select-none cursor-pointer">
