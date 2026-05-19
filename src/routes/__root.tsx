@@ -142,9 +142,15 @@ function RootComponent() {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
-        const remembered = localStorage.getItem("fc-auth-remember") === "1";
+        // Only sign out when the user explicitly chose "don't remember me"
+        // on the last sign-in (we set fc-auth-ephemeral=1 in that case) AND
+        // the in-tab marker is gone — meaning the browser was reopened.
+        // Google / magic-link / password-reset sign-ins never set this flag,
+        // so their sessions persist normally.
+        const ephemeral = localStorage.getItem("fc-auth-ephemeral") === "1";
         const sessionMarker = sessionStorage.getItem("fc-auth-session") === "1";
-        if (!remembered && !sessionMarker) {
+        if (ephemeral && !sessionMarker) {
+          localStorage.removeItem("fc-auth-ephemeral");
           await supabase.auth.signOut();
         }
       } catch {}
