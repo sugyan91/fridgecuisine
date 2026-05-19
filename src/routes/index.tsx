@@ -533,17 +533,38 @@ function Index() {
                         <p className="font-black text-xs uppercase tracking-widest">
                           Receipe
                         </p>
-                        <span className="font-mono text-xs bg-white border border-border px-2 py-0.5">
-                          {dishResult.receipe.cookTimeMinutes} min
-                          {dishResult.receipe.serves ? ` · serves ${dishResult.receipe.serves}` : ""}
-                        </span>
+                        <div className="flex flex-wrap gap-1.5 font-mono text-[10px] font-bold uppercase">
+                          {dishResult.receipe.prepTimeMinutes != null && (
+                            <span className="bg-white border border-border px-2 py-0.5">Prep {dishResult.receipe.prepTimeMinutes}m</span>
+                          )}
+                          <span className="bg-white border border-border px-2 py-0.5">Cook {dishResult.receipe.cookTimeMinutes}m</span>
+                          {dishResult.receipe.totalTimeMinutes != null && (
+                            <span className="bg-paprika text-white border border-border px-2 py-0.5">Total {dishResult.receipe.totalTimeMinutes}m</span>
+                          )}
+                          {dishResult.receipe.serves && (
+                            <span className="bg-white border border-border px-2 py-0.5">Serves {dishResult.receipe.serves}</span>
+                          )}
+                        </div>
                       </div>
-                      <ol className="space-y-2 list-decimal list-inside">
-                        {dishResult.receipe.steps.map((s, i) => (
-                          <li key={i} className="text-sm leading-relaxed">
-                            {s}
-                          </li>
-                        ))}
+                      <ol className="space-y-2.5">
+                        {dishResult.receipe.steps.map((s, i) => {
+                          const t = dishResult.receipe.stepTimings?.[i];
+                          return (
+                            <li key={i} className="flex gap-3 items-start text-sm leading-relaxed">
+                              <span className="shrink-0 size-6 rounded-full bg-turmeric text-foreground font-black text-[11px] grid place-items-center mt-0.5">
+                                {i + 1}
+                              </span>
+                              <span className="flex-1">
+                                {s}
+                                {t != null && (
+                                  <span className="ml-2 inline-block font-mono text-[10px] font-bold uppercase bg-white border border-border px-1.5 py-0.5 rounded">
+                                    {t} min
+                                  </span>
+                                )}
+                              </span>
+                            </li>
+                          );
+                        })}
                       </ol>
                       {dishResult.receipe.tips.length > 0 && (
                         <div className="mt-4 pt-3 border-t border-dashed border-border/40">

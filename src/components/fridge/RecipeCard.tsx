@@ -14,6 +14,9 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
   const [open, setOpen] = useState(false);
   const allIngredients = [...receipe.usedIngredients, ...receipe.missingIngredients];
   const dietary = receipe.dietary ?? [];
+  const timings = receipe.stepTimings ?? [];
+  const prep = receipe.prepTimeMinutes;
+  const total = receipe.totalTimeMinutes;
 
   if (open) {
     return (
@@ -27,10 +30,22 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
               {receipe.title}
             </h4>
             <div className="flex flex-wrap gap-3 mt-3 font-mono text-[10px] font-bold uppercase">
+              {prep != null && (
+                <span className="flex items-center gap-1">
+                  <span className="size-2 rounded-full bg-white/80" />
+                  Prep {prep}m
+                </span>
+              )}
               <span className="flex items-center gap-1">
                 <span className="size-2 rounded-full bg-turmeric" />
-                {receipe.cookTimeMinutes} min
+                Cook {receipe.cookTimeMinutes}m
               </span>
+              {total != null && (
+                <span className="flex items-center gap-1">
+                  <span className="size-2 rounded-full bg-paprika" />
+                  Total {total}m
+                </span>
+              )}
               <span className="flex items-center gap-1">
                 <span className="size-2 rounded-full bg-saffron" />
                 {receipe.cuisine}
@@ -69,9 +84,21 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
             <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
               The Method
             </h5>
-            <ol className="text-sm space-y-2.5 list-decimal list-inside font-medium">
+            <ol className="text-sm space-y-2.5 font-medium">
               {receipe.steps.map((s, i) => (
-                <li key={i}>{s}</li>
+                <li key={i} className="flex gap-3 items-start">
+                  <span className="shrink-0 size-6 rounded-full bg-turmeric text-foreground font-black text-[11px] grid place-items-center mt-0.5">
+                    {i + 1}
+                  </span>
+                  <span className="flex-1 leading-snug">
+                    {s}
+                    {timings[i] != null && (
+                      <span className="ml-2 inline-block font-mono text-[10px] font-bold uppercase bg-white/15 border border-white/25 px-1.5 py-0.5 rounded">
+                        {timings[i]} min
+                      </span>
+                    )}
+                  </span>
+                </li>
               ))}
             </ol>
           </div>
@@ -160,7 +187,7 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
         <div className="flex flex-wrap gap-3 font-mono text-[10px] font-bold mb-3 uppercase">
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-turmeric" />
-            {receipe.cookTimeMinutes} min
+            {total != null ? `${total} min total` : `${receipe.cookTimeMinutes} min`}
           </span>
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-cardamom" />
