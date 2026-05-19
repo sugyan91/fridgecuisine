@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
@@ -10,6 +10,7 @@ import {
   addRecipeComment,
   deleteRecipeComment,
   setRecipeCommentsEnabled,
+  deleteCommunityRecipe,
 } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,6 +27,9 @@ function RecipePage() {
   const postComment = useServerFn(addRecipeComment);
   const removeComment = useServerFn(deleteRecipeComment);
   const toggleComments = useServerFn(setRecipeCommentsEnabled);
+  const removeRecipe = useServerFn(deleteCommunityRecipe);
+  const navigate = useNavigate();
+  const [deleting, setDeleting] = useState(false);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(false);
@@ -132,6 +136,19 @@ function RecipePage() {
     }
   };
 
+  const onDeleteRecipe = async () => {
+    if (!confirm(`Delete "${r.title}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      await removeRecipe({ data: { id: recipeId } });
+      toast.success("Receipe deleted");
+      navigate({ to: "/community" });
+    } catch {
+      toast.error("Couldn't delete receipe");
+      setDeleting(false);
+    }
+  };
+
   const resendVerification = async () => {
     if (!userEmail) return;
     const { error } = await supabase.auth.resend({ type: "signup", email: userEmail });
@@ -158,6 +175,18 @@ function RecipePage() {
             {[r.city, r.country, r.cuisine].filter(Boolean).join(" · ")} · by {data.author_name}
           </p>
           {r.description && <p className="mb-5 text-base">{r.description}</p>}
+          {isOwner && (
+            <div className="mb-5 flex justify-end">
+              <button
+                type="button"
+                onClick={onDeleteRecipe}
+                disabled={deleting}
+                className="bg-paprika text-white border-2 border-border rounded-full px-3 py-1.5 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+              >
+                {deleting ? "Deleting…" : "Delete receipe"}
+              </button>
+            </div>
+          )}
           {r.dietary?.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-5">
               {r.dietary.map((d: string) => (
