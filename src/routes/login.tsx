@@ -130,8 +130,8 @@ function LoginPage() {
           setLoading(false);
           return;
         }
-        if (password.length < 6) {
-          toast.error("Password must be at least 6 characters");
+        if (password !== confirmPassword) {
+          toast.error("Passwords do not match");
           setLoading(false);
           return;
         }
