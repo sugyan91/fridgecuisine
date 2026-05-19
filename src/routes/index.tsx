@@ -16,6 +16,9 @@ import { worldFoods } from "@/lib/world-foods";
 import { RecipeCounter } from "@/components/RecipeCounter";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
+import { DishPhoto } from "@/components/fridge/DishPhoto";
+import { RecipeTimers } from "@/components/fridge/RecipeTimers";
+import { StepTimer } from "@/components/fridge/StepTimer";
 import dalImg from "@/assets/recipe-dal.jpg";
 import saagImg from "@/assets/recipe-saag.jpg";
 import riceImg from "@/assets/recipe-rice.jpg";
@@ -488,6 +491,11 @@ function Index() {
                   <h3 className="font-display text-2xl md:text-3xl uppercase text-paprika mb-2">
                     {dishResult.dishName}
                   </h3>
+                  <DishPhoto
+                    title={dishResult.dishName}
+                    ingredients={dishResult.ingredients}
+                    className="mb-4 border-2 border-border rounded-2xl overflow-hidden"
+                  />
                   <p className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
                     Ingredients
                   </p>
@@ -546,6 +554,14 @@ function Index() {
                           )}
                         </div>
                       </div>
+                      <div className="mb-4">
+                        <RecipeTimers
+                          totalMinutes={
+                            dishResult.receipe.totalTimeMinutes ??
+                            dishResult.receipe.cookTimeMinutes
+                          }
+                        />
+                      </div>
                       <ol className="space-y-2.5">
                         {dishResult.receipe.steps.map((s, i) => {
                           const t = dishResult.receipe.stepTimings?.[i];
@@ -557,8 +573,8 @@ function Index() {
                               <span className="flex-1">
                                 {s}
                                 {t != null && (
-                                  <span className="ml-2 inline-block font-mono text-[10px] font-bold uppercase bg-white border border-border px-1.5 py-0.5 rounded">
-                                    {t} min
+                                  <span className="ml-2 inline-flex align-middle">
+                                    <StepTimer minutes={t} />
                                   </span>
                                 )}
                               </span>

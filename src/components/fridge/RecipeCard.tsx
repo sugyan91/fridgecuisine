@@ -1,5 +1,8 @@
 import { useState } from "react";
 import type { Receipe } from "@/lib/receipes.functions";
+import { DishPhoto } from "./DishPhoto";
+import { RecipeTimers } from "./RecipeTimers";
+import { StepTimer } from "./StepTimer";
 
 type Props = {
   receipe: Receipe;
@@ -24,6 +27,12 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
         className="bg-cardamom text-white border-4 border-border rounded-[32px] p-6 md:p-8 shadow-[8px_8px_0px_0px_var(--border)] animate-pop"
         style={{ animationDelay: `${index * 80}ms` }}
       >
+        <DishPhoto
+          title={receipe.title}
+          cuisine={receipe.cuisine}
+          ingredients={allIngredients}
+          className="mb-6 border-2 border-white/20 rounded-2xl overflow-hidden"
+        />
         <div className="flex justify-between items-start mb-6 gap-4">
           <div>
             <h4 className="font-display text-3xl md:text-4xl uppercase tracking-tight leading-none">
@@ -79,6 +88,13 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
 
         <p className="text-sm mb-6 opacity-90">{receipe.blurb}</p>
 
+        <div className="mb-5">
+          <RecipeTimers
+            totalMinutes={total ?? receipe.cookTimeMinutes}
+            variant="dark"
+          />
+        </div>
+
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
             <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
@@ -93,8 +109,8 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
                   <span className="flex-1 leading-snug">
                     {s}
                     {timings[i] != null && (
-                      <span className="ml-2 inline-block font-mono text-[10px] font-bold uppercase bg-white/15 border border-white/25 px-1.5 py-0.5 rounded">
-                        {timings[i]} min
+                      <span className="ml-2 inline-flex align-middle">
+                        <StepTimer minutes={timings[i]} variant="dark" />
                       </span>
                     )}
                   </span>
@@ -167,6 +183,12 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
       className="group bg-white border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
       style={{ animationDelay: `${index * 80}ms` }}
     >
+      <DishPhoto
+        title={receipe.title}
+        cuisine={receipe.cuisine}
+        ingredients={allIngredients}
+        className="border-b-4 border-border"
+      />
       <div className="p-5 flex-1">
         <div className="flex justify-between items-start mb-2 gap-3">
           <h4 className="font-black text-xl md:text-2xl leading-tight">

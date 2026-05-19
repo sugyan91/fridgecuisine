@@ -1,9 +1,9 @@
-import fallbackChana from "@/assets/receipe-chana.jpg";
-import fallbackDal from "@/assets/receipe-dal.jpg";
-import fallbackMomo from "@/assets/receipe-momo.jpg";
-import fallbackPaneer from "@/assets/receipe-paneer.jpg";
-import fallbackRice from "@/assets/receipe-rice.jpg";
-import fallbackSaag from "@/assets/receipe-saag.jpg";
+import fallbackChana from "@/assets/recipe-chana.jpg";
+import fallbackDal from "@/assets/recipe-dal.jpg";
+import fallbackMomo from "@/assets/recipe-momo.jpg";
+import fallbackPaneer from "@/assets/recipe-paneer.jpg";
+import fallbackRice from "@/assets/recipe-rice.jpg";
+import fallbackSaag from "@/assets/recipe-saag.jpg";
 
 const FALLBACKS = [
   fallbackChana,
