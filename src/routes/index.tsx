@@ -559,8 +559,8 @@ function Index() {
                     : "Travelling around the globe to find a perfect receipe for you"
                   : "Show me the cuisine"}
               </button>
-              <PricingNote />
             </div>
+            <PricingNote />
           </section>
 
           <section className="lg:col-span-7 space-y-5">
