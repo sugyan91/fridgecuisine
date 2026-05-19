@@ -183,6 +183,12 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
       className="group bg-white border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
       style={{ animationDelay: `${index * 80}ms` }}
     >
+      <DishPhoto
+        title={receipe.title}
+        cuisine={receipe.cuisine}
+        ingredients={allIngredients}
+        className="border-b-4 border-border"
+      />
       <div className="p-5 flex-1">
         <div className="flex justify-between items-start mb-2 gap-3">
           <h4 className="font-black text-xl md:text-2xl leading-tight">
