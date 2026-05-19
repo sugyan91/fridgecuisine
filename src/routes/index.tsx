@@ -442,13 +442,13 @@ function Index() {
                 <>
                   <Link
                     to="/my-recipes"
-                    className="text-[11px] font-black uppercase tracking-wide px-2 hidden sm:inline"
+                    className="text-[11px] font-black uppercase tracking-wide px-2 hidden lg:inline"
                   >
                     My Receipes
                   </Link>
                   <Link
                     to="/cookbook"
-                    className="text-[11px] font-black uppercase tracking-wide px-2 hidden sm:inline"
+                    className="text-[11px] font-black uppercase tracking-wide px-2 hidden lg:inline"
                   >
                     Cookbook
                   </Link>
@@ -466,7 +466,7 @@ function Index() {
                   >
                     Saved {saved.length}
                   </button>
-                  <span className="hidden md:inline text-xs font-bold truncate max-w-[140px] opacity-70">
+                  <span className="hidden xl:inline text-xs font-bold truncate max-w-[140px] opacity-70">
                     {email}
                   </span>
                   <button
