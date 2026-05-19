@@ -16,7 +16,6 @@ import { worldFoods } from "@/lib/world-foods";
 import { RecipeCounter } from "@/components/RecipeCounter";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
-import { DishPhoto } from "@/components/fridge/DishPhoto";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import dalImg from "@/assets/recipe-dal.jpg";
@@ -491,11 +490,6 @@ function Index() {
                   <h3 className="font-display text-2xl md:text-3xl uppercase text-paprika mb-2">
                     {dishResult.dishName}
                   </h3>
-                  <DishPhoto
-                    title={dishResult.dishName}
-                    ingredients={dishResult.ingredients}
-                    className="mb-4 border-2 border-border rounded-2xl overflow-hidden"
-                  />
                   <p className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
                     Ingredients
                   </p>
