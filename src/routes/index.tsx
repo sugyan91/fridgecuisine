@@ -173,6 +173,8 @@ function Index() {
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium } = useSubscription(userId);
   const { logGeneration, atLimit: usageAtLimit } = useRecipeUsage(userId);
+  const isAdmin = useIsAdmin(userId);
+  const [adminOpen, setAdminOpen] = useState(false);
   const limitBlocked = !isPremium && usageAtLimit;
   const limitToast = () => {
     toast.error(
