@@ -483,7 +483,8 @@ function LoginPage() {
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     required
-                    autoComplete="username"
+                    autoComplete="username email"
+                    inputMode="email"
                     spellCheck={false}
                     autoCapitalize="none"
                     aria-describedby={identifierHintId}
