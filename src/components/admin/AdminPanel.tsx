@@ -133,14 +133,51 @@ function Pager({
   );
 }
 
-function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function SearchBar({
+  value,
+  onChange,
+  placeholder,
+  right,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  right?: React.ReactNode;
+}) {
   return (
-    <input
+    <div className="flex gap-2 mb-3">
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder ?? "Search…"}
+        className="flex-1 border-2 border-border rounded-full px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+      />
+      {right}
+    </div>
+  );
+}
+
+function FilterSelect<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+}) {
+  return (
+    <select
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder="Search…"
-      className="w-full border-2 border-border rounded-full px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-turmeric mb-3"
-    />
+      onChange={(e) => onChange(e.target.value as T)}
+      className="border-2 border-border rounded-full px-3 py-2 text-xs font-black uppercase bg-white focus:outline-none focus:ring-2 focus:ring-turmeric"
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -157,6 +194,7 @@ function UsersTab() {
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [premium, setPremium] = useState<"all" | "premium" | "free">("all");
   const [rows, setRows] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -166,7 +204,9 @@ function UsersTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const r = await list({ data: { page, pageSize: PAGE_SIZE, search: search || undefined } });
+      const r = await list({
+        data: { page, pageSize: PAGE_SIZE, search: search || undefined, premium },
+      });
       setRows(r.users);
       setTotal(r.total);
     } catch (e: any) {
@@ -188,7 +228,7 @@ function UsersTab() {
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, premium]);
 
   const run = async (label: string, fn: () => Promise<unknown>, ok: string) => {
     setBusy(label);
@@ -205,7 +245,22 @@ function UsersTab() {
 
   return (
     <div>
-      <SearchBar value={search} onChange={setSearch} />
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Search email, username, display name, ID…"
+        right={
+          <FilterSelect
+            value={premium}
+            onChange={setPremium}
+            options={[
+              { value: "all", label: "All" },
+              { value: "premium", label: "Premium" },
+              { value: "free", label: "Free" },
+            ]}
+          />
+        }
+      />
       <div className="border-2 border-border rounded-2xl overflow-hidden">
         <div className="grid grid-cols-[1fr_120px_70px_70px_60px] gap-2 px-3 py-2 bg-muted/30 text-[10px] font-black uppercase">
           <div>User</div>
@@ -302,6 +357,7 @@ function RecipesTab() {
   const del = useServerFn(adminDeleteCommunityRecipe);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [published, setPublished] = useState<"all" | "published" | "unpublished">("all");
   const [rows, setRows] = useState<RecipeRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -310,7 +366,9 @@ function RecipesTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const r = await list({ data: { page, pageSize: PAGE_SIZE, search: search || undefined } });
+      const r = await list({
+        data: { page, pageSize: PAGE_SIZE, search: search || undefined, published },
+      });
       setRows(r.recipes);
       setTotal(r.total);
     } catch (e: any) {
@@ -331,7 +389,7 @@ function RecipesTab() {
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, published]);
 
   const onDelete = async (r: RecipeRow) => {
     if (!confirm(`Delete recipe "${r.title}"? This also removes its comments and likes.`)) return;
@@ -349,12 +407,28 @@ function RecipesTab() {
 
   return (
     <div>
-      <SearchBar value={search} onChange={setSearch} />
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Search title, author, city, country…"
+        right={
+          <FilterSelect
+            value={published}
+            onChange={setPublished}
+            options={[
+              { value: "all", label: "All" },
+              { value: "published", label: "Published" },
+              { value: "unpublished", label: "Unpublished" },
+            ]}
+          />
+        }
+      />
       <div className="border-2 border-border rounded-2xl overflow-hidden">
-        <div className="grid grid-cols-[1fr_140px_120px_140px] gap-2 px-3 py-2 bg-muted/30 text-[10px] font-black uppercase">
+        <div className="grid grid-cols-[1fr_140px_120px_70px_140px] gap-2 px-3 py-2 bg-muted/30 text-[10px] font-black uppercase">
           <div>Title</div>
           <div>Author</div>
           <div>Where</div>
+          <div className="text-center">Pub</div>
           <div className="text-right">Actions</div>
         </div>
         {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}
@@ -364,7 +438,7 @@ function RecipesTab() {
         {rows.map((r) => (
           <div
             key={r.id}
-            className="border-t-2 border-border grid grid-cols-[1fr_140px_120px_140px] gap-2 px-3 py-2 items-center text-xs"
+            className="border-t-2 border-border grid grid-cols-[1fr_140px_120px_70px_140px] gap-2 px-3 py-2 items-center text-xs"
           >
             <div className="truncate">
               <div className="font-black truncate">{r.title}</div>
@@ -378,6 +452,7 @@ function RecipesTab() {
             <div className="truncate opacity-80">
               {[r.city, r.country].filter(Boolean).join(", ") || "—"}
             </div>
+            <div className="text-center">{r.is_published ? "✓" : "—"}</div>
             <div className="flex gap-1 justify-end">
               <a
                 href={`/community/${r.id}`}
@@ -457,7 +532,11 @@ function CommentsTab() {
 
   return (
     <div>
-      <SearchBar value={search} onChange={setSearch} />
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Search body, author, recipe title…"
+      />
       <div className="border-2 border-border rounded-2xl overflow-hidden">
         {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}
         {!loading && rows.length === 0 && (
