@@ -36,6 +36,8 @@ function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // Accessible progress announcement (separate from visual spinner).
   const [statusMessage, setStatusMessage] = useState("");
   // Synchronous lock to guard against duplicate submissions when the UI lags
@@ -520,16 +522,26 @@ function LoginPage() {
 
             <div>
                 <label htmlFor={passwordId} className="block font-bold text-xs uppercase mb-1">Password</label>
-                <input
-                  id={passwordId}
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <input
+                    id={passwordId}
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    className="w-full border-2 border-border rounded-xl px-3 py-2.5 pr-16 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase px-2 py-1 rounded-md border-2 border-border bg-white hover:bg-muted"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
                 {mode === "signup" && (
                   <p className="text-[10px] mt-1 text-muted-foreground">
                     Suggested: 6+ characters with letters and numbers
@@ -540,16 +552,26 @@ function LoginPage() {
             {mode === "signup" && (
               <div>
                 <label htmlFor="confirm-password" className="block font-bold text-xs uppercase mb-1">Confirm password</label>
-                <input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  className="w-full border-2 border-border rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
-                  placeholder="Retype your password"
-                />
+                <div className="relative">
+                  <input
+                    id="confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                    className="w-full border-2 border-border rounded-xl px-3 py-2.5 pr-16 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                    placeholder="Retype your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase px-2 py-1 rounded-md border-2 border-border bg-white hover:bg-muted"
+                  >
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
                 {confirmPassword && password !== confirmPassword && (
                   <p className="text-[10px] mt-1 text-red-600 font-bold">Passwords do not match</p>
                 )}
@@ -575,7 +597,7 @@ function LoginPage() {
             <button
               ref={submitBtnRef}
               type="submit"
-              disabled={loading}
+              disabled={loading || (mode === "signup" && (!password || password !== confirmPassword))}
               aria-busy={loading}
               aria-describedby={formError ? formErrorId : undefined}
               className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-lg uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
