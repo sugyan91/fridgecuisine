@@ -92,7 +92,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
             </span>
           )}
         </p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {allDietary.map((d) => {
             const active = dietary.includes(d);
             const isCustom = customDietary.includes(d);
@@ -101,7 +101,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
                 <button
                   type="button"
                   onClick={() => toggle(d)}
-                  className={`w-full border-2 border-border py-2 px-2 rounded-xl font-black text-[11px] uppercase transition-all ${
+                  className={`w-full h-full min-h-[48px] flex items-center justify-center text-center leading-tight break-words border-2 border-border py-2 px-2 rounded-xl font-black text-[11px] uppercase transition-all ${
                     active
                       ? "bg-paprika text-white shadow-[3px_3px_0px_0px_var(--border)]"
                       : isCustom
