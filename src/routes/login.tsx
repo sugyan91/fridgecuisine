@@ -207,10 +207,10 @@ function LoginPage() {
         // session when "Remember me" was unchecked.
         try {
           if (remember) {
-            localStorage.setItem("fc-auth-remember", "1");
+            localStorage.removeItem("fc-auth-ephemeral");
             sessionStorage.removeItem("fc-auth-session");
           } else {
-            localStorage.removeItem("fc-auth-remember");
+            localStorage.setItem("fc-auth-ephemeral", "1");
             sessionStorage.setItem("fc-auth-session", "1");
           }
         } catch {}
