@@ -262,6 +262,39 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_recipes: {
+        Row: {
+          cook_time_minutes: number | null
+          cooked_at: string | null
+          cuisine: string | null
+          id: string
+          recipe: Json
+          saved_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          cook_time_minutes?: number | null
+          cooked_at?: string | null
+          cuisine?: string | null
+          id?: string
+          recipe: Json
+          saved_at?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          cook_time_minutes?: number | null
+          cooked_at?: string | null
+          cuisine?: string | null
+          id?: string
+          recipe?: Json
+          saved_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
