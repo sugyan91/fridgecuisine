@@ -514,8 +514,8 @@ function Index() {
                   )}
                 </div>
               )}
-              <PricingNote />
             </div>
+            <PricingNote />
           </section>
 
           <section className="lg:col-span-5 animate-pop">
