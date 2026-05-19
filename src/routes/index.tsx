@@ -387,6 +387,7 @@ function Index() {
   return (
     <>
       <Toaster />
+      <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
       <SavedDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
