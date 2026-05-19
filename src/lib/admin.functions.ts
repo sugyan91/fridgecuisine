@@ -207,3 +207,166 @@ export const adminGetUserSummary = createServerFn({ method: "POST" })
     });
     return { usedToday: usedToday ?? 0, isPremium, subscriptions: subs ?? [] };
   });
+
+const PAGE = z.object({
+  page: z.number().int().min(1).max(1000).default(1),
+  pageSize: z.number().int().min(1).max(200).default(50),
+  search: z.string().trim().max(200).optional(),
+});
+
+export const adminListUsers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => PAGE.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({
+      page: data.page,
+      perPage: data.pageSize,
+    });
+    if (error) throw new Error(error.message);
+    const ids = list.users.map((u) => u.id);
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, username, display_name")
+      .in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+    const profileMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const { data: gens } = await supabaseAdmin
+      .from("recipe_generations")
+      .select("user_id")
+      .in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"])
+      .gte("created_at", startOfDay.toISOString());
+    const usageMap = new Map<string, number>();
+    for (const g of gens ?? []) usageMap.set(g.user_id, (usageMap.get(g.user_id) ?? 0) + 1);
+    const { data: subs } = await supabaseAdmin
+      .from("subscriptions")
+      .select("user_id, status, current_period_end")
+      .in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+    const now = Date.now();
+    const premiumSet = new Set<string>();
+    for (const s of subs ?? []) {
+      const end = s.current_period_end ? new Date(s.current_period_end).getTime() : null;
+      if (["active", "trialing"].includes(s.status) && (end === null || end > now)) {
+        premiumSet.add(s.user_id);
+      }
+    }
+    let users = list.users.map((u) => {
+      const p = profileMap.get(u.id);
+      return {
+        id: u.id,
+        email: u.email ?? null,
+        username: p?.username ?? null,
+        display_name: p?.display_name ?? null,
+        created_at: u.created_at,
+        usedToday: usageMap.get(u.id) ?? 0,
+        isPremium: premiumSet.has(u.id),
+      };
+    });
+    if (data.search) {
+      const q = data.search.toLowerCase();
+      users = users.filter(
+        (u) =>
+          u.email?.toLowerCase().includes(q) ||
+          u.username?.toLowerCase().includes(q) ||
+          u.display_name?.toLowerCase().includes(q) ||
+          u.id.includes(q),
+      );
+    }
+    return { users, total: list.total ?? users.length };
+  });
+
+export const adminListCommunityRecipes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => PAGE.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const from = (data.page - 1) * data.pageSize;
+    const to = from + data.pageSize - 1;
+    let query = supabaseAdmin
+      .from("community_recipes")
+      .select("id, user_id, title, city, country, cuisine, created_at, is_published", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(from, to);
+    if (data.search) query = query.ilike("title", `%${data.search}%`);
+    const { data: rows, count, error } = await query;
+    if (error) throw new Error(error.message);
+    const ids = (rows ?? []).map((r) => r.user_id);
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, username, display_name")
+      .in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+    const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
+    return {
+      recipes: (rows ?? []).map((r) => ({
+        ...r,
+        author_username: pMap.get(r.user_id)?.username ?? null,
+        author_display_name: pMap.get(r.user_id)?.display_name ?? null,
+      })),
+      total: count ?? 0,
+    };
+  });
+
+export const adminDeleteCommunityRecipe = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ recipe_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    await supabaseAdmin.from("community_recipe_comments").delete().eq("recipe_id", data.recipe_id);
+    await supabaseAdmin.from("community_recipe_likes").delete().eq("recipe_id", data.recipe_id);
+    const { error } = await supabaseAdmin.from("community_recipes").delete().eq("id", data.recipe_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminListComments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => PAGE.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const from = (data.page - 1) * data.pageSize;
+    const to = from + data.pageSize - 1;
+    let query = supabaseAdmin
+      .from("community_recipe_comments")
+      .select("id, user_id, recipe_id, body, created_at", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(from, to);
+    if (data.search) query = query.ilike("body", `%${data.search}%`);
+    const { data: rows, count, error } = await query;
+    if (error) throw new Error(error.message);
+    const uids = (rows ?? []).map((r) => r.user_id);
+    const rids = (rows ?? []).map((r) => r.recipe_id);
+    const [{ data: profiles }, { data: recipes }] = await Promise.all([
+      supabaseAdmin
+        .from("profiles")
+        .select("user_id, username")
+        .in("user_id", uids.length ? uids : ["00000000-0000-0000-0000-000000000000"]),
+      supabaseAdmin
+        .from("community_recipes")
+        .select("id, title")
+        .in("id", rids.length ? rids : ["00000000-0000-0000-0000-000000000000"]),
+    ]);
+    const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p.username]));
+    const rMap = new Map((recipes ?? []).map((r) => [r.id, r.title]));
+    return {
+      comments: (rows ?? []).map((c) => ({
+        ...c,
+        author_username: pMap.get(c.user_id) ?? null,
+        recipe_title: rMap.get(c.recipe_id) ?? null,
+      })),
+      total: count ?? 0,
+    };
+  });
+
+export const adminDeleteComment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ comment_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("community_recipe_comments")
+      .delete()
+      .eq("id", data.comment_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

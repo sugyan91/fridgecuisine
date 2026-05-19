@@ -1,88 +1,60 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  adminFindUser,
+  adminListUsers,
+  adminListCommunityRecipes,
+  adminListComments,
   adminGetUserSummary,
   adminResetUsage,
   adminSendPasswordReset,
   adminDeleteUser,
   adminGrantPremium,
   adminRevokePremium,
+  adminDeleteCommunityRecipe,
+  adminDeleteComment,
 } from "@/lib/admin.functions";
 
-type FoundUser = {
+type Tab = "users" | "recipes" | "comments";
+
+type UserRow = {
   id: string;
   email: string | null;
   username: string | null;
   display_name: string | null;
   created_at: string;
-};
-
-type Summary = {
   usedToday: number;
   isPremium: boolean;
-  subscriptions: { status: string; environment: string; current_period_end: string | null; stripe_subscription_id: string }[];
 };
 
+type RecipeRow = {
+  id: string;
+  user_id: string;
+  title: string;
+  city: string | null;
+  country: string | null;
+  cuisine: string | null;
+  created_at: string;
+  is_published: boolean;
+  author_username: string | null;
+  author_display_name: string | null;
+};
+
+type CommentRow = {
+  id: string;
+  user_id: string;
+  recipe_id: string;
+  body: string;
+  created_at: string;
+  author_username: string | null;
+  recipe_title: string | null;
+};
+
+const PAGE_SIZE = 50;
+
 export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const find = useServerFn(adminFindUser);
-  const summary = useServerFn(adminGetUserSummary);
-  const resetUsage = useServerFn(adminResetUsage);
-  const sendReset = useServerFn(adminSendPasswordReset);
-  const deleteUser = useServerFn(adminDeleteUser);
-  const grant = useServerFn(adminGrantPremium);
-  const revoke = useServerFn(adminRevokePremium);
-
-  const [query, setQuery] = useState("");
-  const [user, setUser] = useState<FoundUser | null>(null);
-  const [info, setInfo] = useState<Summary | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
-
+  const [tab, setTab] = useState<Tab>("users");
   if (!open) return null;
-
-  const loadSummary = async (uid: string) => {
-    try {
-      const s = await summary({ data: { user_id: uid } });
-      setInfo(s);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to load");
-    }
-  };
-
-  const search = async () => {
-    if (!query.trim()) return;
-    setBusy("search");
-    try {
-      const r = await find({ data: { query: query.trim() } });
-      if (!r.user) {
-        toast.error("No user found");
-        setUser(null);
-        setInfo(null);
-      } else {
-        setUser(r.user);
-        await loadSummary(r.user.id);
-      }
-    } catch (e: any) {
-      toast.error(e?.message ?? "Search failed");
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const run = async (label: string, fn: () => Promise<unknown>, successMsg: string) => {
-    setBusy(label);
-    try {
-      await fn();
-      toast.success(successMsg);
-      if (user) await loadSummary(user.id);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Action failed");
-    } finally {
-      setBusy(null);
-    }
-  };
-
   return (
     <div
       className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto"
@@ -90,10 +62,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white border-4 border-border rounded-3xl shadow-[8px_8px_0px_0px_var(--border)] w-full max-w-xl mt-12 p-5"
+        className="bg-white border-4 border-border rounded-3xl shadow-[8px_8px_0px_0px_var(--border)] w-full max-w-5xl mt-8 mb-8 p-5"
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-2xl text-paprika">Admin panel</h2>
+          <h2 className="font-display text-2xl text-paprika">Admin dashboard</h2>
           <button
             onClick={onClose}
             className="border-2 border-border rounded-full w-8 h-8 font-black text-sm"
@@ -102,100 +74,425 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
           </button>
         </div>
 
-        <div className="flex gap-2 mb-4">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Email, username, or user ID"
-            onKeyDown={(e) => e.key === "Enter" && search()}
-            className="flex-1 border-2 border-border rounded-full px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
-          />
-          <button
-            onClick={search}
-            disabled={busy === "search"}
-            className="bg-turmeric border-2 border-border rounded-full px-4 py-2 text-xs font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
-          >
-            {busy === "search" ? "…" : "Find"}
-          </button>
+        <div className="flex gap-1 bg-muted/40 border-2 border-border rounded-full p-1 mb-5">
+          {(["users", "recipes", "comments"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 text-xs font-black uppercase py-2 rounded-full transition-colors ${
+                tab === t ? "bg-turmeric text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
         </div>
 
-        {user && (
-          <div className="border-2 border-border rounded-2xl p-4 space-y-3">
-            <div>
-              <p className="font-black text-sm">{user.display_name ?? user.username ?? "Unnamed"}</p>
-              <p className="text-xs opacity-70">{user.email}</p>
-              <p className="text-[10px] opacity-50 font-mono break-all">{user.id}</p>
-              {info && (
-                <p className="text-xs mt-2">
-                  <span className="font-black">Today's usage:</span> {info.usedToday} ·{" "}
-                  <span className="font-black">Premium:</span>{" "}
-                  {info.isPremium ? "Yes" : "No"}
-                </p>
-              )}
-            </div>
+        {tab === "users" && <UsersTab />}
+        {tab === "recipes" && <RecipesTab />}
+        {tab === "comments" && <CommentsTab />}
+      </div>
+    </div>
+  );
+}
 
-            <div className="grid grid-cols-2 gap-2">
+function Pager({
+  page,
+  total,
+  pageSize,
+  onPage,
+}: {
+  page: number;
+  total: number;
+  pageSize: number;
+  onPage: (p: number) => void;
+}) {
+  const last = Math.max(1, Math.ceil(total / pageSize));
+  return (
+    <div className="flex items-center justify-between mt-3 text-xs">
+      <span className="opacity-60">
+        {total} total · page {page} / {last}
+      </span>
+      <div className="flex gap-2">
+        <button
+          disabled={page <= 1}
+          onClick={() => onPage(page - 1)}
+          className="border-2 border-border rounded-full px-3 py-1 font-black uppercase disabled:opacity-40"
+        >
+          Prev
+        </button>
+        <button
+          disabled={page >= last}
+          onClick={() => onPage(page + 1)}
+          className="border-2 border-border rounded-full px-3 py-1 font-black uppercase disabled:opacity-40"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="Search…"
+      className="w-full border-2 border-border rounded-full px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-turmeric mb-3"
+    />
+  );
+}
+
+/* ----------------- USERS ----------------- */
+
+function UsersTab() {
+  const list = useServerFn(adminListUsers);
+  const summary = useServerFn(adminGetUserSummary);
+  const resetUsage = useServerFn(adminResetUsage);
+  const sendReset = useServerFn(adminSendPasswordReset);
+  const deleteUser = useServerFn(adminDeleteUser);
+  const grant = useServerFn(adminGrantPremium);
+  const revoke = useServerFn(adminRevokePremium);
+
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [rows, setRows] = useState<UserRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const r = await list({ data: { page, pageSize: PAGE_SIZE, search: search || undefined } });
+      setRows(r.users);
+      setTotal(r.total);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else load();
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const run = async (label: string, fn: () => Promise<unknown>, ok: string) => {
+    setBusy(label);
+    try {
+      await fn();
+      toast.success(ok);
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Action failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div>
+      <SearchBar value={search} onChange={setSearch} />
+      <div className="border-2 border-border rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-[1fr_120px_70px_70px_60px] gap-2 px-3 py-2 bg-muted/30 text-[10px] font-black uppercase">
+          <div>User</div>
+          <div>Username</div>
+          <div className="text-center">Today</div>
+          <div className="text-center">Prem</div>
+          <div></div>
+        </div>
+        {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}
+        {!loading && rows.length === 0 && (
+          <div className="px-3 py-4 text-xs opacity-60">No users found.</div>
+        )}
+        {rows.map((u) => (
+          <div key={u.id} className="border-t-2 border-border">
+            <div className="grid grid-cols-[1fr_120px_70px_70px_60px] gap-2 px-3 py-2 items-center text-xs">
+              <div className="truncate">
+                <div className="font-black truncate">{u.display_name || u.email || u.id}</div>
+                <div className="opacity-60 truncate text-[10px]">{u.email}</div>
+              </div>
+              <div className="truncate opacity-80">{u.username ? `@${u.username}` : "—"}</div>
+              <div className="text-center font-black">{u.usedToday}</div>
+              <div className="text-center">{u.isPremium ? "✓" : "—"}</div>
               <button
-                disabled={!!busy}
-                onClick={() =>
-                  run("reset", () => resetUsage({ data: { user_id: user.id } }), "Usage reset for today")
-                }
-                className="bg-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+                onClick={() => setExpanded(expanded === u.id ? null : u.id)}
+                className="border-2 border-border rounded-full px-2 py-1 text-[10px] font-black uppercase"
               >
-                Reset usage
+                {expanded === u.id ? "Hide" : "Open"}
               </button>
-              <button
-                disabled={!!busy || !user.email}
-                onClick={() =>
-                  run("reset-pw", () => sendReset({ data: { email: user.email! } }), "Password reset email sent")
-                }
-                className="bg-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+            </div>
+            {expanded === u.id && (
+              <div className="px-3 pb-3 grid grid-cols-2 gap-2">
+                <button
+                  disabled={!!busy}
+                  onClick={() =>
+                    run("r", () => resetUsage({ data: { user_id: u.id } }), "Usage reset")
+                  }
+                  className="bg-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+                >
+                  Reset usage
+                </button>
+                <button
+                  disabled={!!busy || !u.email}
+                  onClick={() =>
+                    run("pw", () => sendReset({ data: { email: u.email! } }), "Reset email sent")
+                  }
+                  className="bg-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+                >
+                  Send password reset
+                </button>
+                <button
+                  disabled={!!busy}
+                  onClick={() =>
+                    run(
+                      "g",
+                      () => grant({ data: { user_id: u.id, days: 30, environment: "live" } }),
+                      "Premium granted 30d",
+                    )
+                  }
+                  className="bg-cardamom text-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+                >
+                  Grant premium 30d
+                </button>
+                <button
+                  disabled={!!busy}
+                  onClick={() => run("v", () => revoke({ data: { user_id: u.id } }), "Premium revoked")}
+                  className="bg-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+                >
+                  Revoke premium
+                </button>
+                <button
+                  disabled={!!busy}
+                  onClick={() => {
+                    if (!confirm(`Permanently delete ${u.email}? This cannot be undone.`)) return;
+                    run("d", () => deleteUser({ data: { user_id: u.id } }), "User deleted");
+                  }}
+                  className="col-span-2 bg-paprika text-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+                >
+                  Delete user
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <Pager page={page} total={total} pageSize={PAGE_SIZE} onPage={setPage} />
+    </div>
+  );
+}
+
+/* ----------------- RECIPES ----------------- */
+
+function RecipesTab() {
+  const list = useServerFn(adminListCommunityRecipes);
+  const del = useServerFn(adminDeleteCommunityRecipe);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [rows, setRows] = useState<RecipeRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const r = await list({ data: { page, pageSize: PAGE_SIZE, search: search || undefined } });
+      setRows(r.recipes);
+      setTotal(r.total);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to load recipes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else load();
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const onDelete = async (r: RecipeRow) => {
+    if (!confirm(`Delete recipe "${r.title}"? This also removes its comments and likes.`)) return;
+    setBusy(r.id);
+    try {
+      await del({ data: { recipe_id: r.id } });
+      toast.success("Recipe deleted");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Delete failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div>
+      <SearchBar value={search} onChange={setSearch} />
+      <div className="border-2 border-border rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-[1fr_140px_120px_140px] gap-2 px-3 py-2 bg-muted/30 text-[10px] font-black uppercase">
+          <div>Title</div>
+          <div>Author</div>
+          <div>Where</div>
+          <div className="text-right">Actions</div>
+        </div>
+        {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}
+        {!loading && rows.length === 0 && (
+          <div className="px-3 py-4 text-xs opacity-60">No recipes found.</div>
+        )}
+        {rows.map((r) => (
+          <div
+            key={r.id}
+            className="border-t-2 border-border grid grid-cols-[1fr_140px_120px_140px] gap-2 px-3 py-2 items-center text-xs"
+          >
+            <div className="truncate">
+              <div className="font-black truncate">{r.title}</div>
+              <div className="opacity-60 text-[10px]">
+                {new Date(r.created_at).toLocaleDateString()} · {r.cuisine ?? "—"}
+              </div>
+            </div>
+            <div className="truncate opacity-80">
+              {r.author_username ? `@${r.author_username}` : r.author_display_name ?? "—"}
+            </div>
+            <div className="truncate opacity-80">
+              {[r.city, r.country].filter(Boolean).join(", ") || "—"}
+            </div>
+            <div className="flex gap-1 justify-end">
+              <a
+                href={`/community/${r.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="border-2 border-border rounded-full px-2 py-1 text-[10px] font-black uppercase"
               >
-                Send password reset
-              </button>
+                Open
+              </a>
               <button
-                disabled={!!busy}
-                onClick={() =>
-                  run(
-                    "grant",
-                    () => grant({ data: { user_id: user.id, days: 30, environment: "live" } }),
-                    "Premium granted for 30 days",
-                  )
-                }
-                className="bg-cardamom text-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
+                disabled={busy === r.id}
+                onClick={() => onDelete(r)}
+                className="bg-paprika text-white border-2 border-border rounded-full px-2 py-1 text-[10px] font-black uppercase disabled:opacity-60"
               >
-                Grant premium 30d
-              </button>
-              <button
-                disabled={!!busy}
-                onClick={() =>
-                  run("revoke", () => revoke({ data: { user_id: user.id } }), "Premium revoked")
-                }
-                className="bg-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
-              >
-                Revoke premium
-              </button>
-              <button
-                disabled={!!busy}
-                onClick={() => {
-                  if (!confirm(`Permanently delete ${user.email}? This cannot be undone.`)) return;
-                  run("del", () => deleteUser({ data: { user_id: user.id } }), "User deleted").then(() => {
-                    setUser(null);
-                    setInfo(null);
-                  });
-                }}
-                className="col-span-2 bg-paprika text-white border-2 border-border rounded-full px-3 py-2 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
-              >
-                Delete user
+                {busy === r.id ? "…" : "Delete"}
               </button>
             </div>
           </div>
-        )}
-
-        <p className="text-[10px] opacity-50 mt-4 leading-relaxed">
-          Admins can also delete any community recipe or comment directly from those pages.
-        </p>
+        ))}
       </div>
+      <Pager page={page} total={total} pageSize={PAGE_SIZE} onPage={setPage} />
+    </div>
+  );
+}
+
+/* ----------------- COMMENTS ----------------- */
+
+function CommentsTab() {
+  const list = useServerFn(adminListComments);
+  const del = useServerFn(adminDeleteComment);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [rows, setRows] = useState<CommentRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const r = await list({ data: { page, pageSize: PAGE_SIZE, search: search || undefined } });
+      setRows(r.comments);
+      setTotal(r.total);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to load comments");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else load();
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const onDelete = async (c: CommentRow) => {
+    if (!confirm("Delete this comment?")) return;
+    setBusy(c.id);
+    try {
+      await del({ data: { comment_id: c.id } });
+      toast.success("Comment deleted");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Delete failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div>
+      <SearchBar value={search} onChange={setSearch} />
+      <div className="border-2 border-border rounded-2xl overflow-hidden">
+        {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}
+        {!loading && rows.length === 0 && (
+          <div className="px-3 py-4 text-xs opacity-60">No comments found.</div>
+        )}
+        {rows.map((c) => (
+          <div key={c.id} className="border-t-2 border-border first:border-t-0 px-3 py-2 text-xs">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="whitespace-pre-wrap break-words">{c.body}</p>
+                <p className="opacity-60 text-[10px] mt-1">
+                  {c.author_username ? `@${c.author_username}` : "anon"} on{" "}
+                  <a
+                    href={`/community/${c.recipe_id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    {c.recipe_title ?? c.recipe_id}
+                  </a>{" "}
+                  · {new Date(c.created_at).toLocaleString()}
+                </p>
+              </div>
+              <button
+                disabled={busy === c.id}
+                onClick={() => onDelete(c)}
+                className="bg-paprika text-white border-2 border-border rounded-full px-2 py-1 text-[10px] font-black uppercase disabled:opacity-60 shrink-0"
+              >
+                {busy === c.id ? "…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Pager page={page} total={total} pageSize={PAGE_SIZE} onPage={setPage} />
     </div>
   );
 }
