@@ -22,6 +22,8 @@ import { worldFoods } from "@/lib/world-foods";
 import { RecipeCounter } from "@/components/RecipeCounter";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useIsAdmin } from "@/hooks/use-is-admin";
+import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import dalImg from "@/assets/recipe-dal.jpg";
