@@ -1,19 +1,25 @@
 ## Goal
 
-Remove the "Pricing" link from the top-right nav and display the pricing inline on the home page as a prominent block:
+Show the Premium price as a tiny one-liner directly under each of the three main boxes on the homepage, instead of the large pricing block above the footer.
 
-> **$5.99 / month — Unlimited recipes**
+## Changes (frontend only, `src/routes/index.tsx`)
 
-with a CTA button linking to `/pricing` (or directly to checkout for signed-in users).
+1. **Remove** the large `<section>` pricing callout currently placed after `<CommunityStrip />` (the `bg-paprika ... $5.99 / month ... Go Premium` block, ~lines 617+).
 
-## Changes (frontend only)
+2. **Add a small price line** immediately below each of the three boxes — placed *inside* each section's white card, at the bottom, separated by a thin dashed divider:
+   - **Dish to receipe** card (~line 517, just before `</div></section>`)
+   - **What's in your Pantry** card (~line 561, just before `</div></section>`)
+   - **Results / "Ready when you are"** section (~line 612, just before `</section>`)
 
-**`src/routes/index.tsx`**
+3. **Markup** for each (consistent, minimal, neo-brutalist tone):
 
-1. Delete the `<Link to="/pricing">Pricing</Link>` chip in the top nav (lines ~352–357).
-2. Add a new `<PricingCallout />` section placed right after `<CommunityStrip />` (line 621), so it sits near the bottom of the page above the mobile saved-button floater. It will:
-   - Match the existing neo-brutalist style (thick border, hard shadow, turmeric/paprika accents, font-display + uppercase).
-   - Show the headline "Unlimited Recipes", the price `$5.99` with `/month` muted, a one-line value prop ("Skip the 5/day limit. Cook anything, anytime."), and a CTA button "Go Premium" linking via TanStack `<Link to="/pricing">`.
-   - Be full-width inside the existing `max-w-6xl` main container, responsive (stacks on mobile, row on md+).
+   ```tsx
+   <div className="mt-4 pt-3 border-t border-dashed border-border/30 text-[11px] text-muted-foreground flex items-center justify-between">
+     <span><span className="font-black text-foreground">$5.99/mo</span> · Premium · unlimited recipes</span>
+     <Link to="/pricing" className="font-black uppercase tracking-wide underline underline-offset-2">Upgrade</Link>
+   </div>
+   ```
 
-No backend, route, or business-logic changes. The `/pricing` route and Stripe wiring stay as-is — only its entry point on the homepage moves from the nav into an in-page section.
+   Small enough to be informational, not a CTA banner. Same line on all three boxes for consistency.
+
+No backend, route, or pricing-logic changes — `/pricing` route and Stripe wiring untouched.
