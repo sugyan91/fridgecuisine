@@ -374,6 +374,7 @@ function LoginPage() {
                   setSignupSent(null);
                   setMode("signin");
                   setPassword("");
+                  setConfirmPassword("");
                 }}
                 className="w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all"
               >
