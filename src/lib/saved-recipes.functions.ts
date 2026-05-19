@@ -2,12 +2,27 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export type SavedRecipeData = {
+  title: string;
+  blurb?: string;
+  cookTimeMinutes?: number;
+  prepTimeMinutes?: number;
+  totalTimeMinutes?: number;
+  cuisine?: string;
+  usedIngredients?: string[];
+  missingIngredients?: string[];
+  steps?: string[];
+  stepTimings?: number[];
+  substitutions?: string[];
+  dietary?: string[];
+};
+
 export type SavedRecipeRow = {
   id: string;
   title: string;
   cuisine: string | null;
   cook_time_minutes: number | null;
-  recipe: unknown;
+  recipe: SavedRecipeData;
   saved_at: string;
   cooked_at: string | null;
 };
@@ -54,14 +69,14 @@ export const saveRecipe = createServerFn({ method: "POST" })
           title: r.title,
           cuisine: r.cuisine ?? null,
           cook_time_minutes: r.cookTimeMinutes ?? null,
-          recipe: r,
+          recipe: r as unknown as Record<string, unknown>,
         },
         { onConflict: "user_id,title" },
       )
       .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    return { row: row as SavedRecipeRow };
+    return { row: row as unknown as SavedRecipeRow };
   });
 
 export const unsaveRecipe = createServerFn({ method: "POST" })
@@ -98,5 +113,5 @@ export const setCookedStatus = createServerFn({ method: "POST" })
       .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    return { row: row as SavedRecipeRow };
+    return { row: row as unknown as SavedRecipeRow };
   });
