@@ -52,7 +52,7 @@ export const listSavedRecipes = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .order("saved_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { rows: (data ?? []) as SavedRecipeRow[] };
+    return { rows: (data ?? []) as unknown as SavedRecipeRow[] };
   });
 
 export const saveRecipe = createServerFn({ method: "POST" })
