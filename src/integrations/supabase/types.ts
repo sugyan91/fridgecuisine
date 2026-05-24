@@ -335,6 +335,7 @@ export type Database = {
       paid_recipes: {
         Row: {
           chef_user_id: string
+          city: string | null
           cook_minutes: number | null
           country: string | null
           cover_image_url: string | null
@@ -345,6 +346,7 @@ export type Database = {
           id: string
           ingredients: Json
           is_published: boolean
+          local_name: string | null
           prep_minutes: number | null
           price_cents: number
           serves: string | null
@@ -355,6 +357,7 @@ export type Database = {
         }
         Insert: {
           chef_user_id: string
+          city?: string | null
           cook_minutes?: number | null
           country?: string | null
           cover_image_url?: string | null
@@ -365,6 +368,7 @@ export type Database = {
           id?: string
           ingredients?: Json
           is_published?: boolean
+          local_name?: string | null
           prep_minutes?: number | null
           price_cents: number
           serves?: string | null
@@ -375,6 +379,7 @@ export type Database = {
         }
         Update: {
           chef_user_id?: string
+          city?: string | null
           cook_minutes?: number | null
           country?: string | null
           cover_image_url?: string | null
@@ -385,6 +390,7 @@ export type Database = {
           id?: string
           ingredients?: Json
           is_published?: boolean
+          local_name?: string | null
           prep_minutes?: number | null
           price_cents?: number
           serves?: string | null
