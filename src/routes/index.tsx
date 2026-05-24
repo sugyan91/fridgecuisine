@@ -183,6 +183,7 @@ function Index() {
   const navRef = useRef<HTMLDivElement | null>(null);
   const pantryRef = useRef<HTMLElement | null>(null);
   const dishInputRef = useRef<HTMLInputElement | null>(null);
+  const cuisineResultsRef = useRef<HTMLDivElement | null>(null);
   const [headerOffset, setHeaderOffset] = useState(96);
   useEffect(() => {
     const compute = () => {
