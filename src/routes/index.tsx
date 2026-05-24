@@ -300,6 +300,7 @@ function Index() {
       return;
     }
     setPantryMode(false);
+    cancelGenerationRef.current = false;
     setLoading(true);
     setReceipes(null);
     // Scroll the results area into view right away so feedback is visible
@@ -310,6 +311,7 @@ function Index() {
       const res = await generate({
         data: { ingredients, dietary, cuisine, exclude: [] },
       });
+      if (cancelGenerationRef.current) return;
       if (!res.ok) {
         toast.error(res.error);
       } else {
@@ -317,10 +319,11 @@ function Index() {
         logGeneration();
       }
     } catch (err) {
+      if (cancelGenerationRef.current) return;
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
     } finally {
-      setLoading(false);
+      if (!cancelGenerationRef.current) setLoading(false);
     }
   };
 
@@ -331,22 +334,25 @@ function Index() {
     }
     setPantryMode(true);
     setCuisine("Any / Surprise Me");
+    cancelGenerationRef.current = false;
     setLoading(true);
     setReceipes(null);
     try {
       const res = await generate({
         data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [] },
       });
+      if (cancelGenerationRef.current) return;
       if (!res.ok) toast.error(res.error);
       else {
         setReceipes(res.receipes);
         logGeneration();
       }
     } catch (err) {
+      if (cancelGenerationRef.current) return;
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
     } finally {
-      setLoading(false);
+      if (!cancelGenerationRef.current) setLoading(false);
     }
   };
 
@@ -356,6 +362,7 @@ function Index() {
       limitToast();
       return;
     }
+    cancelGenerationRef.current = false;
     setLoadingMore(true);
     try {
       const res = await generate({
@@ -366,6 +373,7 @@ function Index() {
           exclude: receipes.map((r) => r.title),
         },
       });
+      if (cancelGenerationRef.current) return;
       if (!res.ok) {
         toast.error(res.error);
       } else {
@@ -379,10 +387,11 @@ function Index() {
         }
       }
     } catch (err) {
+      if (cancelGenerationRef.current) return;
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
     } finally {
-      setLoadingMore(false);
+      if (!cancelGenerationRef.current) setLoadingMore(false);
     }
   };
 
