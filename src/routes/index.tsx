@@ -710,6 +710,21 @@ function Index() {
                   <option key={c}>{c}</option>
                 ))}
               </select>
+              <button
+                type="button"
+                onClick={onSubmit}
+                disabled={loading}
+                className="mt-4 w-full bg-primary text-primary-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading && !pantryMode
+                  ? cuisine && cuisine !== "Any / Surprise Me"
+                    ? `Travelling to ${cuisineToCountry(cuisine)} for a surprise recipe…`
+                    : "Travelling the globe to find your perfect recipe…"
+                  : "Show me the cuisine"}
+              </button>
+              <div className="mt-3 flex justify-center">
+                <RecipeCounter userId={userId} isPremium={isPremium} />
+              </div>
             </div>
           </section>
 
@@ -759,22 +774,6 @@ function Index() {
                 isAuthenticated={!!email}
                 counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} />}
               />
-
-              <button
-                type="button"
-                onClick={onSubmit}
-                disabled={loading}
-                className="mt-6 w-full bg-primary text-primary-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {loading && !pantryMode
-                  ? cuisine && cuisine !== "Any / Surprise Me"
-                    ? `Travelling to ${cuisineToCountry(cuisine)} for a surprise recipe…`
-                    : "Travelling the globe to find your perfect recipe…"
-                  : "Show me the cuisine"}
-              </button>
-              <div className="mt-3 flex justify-center">
-                <RecipeCounter userId={userId} isPremium={isPremium} />
-              </div>
             </div>
           </section>
 
