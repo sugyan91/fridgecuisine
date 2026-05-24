@@ -11,6 +11,7 @@ import { CommunityStrip } from "@/components/fridge/CommunityStrip";
 import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorks } from "@/components/landing/HowItWorks";
+import { ChefCTA } from "@/components/landing/ChefCTA";
 import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
 import {
   listSavedRecipes,
@@ -720,6 +721,10 @@ function Index() {
               title="From fridge to feast in 3 steps"
             />
             <HowItWorks />
+          </section>
+
+          <section className="lg:col-span-12">
+            <ChefCTA />
           </section>
 
           <section ref={pantryRef} className="lg:col-span-5 animate-pop scroll-mt-32">

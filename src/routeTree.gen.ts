@@ -11,12 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ChefsRouteImport } from './routes/chefs'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as CommunityRecipeIdRouteImport } from './routes/community.$recipeId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
@@ -34,6 +36,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChefsRoute = ChefsRouteImport.update({
+  id: '/chefs',
+  path: '/chefs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -64,6 +71,11 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
   id: '/checkout/cancel',
   path: '/checkout/cancel',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSellRoute = AuthenticatedSellRouteImport.update({
+  id: '/sell',
+  path: '/sell',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
   id: '/pricing',
@@ -111,11 +123,13 @@ const ApiPublicPaymentsWebhookRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/chefs': typeof ChefsRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
+  '/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -128,11 +142,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/chefs': typeof ChefsRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
+  '/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -147,11 +163,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/chefs': typeof ChefsRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
+  '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -166,11 +184,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/chefs'
     | '/login'
     | '/reset-password'
     | '/cookbook'
     | '/my-recipes'
     | '/pricing'
+    | '/sell'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -183,11 +203,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/chefs'
     | '/login'
     | '/reset-password'
     | '/cookbook'
     | '/my-recipes'
     | '/pricing'
+    | '/sell'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -201,11 +223,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/chefs'
     | '/login'
     | '/reset-password'
     | '/_authenticated/cookbook'
     | '/_authenticated/my-recipes'
     | '/_authenticated/pricing'
+    | '/_authenticated/sell'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -220,6 +244,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  ChefsRoute: typeof ChefsRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
@@ -246,6 +271,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chefs': {
+      id: '/chefs'
+      path: '/chefs'
+      fullPath: '/chefs'
+      preLoaderRoute: typeof ChefsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -289,6 +321,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/checkout/cancel'
       preLoaderRoute: typeof CheckoutCancelRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/sell': {
+      id: '/_authenticated/sell'
+      path: '/sell'
+      fullPath: '/sell'
+      preLoaderRoute: typeof AuthenticatedSellRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/pricing': {
       id: '/_authenticated/pricing'
@@ -353,6 +392,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCookbookRoute: typeof AuthenticatedCookbookRoute
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
+  AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
 }
 
@@ -360,6 +400,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCookbookRoute: AuthenticatedCookbookRoute,
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
+  AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
 }
 
@@ -370,6 +411,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  ChefsRoute: ChefsRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,

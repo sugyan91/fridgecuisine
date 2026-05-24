@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      chef_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          charges_enabled: boolean
+          country: string | null
+          created_at: string
+          id: string
+          onboarding_completed_at: string | null
+          payouts_enabled: boolean
+          stripe_account_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          charges_enabled?: boolean
+          country?: string | null
+          created_at?: string
+          id?: string
+          onboarding_completed_at?: string | null
+          payouts_enabled?: boolean
+          stripe_account_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          charges_enabled?: boolean
+          country?: string | null
+          created_at?: string
+          id?: string
+          onboarding_completed_at?: string | null
+          payouts_enabled?: boolean
+          stripe_account_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_recipe_comments: {
         Row: {
           body: string
@@ -127,6 +169,75 @@ export type Database = {
         }
         Relationships: []
       }
+      cookbook_recipes: {
+        Row: {
+          cookbook_id: string
+          paid_recipe_id: string
+          position: number
+        }
+        Insert: {
+          cookbook_id: string
+          paid_recipe_id: string
+          position?: number
+        }
+        Update: {
+          cookbook_id?: string
+          paid_recipe_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cookbook_recipes_cookbook_id_fkey"
+            columns: ["cookbook_id"]
+            isOneToOne: false
+            referencedRelation: "cookbooks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cookbook_recipes_paid_recipe_id_fkey"
+            columns: ["paid_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "paid_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cookbooks: {
+        Row: {
+          chef_user_id: string
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          price_cents: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chef_user_id: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          price_cents: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chef_user_id?: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          price_cents?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -214,6 +325,69 @@ export type Database = {
         }
         Relationships: []
       }
+      paid_recipes: {
+        Row: {
+          chef_user_id: string
+          cook_minutes: number | null
+          country: string | null
+          cover_image_url: string | null
+          created_at: string
+          cuisine: string | null
+          description: string | null
+          dietary: string[]
+          id: string
+          ingredients: Json
+          is_published: boolean
+          prep_minutes: number | null
+          price_cents: number
+          serves: string | null
+          steps: Json
+          tips: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chef_user_id: string
+          cook_minutes?: number | null
+          country?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          cuisine?: string | null
+          description?: string | null
+          dietary?: string[]
+          id?: string
+          ingredients?: Json
+          is_published?: boolean
+          prep_minutes?: number | null
+          price_cents: number
+          serves?: string | null
+          steps?: Json
+          tips?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chef_user_id?: string
+          cook_minutes?: number | null
+          country?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          cuisine?: string | null
+          description?: string | null
+          dietary?: string[]
+          id?: string
+          ingredients?: Json
+          is_published?: boolean
+          prep_minutes?: number | null
+          price_cents?: number
+          serves?: string | null
+          steps?: Json
+          tips?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -261,6 +435,75 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      recipe_purchases: {
+        Row: {
+          buyer_user_id: string
+          chef_net_cents: number
+          chef_user_id: string
+          cookbook_id: string | null
+          created_at: string
+          currency: string
+          gross_cents: number
+          id: string
+          paid_recipe_id: string | null
+          platform_fee_cents: number
+          purchased_at: string | null
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          buyer_user_id: string
+          chef_net_cents: number
+          chef_user_id: string
+          cookbook_id?: string | null
+          created_at?: string
+          currency?: string
+          gross_cents: number
+          id?: string
+          paid_recipe_id?: string | null
+          platform_fee_cents: number
+          purchased_at?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          buyer_user_id?: string
+          chef_net_cents?: number
+          chef_user_id?: string
+          cookbook_id?: string | null
+          created_at?: string
+          currency?: string
+          gross_cents?: number
+          id?: string
+          paid_recipe_id?: string | null
+          platform_fee_cents?: number
+          purchased_at?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_purchases_cookbook_id_fkey"
+            columns: ["cookbook_id"]
+            isOneToOne: false
+            referencedRelation: "cookbooks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_purchases_paid_recipe_id_fkey"
+            columns: ["paid_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "paid_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_recipes: {
         Row: {
@@ -432,6 +675,14 @@ export type Database = {
       }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
+        Returns: boolean
+      }
+      has_purchased_cookbook: {
+        Args: { _cookbook_id: string; _user_id: string }
+        Returns: boolean
+      }
+      has_purchased_recipe: {
+        Args: { _recipe_id: string; _user_id: string }
         Returns: boolean
       }
       has_role: {

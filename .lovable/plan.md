@@ -1,57 +1,84 @@
-# Landing Page Redesign — Fresh & Organic
+# Chef Marketplace — Sell Recipes & Cookbooks
 
-Make FridgeCuisine's home page mobile-first and visually rich while preserving every existing function (dish search, fridge generation, saved drawer, recipe results, auth, limits, admin).
+Let any logged-in user become a paid chef. They upload recipes (single, priced) or group recipes into cookbooks (bundle, priced). Buyers pay through Stripe; Stripe Connect routes 70% to the chef's bank, 30% to you, automatically — after Stripe's own processing fees come off both sides.
 
-## Visual direction
+## Heads-up before we start
 
-- **Palette (Fresh & Organic)** added as semantic tokens in `src/styles.css`:
-  - Cream background `#f5f0e8`
-  - Sage primary `#87a878`
-  - Tomato accent `#e85d3a` (CTA, highlights)
-  - Forest ink `#2d3a2d` (text, borders)
-- Soft rounded cards, hand-drawn feel borders, generous whitespace, photo-forward.
-- Typography: keep existing display font, tighten mobile hierarchy.
+The current Lovable payments setup uses a managed gateway suited to a single seller account (your $5.99 Premium plan). True marketplace splits require **Stripe Connect**, which needs a real Stripe platform account with Connect enabled. We have two options:
 
-## New landing-page structure (top → bottom)
+- **A. Switch to bring-your-own-key Stripe** for the marketplace (you provide a platform secret key with Connect enabled). Keeps the existing $5.99 Premium plan working on the managed gateway is awkward — we'd migrate Premium to the same key.
+- **B. Keep managed Stripe for Premium, add a second Stripe key just for marketplace charges with Connect.** Cleaner separation, more keys to manage.
 
-1. **Sticky header** — slimmer on mobile, logo + Community + Saved/Account.
-2. **Hero — Country flag tiles**
-   - Headline + one-line subhead.
-   - Two primary inputs (dish search + "Use my fridge" CTA), stacked on mobile, side-by-side on desktop.
-   - Below: horizontally scrollable row of **country tiles** (flag emoji + cuisine name, e.g. 🇮🇹 Italian, 🇯🇵 Japanese, 🇮🇳 Indian, 🇲🇽 Mexican, 🇹🇭 Thai, 🇫🇷 French, 🇰🇷 Korean, 🇱🇧 Lebanese, 🇪🇹 Ethiopian, 🇵🇪 Peruvian, 🇨🇳 Chinese, 🇻🇳 Vietnamese). Tap → sets cuisine filter and scrolls to ingredient input / triggers a "surprise me" recipe.
-3. **Popular cuisines strip** — chip grid with flags, doubles as quick filters.
-4. **Trending dishes gallery**
-   - Responsive grid (1 col mobile → 2 → 3) using existing imported food images (pasta, sushi, tacos, curry, burger, pizza, dal, saag, paneer, momo, chana, rice).
-   - Tapping a dish auto-fills dish search and runs `fetchDish` (respecting limits).
-5. **How it works (3 steps)** — icon cards: ① Add ingredients or name a dish → ② AI finds a recipe → ③ Cook & save. Lucide icons (Refrigerator, Sparkles, ChefHat).
-6. **Community preview** — keep `CommunityStrip` but restyle into a card grid with "See all" → `/community`.
-7. **Footer** — small links + pricing note.
+I'll proceed with **option A** unless you say otherwise. You'll need:
+1. A Stripe account at platform.stripe.com with **Connect → Express** enabled.
+2. Your Stripe **Secret Key** (live or test) — I'll prompt you to paste it securely.
+3. A Connect webhook signing secret.
 
-Existing **results area** (loading, recipe cards, load more, dish recipe modal, timers, pantry mode) renders below hero when active — unchanged logic, restyled to match new tokens.
+## Pricing & money flow
 
-## Mobile-first specifics
+- Chef sets any price ≥ $1 (no cap). Currency: USD only for v1.
+- Buyer pays `chef_price` via Stripe Checkout.
+- Stripe deducts its processing fee (~2.9% + $0.30).
+- The remaining net is split: **30% to your platform account, 70% transferred to chef's connected account** using `application_fee_amount` on a destination charge.
+- Chef payouts are automatic to their bank on Stripe's normal schedule.
 
-- Base styles target 360–414px; scale up at `sm/md/lg`.
-- Tap targets ≥ 44px, larger search input font (prevents iOS zoom).
-- Country tiles & gallery use horizontal snap-scroll on mobile, grid on desktop.
-- Reduce sticky header height on mobile; remove the per-frame `ResizeObserver` padding hack in favor of fixed `pt-[64px] md:pt-[80px]`.
-- Pricing/upgrade note moves into footer area instead of competing with hero.
+## Database (new tables)
 
-## Technical changes
+- `chef_profiles` — `user_id`, `bio`, `country`, `avatar_url`, `stripe_account_id`, `payouts_enabled`, `charges_enabled`, `onboarding_completed_at`.
+- `paid_recipes` — `id`, `chef_user_id`, `title`, `description`, `cuisine`, `country`, `dietary[]`, `cover_image_url`, `ingredients` jsonb, `steps` jsonb, `tips` jsonb, `prep_min`, `cook_min`, `serves`, `price_cents`, `is_published`, `created_at`.
+- `cookbooks` — `id`, `chef_user_id`, `title`, `description`, `cover_image_url`, `price_cents`, `is_published`.
+- `cookbook_recipes` — `cookbook_id`, `paid_recipe_id`, `position` (join table).
+- `recipe_purchases` — `id`, `buyer_user_id`, `paid_recipe_id?`, `cookbook_id?`, `chef_user_id`, `stripe_checkout_session_id`, `stripe_payment_intent_id`, `gross_cents`, `platform_fee_cents`, `chef_net_cents`, `status` (`pending`/`paid`/`refunded`), `purchased_at`.
+- `chef_payout_log` — read-only Stripe transfer mirror for the chef dashboard.
 
-- `src/styles.css`: add Fresh & Organic OKLCH tokens (`--background`, `--primary`, `--accent`, `--ink`, gradients, shadows).
-- `src/routes/index.tsx`: restructure JSX into composed sections; preserve all existing state, server-fn calls, and handlers.
-- New presentational components (no business logic) in `src/components/landing/`:
-  - `CountryTiles.tsx` — flag tiles, calls `onPickCuisine(name)`.
-  - `CuisineChips.tsx` — popular cuisines.
-  - `TrendingDishes.tsx` — image gallery, calls `onPickDish(name)`.
-  - `HowItWorks.tsx` — 3-step explainer.
-  - `LandingFooter.tsx` — links + pricing note.
-- Reuse existing assets in `src/assets/` (food-pasta, food-sushi, etc.) — no new image generation needed.
-- Keep `IngredientInput`, `FilterPanel`, `RecipeCard`, `SavedDrawer`, `CommunityStrip`, `RecipeCounter`, `AdminPanel` untouched; only their wrappers/spacing change.
+RLS: chef can CRUD only own profile/recipes/cookbooks; buyers read published rows; purchases readable by buyer and seller; admin reads all.
 
-## Out of scope
+Add `has_purchased_recipe(_user uuid, _recipe uuid)` SECURITY DEFINER helper so the recipe-view route can gate full steps behind a paid unlock.
 
-- No backend, auth, schema, or payments changes.
-- No new routes; this is index page only.
-- Apple App Store prep items from earlier (Sign in with Apple, IAP, etc.) remain deferred.
+## Stripe Connect wiring
+
+Server functions (`src/lib/marketplace.functions.ts`):
+- `startChefOnboarding` → `stripe.accounts.create({ type:'express', capabilities:{ transfers:{requested:true}, card_payments:{requested:true} } })` then `accountLinks.create` → returns onboarding URL; insert `chef_profiles` row with `stripe_account_id`.
+- `refreshChefAccountStatus` → `accounts.retrieve`, update `payouts_enabled`/`charges_enabled`.
+- `createPurchaseCheckout({ kind:'recipe'|'cookbook', id })` → `stripe.checkout.sessions.create` with `payment_intent_data.application_fee_amount = round(price * 0.30)` and `payment_intent_data.transfer_data.destination = chef.stripe_account_id`; success redirects to `/library/:purchaseId`.
+
+Public webhook route `src/routes/api/public/stripe-connect-webhook.ts` handles `checkout.session.completed`, `account.updated`, `charge.refunded` — writes to `recipe_purchases` and `chef_profiles`.
+
+## App surface
+
+New routes:
+- `/chefs` — directory of chef profiles, country filter, search.
+- `/chefs/:username` — chef page with bio, paid recipes, cookbooks.
+- `/sell` — chef dashboard (overview, payouts so far, "Continue Stripe setup" if not done).
+- `/sell/recipes/new` & `/sell/recipes/:id/edit` — recipe form (reuses the create-recipe form from `/community/new`, adds price + cover upload).
+- `/sell/cookbooks/new` & `/sell/cookbooks/:id/edit` — cookbook builder (pick from your own recipes).
+- `/library` — buyer's purchased recipes/cookbooks.
+- `/recipes/:id` — public preview (title, ingredients-as-teaser, locked steps with "Unlock $X" button). If purchased → full recipe.
+- `/cookbooks/:id` — public preview + unlock.
+
+Landing page additions (under your new "How it works" section):
+- A **"Are you a chef? Earn from your recipes"** banner — gradient card, photo, CTA → `/sell`. Copy emphasises "Keep 70%, payouts straight to your bank, set your own price."
+- New "Featured chef recipes" carousel pulling top-selling paid recipes.
+
+## UX details
+
+- Chef onboarding gate: `/sell/recipes/new` blocks publishing until `payouts_enabled && charges_enabled`. Shows a banner "Finish Stripe setup to start selling."
+- Image uploads → reuse the existing `recipe-photos` storage bucket.
+- Refund policy line shown at checkout: "Recipes are non-refundable once unlocked." (Required by Stripe.)
+- Admin panel gets a new "Marketplace" tab: total GMV, your 30% earnings, top chefs, recent purchases, refund button.
+
+## Phasing (so you see value fast)
+
+1. **DB + chef profile + onboarding URL flow.** Test on Stripe test mode.
+2. **Paid recipe CRUD + public preview/locked detail page.**
+3. **Checkout + webhook + library.**
+4. **Cookbooks (bundle of recipes).**
+5. **Landing-page banner + chef directory + featured carousel.**
+6. **Admin dashboard for marketplace.**
+
+## Things I need from you
+
+1. Confirm option A (one Stripe key for everything) vs B (separate key for marketplace).
+2. Confirm USD-only for v1, or also EUR/GBP.
+3. Confirm 30% platform fee is computed on **gross** price (so you absorb part of Stripe's fee) vs on **net after Stripe fee** (chef absorbs more). Recommendation: on **gross** — simpler, more standard.
+4. Once approved, I'll prompt you for `STRIPE_PLATFORM_SECRET_KEY` and `STRIPE_CONNECT_WEBHOOK_SECRET` via the secure secrets prompt.
