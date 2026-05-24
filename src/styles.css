@@ -234,11 +234,11 @@ button:not(:disabled),
 }
 
 .marquee-left {
-  animation: marquee-left 60s linear infinite;
+  animation: marquee-left 140s linear infinite;
 }
 
 .marquee-right {
-  animation: marquee-right 70s linear infinite;
+  animation: marquee-right 160s linear infinite;
 }
 
 .marquee-row:hover .marquee-track {
