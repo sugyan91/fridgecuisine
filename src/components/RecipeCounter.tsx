@@ -22,7 +22,10 @@ export function RecipeCounter({ userId, isPremium }: Props) {
     );
   }
 
-  const label = loaded ? `${used}/${limit} today` : `—/${limit} today`;
+  const shortLabel = loaded ? `${used}/${limit} free today` : `—/${limit} free today`;
+  const longLabel = loaded
+    ? `${used} of ${limit} free recipes today`
+    : `— of ${limit} free recipes today`;
 
   return (
     <div className="flex flex-col items-end gap-1">
@@ -30,11 +33,12 @@ export function RecipeCounter({ userId, isPremium }: Props) {
         className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full border-2 border-border ${
           atLimit ? "bg-paprika text-white" : "bg-background"
         }`}
-        title="Free plan: 5 recipes per day"
+        title="You get 5 AI recipes per day on the free plan. Upgrade for unlimited."
       >
-        {label}
+        <span className="sm:hidden">{shortLabel}</span>
+        <span className="hidden sm:inline">{longLabel}</span>
       </span>
-      <span className="text-[10px] text-muted-foreground font-bold">
+      <span className="text-[10px] text-muted-foreground font-bold text-right">
         {atLimit ? (
           <>
             Limit reached ·{" "}
@@ -59,6 +63,12 @@ export function RecipeCounter({ userId, isPremium }: Props) {
           <>Resets in {countdown}</>
         )}
       </span>
+      <Link
+        to="/pricing"
+        className="text-[10px] font-bold text-accent underline underline-offset-2 hover:brightness-110"
+      >
+        Go unlimited → cook anything, anytime
+      </Link>
     </div>
   );
 }

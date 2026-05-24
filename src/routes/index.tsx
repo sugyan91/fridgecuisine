@@ -548,7 +548,7 @@ function Index() {
                 <span className="h-px w-8 bg-accent" />
               </div>
               <h1 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight leading-[0.9] text-foreground mb-6">
-                See something that<br className="hidden sm:inline" /> made you <span className="text-accent">hungry?</span>
+                What food is living rent-free<br className="hidden sm:inline" /> in your <span className="text-accent">head</span> right now?
               </h1>
               <div className="min-h-[3.5rem] md:min-h-[3rem] mb-8 flex items-center justify-center overflow-hidden">
                 <p
@@ -569,12 +569,12 @@ function Index() {
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
                   placeholder={`eg: ${worldFoods[worldFoodIndex].food} from ${worldFoods[worldFoodIndex].country}`}
-                  className="w-full bg-card border border-border rounded-2xl py-5 md:py-6 pl-6 pr-36 md:pr-44 text-base md:text-lg shadow-[var(--shadow-soft)] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/60"
+                  className="w-full bg-card border border-border rounded-2xl py-4 sm:py-5 md:py-6 pl-6 pr-4 sm:pr-36 md:pr-44 text-base md:text-lg shadow-[var(--shadow-soft)] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/60"
                 />
                 <button
                   type="submit"
                   disabled={dishLoading}
-                  className="absolute right-2 top-2 bottom-2 bg-primary text-primary-foreground px-5 md:px-7 rounded-xl font-display font-semibold text-sm md:text-base hover:brightness-110 transition-all disabled:opacity-60"
+                  className="mt-2 w-full py-3 sm:mt-0 sm:w-auto sm:py-0 sm:absolute sm:right-2 sm:top-2 sm:bottom-2 bg-primary text-primary-foreground px-5 md:px-7 rounded-xl font-display font-semibold text-sm md:text-base hover:brightness-110 transition-all disabled:opacity-60"
                 >
                   {dishLoading ? "Thinking…" : "Start cooking"}
                 </button>
