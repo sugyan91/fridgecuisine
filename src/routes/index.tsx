@@ -184,6 +184,14 @@ function Index() {
   const pantryRef = useRef<HTMLElement | null>(null);
   const dishInputRef = useRef<HTMLInputElement | null>(null);
   const cuisineResultsRef = useRef<HTMLDivElement | null>(null);
+  const cancelGenerationRef = useRef(false);
+
+  const onCancelGeneration = () => {
+    cancelGenerationRef.current = true;
+    setLoading(false);
+    setLoadingMore(false);
+    toast.info("Generation cancelled");
+  };
   const [headerOffset, setHeaderOffset] = useState(96);
   useEffect(() => {
     const compute = () => {
@@ -292,6 +300,7 @@ function Index() {
       return;
     }
     setPantryMode(false);
+    cancelGenerationRef.current = false;
     setLoading(true);
     setReceipes(null);
     // Scroll the results area into view right away so feedback is visible
@@ -302,6 +311,7 @@ function Index() {
       const res = await generate({
         data: { ingredients, dietary, cuisine, exclude: [] },
       });
+      if (cancelGenerationRef.current) return;
       if (!res.ok) {
         toast.error(res.error);
       } else {
@@ -309,10 +319,11 @@ function Index() {
         logGeneration();
       }
     } catch (err) {
+      if (cancelGenerationRef.current) return;
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
     } finally {
-      setLoading(false);
+      if (!cancelGenerationRef.current) setLoading(false);
     }
   };
 
@@ -323,22 +334,25 @@ function Index() {
     }
     setPantryMode(true);
     setCuisine("Any / Surprise Me");
+    cancelGenerationRef.current = false;
     setLoading(true);
     setReceipes(null);
     try {
       const res = await generate({
         data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [] },
       });
+      if (cancelGenerationRef.current) return;
       if (!res.ok) toast.error(res.error);
       else {
         setReceipes(res.receipes);
         logGeneration();
       }
     } catch (err) {
+      if (cancelGenerationRef.current) return;
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
     } finally {
-      setLoading(false);
+      if (!cancelGenerationRef.current) setLoading(false);
     }
   };
 
@@ -348,6 +362,7 @@ function Index() {
       limitToast();
       return;
     }
+    cancelGenerationRef.current = false;
     setLoadingMore(true);
     try {
       const res = await generate({
@@ -358,6 +373,7 @@ function Index() {
           exclude: receipes.map((r) => r.title),
         },
       });
+      if (cancelGenerationRef.current) return;
       if (!res.ok) {
         toast.error(res.error);
       } else {
@@ -371,10 +387,11 @@ function Index() {
         }
       }
     } catch (err) {
+      if (cancelGenerationRef.current) return;
       console.error(err);
       toast.error("Couldn't reach the kitchen. Try again.");
     } finally {
-      setLoadingMore(false);
+      if (!cancelGenerationRef.current) setLoadingMore(false);
     }
   };
 
@@ -837,6 +854,15 @@ function Index() {
                     : "Travelling the globe to find your perfect receipe…"
                   : "Show me the cuisine"}
               </button>
+              {loading && !pantryMode && (
+                <button
+                  type="button"
+                  onClick={onCancelGeneration}
+                  className="mt-2 w-full bg-card border border-border text-foreground py-3 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
               <div className="mt-3 flex justify-center">
                 <ReceipeCounter userId={userId} isPremium={isPremium} />
               </div>
