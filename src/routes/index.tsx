@@ -170,6 +170,7 @@ function Index() {
   const { logGeneration, atLimit: usageAtLimit } = useReceipeUsage(userId);
   const isAdmin = useIsAdmin(userId);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const limitBlocked = !isPremium && usageAtLimit;
   const limitToast = () => {
     toast.error(
