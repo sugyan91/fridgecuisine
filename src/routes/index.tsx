@@ -30,18 +30,6 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
-import dalImg from "@/assets/recipe-dal.jpg";
-import saagImg from "@/assets/recipe-saag.jpg";
-import riceImg from "@/assets/recipe-rice.jpg";
-import paneerImg from "@/assets/recipe-paneer.jpg";
-import momoImg from "@/assets/recipe-momo.jpg";
-import chanaImg from "@/assets/recipe-chana.jpg";
-import pastaImg from "@/assets/food-pasta.jpg";
-import sushiImg from "@/assets/food-sushi.jpg";
-import tacosImg from "@/assets/food-tacos.jpg";
-import curryImg from "@/assets/food-curry.jpg";
-import burgerImg from "@/assets/food-burger.jpg";
-import pizzaImg from "@/assets/food-pizza.jpg";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
@@ -456,24 +444,24 @@ function Index() {
             <Link
               to="/"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-2.5 min-w-0 mr-2"
+              className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 mr-1 sm:mr-2"
             >
               <img
                 src={logoImg}
                 alt="Fridge Cuisine"
-                className="h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
+                className="h-7 sm:h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
               />
-              <div className="hidden sm:block min-w-0">
-                <h1 className="font-display tracking-tight text-foreground leading-none text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
+              <div className="min-w-0">
+                <h1 className="font-display tracking-tight text-foreground leading-none text-[13px] sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
               </div>
             </Link>
 
-            <nav className="flex items-center gap-1.5 md:gap-2 shrink-0">
+            <nav className="flex items-center gap-1 md:gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[11px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-2.5 py-1.5 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
+                className="text-[11px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-2 py-1.5 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
               >
                 Community
               </Link>
