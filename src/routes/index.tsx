@@ -30,18 +30,6 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
-import dalImg from "@/assets/recipe-dal.jpg";
-import saagImg from "@/assets/recipe-saag.jpg";
-import riceImg from "@/assets/recipe-rice.jpg";
-import paneerImg from "@/assets/recipe-paneer.jpg";
-import momoImg from "@/assets/recipe-momo.jpg";
-import chanaImg from "@/assets/recipe-chana.jpg";
-import pastaImg from "@/assets/food-pasta.jpg";
-import sushiImg from "@/assets/food-sushi.jpg";
-import tacosImg from "@/assets/food-tacos.jpg";
-import curryImg from "@/assets/food-curry.jpg";
-import burgerImg from "@/assets/food-burger.jpg";
-import pizzaImg from "@/assets/food-pizza.jpg";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
@@ -456,24 +444,24 @@ function Index() {
             <Link
               to="/"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-2.5 min-w-0 mr-2"
+              className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 mr-1 sm:mr-2"
             >
               <img
                 src={logoImg}
                 alt="Fridge Cuisine"
-                className="h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
+                className="h-7 sm:h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
               />
-              <div className="hidden sm:block min-w-0">
-                <h1 className="font-display tracking-tight text-foreground leading-none text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
+              <div className="min-w-0">
+                <h1 className="font-display tracking-tight text-foreground leading-none text-[13px] sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
               </div>
             </Link>
 
-            <nav className="flex items-center gap-1.5 md:gap-2 shrink-0">
+            <nav className="flex items-center gap-1 md:gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[11px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-2.5 py-1.5 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
+                className="text-[11px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-2 py-1.5 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
               >
                 Community
               </Link>
@@ -775,28 +763,24 @@ function Index() {
           </section>
 
           <section className="lg:col-span-7 space-y-5">
-            <div className="flex items-baseline justify-between">
-              <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
-                {loading
-                  ? "Searching…"
-                  : receipes
-                    ? `${receipes.length} recipes found`
-                    : "Ready when you are"}
-              </h3>
-              {receipes && (
-                <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
-                  {pantryMode
-                    ? dietary.length > 0
-                      ? dietary.join(" · ")
-                      : "Pantry"
-                    : `AI · ${cuisine.split(" /")[0]}`}
-                </span>
-              )}
-            </div>
+            {(loading || (receipes && receipes.length > 0)) && (
+              <div className="flex items-baseline justify-between">
+                <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
+                  {loading ? "Searching…" : `${receipes!.length} recipes found`}
+                </h3>
+                {receipes && (
+                  <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
+                    {pantryMode
+                      ? dietary.length > 0
+                        ? dietary.join(" · ")
+                        : "Pantry"
+                      : `AI · ${cuisine.split(" /")[0]}`}
+                  </span>
+                )}
+              </div>
+            )}
 
             {loading && <LoadingSkeleton />}
-
-            {!loading && !receipes && <EmptyState />}
 
             {!loading &&
               receipes &&
@@ -822,11 +806,14 @@ function Index() {
                 {loadingMore ? "Cooking up more…" : "Show more recipes"}
               </button>
             )}
-            <PricingNote />
           </section>
         </div>
 
         <CommunityStrip isAuthenticated={!!email} />
+
+        <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-border">
+          <PricingNote />
+        </div>
 
         {email && (
           <button
@@ -910,31 +897,3 @@ function LoadingSkeleton() {
   );
 }
 
-function EmptyState() {
-  const foodImages = [
-    dalImg, saagImg, riceImg, paneerImg, momoImg, chanaImg,
-    pastaImg, sushiImg, tacosImg, curryImg, burgerImg, pizzaImg,
-  ];
-  return (
-    <div className="bg-card border border-border rounded-[2rem] p-8 text-center shadow-[var(--shadow-soft)]">
-      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-5 max-w-md mx-auto">
-        {foodImages.map((src, i) => (
-          <div
-            key={i}
-            className="aspect-square rounded-xl overflow-hidden border border-border"
-          >
-            <img
-              src={src}
-              alt="Food inspiration"
-              loading="lazy"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
-      <p className="font-display text-xl font-semibold tracking-tight">
-        Your global cuisine will be displayed here
-      </p>
-    </div>
-  );
-}
