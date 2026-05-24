@@ -23,6 +23,7 @@ import {
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
+import { DEFAULT_CUISINES } from "@/lib/taxonomy";
 import { RecipeCounter } from "@/components/RecipeCounter";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
