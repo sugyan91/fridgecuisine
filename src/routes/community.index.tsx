@@ -11,7 +11,7 @@ export const Route = createFileRoute("/community/")({
       {
         name: "description",
         content:
-          "Browse receipes shared by home cooks around the world. Filter by city, cuisine, and dietary preference.",
+          "Browse recipes shared by home cooks around the world. Filter by city, cuisine, and dietary preference.",
       },
     ],
   }),
@@ -59,14 +59,14 @@ function CommunityPage() {
               to="/community/new"
               className="bg-turmeric border-2 border-border px-4 py-2 rounded-full font-black text-xs uppercase shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-all"
             >
-              + Share receipe
+              + Share recipe
             </Link>
           ) : (
             <Link
               to="/login"
               className="bg-paprika text-white border-2 border-border px-4 md:px-5 py-2 md:py-2.5 rounded-full font-black text-sm md:text-base shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
             >
-              <span className="underline">Sign in</span> to share your own receipe
+              <span className="underline">Sign in</span> to share your own recipe
             </Link>
           )}
         </div>
@@ -83,7 +83,7 @@ function CommunityPage() {
             onClick={() => setShowFilters((v) => !v)}
             className="text-[11px] font-black uppercase tracking-wide bg-white border-2 border-border px-3 py-1.5 rounded-full shadow-[2px_2px_0px_0px_var(--border)]"
           >
-            {showFilters ? "− Hide filters" : "🔎 Filter receipes"}
+            {showFilters ? "− Hide filters" : "🔎 Filter recipes"}
           </button>
         </div>
 
@@ -116,7 +116,7 @@ function CommunityPage() {
         {loading ? (
           <p className="text-center opacity-60">Loading…</p>
         ) : receipes.length === 0 ? (
-          <p className="text-center opacity-60">No receipes yet. Be the first to share!</p>
+          <p className="text-center opacity-60">No recipes yet. Be the first to share!</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {receipes.map((r) => (

@@ -147,7 +147,7 @@ function RecipePage() {
       toast.success("Receipe deleted");
       navigate({ to: "/community" });
     } catch {
-      toast.error("Couldn't delete receipe");
+      toast.error("Couldn't delete recipe");
       setDeleting(false);
     }
   };
@@ -186,7 +186,7 @@ function RecipePage() {
                 disabled={deleting}
                 className="bg-paprika text-white border-2 border-border rounded-full px-3 py-1.5 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
               >
-                {deleting ? "Deleting…" : "Delete receipe"}
+                {deleting ? "Deleting…" : "Delete recipe"}
               </button>
             </div>
           )}

@@ -98,13 +98,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step receipes from any global cuisine.",
+          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step recipes from any global cuisine.",
       },
       { property: "og:title", content: "FridgeCuisine — Global AI Kitchen" },
       {
         property: "og:description",
         content:
-          "Free AI kitchen helper. Get ingredients and receipes for any dish, or cook from what you already have.",
+          "Free AI kitchen helper. Get ingredients and recipes for any dish, or cook from what you already have.",
       },
     ],
   }),
@@ -137,16 +137,16 @@ function Index() {
   const [showRecipe, setShowRecipe] = useState(false);
 
   const dishPrompts = [
-    "See something that made you hungry? Tell me the dish — I'll give you the ingredients and receipe.",
-    "Caught drooling? Name the food and I'll spill the ingredients and receipe.",
-    "Food crush? Tell me what it was and I'll hand over the ingredients and receipe.",
-    "That dish got your attention, huh? Drop the name — I've got the receipe and ingredients.",
-    "If your stomach just said 'yes please,' tell me the dish and I'll generate the receipe and ingredients.",
-    "Name the dish you can't stop thinking about — I'll recreate it with ingredients and receipe.",
-    "Saw something delicious online? Tell me what it is and I'll break down the receipe and ingredients.",
-    "From craving to cooking — tell me the dish and I'll give you the ingredients and receipe.",
-    "That food looked dangerously good. Want the ingredients and receipe?",
-    "Tell me what made you hungry — I'll turn it into a receipe with ingredients.",
+    "See something that made you hungry? Tell me the dish — I'll give you the ingredients and recipe.",
+    "Caught drooling? Name the food and I'll spill the ingredients and recipe.",
+    "Food crush? Tell me what it was and I'll hand over the ingredients and recipe.",
+    "That dish got your attention, huh? Drop the name — I've got the recipe and ingredients.",
+    "If your stomach just said 'yes please,' tell me the dish and I'll generate the recipe and ingredients.",
+    "Name the dish you can't stop thinking about — I'll recreate it with ingredients and recipe.",
+    "Saw something delicious online? Tell me what it is and I'll break down the recipe and ingredients.",
+    "From craving to cooking — tell me the dish and I'll give you the ingredients and recipe.",
+    "That food looked dangerously good. Want the ingredients and recipe?",
+    "Tell me what made you hungry — I'll turn it into a recipe with ingredients.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
   const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
@@ -368,7 +368,7 @@ function Index() {
         const existing = new Set(receipes.map((r) => r.title.toLowerCase()));
         const fresh = res.receipes.filter((r) => !existing.has(r.title.toLowerCase()));
         if (fresh.length === 0) {
-          toast("No new receipes — try changing cuisine or dietary filters.");
+          toast("No new recipes — try changing cuisine or dietary filters.");
         } else {
           setRecipes([...receipes, ...fresh]);
           logGeneration();
@@ -385,8 +385,8 @@ function Index() {
   const isSaved = (title: string) => saved.some((s) => s.title === title);
   const toggleSave = async (receipe: Receipe) => {
     if (!email) {
-      toast("Sign in to save receipes", {
-        description: "Create a free account to keep receipes across devices.",
+      toast("Sign in to save recipes", {
+        description: "Create a free account to keep recipes across devices.",
         action: {
           label: "Sign in",
           onClick: () => navigate({ to: "/login" }),
@@ -828,7 +828,7 @@ function Index() {
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            aria-label="Open saved receipes"
+            aria-label="Open saved recipes"
             className="md:hidden fixed bottom-6 right-6 size-16 bg-turmeric border-4 border-border rounded-full shadow-[4px_4px_0px_0px_var(--border)] grid place-items-center z-40"
           >
             <span className="font-black text-xl">{saved.length}</span>

@@ -80,7 +80,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
                   {r.title}
                 </h3>
                 <p className="mt-1 text-[11px] font-bold uppercase tracking-wide opacity-60 truncate">
-                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community receipe"}
+                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community recipe"}
                 </p>
                 <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
                   <span className="opacity-70 truncate">by {r.author_name}</span>
