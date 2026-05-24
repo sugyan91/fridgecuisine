@@ -8,6 +8,9 @@ import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { RecipeCard } from "@/components/fridge/RecipeCard";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
+import { CountryTiles } from "@/components/landing/CountryTiles";
+import { TrendingDishes } from "@/components/landing/TrendingDishes";
+import { HowItWorks } from "@/components/landing/HowItWorks";
 import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
 import {
   listSavedRecipes,
@@ -185,6 +188,8 @@ function Index() {
   };
   const headerRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
+  const pantryRef = useRef<HTMLElement | null>(null);
+  const dishInputRef = useRef<HTMLInputElement | null>(null);
   const [headerOffset, setHeaderOffset] = useState(96);
   useEffect(() => {
     const compute = () => {
@@ -254,6 +259,38 @@ function Index() {
     } finally {
       setDishLoading(false);
     }
+  };
+
+  const runDishByName = async (name: string) => {
+    if (limitBlocked) {
+      limitToast();
+      return;
+    }
+    setDishQuery(name);
+    setDishLoading(true);
+    setDishResult(null);
+    setShowRecipe(false);
+    dishInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    try {
+      const res = await fetchDish({ data: { dish: name } });
+      if (!res.ok) toast.error(res.error);
+      else {
+        setDishResult(res.data);
+        logGeneration();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't reach the kitchen. Try again.");
+    } finally {
+      setDishLoading(false);
+    }
+  };
+
+  const pickCuisine = (c: string) => {
+    setCuisine(c);
+    setPantryMode(false);
+    toast.success(`Cuisine set to ${c}`);
+    pantryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const onSubmit = async () => {
@@ -535,11 +572,12 @@ function Index() {
               </div>
               <form onSubmit={onDishSubmit} className="flex flex-col md:flex-row gap-3">
                 <input
+                  ref={dishInputRef}
                   type="text"
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
                   placeholder={`eg: ${worldFoods[worldFoodIndex].food} from ${worldFoods[worldFoodIndex].country}`}
-                  className="flex-1 border-2 border-border rounded-2xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                  className="flex-1 border-2 border-border rounded-2xl px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
                 />
                 <button
                   type="submit"
@@ -656,10 +694,35 @@ function Index() {
                 </div>
               )}
             </div>
-            <PricingNote />
           </section>
 
-          <section className="lg:col-span-5 animate-pop">
+          <section className="lg:col-span-12">
+            <SectionHeader
+              eyebrow="Explore by country"
+              title="Cook the world tonight"
+              subtitle="Tap a flag to set the cuisine — then add your ingredients below."
+            />
+            <CountryTiles onPick={pickCuisine} />
+          </section>
+
+          <section className="lg:col-span-12">
+            <SectionHeader
+              eyebrow="Trending right now"
+              title="Hungry for inspiration?"
+              subtitle="Tap any dish and we'll spin up the full recipe instantly."
+            />
+            <TrendingDishes onPick={runDishByName} />
+          </section>
+
+          <section className="lg:col-span-12">
+            <SectionHeader
+              eyebrow="How it works"
+              title="From fridge to feast in 3 steps"
+            />
+            <HowItWorks />
+          </section>
+
+          <section ref={pantryRef} className="lg:col-span-5 animate-pop scroll-mt-32">
             <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)] lg:sticky lg:top-6">
               <h2 className="font-black text-xl md:text-2xl uppercase mb-1">
                 What's in your Pantry
@@ -701,7 +764,6 @@ function Index() {
                   : "Show me the cuisine"}
               </button>
             </div>
-            <PricingNote />
           </section>
 
           <section className="lg:col-span-7 space-y-5">
@@ -785,6 +847,32 @@ function PricingNote() {
       >
         Upgrade
       </Link>
+    </div>
+  );
+}
+
+function SectionHeader({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="mb-4 md:mb-5">
+      <p className="font-black text-[10px] md:text-xs uppercase tracking-[0.18em] text-paprika mb-1">
+        {eyebrow}
+      </p>
+      <h2 className="font-display text-2xl md:text-4xl uppercase leading-tight">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-sm md:text-base text-muted-foreground mt-1 max-w-2xl">
+          {subtitle}
+        </p>
+      )}
     </div>
   );
 }
