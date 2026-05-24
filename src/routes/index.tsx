@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Menu, X } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -169,6 +170,7 @@ function Index() {
   const { logGeneration, atLimit: usageAtLimit } = useReceipeUsage(userId);
   const isAdmin = useIsAdmin(userId);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const limitBlocked = !isPremium && usageAtLimit;
   const limitToast = () => {
     toast.error(
@@ -445,7 +447,7 @@ function Index() {
             <Link
               to="/"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 mr-1 sm:mr-2 shrink"
+              className="flex items-center gap-2 sm:gap-2.5 min-w-0 mr-1 sm:mr-2 shrink"
             >
               <img
                 src={logoImg}
@@ -453,16 +455,17 @@ function Index() {
                 className="h-7 sm:h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <h1 className="font-display tracking-tight text-foreground leading-none text-[13px] sm:text-lg md:text-xl text-left lowercase sm:whitespace-nowrap font-semibold truncate">
+                <h1 className="font-display tracking-tight text-foreground leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
               </div>
             </Link>
 
-            <nav className="flex items-center gap-0.5 md:gap-2 justify-end min-w-0 flex-wrap">
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[10px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-1.5 py-1 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
+                className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
               >
                 Community
               </Link>
@@ -482,23 +485,22 @@ function Index() {
                   </Link>
                   <Link
                     to="/community/new"
-                    className="text-[10px] md:text-sm font-medium px-1.5 py-1 md:px-3 md:py-2 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                    className="text-sm font-medium px-3 py-2 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                   >
-                    Share
+                    + Share
                   </Link>
                   <button
                     type="button"
                     onClick={() => setDrawerOpen(true)}
-                    className="text-[10px] md:text-sm font-medium px-1.5 py-1 md:px-3 md:py-2 rounded-full border border-border hover:bg-secondary transition-colors"
+                    className="text-sm font-medium px-3 py-2 rounded-full border border-border hover:bg-secondary transition-colors"
                   >
-                    <span className="md:hidden">♥ {saved.length}</span>
-                    <span className="hidden md:inline">Saved {saved.length}</span>
+                    Saved {saved.length}
                   </button>
                   {isAdmin && (
                     <button
                       type="button"
                       onClick={() => setAdminOpen(true)}
-                      className="text-[10px] md:text-sm font-medium px-1.5 py-1 md:px-3 md:py-2 rounded-full bg-foreground text-background"
+                      className="text-sm font-medium px-3 py-2 rounded-full bg-foreground text-background"
                     >
                       Admin
                     </button>
@@ -508,10 +510,9 @@ function Index() {
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="text-[10px] md:text-sm font-medium px-1.5 py-1 md:px-3 md:py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
+                    className="text-sm font-medium px-3 py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
                   >
-                    <span className="md:hidden">Out</span>
-                    <span className="hidden md:inline">Sign out</span>
+                    Sign out
                   </button>
                 </>
               ) : (
@@ -519,21 +520,126 @@ function Index() {
                   <Link
                     to="/login"
                     search={{ mode: "signin" }}
-                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-4 md:py-2 rounded-full text-foreground hover:bg-secondary transition-colors"
+                    className="text-sm font-medium px-4 py-2 rounded-full text-foreground hover:bg-secondary transition-colors"
                   >
                     Sign in
                   </Link>
                   <Link
                     to="/login"
                     search={{ mode: "signup" }}
-                    className="text-[11px] md:text-sm font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                    className="text-sm font-medium px-4 py-2 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                   >
                     Sign up
                   </Link>
                 </>
               )}
             </nav>
+
+            {/* Mobile nav */}
+            <div className="flex md:hidden items-center gap-2 shrink-0">
+              {email ? (
+                <Link
+                  to="/community/new"
+                  className="text-xs font-medium px-3 py-1.5 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                >
+                  + Share
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  search={{ mode: "signup" }}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                >
+                  Sign up
+                </Link>
+              )}
+              <button
+                type="button"
+                aria-label="Open menu"
+                onClick={() => setMobileMenuOpen((v) => !v)}
+                className="p-2 rounded-full border border-border hover:bg-secondary transition-colors"
+              >
+                {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile dropdown panel */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-border bg-background shadow-lg">
+              <div className="max-w-6xl mx-auto px-4 py-2 flex flex-col">
+                <Link
+                  to="/community"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-3 text-sm font-medium text-foreground/90 hover:text-foreground border-b border-border"
+                >
+                  Community
+                </Link>
+                {email ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDrawerOpen(true);
+                        setMobileMenuOpen(false);
+                      }}
+                      className="py-3 text-sm font-medium text-left text-foreground/90 hover:text-foreground border-b border-border"
+                    >
+                      Saved ({saved.length})
+                    </button>
+                    <Link
+                      to="/my-receipes"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-3 text-sm font-medium text-foreground/90 hover:text-foreground border-b border-border"
+                    >
+                      My Receipes
+                    </Link>
+                    <Link
+                      to="/cookbook"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-3 text-sm font-medium text-foreground/90 hover:text-foreground border-b border-border"
+                    >
+                      Cookbook
+                    </Link>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAdminOpen(true);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="py-3 text-sm font-medium text-left text-foreground/90 hover:text-foreground border-b border-border"
+                      >
+                        Admin
+                      </button>
+                    )}
+                    {email && (
+                      <div className="py-2 text-xs opacity-70 truncate">{email}</div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleLogout();
+                      }}
+                      className="my-2 py-2.5 text-sm font-medium rounded-full bg-primary text-primary-foreground"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    search={{ mode: "signin" }}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="py-3 text-sm font-medium text-foreground/90 hover:text-foreground"
+                  >
+                    Sign in
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </header>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20">

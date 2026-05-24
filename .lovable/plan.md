@@ -1,18 +1,24 @@
-## Restore Community, Share, Saved on mobile header
+## Mobile header: collapse nav into a hamburger menu
 
-In my previous fix I hid Community and Saved below `sm:` to prevent overlap. The user wants all three visible on mobile. Replace "hidden until sm" with a compact icon+label treatment that fits at 360–414px.
+The five tiny pills (Community / Share / Saved / Admin / Sign out) crammed next to "fridge cuisine" look messy at 390px no matter how I shrink them. Replace the cramped row with a clean mobile pattern:
 
-### Changes to `src/routes/index.tsx` header nav
+### On mobile (< md)
+- Logo + wordmark on the left (full size, not truncated).
+- A single primary action visible on the right: **+ Share** (dark Admin-style pill) — the most important call to action.
+- A **hamburger icon button** next to Share that opens a slide-down dropdown menu containing: Community, Saved ({n}), My Receipes, Cookbook, Admin (if admin), the user email, and Sign out.
+- Menu items are full-width rows with comfortable tap targets (44px), separated by dividers; close on item click or outside click.
 
-1. **Community** — remove `hidden sm:inline-flex`; keep visible. Shrink padding to `px-1.5 py-1` on mobile and use `text-[10px]` on the smallest size.
-2. **+ Share** — already visible; keep Admin-style dark styling. On mobile show `Share` text (not just `+`) so the user sees it.
-3. **Saved {n}** — remove `hidden sm:inline-flex`; keep visible. Show as `♥ {n}` (heart icon + count) on mobile to save horizontal space, full `Saved {n}` from `sm:` up.
-4. **Sign out** — on mobile shrink to icon-style with shorter text "Out" below `sm:`, full "Sign out" from `sm:` up. (Optional, only if still overlapping.)
-5. **Admin** — same compact treatment if signed-in admin; show "A" on mobile, "Admin" from `sm:` up.
-6. **Logo title** — keep current truncation; consider hiding the wordmark `fridge cuisine` text on the smallest widths (<360px) and keeping just the logo image, since 5 nav items + wordmark won't fit cleanly. At 390px it should still fit with the compact pills above.
-7. Keep `flex-wrap` on the nav as a safety net so nothing clips off-screen.
+### On desktop (md+)
+- Keep the current horizontal nav exactly as it is (Community, +Share, Saved, Admin, email, Sign out). No regression.
 
-### File
-- `src/routes/index.tsx` (header/nav block only)
+### Implementation notes
+- Add `mobileMenuOpen` state in `src/routes/index.tsx`.
+- Use `lucide-react`'s `Menu` and `X` icons (already a dependency in this stack).
+- Render the dropdown as an absolutely-positioned panel below the header, full width, with `bg-background border-b border-border shadow-lg`, only when `mobileMenuOpen && md:hidden`.
+- Restore the wordmark to its readable size on mobile (`text-base sm:text-lg md:text-xl`, drop the `text-[13px]` hack and `truncate`).
+- Keep the +Share button visible on mobile so the primary CTA stays one tap away.
 
-No backend or logic changes.
+### Files
+- `src/routes/index.tsx` only (header/nav block).
+
+No backend or routing changes.
