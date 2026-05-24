@@ -763,28 +763,24 @@ function Index() {
           </section>
 
           <section className="lg:col-span-7 space-y-5">
-            <div className="flex items-baseline justify-between">
-              <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
-                {loading
-                  ? "Searching…"
-                  : receipes
-                    ? `${receipes.length} recipes found`
-                    : "Ready when you are"}
-              </h3>
-              {receipes && (
-                <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
-                  {pantryMode
-                    ? dietary.length > 0
-                      ? dietary.join(" · ")
-                      : "Pantry"
-                    : `AI · ${cuisine.split(" /")[0]}`}
-                </span>
-              )}
-            </div>
+            {(loading || (receipes && receipes.length > 0)) && (
+              <div className="flex items-baseline justify-between">
+                <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
+                  {loading ? "Searching…" : `${receipes!.length} recipes found`}
+                </h3>
+                {receipes && (
+                  <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
+                    {pantryMode
+                      ? dietary.length > 0
+                        ? dietary.join(" · ")
+                        : "Pantry"
+                      : `AI · ${cuisine.split(" /")[0]}`}
+                  </span>
+                )}
+              </div>
+            )}
 
             {loading && <LoadingSkeleton />}
-
-            {!loading && !receipes && <EmptyState />}
 
             {!loading &&
               receipes &&
@@ -810,11 +806,14 @@ function Index() {
                 {loadingMore ? "Cooking up more…" : "Show more recipes"}
               </button>
             )}
-            <PricingNote />
           </section>
         </div>
 
         <CommunityStrip isAuthenticated={!!email} />
+
+        <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-border">
+          <PricingNote />
+        </div>
 
         {email && (
           <button
@@ -898,31 +897,3 @@ function LoadingSkeleton() {
   );
 }
 
-function EmptyState() {
-  const foodImages = [
-    dalImg, saagImg, riceImg, paneerImg, momoImg, chanaImg,
-    pastaImg, sushiImg, tacosImg, curryImg, burgerImg, pizzaImg,
-  ];
-  return (
-    <div className="bg-card border border-border rounded-[2rem] p-8 text-center shadow-[var(--shadow-soft)]">
-      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-5 max-w-md mx-auto">
-        {foodImages.map((src, i) => (
-          <div
-            key={i}
-            className="aspect-square rounded-xl overflow-hidden border border-border"
-          >
-            <img
-              src={src}
-              alt="Food inspiration"
-              loading="lazy"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
-      <p className="font-display text-xl font-semibold tracking-tight">
-        Your global cuisine will be displayed here
-      </p>
-    </div>
-  );
-}
