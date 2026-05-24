@@ -89,63 +89,95 @@ export function CountryTiles({ onPick }: Props) {
     setShowCustom(false);
   };
 
+  const half = Math.ceil(COUNTRIES.length / 2);
+  const rowA = COUNTRIES.slice(0, half);
+  const rowB = COUNTRIES.slice(half);
+
+  const Tile = ({ c, i }: { c: Country; i: number }) => (
+    <button
+      type="button"
+      onClick={() => onPick(c.cuisine)}
+      className={`snap-start shrink-0 w-[96px] ${TINTS[i % TINTS.length]} flex flex-col items-center justify-center gap-1 border-2 border-border rounded-2xl py-3 px-2 shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[4px_5px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all`}
+      aria-label={`Cook ${c.cuisine} cuisine`}
+    >
+      <span className="text-4xl leading-none" aria-hidden>
+        {c.flag}
+      </span>
+      <span className="text-[11px] font-black uppercase tracking-wide text-center leading-tight">
+        {c.cuisine}
+      </span>
+    </button>
+  );
+
   return (
     <div className="-mx-4 md:mx-0">
-      <div className="relative">
-        {/* Mobile: 2-row horizontal snap carousel. Desktop: full grid. */}
+      {/* MOBILE: 2-row swipe carousel */}
+      <div className="relative md:hidden">
         <div
-          className="
-            grid grid-rows-2 grid-flow-col auto-cols-[88px] gap-3
-            overflow-x-auto px-4 pb-3 snap-x snap-mandatory scrollbar-none
-            md:grid-rows-none md:grid-flow-row md:auto-cols-auto
-            md:grid-cols-6 lg:grid-cols-9 md:px-0 md:pb-0 md:overflow-visible
-          "
+          className="grid grid-rows-2 grid-flow-col auto-cols-[88px] gap-3 overflow-x-auto px-4 pb-3 snap-x snap-mandatory scrollbar-none"
         >
           {COUNTRIES.map((c, i) => (
-            <button
-              key={c.cuisine}
-              type="button"
-              onClick={() => onPick(c.cuisine)}
-              className={`snap-start ${TINTS[i % TINTS.length]} flex flex-col items-center justify-center gap-1 border-2 border-border rounded-2xl py-3 px-2 shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[4px_5px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all`}
-              aria-label={`Cook ${c.cuisine} cuisine`}
-            >
-              <span className="text-4xl leading-none" aria-hidden>
-                {c.flag}
-              </span>
-              <span className="text-[10px] md:text-[11px] font-black uppercase tracking-wide text-center leading-tight">
-                {c.cuisine}
-              </span>
-            </button>
+            <Tile key={c.cuisine} c={c} i={i} />
           ))}
-
-          {/* "Your cuisine" inclusive tile */}
           <button
             type="button"
             onClick={() => setShowCustom((s) => !s)}
-            className="snap-start bg-gradient-to-br from-paprika/15 to-turmeric/20 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-foreground rounded-2xl py-3 px-2 shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[4px_5px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
+            className="snap-start shrink-0 w-[88px] bg-gradient-to-br from-paprika/15 to-turmeric/20 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-foreground rounded-2xl py-3 px-2 shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[4px_5px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
             aria-label="Add your own cuisine"
           >
             <span className="text-4xl leading-none" aria-hidden>🌍</span>
-            <span className="text-[10px] md:text-[11px] font-black uppercase tracking-wide text-center leading-tight">
+            <span className="text-[10px] font-black uppercase tracking-wide text-center leading-tight">
               Your cuisine
             </span>
           </button>
         </div>
-
-        {/* Right-edge fade hint on mobile */}
-        <div className="md:hidden pointer-events-none absolute top-0 right-0 h-full w-10 bg-gradient-to-l from-background to-transparent" />
+        <div className="pointer-events-none absolute top-0 right-0 h-full w-10 bg-gradient-to-l from-background to-transparent" />
+        <p className="px-4 mt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          ← Swipe for 50+ cuisines →
+        </p>
       </div>
 
-      {/* Swipe hint on mobile */}
-      <p className="md:hidden px-4 mt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-        ← Swipe for 50+ cuisines →
-      </p>
+      {/* DESKTOP/TABLET: dual-row auto-scrolling marquee */}
+      <div className="hidden md:block relative">
+        {/* Edge fades */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 z-10 bg-gradient-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 z-10 bg-gradient-to-l from-background to-transparent" />
+
+        <div className="marquee-row overflow-hidden py-2">
+          <div className="marquee-track marquee-left gap-3 pr-3">
+            {[...rowA, ...rowA].map((c, i) => (
+              <Tile key={`a-${i}`} c={c} i={i} />
+            ))}
+          </div>
+        </div>
+        <div className="marquee-row overflow-hidden py-2 mt-1">
+          <div className="marquee-track marquee-right gap-3 pr-3">
+            {[...rowB, ...rowB].map((c, i) => (
+              <Tile key={`b-${i}`} c={c} i={i + 1} />
+            ))}
+          </div>
+        </div>
+
+        {/* Your-cuisine CTA below marquee */}
+        <div className="flex justify-center mt-4">
+          <button
+            type="button"
+            onClick={() => setShowCustom((s) => !s)}
+            className="inline-flex items-center gap-2 bg-gradient-to-br from-paprika/15 to-turmeric/20 border-2 border-dashed border-foreground rounded-2xl px-4 py-2 shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[4px_5px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
+          >
+            <span className="text-2xl" aria-hidden>🌍</span>
+            <span className="text-sm font-black uppercase tracking-wide">
+              Don't see yours? Add it
+            </span>
+          </button>
+        </div>
+      </div>
 
       {/* Inline custom-cuisine input */}
       {showCustom && (
         <form
           onSubmit={submitCustom}
-          className="mx-4 md:mx-0 mt-3 flex gap-2 bg-white border-2 border-border rounded-2xl p-2 shadow-[3px_3px_0px_0px_var(--border)]"
+          className="mx-4 md:mx-auto md:max-w-md mt-3 flex gap-2 bg-white border-2 border-border rounded-2xl p-2 shadow-[3px_3px_0px_0px_var(--border)]"
         >
           <input
             autoFocus
