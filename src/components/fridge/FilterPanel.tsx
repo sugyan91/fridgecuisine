@@ -173,19 +173,6 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
         </button>
         {counterSlot && <div className="mt-3 flex justify-center">{counterSlot}</div>}
       </div>
-
-      <div className="border-t-2 border-dashed border-border/30 pt-4">
-        <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">Global Cuisine Vibe</p>
-        <select
-          value={cuisine}
-          onChange={(e) => onCuisine(e.target.value)}
-          className="w-full border-2 border-border p-3 rounded-xl font-bold bg-white"
-        >
-          {allCuisines.map((c) => (
-            <option key={c}>{c}</option>
-          ))}
-        </select>
-      </div>
     </div>
   );
 }
