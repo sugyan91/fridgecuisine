@@ -552,11 +552,15 @@ function Index() {
               <div className="flex justify-center mb-6">
                 <RecipeCounter userId={userId} isPremium={isPremium} />
               </div>
-              <p className="font-display text-[10px] md:text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-5">
-                Dish to Recipe
-              </p>
-              <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05] text-foreground mb-6">
-                See something that<br className="hidden sm:inline" /> made you hungry?
+              <div className="flex items-center justify-center gap-3 mb-5">
+                <span className="h-px w-8 bg-accent" />
+                <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
+                  Dish to Recipe
+                </p>
+                <span className="h-px w-8 bg-accent" />
+              </div>
+              <h1 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight leading-[0.9] text-foreground mb-6">
+                See something that<br className="hidden sm:inline" /> made you <span className="text-accent">hungry?</span>
               </h1>
               <div className="min-h-[3.5rem] md:min-h-[3rem] mb-8 flex items-center justify-center overflow-hidden">
                 <p
@@ -865,18 +869,23 @@ function SectionHeader({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-8 md:mb-10">
-      <p className="font-display text-[10px] md:text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
-        {eyebrow}
-      </p>
-      <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight text-foreground">
-        {title}
-      </h2>
-      {subtitle && (
-        <p className="text-base md:text-lg text-muted-foreground mt-2 max-w-2xl">
-          {subtitle}
+    <div className="mb-8 md:mb-12 border-b border-border pb-5">
+      <div className="flex items-center gap-3 mb-3">
+        <span className="h-px w-8 bg-accent" />
+        <p className="font-display text-[10px] md:text-xs uppercase tracking-[0.3em] text-accent">
+          {eyebrow}
         </p>
-      )}
+      </div>
+      <div className="flex items-baseline justify-between gap-6 flex-wrap">
+        <h2 className="font-display text-3xl md:text-5xl uppercase tracking-tight leading-[0.95] text-foreground">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="text-sm md:text-base text-muted-foreground max-w-md leading-relaxed">
+            {subtitle}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

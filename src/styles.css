@@ -67,45 +67,44 @@
   --color-sage-soft: var(--sage-soft);
   --color-cream: var(--cream);
   --color-ink: var(--ink);
-  --font-display: "Outfit", system-ui, sans-serif;
-  --font-sans: "Figtree", system-ui, sans-serif;
+  --font-display: "Archivo Black", system-ui, sans-serif;
+  --font-sans: "Hind", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --shadow-soft: 0 8px 24px -8px rgb(42 15 10 / 0.10);
-  --shadow-card: 0 24px 48px -16px rgb(42 15 10 / 0.14);
+  --shadow-soft: 0 8px 24px -8px rgb(6 78 59 / 0.14);
+  --shadow-card: 0 24px 48px -16px rgb(6 78 59 / 0.20);
 }
 
 :root {
   --radius: 1rem;
-  /* Autumn Harvest — burgundy, sienna, amber, gold */
-  --background: oklch(0.96 0.024 80);      /* warm parchment */
-  --foreground: oklch(0.22 0.045 30);      /* deep burgundy ink */
+  /* Emerald Prestige — deep emerald, mid emerald, gold, parchment */
+  --background: oklch(0.955 0.030 95);     /* #f5f0e0 parchment */
+  --foreground: oklch(0.32 0.075 165);     /* #064e3b deep emerald */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.045 30);
+  --card-foreground: oklch(0.32 0.075 165);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.045 30);
-  --primary: oklch(0.50 0.155 40);         /* #9b4423 sienna */
-  --primary-foreground: oklch(0.98 0.012 80);
-  --secondary: oklch(0.91 0.040 75);       /* warm amber surface */
-  --secondary-foreground: oklch(0.22 0.045 30);
-  --muted: oklch(0.91 0.040 75);
-  --muted-foreground: oklch(0.42 0.060 35);
-  --accent: oklch(0.70 0.150 70);          /* #d4842a amber */
-  --accent-foreground: oklch(0.22 0.045 30);
+  --popover-foreground: oklch(0.32 0.075 165);
+  --primary: oklch(0.32 0.075 165);        /* #064e3b emerald */
+  --primary-foreground: oklch(0.955 0.030 95);
+  --secondary: oklch(0.92 0.028 90);       /* warm cream surface */
+  --secondary-foreground: oklch(0.32 0.075 165);
+  --muted: oklch(0.92 0.028 90);
+  --muted-foreground: oklch(0.45 0.060 165);
+  --accent: oklch(0.74 0.115 85);          /* #c9a84c gold */
+  --accent-foreground: oklch(0.32 0.075 165);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.22 0.045 30 / 0.12);   /* hairline burgundy */
-  --input: oklch(0.22 0.045 30 / 0.14);
-  --ring: oklch(0.50 0.155 40 / 0.40);
-  /* Brand-legacy tokens redirected to the new palette so existing
-     components keep working visually. */
-  --turmeric: oklch(0.78 0.150 75);        /* gold */
-  --paprika: oklch(0.50 0.155 40);         /* sienna */
-  --cardamom: oklch(0.50 0.155 40);
-  --saffron: oklch(0.91 0.040 75);
-  --sage: oklch(0.50 0.155 40);
-  --sage-soft: oklch(0.91 0.040 75);
-  --cream: oklch(0.96 0.024 80);
-  --ink: oklch(0.22 0.045 30);
+  --border: oklch(0.32 0.075 165 / 0.14);  /* hairline emerald */
+  --input: oklch(0.32 0.075 165 / 0.16);
+  --ring: oklch(0.74 0.115 85 / 0.45);     /* gold focus ring */
+  /* Brand-legacy tokens redirected to Emerald Prestige */
+  --turmeric: oklch(0.74 0.115 85);        /* gold */
+  --paprika: oklch(0.32 0.075 165);        /* emerald */
+  --cardamom: oklch(0.48 0.105 165);       /* mid emerald #0d7a5f */
+  --saffron: oklch(0.92 0.028 90);
+  --sage: oklch(0.48 0.105 165);
+  --sage-soft: oklch(0.92 0.028 90);
+  --cream: oklch(0.955 0.030 95);
+  --ink: oklch(0.32 0.075 165);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

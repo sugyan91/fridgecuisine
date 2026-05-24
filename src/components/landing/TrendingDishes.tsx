@@ -130,11 +130,11 @@ function BentoTile({
         loading="lazy"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#2A0F0A]/85 via-[#2A0F0A]/10 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#04382a]/90 via-[#04382a]/15 to-transparent" />
 
       {variant === "hero" ? (
         <div className="absolute bottom-8 left-8 right-8 text-white space-y-3">
-          <span className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-semibold border border-white/20 inline-flex items-center gap-1.5 uppercase tracking-[0.15em]">
+          <span className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1.5 uppercase tracking-[0.15em]">
             <span aria-hidden>{dish.flag}</span>
             {country}
           </span>
@@ -147,7 +147,7 @@ function BentoTile({
         </div>
       ) : variant === "wide" ? (
         <div className="absolute bottom-6 left-6 text-white">
-          <span className="text-[10px] font-display font-semibold uppercase tracking-[0.15em] text-primary-foreground/90 mb-1 flex items-center gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-1 flex items-center gap-1.5">
             <span aria-hidden>{dish.flag}</span> {country}
           </span>
           <h3 className="font-display text-xl md:text-2xl font-semibold tracking-tight">
