@@ -280,7 +280,6 @@ function Index() {
     setCuisine(c);
     setPantryMode(false);
     toast.success(`Cuisine set to ${c}`);
-    pantryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const onSubmit = async () => {
