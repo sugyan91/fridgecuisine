@@ -447,37 +447,33 @@ function Index() {
       >
         <header
           ref={headerRef}
-          className="fixed inset-x-0 top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-border"
+          className="fixed inset-x-0 top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border"
         >
           <div
             ref={navRef}
-            className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-2 md:px-6 py-2"
+            className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-4 md:px-8 py-4"
           >
             <Link
               to="/"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-2 min-w-0 mr-2"
+              className="flex items-center gap-2.5 min-w-0 mr-2"
             >
               <img
                 src={logoImg}
                 alt="Fridge Cuisine"
-                className="h-8 sm:h-9 md:h-10 w-auto rounded-lg border-2 border-border shadow-[1px_1px_0px_0px_var(--border)] bg-background shrink-0"
+                className="h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="font-display tracking-tight text-paprika leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap">
-                  fridge <span className="text-foreground">cuisine</span>
-                  <span className="text-turmeric">.</span>
+                <h1 className="font-display tracking-tight text-foreground leading-none text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
+                  fridge cuisine<span className="text-primary">.</span>
                 </h1>
-                <p className="font-black uppercase tracking-widest text-[7px] md:text-[8px] opacity-70 hidden sm:block">
-                  Global AI Kitchen
-                </p>
               </div>
             </Link>
 
-            <nav className="flex items-center gap-1 md:gap-2 shrink-0">
+            <nav className="flex items-center gap-1.5 md:gap-2 shrink-0">
               <Link
                 to="/community"
-                className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-1.5 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
+                className="text-[11px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-2.5 py-1.5 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
               >
                 Community
               </Link>
@@ -485,19 +481,19 @@ function Index() {
                 <>
                   <Link
                     to="/my-recipes"
-                    className="text-[11px] font-black uppercase tracking-wide px-2 hidden lg:inline"
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 hidden lg:inline rounded-full hover:bg-secondary transition-colors"
                   >
-                    My Receipes
+                    My Recipes
                   </Link>
                   <Link
                     to="/cookbook"
-                    className="text-[11px] font-black uppercase tracking-wide px-2 hidden lg:inline"
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 hidden lg:inline rounded-full hover:bg-secondary transition-colors"
                   >
                     Cookbook
                   </Link>
                   <Link
                     to="/community/new"
-                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
+                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full bg-secondary border border-border hover:bg-foreground hover:text-background hover:border-transparent transition-all"
                   >
                     <span className="sm:hidden">+</span>
                     <span className="hidden sm:inline">+ Share</span>
@@ -505,7 +501,7 @@ function Index() {
                   <button
                     type="button"
                     onClick={() => setDrawerOpen(true)}
-                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-background px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
+                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border border-border hover:bg-secondary transition-colors"
                   >
                     Saved {saved.length}
                   </button>
@@ -513,7 +509,7 @@ function Index() {
                     <button
                       type="button"
                       onClick={() => setAdminOpen(true)}
-                      className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-foreground text-background px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
+                      className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full bg-foreground text-background"
                     >
                       Admin
                     </button>
@@ -523,7 +519,7 @@ function Index() {
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full border-2 border-border"
+                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
                   >
                     Sign out
                   </button>
@@ -533,14 +529,14 @@ function Index() {
                   <Link
                     to="/login"
                     search={{ mode: "signin" }}
-                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-paprika text-white px-1.5 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-4 md:py-2 rounded-full text-foreground hover:bg-secondary transition-colors"
                   >
                     Sign in
                   </Link>
                   <Link
                     to="/login"
                     search={{ mode: "signup" }}
-                    className="text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase tracking-wide bg-turmeric px-1.5 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-full border-2 border-border"
+                    className="text-[11px] md:text-sm font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                   >
                     Sign up
                   </Link>
@@ -548,21 +544,24 @@ function Index() {
               )}
             </nav>
           </div>
-          <div className="flex justify-end mt-2">
+          <div className="max-w-6xl mx-auto flex justify-end px-4 md:px-8 pb-2">
             <RecipeCounter userId={userId} isPremium={isPremium} />
           </div>
         </header>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-          <section className="lg:col-span-12 animate-pop">
-            <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)]">
-              <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
-                Dish to receipe
-              </h2>
-              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-4 flex items-start overflow-hidden">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20">
+          <section className="lg:col-span-12">
+            <div className="max-w-3xl mx-auto text-center pt-8 md:pt-16 pb-4">
+              <p className="font-display text-[10px] md:text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-5">
+                Dish to Recipe
+              </p>
+              <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05] text-foreground mb-6">
+                See something that<br className="hidden sm:inline" /> made you hungry?
+              </h1>
+              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-8 flex items-center justify-center overflow-hidden">
                 <p
                   key={promptIndex}
-                  className={`font-display text-lg md:text-2xl leading-snug text-foreground ${
+                  className={`text-base md:text-lg leading-relaxed text-muted-foreground max-w-xl ${
                     promptAnim === "in"
                       ? "animate-fade-down-in"
                       : "animate-fade-down-out"
@@ -571,37 +570,38 @@ function Index() {
                   {dishPrompts[promptIndex]}
                 </p>
               </div>
-              <form onSubmit={onDishSubmit} className="flex flex-col md:flex-row gap-3">
+              <form onSubmit={onDishSubmit} className="relative max-w-2xl mx-auto">
                 <input
                   ref={dishInputRef}
                   type="text"
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
                   placeholder={`eg: ${worldFoods[worldFoodIndex].food} from ${worldFoods[worldFoodIndex].country}`}
-                  className="flex-1 border-2 border-border rounded-2xl px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                  className="w-full bg-card border border-border rounded-2xl py-5 md:py-6 pl-6 pr-36 md:pr-44 text-base md:text-lg shadow-[var(--shadow-soft)] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/60"
                 />
                 <button
                   type="submit"
                   disabled={dishLoading}
-                  className="bg-paprika text-white border-4 border-border py-3 px-6 rounded-2xl font-black uppercase shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
+                  className="absolute right-2 top-2 bottom-2 bg-primary text-primary-foreground px-5 md:px-7 rounded-xl font-display font-semibold text-sm md:text-base hover:brightness-110 transition-all disabled:opacity-60"
                 >
-                  {dishLoading ? "Thinking…" : "Start Cooking"}
+                  {dishLoading ? "Thinking…" : "Start cooking"}
                 </button>
               </form>
+            </div>
 
               {dishResult && (
-                <div className="mt-5 border-t-2 border-dashed border-border/40 pt-5">
-                  <h3 className="font-display text-2xl md:text-3xl uppercase text-paprika mb-2">
+              <div className="max-w-3xl mx-auto mt-10 bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)]">
+                <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-foreground mb-2">
                     {dishResult.dishName}
                   </h3>
-                  <p className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-3">
+                <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mb-3">
                     Ingredients
                   </p>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-5">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-5">
                     {dishResult.ingredients.map((ing, i) => (
                       <li
                         key={i}
-                        className="text-sm font-medium before:content-['▸'] before:mr-2 before:text-turmeric"
+                        className="text-sm font-medium before:content-['•'] before:mr-2 before:text-primary"
                       >
                         {ing}
                       </li>
@@ -609,15 +609,15 @@ function Index() {
                   </ul>
 
                   {!showRecipe ? (
-                    <div className="bg-turmeric/10 border-2 border-dashed border-border/50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <p className="font-bold text-sm">
-                        Do you want the receipe as well?
+                  <div className="bg-secondary border border-border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <p className="font-medium text-sm">
+                        Do you want the recipe as well?
                       </p>
                       <div className="flex gap-2">
                         <button
                           type="button"
                           onClick={() => setShowRecipe(true)}
-                          className="bg-turmeric border-2 border-border px-5 py-2 rounded-full font-black uppercase text-sm shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+                          className="bg-primary text-primary-foreground px-5 py-2 rounded-full font-display font-semibold text-sm hover:brightness-110 transition-all"
                         >
                           Yes
                         </button>
@@ -627,28 +627,28 @@ function Index() {
                             setDishResult(null);
                             setDishQuery("");
                           }}
-                          className="bg-white border-2 border-border px-5 py-2 rounded-full font-black uppercase text-sm shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+                          className="bg-card border border-border text-foreground px-5 py-2 rounded-full font-display font-semibold text-sm hover:bg-secondary transition-colors"
                         >
                           No
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-background border-2 border-border rounded-2xl p-4">
+                  <div className="bg-secondary/60 border border-border rounded-2xl p-5">
                       <div className="flex items-center gap-3 mb-3">
-                        <p className="font-black text-xs uppercase tracking-widest">
-                          Receipe
+                        <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+                          Recipe
                         </p>
-                        <div className="flex flex-wrap gap-1.5 font-mono text-[10px] font-bold uppercase">
+                        <div className="flex flex-wrap gap-1.5 text-[11px] font-medium">
                           {dishResult.receipe.prepTimeMinutes != null && (
-                            <span className="bg-white border border-border px-2 py-0.5">Prep {dishResult.receipe.prepTimeMinutes}m</span>
+                            <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Prep {dishResult.receipe.prepTimeMinutes}m</span>
                           )}
-                          <span className="bg-white border border-border px-2 py-0.5">Cook {dishResult.receipe.cookTimeMinutes}m</span>
+                          <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Cook {dishResult.receipe.cookTimeMinutes}m</span>
                           {dishResult.receipe.totalTimeMinutes != null && (
-                            <span className="bg-paprika text-white border border-border px-2 py-0.5">Total {dishResult.receipe.totalTimeMinutes}m</span>
+                            <span className="bg-primary text-primary-foreground rounded-full px-2.5 py-0.5">Total {dishResult.receipe.totalTimeMinutes}m</span>
                           )}
                           {dishResult.receipe.serves && (
-                            <span className="bg-white border border-border px-2 py-0.5">Serves {dishResult.receipe.serves}</span>
+                            <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Serves {dishResult.receipe.serves}</span>
                           )}
                         </div>
                       </div>
@@ -665,7 +665,7 @@ function Index() {
                           const t = dishResult.receipe.stepTimings?.[i];
                           return (
                             <li key={i} className="flex gap-3 items-start text-sm leading-relaxed">
-                              <span className="shrink-0 size-6 rounded-full bg-turmeric text-foreground font-black text-[11px] grid place-items-center mt-0.5">
+                              <span className="shrink-0 size-6 rounded-full bg-primary/10 text-primary border border-primary/20 font-display font-semibold text-[11px] grid place-items-center mt-0.5">
                                 {i + 1}
                               </span>
                               <span className="flex-1">
@@ -681,8 +681,8 @@ function Index() {
                         })}
                       </ol>
                       {dishResult.receipe.tips.length > 0 && (
-                        <div className="mt-4 pt-3 border-t border-dashed border-border/40">
-                          <p className="font-black text-xs uppercase mb-1">Tips</p>
+                        <div className="mt-4 pt-3 border-t border-border">
+                          <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mb-1.5">Tips</p>
                           <ul className="space-y-1">
                             {dishResult.receipe.tips.map((t, i) => (
                               <li key={i} className="text-xs text-muted-foreground">• {t}</li>
@@ -692,16 +692,15 @@ function Index() {
                       )}
                     </div>
                   )}
-                </div>
+              </div>
               )}
-            </div>
           </section>
 
           <section className="lg:col-span-12">
             <SectionHeader
               eyebrow="Explore by country"
               title="Cook the world tonight"
-              subtitle="50+ cuisines from every continent. Don't see yours? Add it with the 🌍 tile."
+              subtitle="Explore 50+ cuisines from every corner of the globe."
             />
             <CountryTiles onPick={pickCuisine} />
           </section>
@@ -727,13 +726,13 @@ function Index() {
             <ChefCTA />
           </section>
 
-          <section ref={pantryRef} className="lg:col-span-5 animate-pop scroll-mt-32">
-            <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)] lg:sticky lg:top-6">
-              <h2 className="font-black text-xl md:text-2xl uppercase mb-1">
+          <section ref={pantryRef} className="lg:col-span-5 scroll-mt-32">
+            <div className="bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)] lg:sticky lg:top-32">
+              <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-1">
                 What's in your Pantry
               </h2>
-              <p className="text-[11px] text-muted-foreground mb-4">
-                Add what food items you have in your pantry below
+              <p className="text-sm text-muted-foreground mb-5">
+                Add the ingredients you have on hand and we'll plan the meal.
               </p>
 
               <IngredientInput
@@ -741,7 +740,7 @@ function Index() {
                 onChange={setIngredients}
               />
 
-              <div className="my-5 border-t-2 border-dashed border-border/30" />
+              <div className="my-5 border-t border-border" />
 
               <FilterPanel
                 dietary={dietary}
@@ -760,12 +759,12 @@ function Index() {
                 type="button"
                 onClick={onSubmit}
                 disabled={loading}
-                className="mt-5 w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_6px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="mt-6 w-full bg-primary text-primary-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading && !pantryMode
                   ? cuisine && cuisine !== "Any / Surprise Me"
-                    ? `Travelling to ${cuisineToCountry(cuisine)} for surprise receipe. Please wait…`
-                    : "Travelling around the globe to find a perfect receipe for you"
+                    ? `Travelling to ${cuisineToCountry(cuisine)} for a surprise recipe…`
+                    : "Travelling the globe to find your perfect recipe…"
                   : "Show me the cuisine"}
               </button>
             </div>
@@ -773,15 +772,15 @@ function Index() {
 
           <section className="lg:col-span-7 space-y-5">
             <div className="flex items-baseline justify-between">
-              <h3 className="font-display text-3xl md:text-4xl uppercase">
+              <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
                 {loading
                   ? "Searching…"
                   : receipes
-                    ? `${receipes.length} Receipes Found`
+                    ? `${receipes.length} recipes found`
                     : "Ready when you are"}
               </h3>
               {receipes && (
-                <span className="font-mono text-xs font-bold bg-white border border-border px-2 py-0.5">
+                <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
                   {pantryMode
                     ? dietary.length > 0
                       ? dietary.join(" · ")
@@ -814,9 +813,9 @@ function Index() {
                 type="button"
                 onClick={onLoadMore}
                 disabled={loadingMore}
-                className="w-full bg-white border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
+                className="w-full bg-card border border-border text-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-all disabled:opacity-60"
               >
-                {loadingMore ? "Cooking up more…" : "Show more receipes"}
+                {loadingMore ? "Cooking up more…" : "Show more recipes"}
               </button>
             )}
             <PricingNote />
@@ -842,13 +841,13 @@ function Index() {
 
 function PricingNote() {
   return (
-    <div className="mt-4 pt-3 border-t border-dashed border-border/30 text-xs md:text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-2">
+    <div className="mt-4 pt-3 border-t border-border text-xs md:text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-2">
       <span>
-        <span className="font-black text-foreground">$5.99/mo</span> · Premium · unlimited recipes
+        <span className="font-semibold text-foreground">$5.99/mo</span> · Premium · unlimited recipes
       </span>
       <Link
         to="/pricing"
-        className="font-black uppercase tracking-wide underline underline-offset-2 text-foreground shrink-0"
+        className="font-medium underline underline-offset-2 text-foreground shrink-0"
       >
         Upgrade
       </Link>
@@ -866,15 +865,15 @@ function SectionHeader({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-4 md:mb-5">
-      <p className="font-black text-[10px] md:text-xs uppercase tracking-[0.18em] text-paprika mb-1">
+    <div className="mb-8 md:mb-10">
+      <p className="font-display text-[10px] md:text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
         {eyebrow}
       </p>
-      <h2 className="font-display text-2xl md:text-4xl uppercase leading-tight">
+      <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight text-foreground">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-sm md:text-base text-muted-foreground mt-1 max-w-2xl">
+        <p className="text-base md:text-lg text-muted-foreground mt-2 max-w-2xl">
           {subtitle}
         </p>
       )}
@@ -888,9 +887,9 @@ function LoadingSkeleton() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="bg-white border-4 border-border rounded-[32px] h-40 shadow-[8px_8px_0px_0px_var(--border)] animate-pulse flex"
+          className="bg-card border border-border rounded-[2rem] h-40 shadow-[var(--shadow-soft)] animate-pulse flex overflow-hidden"
         >
-          <div className="w-48 bg-turmeric/20 border-r-4 border-border" />
+          <div className="w-48 bg-secondary" />
           <div className="flex-1 p-6 space-y-3">
             <div className="h-6 bg-foreground/10 rounded w-2/3" />
             <div className="h-3 bg-foreground/10 rounded w-1/3" />
@@ -908,12 +907,12 @@ function EmptyState() {
     pastaImg, sushiImg, tacosImg, curryImg, burgerImg, pizzaImg,
   ];
   return (
-    <div className="bg-white border-4 border-dashed border-border/40 rounded-[32px] p-8 text-center">
+    <div className="bg-card border border-border rounded-[2rem] p-8 text-center shadow-[var(--shadow-soft)]">
       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-5 max-w-md mx-auto">
         {foodImages.map((src, i) => (
           <div
             key={i}
-            className="aspect-square rounded-xl overflow-hidden border-2 border-border shadow-[2px_2px_0px_0px_var(--border)]"
+            className="aspect-square rounded-xl overflow-hidden border border-border"
           >
             <img
               src={src}
@@ -924,8 +923,8 @@ function EmptyState() {
           </div>
         ))}
       </div>
-      <p className="font-black text-lg uppercase">
-        Your global cuisine will be displayed here.
+      <p className="font-display text-xl font-semibold tracking-tight">
+        Your global cuisine will be displayed here
       </p>
     </div>
   );

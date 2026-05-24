@@ -67,40 +67,45 @@
   --color-sage-soft: var(--sage-soft);
   --color-cream: var(--cream);
   --color-ink: var(--ink);
-  --font-display: "Anton", Impact, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Outfit", system-ui, sans-serif;
+  --font-sans: "Figtree", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --shadow-soft: 0 8px 24px -8px rgb(31 42 26 / 0.08);
+  --shadow-card: 0 24px 48px -16px rgb(31 42 26 / 0.10);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(0.96 0.02 85);
-  --foreground: oklch(0.24 0.03 145);
+  --radius: 1rem;
+  /* Cream & Olive — warm storytelling editorial */
+  --background: oklch(0.97 0.012 90);      /* #FBF8F1 cream */
+  --foreground: oklch(0.25 0.018 140);     /* #1F2A1A ink */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.02 30);
+  --card-foreground: oklch(0.25 0.018 140);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.02 30);
-  --primary: oklch(0.62 0.21 28);
-  --primary-foreground: oklch(0.985 0.02 95);
-  --secondary: oklch(0.95 0.03 80);
-  --secondary-foreground: oklch(0.21 0.02 30);
-  --muted: oklch(0.95 0.03 80);
-  --muted-foreground: oklch(0.45 0.03 40);
-  --accent: oklch(0.82 0.16 80);
-  --accent-foreground: oklch(0.21 0.02 30);
+  --popover-foreground: oklch(0.25 0.018 140);
+  --primary: oklch(0.55 0.135 125);        /* #6B8E23 olive */
+  --primary-foreground: oklch(0.99 0.005 90);
+  --secondary: oklch(0.92 0.020 90);       /* #EFE9DA surface */
+  --secondary-foreground: oklch(0.25 0.018 140);
+  --muted: oklch(0.92 0.020 90);
+  --muted-foreground: oklch(0.45 0.018 140);
+  --accent: oklch(0.55 0.135 125);
+  --accent-foreground: oklch(0.99 0.005 90);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.24 0.03 145);
-  --input: oklch(0.88 0.02 80);
-  --ring: oklch(0.62 0.21 28);
-  --turmeric: oklch(0.82 0.16 80);
-  --paprika: oklch(0.62 0.21 28);
-  --cardamom: oklch(0.5 0.07 150);
-  --saffron: oklch(0.72 0.18 55);
-  --sage: oklch(0.72 0.08 145);
-  --sage-soft: oklch(0.92 0.05 145);
-  --cream: oklch(0.96 0.02 85);
-  --ink: oklch(0.24 0.03 145);
+  --border: oklch(0.25 0.018 140 / 0.10);  /* hairline ink */
+  --input: oklch(0.25 0.018 140 / 0.12);
+  --ring: oklch(0.55 0.135 125 / 0.35);
+  /* Brand-legacy tokens redirected to the new palette so existing
+     components keep working visually. */
+  --turmeric: oklch(0.92 0.020 90);        /* was warm yellow → surface */
+  --paprika: oklch(0.55 0.135 125);        /* was red → olive accent */
+  --cardamom: oklch(0.55 0.135 125);
+  --saffron: oklch(0.92 0.020 90);
+  --sage: oklch(0.55 0.135 125);
+  --sage-soft: oklch(0.92 0.020 90);
+  --cream: oklch(0.97 0.012 90);
+  --ink: oklch(0.25 0.018 140);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

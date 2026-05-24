@@ -64,56 +64,101 @@ function pickUnique(pool: Dish[], cursor: number, count: number): Dish[] {
 }
 
 export function TrendingDishes({ onPick }: Props) {
+  // Four bento slots: 0=hero (large), 1=wide secondary, 2/3=small squares.
+  const SLOTS = 4;
   const [cursor, setCursor] = useState(0);
-  const [count, setCount] = useState(6);
-
-  useEffect(() => {
-    const update = () =>
-      setCount(typeof window !== "undefined" && window.innerWidth < 768 ? 4 : 6);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
 
   useEffect(() => {
     const id = setInterval(() => {
-      setCursor((c) => (c + count) % DISHES.length);
+      setCursor((c) => (c + SLOTS) % DISHES.length);
     }, ROTATE_MS);
     return () => clearInterval(id);
-  }, [count]);
+  }, []);
 
-  const visible = useMemo(() => pickUnique(DISHES, cursor, count), [cursor, count]);
+  const visible = useMemo(() => pickUnique(DISHES, cursor, SLOTS), [cursor]);
+  const [hero, second, third, fourth] = visible;
+
+  if (!hero) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-      {visible.map((d, slot) => (
-        <button
-          key={slot}
-          type="button"
-          onClick={() => onPick(d.name)}
-          className="group relative aspect-[4/5] md:aspect-[4/3] overflow-hidden rounded-2xl border-2 border-border shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all text-left bg-white"
-        >
-          <img
-            src={d.img}
-            alt={d.name}
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
-          <div className="absolute top-2 left-2 bg-white/95 border-2 border-border rounded-full px-2 py-0.5 text-[11px] font-black flex items-center gap-1">
-            <span aria-hidden>{d.flag}</span>
-            <span className="uppercase tracking-wide">{d.origin.replace("-alt", "")}</span>
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <p className="font-display text-white text-lg md:text-xl uppercase leading-tight drop-shadow">
-              {d.name}
-            </p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-turmeric mt-1">
-              Tap to cook →
-            </p>
-          </div>
-        </button>
-      ))}
+    <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-[280px_280px] md:grid-rows-2 md:h-[640px] gap-4 md:gap-6">
+      <BentoTile dish={hero} onPick={onPick} variant="hero" className="col-span-2 row-span-2" />
+      {second && (
+        <BentoTile
+          dish={second}
+          onPick={onPick}
+          variant="wide"
+          className="col-span-2 md:col-span-2"
+        />
+      )}
+      {third && (
+        <BentoTile dish={third} onPick={onPick} variant="small" className="col-span-1" />
+      )}
+      {fourth && (
+        <BentoTile dish={fourth} onPick={onPick} variant="small" className="col-span-1" />
+      )}
     </div>
+  );
+}
+
+function BentoTile({
+  dish,
+  onPick,
+  variant,
+  className,
+}: {
+  dish: Dish;
+  onPick: (name: string) => void;
+  variant: "hero" | "wide" | "small";
+  className?: string;
+}) {
+  const country = dish.origin.replace("-alt", "");
+  return (
+    <button
+      type="button"
+      onClick={() => onPick(dish.name)}
+      className={`relative group overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-secondary text-left transition-all hover:shadow-[0_24px_48px_-16px_rgb(31_42_26/0.18)] ${className ?? ""}`}
+    >
+      <img
+        src={dish.img}
+        alt={dish.name}
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#1F2A1A]/85 via-[#1F2A1A]/15 to-transparent" />
+
+      {variant === "hero" ? (
+        <div className="absolute bottom-8 left-8 right-8 text-white space-y-3">
+          <span className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-semibold border border-white/20 inline-flex items-center gap-1.5 uppercase tracking-[0.15em]">
+            <span aria-hidden>{dish.flag}</span>
+            {country}
+          </span>
+          <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
+            {dish.name}
+          </h3>
+          <p className="opacity-80 text-sm flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+            Start cooking <span className="text-lg">→</span>
+          </p>
+        </div>
+      ) : variant === "wide" ? (
+        <div className="absolute bottom-6 left-6 text-white">
+          <span className="text-[10px] font-display font-semibold uppercase tracking-[0.15em] text-primary-foreground/90 mb-1 flex items-center gap-1.5">
+            <span aria-hidden>{dish.flag}</span> {country}
+          </span>
+          <h3 className="font-display text-xl md:text-2xl font-semibold tracking-tight">
+            {dish.name}
+          </h3>
+        </div>
+      ) : (
+        <div className="absolute bottom-5 left-5 right-5 text-white">
+          <h3 className="font-display text-base md:text-lg font-semibold leading-tight">
+            {dish.name}
+          </h3>
+          <p className="text-[10px] opacity-80 mt-0.5 flex items-center gap-1">
+            <span aria-hidden>{dish.flag}</span> {country}
+          </p>
+        </div>
+      )}
+    </button>
   );
 }
