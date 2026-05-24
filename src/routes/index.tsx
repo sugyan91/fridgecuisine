@@ -11,6 +11,7 @@ import { CommunityStrip } from "@/components/fridge/CommunityStrip";
 import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorks } from "@/components/landing/HowItWorks";
+import { ChefCTA } from "@/components/landing/ChefCTA";
 import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
 import {
   listSavedRecipes,
