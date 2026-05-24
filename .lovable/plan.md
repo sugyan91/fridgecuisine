@@ -1,24 +1,18 @@
-## Fixes
+## Restore Community, Share, Saved on mobile header
 
-### 1. "+ Share" button — make it readable like Admin
-In `src/routes/index.tsx` (the signed-in nav around line 483), the Share link uses `bg-secondary` with no explicit text color, so on some themes the label looks blacked-out.
+In my previous fix I hid Community and Saved below `sm:` to prevent overlap. The user wants all three visible on mobile. Replace "hidden until sm" with a compact icon+label treatment that fits at 360–414px.
 
-Restyle it to match the Admin button:
-- From: `bg-secondary border border-border hover:bg-foreground hover:text-background`
-- To: `bg-foreground text-background hover:brightness-110` (same treatment as Admin)
+### Changes to `src/routes/index.tsx` header nav
 
-### 2. Community + "fridge cuisine" overlap on mobile after sign-in
-On a 390px viewport the signed-in nav renders Community, +, Saved N, (Admin), Sign out — together they push into the logo/title because `nav` has `shrink-0` and the title is `whitespace-nowrap`.
+1. **Community** — remove `hidden sm:inline-flex`; keep visible. Shrink padding to `px-1.5 py-1` on mobile and use `text-[10px]` on the smallest size.
+2. **+ Share** — already visible; keep Admin-style dark styling. On mobile show `Share` text (not just `+`) so the user sees it.
+3. **Saved {n}** — remove `hidden sm:inline-flex`; keep visible. Show as `♥ {n}` (heart icon + count) on mobile to save horizontal space, full `Saved {n}` from `sm:` up.
+4. **Sign out** — on mobile shrink to icon-style with shorter text "Out" below `sm:`, full "Sign out" from `sm:` up. (Optional, only if still overlapping.)
+5. **Admin** — same compact treatment if signed-in admin; show "A" on mobile, "Admin" from `sm:` up.
+6. **Logo title** — keep current truncation; consider hiding the wordmark `fridge cuisine` text on the smallest widths (<360px) and keeping just the logo image, since 5 nav items + wordmark won't fit cleanly. At 390px it should still fit with the compact pills above.
+7. Keep `flex-wrap` on the nav as a safety net so nothing clips off-screen.
 
-Tighten the header for small screens in `src/routes/index.tsx`:
-- Allow the nav to wrap/shrink: remove `shrink-0` from the `<nav>`, add `flex-wrap justify-end min-w-0`, and reduce gap to `gap-0.5` on mobile.
-- Hide the "Saved N" count label text on mobile (icon/short form) — show only `Saved` (no count) under `sm`, full label from `sm:` up. Or hide entirely below `sm` since the saved drawer is also accessible from the floating button.
-- Hide "Community" link in the header below `sm` (it's already surfaced via the CommunityStrip on the page) — show from `sm:` up.
-- Shrink the logo title further on the smallest widths: keep `text-[13px]` but allow truncation by removing `whitespace-nowrap` on `< sm` (keep nowrap from `sm:` up), and add `truncate` so it never pushes the nav.
+### File
+- `src/routes/index.tsx` (header/nav block only)
 
-These together prevent overlap at 360–414px while keeping the desktop layout unchanged.
-
-### Files
-- `src/routes/index.tsx` (header/nav block ~lines 437–536 only)
-
-No business logic, routing, or backend changes.
+No backend or logic changes.

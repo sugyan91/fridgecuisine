@@ -462,7 +462,7 @@ function Index() {
             <nav className="flex items-center gap-0.5 md:gap-2 justify-end min-w-0 flex-wrap">
               <Link
                 to="/community"
-                className="hidden sm:inline-flex text-[11px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-2 py-1.5 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
+                className="text-[10px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-1.5 py-1 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
               >
                 Community
               </Link>
@@ -482,23 +482,23 @@ function Index() {
                   </Link>
                   <Link
                     to="/community/new"
-                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                    className="text-[10px] md:text-sm font-medium px-1.5 py-1 md:px-3 md:py-2 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                   >
-                    <span className="sm:hidden">+</span>
-                    <span className="hidden sm:inline">+ Share</span>
+                    Share
                   </Link>
                   <button
                     type="button"
                     onClick={() => setDrawerOpen(true)}
-                    className="hidden sm:inline-flex text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border border-border hover:bg-secondary transition-colors"
+                    className="text-[10px] md:text-sm font-medium px-1.5 py-1 md:px-3 md:py-2 rounded-full border border-border hover:bg-secondary transition-colors"
                   >
-                    Saved {saved.length}
+                    <span className="md:hidden">♥ {saved.length}</span>
+                    <span className="hidden md:inline">Saved {saved.length}</span>
                   </button>
                   {isAdmin && (
                     <button
                       type="button"
                       onClick={() => setAdminOpen(true)}
-                      className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full bg-foreground text-background"
+                      className="text-[10px] md:text-sm font-medium px-1.5 py-1 md:px-3 md:py-2 rounded-full bg-foreground text-background"
                     >
                       Admin
                     </button>
@@ -508,9 +508,10 @@ function Index() {
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
+                    className="text-[10px] md:text-sm font-medium px-1.5 py-1 md:px-3 md:py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
                   >
-                    Sign out
+                    <span className="md:hidden">Out</span>
+                    <span className="hidden md:inline">Sign out</span>
                   </button>
                 </>
               ) : (
