@@ -8,6 +8,9 @@ import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { RecipeCard } from "@/components/fridge/RecipeCard";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
+import { CountryTiles } from "@/components/landing/CountryTiles";
+import { TrendingDishes } from "@/components/landing/TrendingDishes";
+import { HowItWorks } from "@/components/landing/HowItWorks";
 import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
 import {
   listSavedRecipes,
