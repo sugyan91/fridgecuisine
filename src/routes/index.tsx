@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
 import { RecipeCounter } from "@/components/RecipeCounter";
+import { FreeTierBanner } from "@/components/FreeTierBanner";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useIsAdmin } from "@/hooks/use-is-admin";
@@ -535,6 +536,9 @@ function Index() {
         </header>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20">
+          <div className="lg:col-span-12 -mb-6 md:-mb-12">
+            <FreeTierBanner isPremium={isPremium} userId={userId} />
+          </div>
           <section className="lg:col-span-12">
             <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4">
               <div className="flex items-center justify-center gap-3 mb-5">
