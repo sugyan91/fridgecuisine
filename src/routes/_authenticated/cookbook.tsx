@@ -7,7 +7,7 @@ import {
   setCookedStatus,
   unsaveRecipe,
   type SavedRecipeRow,
-} from "@/lib/saved-recipes.functions";
+} from "@/lib/saved-receipes.functions";
 
 export const Route = createFileRoute("/_authenticated/cookbook")({
   head: () => ({
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/cookbook")({
       { title: "My Cookbook & Meal History — FridgeCuisine" },
       {
         name: "description",
-        content: "Saved recipes and your cooked meal history on FridgeCuisine.",
+        content: "Saved receipes and your cooked meal history on FridgeCuisine.",
       },
     ],
   }),
@@ -114,7 +114,7 @@ function CookbookPage() {
         ) : tab === "saved" ? (
           savedList.length === 0 ? (
             <p className="opacity-60">
-              Nothing saved yet. Tap the heart on a recipe to add it here.
+              Nothing saved yet. Tap the heart on a receipe to add it here.
             </p>
           ) : (
             <ul className="space-y-3">
@@ -156,7 +156,7 @@ function CookbookPage() {
           )
         ) : history.length === 0 ? (
           <p className="opacity-60">
-            No cooked meals yet. Mark a saved recipe as cooked to start your history.
+            No cooked meals yet. Mark a saved receipe as cooked to start your history.
           </p>
         ) : (
           <ul className="space-y-3">

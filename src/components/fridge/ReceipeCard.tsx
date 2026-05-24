@@ -72,7 +72,7 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Collapse recipe"
+            aria-label="Collapse receipe"
             className="size-10 bg-white text-foreground rounded-full font-black text-xl flex-shrink-0"
           >
             −
@@ -230,7 +230,7 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
           <button
             type="button"
             onClick={onToggleSave}
-            aria-label={saved ? "Unsave recipe" : "Save recipe"}
+            aria-label={saved ? "Unsave receipe" : "Save receipe"}
             className={`size-10 border-2 border-border rounded-full grid place-items-center transition-colors ${
               saved ? "bg-paprika text-white" : "bg-white hover:bg-paprika/10"
             }`}

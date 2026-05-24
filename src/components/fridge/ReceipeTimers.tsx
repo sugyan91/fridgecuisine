@@ -41,7 +41,7 @@ export function RecipeTimers({ totalMinutes, variant = "light" }: Props) {
             type="button"
             onClick={start}
             className={`size-8 rounded-full grid place-items-center font-black ${btn}`}
-            aria-label="Start recipe timer"
+            aria-label="Start receipe timer"
           >
             <Play className="size-3.5" fill="currentColor" />
           </button>
@@ -51,7 +51,7 @@ export function RecipeTimers({ totalMinutes, variant = "light" }: Props) {
             type="button"
             onClick={pause}
             className={`size-8 rounded-full grid place-items-center ${btn}`}
-            aria-label="Pause recipe timer"
+            aria-label="Pause receipe timer"
           >
             <Pause className="size-3.5" fill="currentColor" />
           </button>
@@ -61,7 +61,7 @@ export function RecipeTimers({ totalMinutes, variant = "light" }: Props) {
             type="button"
             onClick={skip}
             className={`size-8 rounded-full grid place-items-center ${btn}`}
-            aria-label="Skip recipe timer"
+            aria-label="Skip receipe timer"
           >
             <SkipForward className="size-3.5" fill="currentColor" />
           </button>
@@ -70,7 +70,7 @@ export function RecipeTimers({ totalMinutes, variant = "light" }: Props) {
           type="button"
           onClick={reset}
           className={`size-8 rounded-full grid place-items-center ${btn}`}
-          aria-label="Reset recipe timer"
+          aria-label="Reset receipe timer"
         >
           <RotateCcw className="size-3.5" />
         </button>

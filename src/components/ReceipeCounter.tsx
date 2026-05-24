@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useRecipeUsage } from "@/hooks/use-recipe-usage";
+import { useRecipeUsage } from "@/hooks/use-receipe-usage";
 
 type Props = {
   userId: string | undefined;
@@ -24,8 +24,8 @@ export function RecipeCounter({ userId, isPremium }: Props) {
 
   const shortLabel = loaded ? `${used}/${limit} free today` : `—/${limit} free today`;
   const longLabel = loaded
-    ? `${used} of ${limit} free recipes today`
-    : `— of ${limit} free recipes today`;
+    ? `${used} of ${limit} free receipes today`
+    : `— of ${limit} free receipes today`;
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
@@ -33,7 +33,7 @@ export function RecipeCounter({ userId, isPremium }: Props) {
         className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full border-2 border-border ${
           atLimit ? "bg-paprika text-white" : "bg-background"
         }`}
-        title="You get 5 AI recipes per day on the free plan. Upgrade for unlimited."
+        title="You get 5 AI receipes per day on the free plan. Upgrade for unlimited."
       >
         <span className="sm:hidden">{shortLabel}</span>
         <span className="hidden sm:inline">{longLabel}</span>

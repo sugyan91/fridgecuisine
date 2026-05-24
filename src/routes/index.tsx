@@ -19,14 +19,14 @@ import {
   unsaveRecipe as unsaveRecipeFn,
   setCookedStatus,
   type SavedRecipeRow,
-} from "@/lib/saved-recipes.functions";
+} from "@/lib/saved-receipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
 import { RecipeCounter } from "@/components/RecipeCounter";
 import { FreeTierBanner } from "@/components/FreeTierBanner";
-import { useRecipeUsage } from "@/hooks/use-recipe-usage";
+import { useRecipeUsage } from "@/hooks/use-receipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { AdminPanel } from "@/components/admin/AdminPanel";
@@ -88,13 +88,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step recipes from any global cuisine.",
+          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step receipes from any global cuisine.",
       },
       { property: "og:title", content: "FridgeCuisine — Global AI Kitchen" },
       {
         property: "og:description",
         content:
-          "Free AI kitchen helper. Get ingredients and recipes for any dish, or cook from what you already have.",
+          "Free AI kitchen helper. Get ingredients and receipes for any dish, or cook from what you already have.",
       },
     ],
   }),
@@ -127,16 +127,16 @@ function Index() {
   const [showRecipe, setShowRecipe] = useState(false);
 
   const dishPrompts = [
-    "See something that made you hungry? Tell me the dish — I'll give you the ingredients and recipe.",
-    "Caught drooling? Name the food and I'll spill the ingredients and recipe.",
-    "Food crush? Tell me what it was and I'll hand over the ingredients and recipe.",
-    "That dish got your attention, huh? Drop the name — I've got the recipe and ingredients.",
-    "If your stomach just said 'yes please,' tell me the dish and I'll generate the recipe and ingredients.",
-    "Name the dish you can't stop thinking about — I'll recreate it with ingredients and recipe.",
-    "Saw something delicious online? Tell me what it is and I'll break down the recipe and ingredients.",
-    "From craving to cooking — tell me the dish and I'll give you the ingredients and recipe.",
-    "That food looked dangerously good. Want the ingredients and recipe?",
-    "Tell me what made you hungry — I'll turn it into a recipe with ingredients.",
+    "See something that made you hungry? Tell me the dish — I'll give you the ingredients and receipe.",
+    "Caught drooling? Name the food and I'll spill the ingredients and receipe.",
+    "Food crush? Tell me what it was and I'll hand over the ingredients and receipe.",
+    "That dish got your attention, huh? Drop the name — I've got the receipe and ingredients.",
+    "If your stomach just said 'yes please,' tell me the dish and I'll generate the receipe and ingredients.",
+    "Name the dish you can't stop thinking about — I'll recreate it with ingredients and receipe.",
+    "Saw something delicious online? Tell me what it is and I'll break down the receipe and ingredients.",
+    "From craving to cooking — tell me the dish and I'll give you the ingredients and receipe.",
+    "That food looked dangerously good. Want the ingredients and receipe?",
+    "Tell me what made you hungry — I'll turn it into a receipe with ingredients.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
   const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
@@ -173,7 +173,7 @@ function Index() {
   const limitToast = () => {
     toast.error(
       userId
-        ? "Daily limit reached (5/day). Upgrade for unlimited recipes."
+        ? "Daily limit reached (5/day). Upgrade for unlimited receipes."
         : "Daily limit reached (5/day). Sign up or upgrade for more.",
     );
   };
@@ -357,7 +357,7 @@ function Index() {
         const existing = new Set(receipes.map((r) => r.title.toLowerCase()));
         const fresh = res.receipes.filter((r) => !existing.has(r.title.toLowerCase()));
         if (fresh.length === 0) {
-          toast("No new recipes — try changing cuisine or dietary filters.");
+          toast("No new receipes — try changing cuisine or dietary filters.");
         } else {
           setRecipes([...receipes, ...fresh]);
           logGeneration();
@@ -374,8 +374,8 @@ function Index() {
   const isSaved = (title: string) => saved.some((s) => s.title === title);
   const toggleSave = async (receipe: Receipe) => {
     if (!email) {
-      toast("Sign in to save recipes", {
-        description: "Create a free account to keep recipes across devices.",
+      toast("Sign in to save receipes", {
+        description: "Create a free account to keep receipes across devices.",
         action: {
           label: "Sign in",
           onClick: () => navigate({ to: "/login" }),
@@ -389,13 +389,13 @@ function Index() {
         setSaved((prev) => prev.filter((s) => s.title !== receipe.title));
         toast("Removed from saved");
       } else {
-        const res = await saveRecipeRpc({ data: { recipe: receipe } });
+        const res = await saveRecipeRpc({ data: { receipe: receipe } });
         setSaved((prev) => [res.row, ...prev.filter((s) => s.title !== receipe.title)]);
         toast.success("Saved!");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Couldn't update saved recipes.");
+      toast.error("Couldn't update saved receipes.");
     }
   };
 
@@ -469,7 +469,7 @@ function Index() {
               {email ? (
                 <>
                   <Link
-                    to="/my-recipes"
+                    to="/my-receipes"
                     className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 hidden lg:inline rounded-full hover:bg-secondary transition-colors"
                   >
                     My Recipes
@@ -607,7 +607,7 @@ function Index() {
                   {!showRecipe ? (
                   <div className="bg-secondary border border-border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <p className="font-medium text-sm">
-                        Do you want the recipe as well?
+                        Do you want the receipe as well?
                       </p>
                       <div className="flex gap-2">
                         <button
@@ -721,8 +721,8 @@ function Index() {
               >
                 {loading && !pantryMode
                   ? cuisine && cuisine !== "Any / Surprise Me"
-                    ? `Travelling to ${cuisineToCountry(cuisine)} for a surprise recipe…`
-                    : "Travelling the globe to find your perfect recipe…"
+                    ? `Travelling to ${cuisineToCountry(cuisine)} for a surprise receipe…`
+                    : "Travelling the globe to find your perfect receipe…"
                   : "Show me the cuisine"}
               </button>
               <div className="mt-3 flex justify-center">
@@ -735,7 +735,7 @@ function Index() {
             <SectionHeader
               eyebrow="Trending right now"
               title="Hungry for inspiration?"
-              subtitle="Tap any dish and we'll spin up the full recipe instantly."
+              subtitle="Tap any dish and we'll spin up the full receipe instantly."
             />
             <TrendingDishes onPick={runDishByName} />
           </section>
@@ -784,7 +784,7 @@ function Index() {
             {(loading || (receipes && receipes.length > 0)) && (
               <div className="flex items-baseline justify-between">
                 <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
-                  {loading ? "Searching…" : `${receipes!.length} recipes found`}
+                  {loading ? "Searching…" : `${receipes!.length} receipes found`}
                 </h3>
                 {receipes && (
                   <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
@@ -821,7 +821,7 @@ function Index() {
                 disabled={loadingMore}
                 className="w-full bg-card border border-border text-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-all disabled:opacity-60"
               >
-                {loadingMore ? "Cooking up more…" : "Show more recipes"}
+                {loadingMore ? "Cooking up more…" : "Show more receipes"}
               </button>
             )}
           </section>
@@ -841,7 +841,7 @@ function Index() {
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            aria-label="Open saved recipes"
+            aria-label="Open saved receipes"
             className="md:hidden fixed bottom-6 right-6 size-16 bg-turmeric border-4 border-border rounded-full shadow-[4px_4px_0px_0px_var(--border)] grid place-items-center z-40"
           >
             <span className="font-black text-xl">{saved.length}</span>
@@ -856,7 +856,7 @@ function PricingNote() {
   return (
     <div className="mt-4 pt-3 border-t border-border text-xs md:text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-2">
       <span>
-        <span className="font-semibold text-foreground">$5.99/mo</span> · Premium · unlimited recipes
+        <span className="font-semibold text-foreground">$5.99/mo</span> · Premium · unlimited receipes
       </span>
       <Link
         to="/pricing"

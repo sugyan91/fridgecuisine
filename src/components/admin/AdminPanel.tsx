@@ -15,7 +15,7 @@ import {
   adminDeleteComment,
 } from "@/lib/admin.functions";
 
-type Tab = "users" | "recipes" | "comments";
+type Tab = "users" | "receipes" | "comments";
 
 type UserRow = {
   id: string;
@@ -43,11 +43,11 @@ type RecipeRow = {
 type CommentRow = {
   id: string;
   user_id: string;
-  recipe_id: string;
+  receipe_id: string;
   body: string;
   created_at: string;
   author_username: string | null;
-  recipe_title: string | null;
+  receipe_title: string | null;
 };
 
 const PAGE_SIZE = 50;
@@ -75,7 +75,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         </div>
 
         <div className="flex gap-1 bg-muted/40 border-2 border-border rounded-full p-1 mb-5">
-          {(["users", "recipes", "comments"] as const).map((t) => (
+          {(["users", "receipes", "comments"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -89,7 +89,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         </div>
 
         {tab === "users" && <UsersTab />}
-        {tab === "recipes" && <RecipesTab />}
+        {tab === "receipes" && <RecipesTab />}
         {tab === "comments" && <CommentsTab />}
       </div>
     </div>
@@ -369,10 +369,10 @@ function RecipesTab() {
       const r = await list({
         data: { page, pageSize: PAGE_SIZE, search: search || undefined, published },
       });
-      setRows(r.recipes);
+      setRows(r.receipes);
       setTotal(r.total);
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to load recipes");
+      toast.error(e?.message ?? "Failed to load receipes");
     } finally {
       setLoading(false);
     }
@@ -392,10 +392,10 @@ function RecipesTab() {
   }, [search, published]);
 
   const onDelete = async (r: RecipeRow) => {
-    if (!confirm(`Delete recipe "${r.title}"? This also removes its comments and likes.`)) return;
+    if (!confirm(`Delete receipe "${r.title}"? This also removes its comments and likes.`)) return;
     setBusy(r.id);
     try {
-      await del({ data: { recipe_id: r.id } });
+      await del({ data: { receipe_id: r.id } });
       toast.success("Recipe deleted");
       await load();
     } catch (e: any) {
@@ -433,7 +433,7 @@ function RecipesTab() {
         </div>
         {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}
         {!loading && rows.length === 0 && (
-          <div className="px-3 py-4 text-xs opacity-60">No recipes found.</div>
+          <div className="px-3 py-4 text-xs opacity-60">No receipes found.</div>
         )}
         {rows.map((r) => (
           <div
@@ -535,7 +535,7 @@ function CommentsTab() {
       <SearchBar
         value={search}
         onChange={setSearch}
-        placeholder="Search body, author, recipe title…"
+        placeholder="Search body, author, receipe title…"
       />
       <div className="border-2 border-border rounded-2xl overflow-hidden">
         {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}
@@ -550,12 +550,12 @@ function CommentsTab() {
                 <p className="opacity-60 text-[10px] mt-1">
                   {c.author_username ? `@${c.author_username}` : "anon"} on{" "}
                   <a
-                    href={`/community/${c.recipe_id}`}
+                    href={`/community/${c.receipe_id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="underline"
                   >
-                    {c.recipe_title ?? c.recipe_id}
+                    {c.receipe_title ?? c.receipe_id}
                   </a>{" "}
                   · {new Date(c.created_at).toLocaleString()}
                 </p>

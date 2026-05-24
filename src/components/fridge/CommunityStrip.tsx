@@ -61,8 +61,8 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
           return (
             <Link
               key={r.id}
-              to="/community/$recipeId"
-              params={{ recipeId: r.id }}
+              to="/community/$receipeId"
+              params={{ receipeId: r.id }}
               className="group block bg-white border-2 border-border rounded-2xl overflow-hidden shadow-[3px_3px_0px_0px_var(--border)] hover:shadow-[5px_5px_0px_0px_var(--border)] hover:translate-y-[-2px] transition-all"
             >
               {r.image_url ? (
@@ -80,7 +80,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
                   {r.title}
                 </h3>
                 <p className="mt-1 text-[11px] font-bold uppercase tracking-wide opacity-60 truncate">
-                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community recipe"}
+                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community receipe"}
                 </p>
                 <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
                   <span className="opacity-70 truncate">by {r.author_name}</span>

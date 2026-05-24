@@ -83,7 +83,7 @@ export const adminResetUsage = createServerFn({ method: "POST" })
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const { error } = await supabaseAdmin
-      .from("recipe_generations")
+      .from("receipe_generations")
       .delete()
       .eq("user_id", data.user_id)
       .gte("created_at", startOfDay.toISOString());
@@ -190,7 +190,7 @@ export const adminGetUserSummary = createServerFn({ method: "POST" })
     startOfDay.setHours(0, 0, 0, 0);
     const [{ count: usedToday }, { data: subs }] = await Promise.all([
       supabaseAdmin
-        .from("recipe_generations")
+        .from("receipe_generations")
         .select("*", { count: "exact", head: true })
         .eq("user_id", data.user_id)
         .gte("created_at", startOfDay.toISOString()),
@@ -247,7 +247,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const { data: gens } = await supabaseAdmin
-      .from("recipe_generations")
+      .from("receipe_generations")
       .select("user_id")
       .in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"])
       .gte("created_at", startOfDay.toISOString());
@@ -307,7 +307,7 @@ export const adminListCommunityRecipes = createServerFn({ method: "POST" })
     const from = (data.page - 1) * data.pageSize;
     const to = from + data.pageSize - 1;
     let query = supabaseAdmin
-      .from("community_recipes")
+      .from("community_receipes")
       .select("id, user_id, title, city, country, cuisine, created_at, is_published", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, to);
@@ -315,7 +315,7 @@ export const adminListCommunityRecipes = createServerFn({ method: "POST" })
     else if (data.published === "unpublished") query = query.eq("is_published", false);
     if (data.search) {
       const q = safeLike(data.search);
-      // Also match recipes whose author's username/display name matches.
+      // Also match receipes whose author's username/display name matches.
       const { data: matchProfiles } = await supabaseAdmin
         .from("profiles")
         .select("user_id")
@@ -334,7 +334,7 @@ export const adminListCommunityRecipes = createServerFn({ method: "POST" })
       .in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
     const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
     return {
-      recipes: (rows ?? []).map((r) => ({
+      receipes: (rows ?? []).map((r) => ({
         ...r,
         author_username: pMap.get(r.user_id)?.username ?? null,
         author_display_name: pMap.get(r.user_id)?.display_name ?? null,
@@ -345,12 +345,12 @@ export const adminListCommunityRecipes = createServerFn({ method: "POST" })
 
 export const adminDeleteCommunityRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ recipe_id: z.string().uuid() }).parse(i))
+  .inputValidator((i) => z.object({ receipe_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    await supabaseAdmin.from("community_recipe_comments").delete().eq("recipe_id", data.recipe_id);
-    await supabaseAdmin.from("community_recipe_likes").delete().eq("recipe_id", data.recipe_id);
-    const { error } = await supabaseAdmin.from("community_recipes").delete().eq("id", data.recipe_id);
+    await supabaseAdmin.from("community_receipe_comments").delete().eq("receipe_id", data.receipe_id);
+    await supabaseAdmin.from("community_receipe_likes").delete().eq("receipe_id", data.receipe_id);
+    const { error } = await supabaseAdmin.from("community_receipes").delete().eq("id", data.receipe_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -363,8 +363,8 @@ export const adminListComments = createServerFn({ method: "POST" })
     const from = (data.page - 1) * data.pageSize;
     const to = from + data.pageSize - 1;
     let query = supabaseAdmin
-      .from("community_recipe_comments")
-      .select("id, user_id, recipe_id, body, created_at", { count: "exact" })
+      .from("community_receipe_comments")
+      .select("id, user_id, receipe_id, body, created_at", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, to);
     if (data.search) {
@@ -376,7 +376,7 @@ export const adminListComments = createServerFn({ method: "POST" })
           .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
           .limit(500),
         supabaseAdmin
-          .from("community_recipes")
+          .from("community_receipes")
           .select("id")
           .ilike("title", `%${q}%`)
           .limit(500),
@@ -385,29 +385,29 @@ export const adminListComments = createServerFn({ method: "POST" })
       const rList = (matchRecipes ?? []).map((r) => r.id);
       const uIn = uList.length ? uList.join(",") : SENTINEL_UUID;
       const rIn = rList.length ? rList.join(",") : SENTINEL_UUID;
-      query = query.or(`body.ilike.%${q}%,user_id.in.(${uIn}),recipe_id.in.(${rIn})`);
+      query = query.or(`body.ilike.%${q}%,user_id.in.(${uIn}),receipe_id.in.(${rIn})`);
     }
     const { data: rows, count, error } = await query;
     if (error) throw new Error(error.message);
     const uids = (rows ?? []).map((r) => r.user_id);
-    const rids = (rows ?? []).map((r) => r.recipe_id);
-    const [{ data: profiles }, { data: recipes }] = await Promise.all([
+    const rids = (rows ?? []).map((r) => r.receipe_id);
+    const [{ data: profiles }, { data: receipes }] = await Promise.all([
       supabaseAdmin
         .from("profiles")
         .select("user_id, username")
         .in("user_id", uids.length ? uids : ["00000000-0000-0000-0000-000000000000"]),
       supabaseAdmin
-        .from("community_recipes")
+        .from("community_receipes")
         .select("id, title")
         .in("id", rids.length ? rids : ["00000000-0000-0000-0000-000000000000"]),
     ]);
     const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p.username]));
-    const rMap = new Map((recipes ?? []).map((r) => [r.id, r.title]));
+    const rMap = new Map((receipes ?? []).map((r) => [r.id, r.title]));
     return {
       comments: (rows ?? []).map((c) => ({
         ...c,
         author_username: pMap.get(c.user_id) ?? null,
-        recipe_title: rMap.get(c.recipe_id) ?? null,
+        receipe_title: rMap.get(c.receipe_id) ?? null,
       })),
       total: count ?? 0,
     };
@@ -419,7 +419,7 @@ export const adminDeleteComment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { error } = await supabaseAdmin
-      .from("community_recipe_comments")
+      .from("community_receipe_comments")
       .delete()
       .eq("id", data.comment_id);
     if (error) throw new Error(error.message);

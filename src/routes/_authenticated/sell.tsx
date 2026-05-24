@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/sell")({
       {
         name: "description",
         content:
-          "Sell your recipes worldwide. Set your own price and reach home cooks everywhere.",
+          "Sell your receipes worldwide. Set your own price and reach home cooks everywhere.",
       },
     ],
   }),
@@ -122,7 +122,7 @@ function SellPage() {
               <div className="bg-paprika text-white size-12 rounded-2xl border-2 border-border grid place-items-center shadow-[3px_3px_0px_0px_var(--border)]">
                 <ChefHat className="size-7" strokeWidth={2.5} />
               </div>
-              <h1 className="font-display text-3xl md:text-5xl uppercase">Sell your recipes</h1>
+              <h1 className="font-display text-3xl md:text-5xl uppercase">Sell your receipes</h1>
             </div>
             <p className="text-muted-foreground max-w-xl">
               Share your signature dishes with home cooks worldwide. You set the price — we
@@ -245,11 +245,11 @@ function SellPage() {
                 )}
               </Card>
 
-              {/* Step 3 — List recipes (coming soon) */}
-              <Card step={3} title="List your first recipe" complete={false}>
+              {/* Step 3 — List receipes (coming soon) */}
+              <Card step={3} title="List your first receipe" complete={false}>
                 <p className="text-sm text-muted-foreground mb-3">
                   Set a title, ingredients, steps, a cover photo and your price. Buyers unlock
-                  the full recipe instantly.
+                  the full receipe instantly.
                 </p>
                 <button
                   type="button"
