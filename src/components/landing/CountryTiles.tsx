@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 type Country = { flag: string; cuisine: string; label: string };
 
 const COUNTRIES: Country[] = [
@@ -60,79 +62,65 @@ const COUNTRIES: Country[] = [
   { flag: "🇦🇺", cuisine: "Australian", label: "Australia" },
 ];
 
-// Soft rotating background tints (using existing palette tokens via inline styles)
-const TINTS = [
-  "bg-[#FFF4E6]",
-  "bg-[#FFE8E0]",
-  "bg-[#E8F4EA]",
-  "bg-[#FFF7D6]",
-  "bg-[#F0EAFB]",
-  "bg-[#E0F2F7]",
-];
+const COLLAPSED = 14;
 
 type Props = {
   onPick: (cuisine: string) => void;
 };
 
 export function CountryTiles({ onPick }: Props) {
-  const half = Math.ceil(COUNTRIES.length / 2);
-  const rowA = COUNTRIES.slice(0, half);
-  const rowB = COUNTRIES.slice(half);
-
-  const Tile = ({ c, i }: { c: Country; i: number }) => (
-    <button
-      type="button"
-      onClick={() => onPick(c.cuisine)}
-      className={`snap-start shrink-0 w-[96px] ${TINTS[i % TINTS.length]} flex flex-col items-center justify-center gap-1 border-2 border-border rounded-2xl py-3 px-2 shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[4px_5px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_var(--border)] transition-all`}
-      aria-label={`Cook ${c.cuisine} cuisine`}
-    >
-      <span className="text-4xl leading-none" aria-hidden>
-        {c.flag}
-      </span>
-      <span className="text-[11px] font-black uppercase tracking-wide text-center leading-tight">
-        {c.cuisine}
-      </span>
-    </button>
-  );
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? COUNTRIES : COUNTRIES.slice(0, COLLAPSED);
+  const remaining = COUNTRIES.length - COLLAPSED;
 
   return (
-    <div className="-mx-4 md:mx-0">
-      {/* MOBILE: 2-row swipe carousel */}
-      <div className="relative md:hidden">
-        <div
-          className="grid grid-rows-2 grid-flow-col auto-cols-[88px] gap-3 overflow-x-auto px-4 pb-3 snap-x snap-mandatory scrollbar-none"
-        >
-          {COUNTRIES.map((c, i) => (
-            <Tile key={c.cuisine} c={c} i={i} />
+    <div>
+      {/* Mobile: horizontal swipe so the row never wraps awkwardly */}
+      <div className="md:hidden -mx-4">
+        <div className="flex gap-2.5 overflow-x-auto px-4 pb-2 scrollbar-none snap-x">
+          {COUNTRIES.map((c) => (
+            <Chip key={c.cuisine} country={c} onPick={onPick} />
           ))}
         </div>
-        <div className="pointer-events-none absolute top-0 right-0 h-full w-10 bg-gradient-to-l from-background to-transparent" />
-        <p className="px-4 mt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          ← Swipe for 50+ cuisines →
-        </p>
       </div>
 
-      {/* DESKTOP/TABLET: dual-row auto-scrolling marquee */}
-      <div className="hidden md:block relative">
-        {/* Edge fades */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 z-10 bg-gradient-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 z-10 bg-gradient-to-l from-background to-transparent" />
-
-        <div className="marquee-row overflow-hidden py-2">
-          <div className="marquee-track marquee-left gap-3 pr-3">
-            {[...rowA, ...rowA].map((c, i) => (
-              <Tile key={`a-${i}`} c={c} i={i} />
-            ))}
-          </div>
-        </div>
-        <div className="marquee-row overflow-hidden py-2 mt-1">
-          <div className="marquee-track marquee-right gap-3 pr-3">
-            {[...rowB, ...rowB].map((c, i) => (
-              <Tile key={`b-${i}`} c={c} i={i + 1} />
-            ))}
-          </div>
-        </div>
+      {/* Tablet / desktop: wrap-flow chip row */}
+      <div className="hidden md:flex flex-wrap gap-3">
+        {visible.map((c) => (
+          <Chip key={c.cuisine} country={c} onPick={onPick} />
+        ))}
+        {!expanded && remaining > 0 && (
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="px-5 py-2.5 rounded-full border border-foreground/15 text-sm font-medium text-foreground hover:bg-secondary transition-all"
+          >
+            + {remaining} more
+          </button>
+        )}
       </div>
     </div>
+  );
+}
+
+function Chip({
+  country,
+  onPick,
+}: {
+  country: { flag: string; cuisine: string };
+  onPick: (cuisine: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onPick(country.cuisine)}
+      className="snap-start shrink-0 px-5 py-2.5 rounded-full bg-secondary border border-border hover:bg-primary hover:text-primary-foreground hover:border-transparent transition-all flex items-center gap-2.5 text-sm font-medium"
+      aria-label={`Cook ${country.cuisine} cuisine`}
+    >
+      <span className="text-lg leading-none" aria-hidden>
+        {country.flag}
+      </span>
+      <span>{country.cuisine}</span>
+    </button>
   );
 }
