@@ -696,6 +696,21 @@ function Index() {
               subtitle="Explore 50+ cuisines from every corner of the globe."
             />
             <CountryTiles onPick={pickCuisine} />
+            <div className="max-w-md mx-auto mt-6">
+              <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60 text-center">Global Cuisine Vibe</p>
+              <select
+                value={cuisine}
+                onChange={(e) => {
+                  setPantryMode(false);
+                  setCuisine(e.target.value);
+                }}
+                className="w-full border-2 border-border p-3 rounded-xl font-bold bg-white"
+              >
+                {["Any / Surprise Me", ...[...DEFAULT_CUISINES].filter((c) => c !== "Any / Surprise Me").sort((a, b) => a.localeCompare(b))].map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </div>
           </section>
 
           <section className="lg:col-span-12">
