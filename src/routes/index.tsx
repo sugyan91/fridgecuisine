@@ -188,7 +188,7 @@ function Index() {
   };
   const headerRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
-  const pantryRef = useRef<HTMLDivElement | null>(null);
+  const pantryRef = useRef<HTMLElement | null>(null);
   const dishInputRef = useRef<HTMLInputElement | null>(null);
   const [headerOffset, setHeaderOffset] = useState(96);
   useEffect(() => {
@@ -847,6 +847,32 @@ function PricingNote() {
       >
         Upgrade
       </Link>
+    </div>
+  );
+}
+
+function SectionHeader({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="mb-4 md:mb-5">
+      <p className="font-black text-[10px] md:text-xs uppercase tracking-[0.18em] text-paprika mb-1">
+        {eyebrow}
+      </p>
+      <h2 className="font-display text-2xl md:text-4xl uppercase leading-tight">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-sm md:text-base text-muted-foreground mt-1 max-w-2xl">
+          {subtitle}
+        </p>
+      )}
     </div>
   );
 }
