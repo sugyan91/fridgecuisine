@@ -741,6 +741,7 @@ function Index() {
                 onPantryGenerate={onPantryGenerate}
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
+                counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} />}
               />
 
               <button
@@ -755,6 +756,9 @@ function Index() {
                     : "Travelling the globe to find your perfect recipe…"
                   : "Show me the cuisine"}
               </button>
+              <div className="mt-3 flex justify-center">
+                <RecipeCounter userId={userId} isPremium={isPremium} />
+              </div>
             </div>
           </section>
 
