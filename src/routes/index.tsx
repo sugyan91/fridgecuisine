@@ -445,24 +445,24 @@ function Index() {
             <Link
               to="/"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 mr-1 sm:mr-2"
+              className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 mr-1 sm:mr-2 shrink"
             >
               <img
                 src={logoImg}
                 alt="Fridge Cuisine"
                 className="h-7 sm:h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
               />
-              <div className="min-w-0">
-                <h1 className="font-display tracking-tight text-foreground leading-none text-[13px] sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
+              <div className="min-w-0 flex-1">
+                <h1 className="font-display tracking-tight text-foreground leading-none text-[13px] sm:text-lg md:text-xl text-left lowercase sm:whitespace-nowrap font-semibold truncate">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
               </div>
             </Link>
 
-            <nav className="flex items-center gap-1 md:gap-2 shrink-0">
+            <nav className="flex items-center gap-0.5 md:gap-2 justify-end min-w-0 flex-wrap">
               <Link
                 to="/community"
-                className="text-[11px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-2 py-1.5 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
+                className="hidden sm:inline-flex text-[11px] md:text-sm font-medium text-foreground/80 hover:text-foreground px-2 py-1.5 md:px-3 md:py-2 rounded-full hover:bg-secondary transition-colors"
               >
                 Community
               </Link>
@@ -482,7 +482,7 @@ function Index() {
                   </Link>
                   <Link
                     to="/community/new"
-                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full bg-secondary border border-border hover:bg-foreground hover:text-background hover:border-transparent transition-all"
+                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                   >
                     <span className="sm:hidden">+</span>
                     <span className="hidden sm:inline">+ Share</span>
@@ -490,7 +490,7 @@ function Index() {
                   <button
                     type="button"
                     onClick={() => setDrawerOpen(true)}
-                    className="text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border border-border hover:bg-secondary transition-colors"
+                    className="hidden sm:inline-flex text-[11px] md:text-sm font-medium px-2.5 py-1.5 md:px-3 md:py-2 rounded-full border border-border hover:bg-secondary transition-colors"
                   >
                     Saved {saved.length}
                   </button>
