@@ -272,13 +272,15 @@ function Index() {
     setDishLoading(true);
     setDishResult(null);
     setShowReceipe(false);
-    dishInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     try {
       const res = await fetchDish({ data: { dish: name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
         logGeneration();
+        requestAnimationFrame(() => {
+          dishInputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
       }
     } catch (err) {
       console.error(err);
