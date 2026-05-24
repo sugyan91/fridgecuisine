@@ -694,10 +694,35 @@ function Index() {
                 </div>
               )}
             </div>
-            <PricingNote />
           </section>
 
-          <section className="lg:col-span-5 animate-pop">
+          <section className="lg:col-span-12">
+            <SectionHeader
+              eyebrow="Explore by country"
+              title="Cook the world tonight"
+              subtitle="Tap a flag to set the cuisine — then add your ingredients below."
+            />
+            <CountryTiles onPick={pickCuisine} />
+          </section>
+
+          <section className="lg:col-span-12">
+            <SectionHeader
+              eyebrow="Trending right now"
+              title="Hungry for inspiration?"
+              subtitle="Tap any dish and we'll spin up the full recipe instantly."
+            />
+            <TrendingDishes onPick={runDishByName} />
+          </section>
+
+          <section className="lg:col-span-12">
+            <SectionHeader
+              eyebrow="How it works"
+              title="From fridge to feast in 3 steps"
+            />
+            <HowItWorks />
+          </section>
+
+          <section ref={pantryRef} className="lg:col-span-5 animate-pop scroll-mt-32">
             <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)] lg:sticky lg:top-6">
               <h2 className="font-black text-xl md:text-2xl uppercase mb-1">
                 What's in your Pantry
@@ -739,7 +764,6 @@ function Index() {
                   : "Show me the cuisine"}
               </button>
             </div>
-            <PricingNote />
           </section>
 
           <section className="lg:col-span-7 space-y-5">
