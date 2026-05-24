@@ -807,6 +807,10 @@ function Index() {
 
         <CommunityStrip isAuthenticated={!!email} />
 
+        <section className="max-w-6xl mx-auto mt-12">
+          <ChefCTA />
+        </section>
+
         <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-border">
           <PricingNote />
         </div>
