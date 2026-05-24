@@ -244,3 +244,27 @@ button:not(:disabled),
 .marquee-row:hover .marquee-track {
   animation-play-state: paused;
 }
+
+@keyframes flag-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-flag-spin {
+  display: inline-block;
+  transform-origin: center;
+  animation: flag-spin 6s linear infinite;
+}
+
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-left,
+  .marquee-right,
+  .animate-flag-spin {
+    animation: none !important;
+  }
+}
