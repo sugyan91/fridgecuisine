@@ -1,17 +1,17 @@
-Move the "Global Cuisine Vibe" dropdown out of the Pantry's FilterPanel and place it directly below the revolving country flags (CountryTiles).
+Move the "Show me the cuisine" button + RecipeCounter under the Global Cuisine Vibe dropdown (below the country flags), so users can pick a cuisine and generate from one place.
 
-### Changes
+### Changes — `src/routes/index.tsx`
 
-**1. `src/components/fridge/FilterPanel.tsx`**
-- Remove the entire "Global Cuisine Vibe" block (lines 177–188): the section wrapper, label, and `<select>` of cuisines.
-- Keep the `cuisine` / `onCuisine` props in `Props` so the parent still controls cuisine state (no other consumers to update).
+1. **Add inside the flags section**, directly after the Global Cuisine Vibe `<select>`:
+   - "Show me the cuisine" button wired to `onSubmit` (same handler as today). Same primary styling.
+   - RecipeCounter row underneath (`mt-3 flex justify-center`).
+   - Also tweak `pickCuisine` so it no longer scrolls to the pantry — selecting a flag just sets cuisine; the user clicks the new button right there.
 
-**2. `src/routes/index.tsx`**
-- Inside the `<section>` that renders `<CountryTiles onPick={pickCuisine} />` (around line 691–698), add the cuisine vibe selector directly underneath the `<CountryTiles>` element.
-- Reuse the same styling (label "Global Cuisine Vibe" + `<select>` with all cuisines). It will call the same handler the FilterPanel used: set `pantryMode(false)` and `setCuisine(value)`.
-- To avoid duplicating the cuisine list, export `DEFAULT_CUISINES` sorting logic inline in the section (small list build from `DEFAULT_CUISINES` + user's `customCuisines`). For simplicity, fetch custom cuisines the same way FilterPanel does — but since FilterPanel still renders for the pantry, and to keep this minimal, the new selector on the landing section will use only `DEFAULT_CUISINES` (sorted, with "Any / Surprise Me" first). Custom cuisines remain accessible via the cuisine input elsewhere.
-- Constrain max width (e.g. `max-w-md mx-auto mt-6`) so the dropdown sits cleanly centered under the flags.
+2. **Remove from the Pantry section** (lines 763–777):
+   - Delete the "Show me the cuisine" button.
+   - Delete the RecipeCounter row directly below it.
+   - Keep the rest of the pantry section (IngredientInput, FilterPanel with its pantry-generate button, etc.) intact.
 
 ### Out of scope
-- No changes to CountryTiles, TrendingDishes, RecipeCounter, or pantry generate logic.
-- No styling overhaul beyond placement and a sensible width/spacing for the moved selector.
+- No changes to `onSubmit` logic, generation limits, FilterPanel, RecipeCounter, or pantry-generate flow.
+- No styling overhaul beyond placement.
