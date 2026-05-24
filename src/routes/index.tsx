@@ -572,11 +572,12 @@ function Index() {
               </div>
               <form onSubmit={onDishSubmit} className="flex flex-col md:flex-row gap-3">
                 <input
+                  ref={dishInputRef}
                   type="text"
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
                   placeholder={`eg: ${worldFoods[worldFoodIndex].food} from ${worldFoods[worldFoodIndex].country}`}
-                  className="flex-1 border-2 border-border rounded-2xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
+                  className="flex-1 border-2 border-border rounded-2xl px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-turmeric"
                 />
                 <button
                   type="submit"
