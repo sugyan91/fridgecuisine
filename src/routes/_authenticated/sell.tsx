@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/sell")({
       {
         name: "description",
         content:
-          "Sell your recipes worldwide. Keep 70%. Payouts straight to your bank via Stripe.",
+          "Sell your recipes worldwide. Set your own price and reach home cooks everywhere.",
       },
     ],
   }),
