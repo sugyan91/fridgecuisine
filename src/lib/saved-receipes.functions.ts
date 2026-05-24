@@ -69,11 +69,11 @@ export const saveReceipe = createServerFn({ method: "POST" })
           title: r.title,
           cuisine: r.cuisine ?? null,
           cook_time_minutes: r.cookTimeMinutes ?? null,
-          receipe: r as never,
+          recipe: r as never,
         },
         { onConflict: "user_id,title" },
       )
-      .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
+      .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
     return { row: row as unknown as SavedReceipeRow };
