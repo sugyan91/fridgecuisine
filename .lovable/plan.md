@@ -1,36 +1,26 @@
 ## Goal
-Make the "Cook the world tonight" section feel global and inclusive — no one should think their country is excluded — while making it visually more appealing on mobile.
+Replace the ugly desktop/tablet grid wall with a lively auto-scrolling 2-row marquee that feels global and dynamic. Keep the mobile 2-row swipe carousel as-is (user said mobile looks fine).
 
-## Problems today
-- 18 countries hardcoded; on mobile only ~3 flags are visible at once in a horizontal scroller with no hint there's more.
-- No "any other country" escape hatch.
-- Tiles are plain white squares — visually flat.
+## Approach
 
-## Changes
+### Desktop/tablet (md+): dual-row marquee
+- Split the 50 country tiles into two rows (odd/even or top/bottom halves).
+- Row 1 scrolls **left → right**, Row 2 scrolls **right → left**. Opposing directions read as "the world in motion".
+- Use pure CSS `@keyframes` translateX animation (no JS, no extra deps). Duplicate the tile list inline (`[...row, ...row]`) so the loop is seamless.
+- Pause animation on hover of the row container (`group-hover:[animation-play-state:paused]`).
+- Each tile remains independently clickable (buttons still work mid-animation).
+- Edge fade gradients on both left and right so tiles fade in/out of view instead of hard-cutting.
+- Animation duration ~60s per row for a slow, calm pace — not distracting.
 
-### 1. Expand the country list (~40+)
-Add representation across every continent so the section reads as global, not Eurocentric/Asian-only. Additions include:
-- Africa: Nigeria, Egypt, South Africa, Senegal, Kenya, Ghana, Tunisia
-- Americas: USA, Argentina, Colombia, Cuba, Jamaica, Venezuela
-- Asia: Indonesia, Philippines, Malaysia, Pakistan, Bangladesh, Sri Lanka, Iran, Iraq
-- Europe: UK, Portugal, Poland, Russia, Sweden, Hungary, Ukraine, Netherlands
-- Oceania/Middle East: Australia, Israel, Saudi Arabia, UAE, Syria
+### Mobile (<md): unchanged
+Keep the existing 2-row snap swipe carousel + 🌍 tile + custom-cuisine input.
 
-### 2. "Your cuisine" tile (inclusivity escape hatch)
-Append a final tile with a 🌍 globe + "Your cuisine" label. Tapping it opens a small inline input where the user types any country/cuisine (e.g. "Nepalese", "Cambodian"), which feeds into the same `onPick` handler. This guarantees nobody feels excluded.
-
-### 3. Mobile visual polish
-- Switch from single-row horizontal scroll to a **2-row horizontal snap carousel** on mobile (`grid-rows-2 grid-flow-col`) so 6+ flags are visible at once instead of 3.
-- Add a subtle right-edge fade gradient + a "Swipe →" hint on first paint to signal more content.
-- Tile upgrade: soft tinted background per tile (rotating warm palette using existing tokens), larger flag (text-4xl on mobile), rounded-2xl, keep the neo-brutalist offset shadow but soften on mobile.
-- Section header: add a small subtitle "40+ cuisines and counting — don't see yours? Add it." to set expectations.
-
-### 4. Section header tweak
-Change copy from "Cook the world tonight" to keep the headline but add the inclusive subtitle above the carousel.
+### "Your cuisine" tile placement on desktop
+Place the 🌍 inclusivity tile as a **fixed CTA** to the right of the marquee (or above it on tablet), not inside the moving rows — so it's always visible and not chasing the user. On mobile it stays at the end of the carousel as today.
 
 ## Files touched
-- `src/components/landing/CountryTiles.tsx` — expand list, add "Your cuisine" tile + inline input, 2-row mobile grid, edge fade.
-- `src/routes/index.tsx` — update the section subtitle copy only.
+- `src/components/landing/CountryTiles.tsx` — split into mobile carousel branch (current code) and desktop marquee branch with keyframe animation.
+- `src/styles.css` — add `@keyframes marquee-left` and `marquee-right` plus a `.marquee-row` utility (animation, will-change, hover-pause). Keeping animations in styles.css avoids inline `<style>` blocks.
 
 ## Out of scope
-No backend, no schema, no new routes. Pure presentation change.
+No new data, no backend, no library installs.
