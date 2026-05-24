@@ -184,6 +184,14 @@ function Index() {
   const pantryRef = useRef<HTMLElement | null>(null);
   const dishInputRef = useRef<HTMLInputElement | null>(null);
   const cuisineResultsRef = useRef<HTMLDivElement | null>(null);
+  const cancelGenerationRef = useRef(false);
+
+  const onCancelGeneration = () => {
+    cancelGenerationRef.current = true;
+    setLoading(false);
+    setLoadingMore(false);
+    toast.info("Generation cancelled");
+  };
   const [headerOffset, setHeaderOffset] = useState(96);
   useEffect(() => {
     const compute = () => {
