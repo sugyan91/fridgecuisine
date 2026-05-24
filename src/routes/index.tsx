@@ -934,7 +934,7 @@ function Index() {
           </section>
 
           <section className="lg:col-span-7 space-y-5">
-            {(loading || (receipes && receipes.length > 0)) && (
+            {pantryMode && (loading || (receipes && receipes.length > 0)) && (
               <div className="flex items-baseline justify-between">
                 <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
                   {loading ? "Searching…" : `${receipes!.length} receipes found`}
@@ -951,9 +951,9 @@ function Index() {
               </div>
             )}
 
-            {loading && <LoadingSkeleton />}
+            {pantryMode && loading && <LoadingSkeleton />}
 
-            {!loading &&
+            {pantryMode && !loading &&
               receipes &&
               receipes.map((r, i) => (
                 <ReceipeCard
@@ -967,7 +967,7 @@ function Index() {
                 />
               ))}
 
-            {!loading && receipes && receipes.length > 0 && (
+            {pantryMode && !loading && receipes && receipes.length > 0 && (
               <button
                 type="button"
                 onClick={onLoadMore}
