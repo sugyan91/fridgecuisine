@@ -700,7 +700,7 @@ function Index() {
             <SectionHeader
               eyebrow="Explore by country"
               title="Cook the world tonight"
-              subtitle="50+ cuisines from every continent. Don't see yours? Add it with the 🌍 tile."
+              subtitle="Explore 50+ cuisines from every corner of the globe."
             />
             <CountryTiles onPick={pickCuisine} />
           </section>
@@ -726,13 +726,13 @@ function Index() {
             <ChefCTA />
           </section>
 
-          <section ref={pantryRef} className="lg:col-span-5 animate-pop scroll-mt-32">
-            <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)] lg:sticky lg:top-6">
-              <h2 className="font-black text-xl md:text-2xl uppercase mb-1">
+          <section ref={pantryRef} className="lg:col-span-5 scroll-mt-32">
+            <div className="bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)] lg:sticky lg:top-32">
+              <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-1">
                 What's in your Pantry
               </h2>
-              <p className="text-[11px] text-muted-foreground mb-4">
-                Add what food items you have in your pantry below
+              <p className="text-sm text-muted-foreground mb-5">
+                Add the ingredients you have on hand and we'll plan the meal.
               </p>
 
               <IngredientInput
@@ -740,7 +740,7 @@ function Index() {
                 onChange={setIngredients}
               />
 
-              <div className="my-5 border-t-2 border-dashed border-border/30" />
+              <div className="my-5 border-t border-border" />
 
               <FilterPanel
                 dietary={dietary}
@@ -759,12 +759,12 @@ function Index() {
                 type="button"
                 onClick={onSubmit}
                 disabled={loading}
-                className="mt-5 w-full bg-turmeric border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_6px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="mt-6 w-full bg-primary text-primary-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading && !pantryMode
                   ? cuisine && cuisine !== "Any / Surprise Me"
-                    ? `Travelling to ${cuisineToCountry(cuisine)} for surprise receipe. Please wait…`
-                    : "Travelling around the globe to find a perfect receipe for you"
+                    ? `Travelling to ${cuisineToCountry(cuisine)} for a surprise recipe…`
+                    : "Travelling the globe to find your perfect recipe…"
                   : "Show me the cuisine"}
               </button>
             </div>
@@ -772,15 +772,15 @@ function Index() {
 
           <section className="lg:col-span-7 space-y-5">
             <div className="flex items-baseline justify-between">
-              <h3 className="font-display text-3xl md:text-4xl uppercase">
+              <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
                 {loading
                   ? "Searching…"
                   : receipes
-                    ? `${receipes.length} Receipes Found`
+                    ? `${receipes.length} recipes found`
                     : "Ready when you are"}
               </h3>
               {receipes && (
-                <span className="font-mono text-xs font-bold bg-white border border-border px-2 py-0.5">
+                <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
                   {pantryMode
                     ? dietary.length > 0
                       ? dietary.join(" · ")
@@ -813,9 +813,9 @@ function Index() {
                 type="button"
                 onClick={onLoadMore}
                 disabled={loadingMore}
-                className="w-full bg-white border-4 border-border py-3 rounded-2xl font-black text-xs uppercase tracking-wide shadow-[0px_5px_0px_0px_var(--border)] active:shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-1 transition-all disabled:opacity-60"
+                className="w-full bg-card border border-border text-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-all disabled:opacity-60"
               >
-                {loadingMore ? "Cooking up more…" : "Show more receipes"}
+                {loadingMore ? "Cooking up more…" : "Show more recipes"}
               </button>
             )}
             <PricingNote />
@@ -841,13 +841,13 @@ function Index() {
 
 function PricingNote() {
   return (
-    <div className="mt-4 pt-3 border-t border-dashed border-border/30 text-xs md:text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-2">
+    <div className="mt-4 pt-3 border-t border-border text-xs md:text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-2">
       <span>
-        <span className="font-black text-foreground">$5.99/mo</span> · Premium · unlimited recipes
+        <span className="font-semibold text-foreground">$5.99/mo</span> · Premium · unlimited recipes
       </span>
       <Link
         to="/pricing"
-        className="font-black uppercase tracking-wide underline underline-offset-2 text-foreground shrink-0"
+        className="font-medium underline underline-offset-2 text-foreground shrink-0"
       >
         Upgrade
       </Link>
@@ -865,15 +865,15 @@ function SectionHeader({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-4 md:mb-5">
-      <p className="font-black text-[10px] md:text-xs uppercase tracking-[0.18em] text-paprika mb-1">
+    <div className="mb-8 md:mb-10">
+      <p className="font-display text-[10px] md:text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
         {eyebrow}
       </p>
-      <h2 className="font-display text-2xl md:text-4xl uppercase leading-tight">
+      <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight text-foreground">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-sm md:text-base text-muted-foreground mt-1 max-w-2xl">
+        <p className="text-base md:text-lg text-muted-foreground mt-2 max-w-2xl">
           {subtitle}
         </p>
       )}
@@ -887,9 +887,9 @@ function LoadingSkeleton() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="bg-white border-4 border-border rounded-[32px] h-40 shadow-[8px_8px_0px_0px_var(--border)] animate-pulse flex"
+          className="bg-card border border-border rounded-[2rem] h-40 shadow-[var(--shadow-soft)] animate-pulse flex overflow-hidden"
         >
-          <div className="w-48 bg-turmeric/20 border-r-4 border-border" />
+          <div className="w-48 bg-secondary" />
           <div className="flex-1 p-6 space-y-3">
             <div className="h-6 bg-foreground/10 rounded w-2/3" />
             <div className="h-3 bg-foreground/10 rounded w-1/3" />
@@ -907,12 +907,12 @@ function EmptyState() {
     pastaImg, sushiImg, tacosImg, curryImg, burgerImg, pizzaImg,
   ];
   return (
-    <div className="bg-white border-4 border-dashed border-border/40 rounded-[32px] p-8 text-center">
+    <div className="bg-card border border-border rounded-[2rem] p-8 text-center shadow-[var(--shadow-soft)]">
       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-5 max-w-md mx-auto">
         {foodImages.map((src, i) => (
           <div
             key={i}
-            className="aspect-square rounded-xl overflow-hidden border-2 border-border shadow-[2px_2px_0px_0px_var(--border)]"
+            className="aspect-square rounded-xl overflow-hidden border border-border"
           >
             <img
               src={src}
@@ -923,8 +923,8 @@ function EmptyState() {
           </div>
         ))}
       </div>
-      <p className="font-black text-lg uppercase">
-        Your global cuisine will be displayed here.
+      <p className="font-display text-xl font-semibold tracking-tight">
+        Your global cuisine will be displayed here
       </p>
     </div>
   );
