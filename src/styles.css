@@ -63,6 +63,10 @@
   --color-paprika: var(--paprika);
   --color-cardamom: var(--cardamom);
   --color-saffron: var(--saffron);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
   --font-display: "Anton", Impact, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -70,8 +74,8 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.985 0.018 95);
-  --foreground: oklch(0.21 0.02 30);
+  --background: oklch(0.96 0.02 85);
+  --foreground: oklch(0.24 0.03 145);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.21 0.02 30);
   --popover: oklch(1 0 0);
@@ -86,13 +90,17 @@
   --accent-foreground: oklch(0.21 0.02 30);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.21 0.02 30);
+  --border: oklch(0.24 0.03 145);
   --input: oklch(0.88 0.02 80);
   --ring: oklch(0.62 0.21 28);
   --turmeric: oklch(0.82 0.16 80);
   --paprika: oklch(0.62 0.21 28);
   --cardamom: oklch(0.5 0.07 150);
   --saffron: oklch(0.72 0.18 55);
+  --sage: oklch(0.72 0.08 145);
+  --sage-soft: oklch(0.92 0.05 145);
+  --cream: oklch(0.96 0.02 85);
+  --ink: oklch(0.24 0.03 145);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
