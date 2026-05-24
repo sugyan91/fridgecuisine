@@ -3,7 +3,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { ChefHat, ExternalLink, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import {
+  ChefHat,
+  ExternalLink,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Plus,
+  Trash2,
+  ImagePlus,
+} from "lucide-react";
 import {
   getMyChefProfile,
   upsertChefProfile,
@@ -12,6 +21,12 @@ import {
   type ChefProfile,
 } from "@/lib/marketplace.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
+import {
+  listMyPaidReceipes,
+  upsertPaidReceipe,
+  deletePaidReceipe,
+} from "@/lib/paid-receipes.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/sell")({
   head: () => ({
@@ -125,9 +140,8 @@ function SellPage() {
               <h1 className="font-display text-xl md:text-4xl uppercase">Sell your receipes</h1>
             </div>
             <p className="text-muted-foreground max-w-xl">
-              Share your signature dishes with home cooks worldwide. You set the price — we
-              take 30% to keep the platform running, you keep <strong>70%</strong>. Payouts
-              go straight to your bank via Stripe.
+            Share your signature dishes with home cooks worldwide. You set the price and
+            Stripe pays you directly.
             </p>
           </header>
 
@@ -191,8 +205,8 @@ function SellPage() {
                         You're ready to sell!
                       </p>
                       <p className="text-muted-foreground mt-1">
-                        Stripe will pay you out automatically. We deduct 30% per sale; you
-                        keep 70%.
+                        Stripe will pay you out automatically. Fee breakdown appears on
+                        your first sale.
                       </p>
                     </div>
                   </div>
@@ -247,23 +261,8 @@ function SellPage() {
 
               {/* Step 3 — List receipes (coming soon) */}
               <Card step={3} title="List your first receipe" complete={false}>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Set a title, ingredients, steps, a cover photo and your price. Buyers unlock
-                  the full receipe instantly.
-                </p>
-                <button
-                  type="button"
-                  disabled
-                  className="bg-white border-2 border-dashed border-border/50 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide opacity-60"
-                >
-                  Coming in the next update
-                </button>
+                <ReceipesManager />
               </Card>
-
-              <p className="text-xs text-muted-foreground text-center pt-2">
-                By selling on FridgeCuisine you agree that Stripe processes payments and we
-                deduct a 30% platform fee on each sale.
-              </p>
             </div>
           )}
         </div>
@@ -297,5 +296,432 @@ function Card({
       </div>
       {children}
     </section>
+  );
+}
+
+type ReceipeRow = {
+  id: string;
+  title: string;
+  local_name: string | null;
+  country: string | null;
+  city: string | null;
+  cover_image_url: string | null;
+  price_cents: number;
+  is_published: boolean;
+};
+
+type StepDraft = { text: string; minutes: string };
+
+const emptyDraft = () => ({
+  id: undefined as string | undefined,
+  title: "",
+  local_name: "",
+  country: "",
+  city: "",
+  description: "",
+  ingredients: [""] as string[],
+  steps: [{ text: "", minutes: "" }] as StepDraft[],
+  price: "5.99",
+  cover_image_url: "" as string,
+  is_published: true,
+});
+
+function ReceipesManager() {
+  const fetchList = useServerFn(listMyPaidReceipes);
+  const save = useServerFn(upsertPaidReceipe);
+  const remove = useServerFn(deletePaidReceipe);
+
+  const [rows, setRows] = useState<ReceipeRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(emptyDraft());
+  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const reload = () => {
+    setLoading(true);
+    fetchList()
+      .then((res) => setRows(res.rows as ReceipeRow[]))
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Couldn't load"))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onPickPhoto = async (file: File) => {
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Photo must be under 8MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const { data: userResp } = await supabase.auth.getUser();
+      const uid = userResp.user?.id;
+      if (!uid) throw new Error("Not signed in");
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${uid}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("recipe-photos")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data: pub } = supabase.storage.from("recipe-photos").getPublicUrl(path);
+      setDraft((d) => ({ ...d, cover_image_url: pub.publicUrl }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onSubmit = async () => {
+    const cents = Math.round(parseFloat(draft.price) * 100);
+    if (!draft.title.trim()) return toast.error("Add a food name");
+    if (!cents || cents < 100) return toast.error("Price must be at least $1.00");
+    const steps = draft.steps
+      .map((s) => ({
+        text: s.text.trim(),
+        minutes: s.minutes ? Number(s.minutes) : undefined,
+      }))
+      .filter((s) => s.text);
+    if (!steps.length) return toast.error("Add at least one step");
+    const ingredients = draft.ingredients.map((i) => i.trim()).filter(Boolean);
+    setSubmitting(true);
+    try {
+      await save({
+        data: {
+          id: draft.id,
+          title: draft.title.trim(),
+          local_name: draft.local_name.trim() || null,
+          description: draft.description.trim() || null,
+          country: draft.country.trim() || null,
+          city: draft.city.trim() || null,
+          cuisine: null,
+          cover_image_url: draft.cover_image_url || null,
+          ingredients,
+          steps,
+          price_cents: cents,
+          is_published: draft.is_published,
+        },
+      });
+      toast.success("Receipe saved");
+      setDraft(emptyDraft());
+      setEditing(false);
+      reload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't save");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const onDelete = async (id: string) => {
+    if (!confirm("Delete this receipe?")) return;
+    try {
+      await remove({ data: { id } });
+      reload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't delete");
+    }
+  };
+
+  if (!editing) {
+    return (
+      <div>
+        <p className="text-sm text-muted-foreground mb-3">
+          Add a food name, where it's from, ingredients and step-by-step instructions with
+          timings. Buyers see the name, country and photo for free — and unlock the full
+          recipe after paying your price.
+        </p>
+        {loading ? (
+          <div className="py-6 grid place-items-center">
+            <Loader2 className="size-5 animate-spin opacity-50" />
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="bg-turmeric/10 border-2 border-dashed border-border/60 rounded-2xl p-4 text-sm text-muted-foreground mb-3">
+            No receipes yet. Add your first one below.
+          </div>
+        ) : (
+          <ul className="space-y-2 mb-3">
+            {rows.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center gap-3 border-2 border-border rounded-2xl p-2 bg-white"
+              >
+                {r.cover_image_url ? (
+                  <img
+                    src={r.cover_image_url}
+                    alt=""
+                    className="size-12 rounded-xl object-cover border-2 border-border"
+                  />
+                ) : (
+                  <div className="size-12 rounded-xl bg-muted border-2 border-border grid place-items-center text-muted-foreground">
+                    <ImagePlus className="size-4" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-sm truncate">{r.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {[r.city, r.country].filter(Boolean).join(", ") || "—"} · $
+                    {(r.price_cents / 100).toFixed(2)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onDelete(r.id)}
+                  className="text-muted-foreground hover:text-paprika p-1"
+                  aria-label="Delete"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(emptyDraft());
+            setEditing(true);
+          }}
+          className="bg-paprika text-white border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5 inline-flex items-center gap-2"
+        >
+          <Plus className="size-4" /> Add a receipe
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <Field label="Food name">
+        <input
+          value={draft.title}
+          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+          placeholder="e.g. Hyderabadi Biryani"
+          maxLength={160}
+          className={inputCls}
+        />
+      </Field>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Country">
+          <input
+            value={draft.country}
+            onChange={(e) => setDraft({ ...draft, country: e.target.value })}
+            placeholder="India"
+            maxLength={80}
+            className={inputCls}
+          />
+        </Field>
+        <Field label="City">
+          <input
+            value={draft.city}
+            onChange={(e) => setDraft({ ...draft, city: e.target.value })}
+            placeholder="Hyderabad"
+            maxLength={80}
+            className={inputCls}
+          />
+        </Field>
+      </div>
+      <Field label="Local name (optional)">
+        <input
+          value={draft.local_name}
+          onChange={(e) => setDraft({ ...draft, local_name: e.target.value })}
+          placeholder="e.g. హైదరాబాదీ బిర్యానీ"
+          maxLength={160}
+          className={inputCls}
+        />
+      </Field>
+      <Field label="Description">
+        <textarea
+          value={draft.description}
+          onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+          rows={3}
+          maxLength={2000}
+          placeholder="What makes this dish special?"
+          className={inputCls}
+        />
+      </Field>
+      <Field label="Photo">
+        <div className="flex items-center gap-3">
+          {draft.cover_image_url ? (
+            <img
+              src={draft.cover_image_url}
+              alt=""
+              className="size-20 rounded-xl object-cover border-2 border-border"
+            />
+          ) : (
+            <div className="size-20 rounded-xl bg-muted border-2 border-dashed border-border grid place-items-center text-muted-foreground">
+              <ImagePlus className="size-5" />
+            </div>
+          )}
+          <label className="bg-white border-2 border-border px-3 py-2 rounded-xl font-black text-xs uppercase tracking-wide cursor-pointer">
+            {uploading ? "Uploading…" : draft.cover_image_url ? "Replace" : "Upload"}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) onPickPhoto(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        </div>
+      </Field>
+      <Field label="Ingredients">
+        <div className="space-y-2">
+          {draft.ingredients.map((ing, i) => (
+            <div key={i} className="flex gap-2">
+              <input
+                value={ing}
+                onChange={(e) => {
+                  const next = [...draft.ingredients];
+                  next[i] = e.target.value;
+                  setDraft({ ...draft, ingredients: next });
+                }}
+                placeholder={`Ingredient ${i + 1}`}
+                className={inputCls}
+                maxLength={200}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const next = draft.ingredients.filter((_, idx) => idx !== i);
+                  setDraft({ ...draft, ingredients: next.length ? next : [""] });
+                }}
+                className="px-2 text-muted-foreground"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setDraft({ ...draft, ingredients: [...draft.ingredients, ""] })
+            }
+            className="text-xs font-black uppercase tracking-wider text-paprika"
+          >
+            + Add ingredient
+          </button>
+        </div>
+      </Field>
+      <Field label="Steps & timings">
+        <div className="space-y-2">
+          {draft.steps.map((s, i) => (
+            <div
+              key={i}
+              className="border-2 border-border rounded-xl p-2 bg-white space-y-1"
+            >
+              <div className="flex items-center gap-2">
+                <span className="size-6 rounded-full bg-foreground text-background grid place-items-center text-xs font-black shrink-0">
+                  {i + 1}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  max={600}
+                  value={s.minutes}
+                  onChange={(e) => {
+                    const next = [...draft.steps];
+                    next[i] = { ...next[i], minutes: e.target.value };
+                    setDraft({ ...draft, steps: next });
+                  }}
+                  placeholder="min"
+                  className="w-16 border-2 border-border rounded-lg px-2 py-1 text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = draft.steps.filter((_, idx) => idx !== i);
+                    setDraft({
+                      ...draft,
+                      steps: next.length ? next : [{ text: "", minutes: "" }],
+                    });
+                  }}
+                  className="ml-auto text-muted-foreground"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+              <textarea
+                value={s.text}
+                onChange={(e) => {
+                  const next = [...draft.steps];
+                  next[i] = { ...next[i], text: e.target.value };
+                  setDraft({ ...draft, steps: next });
+                }}
+                placeholder="Describe this step…"
+                rows={2}
+                maxLength={1000}
+                className={inputCls}
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setDraft({
+                ...draft,
+                steps: [...draft.steps, { text: "", minutes: "" }],
+              })
+            }
+            className="text-xs font-black uppercase tracking-wider text-paprika"
+          >
+            + Add step
+          </button>
+        </div>
+      </Field>
+      <Field label="Price (USD)">
+        <input
+          type="number"
+          min={1}
+          max={500}
+          step="0.01"
+          value={draft.price}
+          onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+          className={inputCls}
+        />
+      </Field>
+      <div className="flex gap-2 justify-end pt-2">
+        <button
+          type="button"
+          onClick={() => {
+            setEditing(false);
+            setDraft(emptyDraft());
+          }}
+          className="bg-white border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={submitting || uploading}
+          className="bg-paprika text-white border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5 disabled:opacity-60"
+        >
+          {submitting ? "Publishing…" : "Publish receipe"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const inputCls =
+  "w-full border-2 border-border bg-white rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-turmeric";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs font-black uppercase tracking-wider mb-1">
+        {label}
+      </label>
+      {children}
+    </div>
   );
 }

@@ -48,7 +48,7 @@ export const listSavedReceipes = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("saved_recipes")
-      .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
+      .select("id, title, cuisine, cook_time_minutes, receipe:recipe, saved_at, cooked_at")
       .eq("user_id", userId)
       .order("saved_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -69,11 +69,11 @@ export const saveReceipe = createServerFn({ method: "POST" })
           title: r.title,
           cuisine: r.cuisine ?? null,
           cook_time_minutes: r.cookTimeMinutes ?? null,
-          receipe: r as never,
+          recipe: r as never,
         },
         { onConflict: "user_id,title" },
       )
-      .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
+      .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
     return { row: row as unknown as SavedReceipeRow };
@@ -110,7 +110,7 @@ export const setCookedStatus = createServerFn({ method: "POST" })
       .update({ cooked_at: data.cooked ? new Date().toISOString() : null })
       .eq("user_id", userId)
       .eq("id", data.id)
-      .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
+      .select("id, title, cuisine, cook_time_minutes, receipe:recipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
     return { row: row as unknown as SavedReceipeRow };
