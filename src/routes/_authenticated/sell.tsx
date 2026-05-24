@@ -3,7 +3,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { ChefHat, ExternalLink, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import {
+  ChefHat,
+  ExternalLink,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Plus,
+  Trash2,
+  ImagePlus,
+} from "lucide-react";
 import {
   getMyChefProfile,
   upsertChefProfile,
@@ -12,6 +21,12 @@ import {
   type ChefProfile,
 } from "@/lib/marketplace.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
+import {
+  listMyPaidReceipes,
+  upsertPaidReceipe,
+  deletePaidReceipe,
+} from "@/lib/paid-receipes.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/sell")({
   head: () => ({
@@ -125,9 +140,8 @@ function SellPage() {
               <h1 className="font-display text-xl md:text-4xl uppercase">Sell your receipes</h1>
             </div>
             <p className="text-muted-foreground max-w-xl">
-              Share your signature dishes with home cooks worldwide. You set the price — we
-              take 30% to keep the platform running, you keep <strong>70%</strong>. Payouts
-              go straight to your bank via Stripe.
+            Share your signature dishes with home cooks worldwide. You set the price and
+            Stripe pays you directly.
             </p>
           </header>
 
@@ -191,8 +205,8 @@ function SellPage() {
                         You're ready to sell!
                       </p>
                       <p className="text-muted-foreground mt-1">
-                        Stripe will pay you out automatically. We deduct 30% per sale; you
-                        keep 70%.
+                        Stripe will pay you out automatically. Fee breakdown appears on
+                        your first sale.
                       </p>
                     </div>
                   </div>
@@ -247,23 +261,8 @@ function SellPage() {
 
               {/* Step 3 — List receipes (coming soon) */}
               <Card step={3} title="List your first receipe" complete={false}>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Set a title, ingredients, steps, a cover photo and your price. Buyers unlock
-                  the full receipe instantly.
-                </p>
-                <button
-                  type="button"
-                  disabled
-                  className="bg-white border-2 border-dashed border-border/50 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide opacity-60"
-                >
-                  Coming in the next update
-                </button>
+                <ReceipesManager />
               </Card>
-
-              <p className="text-xs text-muted-foreground text-center pt-2">
-                By selling on FridgeCuisine you agree that Stripe processes payments and we
-                deduct a 30% platform fee on each sale.
-              </p>
             </div>
           )}
         </div>
