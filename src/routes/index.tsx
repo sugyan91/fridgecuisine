@@ -547,7 +547,7 @@ function Index() {
                 </p>
                 <span className="h-px w-8 bg-accent" />
               </div>
-              <h1 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight leading-[0.9] text-foreground mb-6">
+              <h1 className="font-display text-4xl md:text-6xl lg:text-7xl uppercase tracking-tight leading-[0.9] text-foreground mb-6">
                 What food is living rent-free<br className="hidden sm:inline" /> in your <span className="text-accent">head</span> right now?
               </h1>
               <div className="min-h-[3.5rem] md:min-h-[3rem] mb-8 flex items-center justify-center overflow-hidden">
