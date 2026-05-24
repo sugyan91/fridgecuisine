@@ -1,40 +1,44 @@
 ## Goal
 
-Two small visual fixes to the homepage hero on mobile (and scale cleanly on larger screens):
+Three small visual changes to the homepage:
 
-1. The "What food is living rent-free in your head right now?" headline is too large on mobile — it dominates the viewport.
-2. The free-recipe counter (pill + "Resets in…" + "Go unlimited") is right-aligned and stacked into three lines, which looks awkward sitting alone above the centered headline.
+1. Move the recipe counter row from above the hero headline to **below the "Start cooking" button**.
+2. Show the same counter row **below the "Create a cuisine from the pantry list" button** (inside `FilterPanel`) and **below the "Show me the cuisine" button** (in the pantry sidebar).
+3. Expand the "Hungry for inspiration?" section to draw from a pool of **100+ rotating food photos** (real images, not just 12 reused assets).
 
 ## Changes
 
-### 1. Smaller hero headline — `src/routes/index.tsx` (line 550)
+### 1. Move counter under "Start cooking" — `src/routes/index.tsx`
 
-Reduce the type scale by one step at every breakpoint while keeping the same font, weight, color, and `<span class="text-accent">head</span>` treatment.
+- **Remove** the existing block at lines 540–542:
+  ```tsx
+  <div className="flex justify-center mb-6">
+    <RecipeCounter userId={userId} isPremium={isPremium} />
+  </div>
+  ```
+- **Add** the same block immediately after the `<form>` closing tag (after line 581), wrapped in `mt-4 flex justify-center`.
 
-- Current: `text-5xl md:text-7xl lg:text-8xl`
-- New:     `text-4xl md:text-6xl lg:text-7xl`
+### 2. Counter below the two pantry buttons
 
-Keep `leading-[0.9]`, `tracking-tight`, `uppercase`, and the `<br className="hidden sm:inline" />`.
+**`src/routes/index.tsx`** — wrap "Show me the cuisine" button (lines 746–757) so that a `<RecipeCounter />` row renders below it with `mt-3 flex justify-center`.
 
-### 2. Compact horizontal counter row — `src/components/RecipeCounter.tsx`
+**`src/components/fridge/FilterPanel.tsx`** — add a new prop `counterSlot?: React.ReactNode` and render `{counterSlot}` immediately after the "Create a cuisine from the pantry list" button (after line 172, inside the same `<div>`). In `index.tsx`, pass `counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} />}` to `<FilterPanel />` (line 733).
 
-Replace the right-aligned 3-line vertical stack with a single centered horizontal row that wraps gracefully on very narrow screens.
+No changes to the `RecipeCounter` component itself — same compact horizontal row reused in all three spots.
 
-Layout (free user):
-```
-[ 0/5 free today ]  ·  Resets in 20h 32m  ·  Go unlimited →
-```
+### 3. 100+ rotating food photos in "Hungry for inspiration" — `src/components/landing/TrendingDishes.tsx`
 
-Implementation notes:
-- Wrapper: `flex flex-wrap items-center justify-center gap-x-2 gap-y-1` (replaces `flex flex-col items-end gap-1`).
-- Pill: keep existing styling (border, rounded-full, bg, atLimit paprika variant), keep the short/long responsive labels.
-- Separators: thin `·` dots as `<span className="text-muted-foreground/50">·</span>`, hidden on the smallest screens if they cause wrapping issues (use `hidden xs:inline` is not in the stack — just allow flex-wrap to handle it).
-- "Resets in {countdown}" / "Limit reached · Sign up|Upgrade": same text, inline, `text-[11px] font-bold text-muted-foreground`.
-- "Go unlimited → cook anything, anytime": shorten on mobile to **"Go unlimited →"** and show the full phrase on `sm:` and up via two spans (`sm:hidden` / `hidden sm:inline`). Keep `text-accent`, underline, link to `/pricing`.
-- Premium variant: also switch to a single centered row (pill + "No daily limit") instead of right-aligned column, for consistency.
-
-Parent in `src/routes/index.tsx` already wraps it in `flex justify-center` so the new row will center naturally — no parent change needed.
+- Replace the 26-entry `DISHES` array with a **120-entry array** of `{ name, country, flag, img }`.
+- Image URLs use direct Unsplash CDN links (`https://images.unsplash.com/photo-<id>?auto=format&fit=crop&w=900&q=70`) — no API key, free, fast, real food photography. I'll curate ~120 photo IDs spanning global cuisines (pasta, sushi, tacos, curry, ramen, bbq, salads, desserts, breakfast, street food, etc.).
+- Drop the local `@/assets/food-*.jpg` and `@/assets/recipe-*.jpg` imports from this file (other components keep using them).
+- Keep the existing 4-slot bento grid layout and `pickUnique` country-dedup logic.
+- Speed up rotation: `ROTATE_MS` from `30_000` → `8_000` so users perceive the "100+ changing" variety quickly.
+- Add a subtle fade transition between rotations (`key={cursor}` on each `BentoTile` + `animate-fade-in` class, which already exists via Tailwind animations in this project).
+- Add `loading="lazy"` (already present) and `decoding="async"` on `<img>` to keep initial load light.
 
 ## Out of scope
 
-No backend, no usage-limit logic changes, no copy changes to the headline text itself, no changes to the input/button or other sections.
+- No changes to `RecipeCounter` markup/styling — same component reused.
+- No changes to usage-limit logic, pricing, auth, or backend.
+- No changes to hero headline copy/size, search input, or other sections.
+- Not generating or bundling new local images — using hosted Unsplash CDN URLs.

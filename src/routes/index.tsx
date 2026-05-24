@@ -537,9 +537,6 @@ function Index() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20">
           <section className="lg:col-span-12">
             <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4">
-              <div className="flex justify-center mb-6">
-                <RecipeCounter userId={userId} isPremium={isPremium} />
-              </div>
               <div className="flex items-center justify-center gap-3 mb-5">
                 <span className="h-px w-8 bg-accent" />
                 <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
@@ -579,6 +576,9 @@ function Index() {
                   {dishLoading ? "Thinking…" : "Start cooking"}
                 </button>
               </form>
+              <div className="mt-4 flex justify-center">
+                <RecipeCounter userId={userId} isPremium={isPremium} />
+              </div>
             </div>
 
               {dishResult && (
@@ -741,6 +741,7 @@ function Index() {
                 onPantryGenerate={onPantryGenerate}
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
+                counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} />}
               />
 
               <button
@@ -755,6 +756,9 @@ function Index() {
                     : "Travelling the globe to find your perfect recipe…"
                   : "Show me the cuisine"}
               </button>
+              <div className="mt-3 flex justify-center">
+                <RecipeCounter userId={userId} isPremium={isPremium} />
+              </div>
             </div>
           </section>
 
