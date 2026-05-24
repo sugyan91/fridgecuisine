@@ -854,6 +854,15 @@ function Index() {
                     : "Travelling the globe to find your perfect receipe…"
                   : "Show me the cuisine"}
               </button>
+              {loading && !pantryMode && (
+                <button
+                  type="button"
+                  onClick={onCancelGeneration}
+                  className="mt-2 w-full bg-card border border-border text-foreground py-3 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
               <div className="mt-3 flex justify-center">
                 <ReceipeCounter userId={userId} isPremium={isPremium} />
               </div>
