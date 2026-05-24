@@ -136,7 +136,7 @@ type Props = {
   onPick: (dishName: string) => void;
 };
 
-const ROTATE_MS = 30_000; // 30 seconds
+const ROTATE_MS = 8_000; // 8 seconds — show off the 120-photo pool
 
 function pickUnique(pool: Dish[], cursor: number, count: number): Dish[] {
   const seen = new Set<string>();
@@ -144,7 +144,7 @@ function pickUnique(pool: Dish[], cursor: number, count: number): Dish[] {
   const n = pool.length;
   for (let i = 0; i < n && out.length < count; i++) {
     const d = pool[(cursor + i) % n];
-    const key = d.origin.replace("-alt", "");
+    const key = d.origin.replace(/-\d+$/, "");
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(d);
@@ -170,7 +170,7 @@ export function TrendingDishes({ onPick }: Props) {
   if (!hero) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] md:auto-rows-auto md:grid-rows-2 md:h-[640px] gap-3 md:gap-6">
+    <div key={cursor} className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] md:auto-rows-auto md:grid-rows-2 md:h-[640px] gap-3 md:gap-6 animate-fade-in">
       <BentoTile
         dish={hero}
         onPick={onPick}
@@ -217,6 +217,7 @@ function BentoTile({
         src={dish.img}
         alt={dish.name}
         loading="lazy"
+        decoding="async"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
