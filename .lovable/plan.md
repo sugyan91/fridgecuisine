@@ -1,33 +1,40 @@
-## Changes to `src/routes/index.tsx` and `src/components/RecipeCounter.tsx`
+## Goal
 
-### 1. Fix "Start cooking" button overlapping input on mobile
-In the dish input form (`src/routes/index.tsx` ~line 565):
-- Stack the button below the input on mobile, keep overlay layout on `sm:` and up.
-- Change input `pr-36 md:pr-44` → `pr-4 sm:pr-36 md:pr-44` and reduce mobile vertical padding (`py-5` → `py-4 sm:py-5`).
-- Change button classes: drop absolute positioning on mobile — `absolute right-2 top-2 bottom-2` → `mt-2 w-full sm:mt-0 sm:w-auto sm:absolute sm:right-2 sm:top-2 sm:bottom-2`, and add `py-3 sm:py-0` so the standalone mobile button has height.
+Two small visual fixes to the homepage hero on mobile (and scale cleanly on larger screens):
 
-Result: on mobile the user can type freely with no button overlap; on tablet/desktop the button stays inside the pill as today.
+1. The "What food is living rent-free in your head right now?" headline is too large on mobile — it dominates the viewport.
+2. The free-recipe counter (pill + "Resets in…" + "Go unlimited") is right-aligned and stacked into three lines, which looks awkward sitting alone above the centered headline.
 
-### 2. Update headline copy (`src/routes/index.tsx` line 551)
-Replace:
-> "See something that made you hungry?"
+## Changes
 
-With:
-> "What food is living rent-free in your **head** right now?"
+### 1. Smaller hero headline — `src/routes/index.tsx` (line 550)
 
-Keep current font/size classes. Apply `text-accent` to "head" (matches existing accent pattern). Keep the `<br className="hidden sm:inline" />` for a clean two-line break on larger screens.
+Reduce the type scale by one step at every breakpoint while keeping the same font, weight, color, and `<span class="text-accent">head</span>` treatment.
 
-### 3. Clarify the `0/5 today` counter and add an upgrade lure
-In `src/components/RecipeCounter.tsx`:
-- Change the pill label from `"0/5 today"` to `"0 of 5 free recipes today"` (full label on `sm:` and up; on mobile keep compact `"0/5 free today"` to fit). Implement via two spans with `hidden sm:inline` / `sm:hidden`.
-- Below the pill, replace the current "Resets in {countdown}" subtext with a two-line block:
-  - Line 1 (existing behavior): `Resets in {countdown}` (or `Limit reached`).
-  - Line 2 (new, always shown for free users): a small upgrade lure linking to `/pricing`:
-    > "Go unlimited → cook anything, anytime"
-  Styled as a subtle underlined link in `text-accent` so it draws the eye without screaming.
-- Keep the existing `title="Free plan: 5 recipes per day"` tooltip as a fallback hover hint, and update its text to `"You get 5 AI recipes per day on the free plan. Upgrade for unlimited."`.
+- Current: `text-5xl md:text-7xl lg:text-8xl`
+- New:     `text-4xl md:text-6xl lg:text-7xl`
 
-### Out of scope
-- No backend / RLS / pricing logic changes.
-- No changes to the premium counter branch beyond what's stated.
-- No layout changes outside the hero / counter.
+Keep `leading-[0.9]`, `tracking-tight`, `uppercase`, and the `<br className="hidden sm:inline" />`.
+
+### 2. Compact horizontal counter row — `src/components/RecipeCounter.tsx`
+
+Replace the right-aligned 3-line vertical stack with a single centered horizontal row that wraps gracefully on very narrow screens.
+
+Layout (free user):
+```
+[ 0/5 free today ]  ·  Resets in 20h 32m  ·  Go unlimited →
+```
+
+Implementation notes:
+- Wrapper: `flex flex-wrap items-center justify-center gap-x-2 gap-y-1` (replaces `flex flex-col items-end gap-1`).
+- Pill: keep existing styling (border, rounded-full, bg, atLimit paprika variant), keep the short/long responsive labels.
+- Separators: thin `·` dots as `<span className="text-muted-foreground/50">·</span>`, hidden on the smallest screens if they cause wrapping issues (use `hidden xs:inline` is not in the stack — just allow flex-wrap to handle it).
+- "Resets in {countdown}" / "Limit reached · Sign up|Upgrade": same text, inline, `text-[11px] font-bold text-muted-foreground`.
+- "Go unlimited → cook anything, anytime": shorten on mobile to **"Go unlimited →"** and show the full phrase on `sm:` and up via two spans (`sm:hidden` / `hidden sm:inline`). Keep `text-accent`, underline, link to `/pricing`.
+- Premium variant: also switch to a single centered row (pill + "No daily limit") instead of right-aligned column, for consistency.
+
+Parent in `src/routes/index.tsx` already wraps it in `flex justify-center` so the new row will center naturally — no parent change needed.
+
+## Out of scope
+
+No backend, no usage-limit logic changes, no copy changes to the headline text itself, no changes to the input/button or other sections.

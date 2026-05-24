@@ -11,11 +11,11 @@ export function RecipeCounter({ userId, isPremium }: Props) {
 
   if (userId && isPremium) {
     return (
-      <div className="flex flex-col items-end gap-1">
+      <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wide bg-turmeric text-foreground px-2 py-1 rounded-full border-2 border-border">
           Premium · Unlimited
         </span>
-        <span className="text-[10px] text-muted-foreground font-bold">
+        <span className="text-[11px] text-muted-foreground font-bold">
           No daily limit
         </span>
       </div>
@@ -28,7 +28,7 @@ export function RecipeCounter({ userId, isPremium }: Props) {
     : `— of ${limit} free recipes today`;
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
       <span
         className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full border-2 border-border ${
           atLimit ? "bg-paprika text-white" : "bg-background"
@@ -38,7 +38,8 @@ export function RecipeCounter({ userId, isPremium }: Props) {
         <span className="sm:hidden">{shortLabel}</span>
         <span className="hidden sm:inline">{longLabel}</span>
       </span>
-      <span className="text-[10px] text-muted-foreground font-bold text-right">
+      <span className="text-muted-foreground/50">·</span>
+      <span className="text-[11px] text-muted-foreground font-bold">
         {atLimit ? (
           <>
             Limit reached ·{" "}
@@ -63,11 +64,13 @@ export function RecipeCounter({ userId, isPremium }: Props) {
           <>Resets in {countdown}</>
         )}
       </span>
+      <span className="text-muted-foreground/50">·</span>
       <Link
         to="/pricing"
-        className="text-[10px] font-bold text-accent underline underline-offset-2 hover:brightness-110"
+        className="text-[11px] font-bold text-accent underline underline-offset-2 hover:brightness-110"
       >
-        Go unlimited → cook anything, anytime
+        <span className="sm:hidden">Go unlimited →</span>
+        <span className="hidden sm:inline">Go unlimited → cook anything, anytime</span>
       </Link>
     </div>
   );
