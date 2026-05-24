@@ -723,6 +723,10 @@ function Index() {
             <HowItWorks />
           </section>
 
+          <section className="lg:col-span-12">
+            <ChefCTA />
+          </section>
+
           <section ref={pantryRef} className="lg:col-span-5 animate-pop scroll-mt-32">
             <div className="bg-white border-4 border-border rounded-[32px] p-5 md:p-6 shadow-[8px_8px_0px_0px_var(--border)] lg:sticky lg:top-6">
               <h2 className="font-black text-xl md:text-2xl uppercase mb-1">
