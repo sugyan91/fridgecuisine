@@ -47,7 +47,7 @@ type Props = {
   onPick: (dishName: string) => void;
 };
 
-const ROTATE_MS = 210_000; // 3.5 minutes
+const ROTATE_MS = 30_000; // 30 seconds
 
 function pickUnique(pool: Dish[], cursor: number, count: number): Dish[] {
   const seen = new Set<string>();

@@ -463,7 +463,7 @@ function Index() {
                 alt="Fridge Cuisine"
                 className="h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
               />
-              <div className="min-w-0">
+              <div className="hidden sm:block min-w-0">
                 <h1 className="font-display tracking-tight text-foreground leading-none text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
