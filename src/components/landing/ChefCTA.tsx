@@ -18,7 +18,6 @@ export function ChefCTA() {
         </h2>
         <p className="text-white/95 text-sm md:text-base mt-3 max-w-xl font-medium">
           Share your signature dishes with home cooks worldwide. Set your own price.
-          Keep <strong>70%</strong> of every sale — payouts straight to your bank.
         </p>
 
         <div className="flex flex-wrap gap-2 mt-5 mb-6">
