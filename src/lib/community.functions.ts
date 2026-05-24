@@ -28,7 +28,7 @@ export const listCommunityReceipes = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     let q = supabaseAdmin
-      .from("community_receipes")
+      .from("community_recipes")
       .select("id, title, description, city, country, cuisine, dietary, image_url, created_at, user_id")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
@@ -46,8 +46,8 @@ export const listCommunityReceipes = createServerFn({ method: "GET" })
         ? supabaseAdmin.from("profiles").select("user_id, display_name").in("user_id", userIds)
         : Promise.resolve({ data: [] as { user_id: string; display_name: string | null }[] }),
       ids.length
-        ? supabaseAdmin.from("community_receipe_likes").select("receipe_id, vote_type").in("receipe_id", ids)
-        : Promise.resolve({ data: [] as { receipe_id: string; vote_type: string }[] }),
+        ? supabaseAdmin.from("community_recipe_likes").select("recipe_id, vote_type").in("recipe_id", ids)
+        : Promise.resolve({ data: [] as { recipe_id: string; vote_type: string }[] }),
     ]);
     const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name]));
     // Backfill any missing display names from auth metadata so authors aren't shown as Anonymous.
@@ -75,7 +75,7 @@ export const listCommunityReceipes = createServerFn({ method: "GET" })
     const downCount = new Map<string, number>();
     (votes ?? []).forEach((v) => {
       const m = v.vote_type === "down" ? downCount : upCount;
-      m.set(v.receipe_id, (m.get(v.receipe_id) ?? 0) + 1);
+      m.set(v.recipe_id, (m.get(v.recipe_id) ?? 0) + 1);
     });
 
     return {
@@ -93,7 +93,7 @@ export const getCommunityReceipe = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { data: receipe, error } = await supabaseAdmin
-      .from("community_receipes")
+      .from("community_recipes")
       .select("*")
       .eq("id", data.id)
       .eq("is_published", true)
@@ -101,7 +101,7 @@ export const getCommunityReceipe = createServerFn({ method: "GET" })
     if (error || !receipe) return { receipe: null, author_name: null, up_count: 0, down_count: 0 };
     const [{ data: profile }, { data: votes }] = await Promise.all([
       supabaseAdmin.from("profiles").select("display_name").eq("user_id", receipe.user_id).maybeSingle(),
-      supabaseAdmin.from("community_receipe_likes").select("vote_type").eq("receipe_id", receipe.id),
+      supabaseAdmin.from("community_recipe_likes").select("vote_type").eq("recipe_id", receipe.id),
     ]);
     let author_name = profile?.display_name ?? null;
     if (!author_name) {
@@ -154,7 +154,7 @@ export const createCommunityReceipe = createServerFn({ method: "POST" })
       }
     }
     const { data: row, error } = await supabase
-      .from("community_receipes")
+      .from("community_recipes")
       .insert({ ...data, user_id: userId })
       .select("id")
       .single();
@@ -168,7 +168,7 @@ export const updateCommunityReceipe = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
     const { error } = await context.supabase
-      .from("community_receipes")
+      .from("community_recipes")
       .update(rest)
       .eq("id", id);
     if (error) throw new Error(error.message);
@@ -179,7 +179,7 @@ export const deleteCommunityReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("community_receipes").delete().eq("id", data.id);
+    const { error } = await context.supabase.from("community_recipes").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -188,7 +188,7 @@ export const listMyReceipes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
-      .from("community_receipes")
+      .from("community_recipes")
       .select("id, title, city, cuisine, is_published, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -197,13 +197,13 @@ export const listMyReceipes = createServerFn({ method: "GET" })
 
 export const getMyVote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ receipe_id: z.string().uuid() }).parse(input))
+  .inputValidator((input) => z.object({ recipe_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: row } = await supabase
-      .from("community_receipe_likes")
+      .from("community_recipe_likes")
       .select("vote_type")
-      .eq("receipe_id", data.receipe_id)
+      .eq("recipe_id", data.recipe_id)
       .eq("user_id", userId)
       .maybeSingle();
     return { vote: (row?.vote_type as "up" | "down" | undefined) ?? null };
@@ -213,49 +213,49 @@ export const setReceipeVote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
-      receipe_id: z.string().uuid(),
+      recipe_id: z.string().uuid(),
       vote: z.enum(["up", "down"]).nullable(),
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: existing } = await supabase
-      .from("community_receipe_likes")
+      .from("community_recipe_likes")
       .select("vote_type")
-      .eq("receipe_id", data.receipe_id)
+      .eq("recipe_id", data.recipe_id)
       .eq("user_id", userId)
       .maybeSingle();
     if (data.vote === null) {
       if (existing) {
         await supabase
-          .from("community_receipe_likes")
+          .from("community_recipe_likes")
           .delete()
-          .eq("receipe_id", data.receipe_id)
+          .eq("recipe_id", data.recipe_id)
           .eq("user_id", userId);
       }
       return { vote: null };
     }
     if (existing) {
       await supabase
-        .from("community_receipe_likes")
+        .from("community_recipe_likes")
         .update({ vote_type: data.vote })
-        .eq("receipe_id", data.receipe_id)
+        .eq("recipe_id", data.recipe_id)
         .eq("user_id", userId);
       return { vote: data.vote };
     }
     await supabase
-      .from("community_receipe_likes")
-      .insert({ receipe_id: data.receipe_id, user_id: userId, vote_type: data.vote });
+      .from("community_recipe_likes")
+      .insert({ recipe_id: data.recipe_id, user_id: userId, vote_type: data.vote });
     return { vote: data.vote };
   });
 
 export const listReceipeComments = createServerFn({ method: "GET" })
-  .inputValidator((input) => z.object({ receipe_id: z.string().uuid() }).parse(input))
+  .inputValidator((input) => z.object({ recipe_id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { data: rows, error } = await supabaseAdmin
-      .from("community_receipe_comments")
+      .from("community_recipe_comments")
       .select("id, body, created_at, user_id")
-      .eq("receipe_id", data.receipe_id)
+      .eq("recipe_id", data.recipe_id)
       .order("created_at", { ascending: true });
     if (error) return { comments: [], error: error.message };
     const userIds = [...new Set((rows ?? []).map((r) => r.user_id))];
@@ -279,7 +279,7 @@ export const addReceipeComment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
-      receipe_id: z.string().uuid(),
+      recipe_id: z.string().uuid(),
       body: z.string().trim().min(1).max(1000),
     }).parse(input),
   )
@@ -292,16 +292,16 @@ export const addReceipeComment = createServerFn({ method: "POST" })
     }
     // Check receipe exists, is published, comments enabled.
     const { data: r } = await supabaseAdmin
-      .from("community_receipes")
+      .from("community_recipes")
       .select("comments_enabled, is_published")
-      .eq("id", data.receipe_id)
+      .eq("id", data.recipe_id)
       .maybeSingle();
     if (!r || !r.is_published) throw new Error("Receipe not found.");
     if (!r.comments_enabled) throw new Error("Comments are turned off for this receipe.");
 
     const { data: row, error } = await supabase
-      .from("community_receipe_comments")
-      .insert({ receipe_id: data.receipe_id, user_id: userId, body: data.body })
+      .from("community_recipe_comments")
+      .insert({ recipe_id: data.recipe_id, user_id: userId, body: data.body })
       .select("id, body, created_at, user_id")
       .single();
     if (error) throw new Error(error.message);
@@ -328,7 +328,7 @@ export const deleteReceipeComment = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("community_receipe_comments")
+      .from("community_recipe_comments")
       .delete()
       .eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -339,22 +339,22 @@ export const setReceipeCommentsEnabled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
-      receipe_id: z.string().uuid(),
+      recipe_id: z.string().uuid(),
       enabled: z.boolean(),
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: r } = await supabase
-      .from("community_receipes")
+      .from("community_recipes")
       .select("user_id")
-      .eq("id", data.receipe_id)
+      .eq("id", data.recipe_id)
       .maybeSingle();
     if (!r || r.user_id !== userId) throw new Error("Not authorized.");
     const { error } = await supabase
-      .from("community_receipes")
+      .from("community_recipes")
       .update({ comments_enabled: data.enabled })
-      .eq("id", data.receipe_id);
+      .eq("id", data.recipe_id);
     if (error) throw new Error(error.message);
     return { ok: true, comments_enabled: data.enabled };
   });

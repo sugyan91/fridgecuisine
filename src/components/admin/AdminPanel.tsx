@@ -43,11 +43,11 @@ type ReceipeRow = {
 type CommentRow = {
   id: string;
   user_id: string;
-  receipe_id: string;
+  recipe_id: string;
   body: string;
   created_at: string;
   author_username: string | null;
-  receipe_title: string | null;
+  recipe_title: string | null;
 };
 
 const PAGE_SIZE = 50;
@@ -395,7 +395,7 @@ function ReceipesTab() {
     if (!confirm(`Delete receipe "${r.title}"? This also removes its comments and likes.`)) return;
     setBusy(r.id);
     try {
-      await del({ data: { receipe_id: r.id } });
+      await del({ data: { recipe_id: r.id } });
       toast.success("Receipe deleted");
       await load();
     } catch (e: any) {
@@ -550,12 +550,12 @@ function CommentsTab() {
                 <p className="opacity-60 text-[10px] mt-1">
                   {c.author_username ? `@${c.author_username}` : "anon"} on{" "}
                   <a
-                    href={`/community/${c.receipe_id}`}
+                    href={`/community/${c.recipe_id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="underline"
                   >
-                    {c.receipe_title ?? c.receipe_id}
+                    {c.recipe_title ?? c.recipe_id}
                   </a>{" "}
                   · {new Date(c.created_at).toLocaleString()}
                 </p>

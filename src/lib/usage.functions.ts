@@ -12,7 +12,7 @@ export const getReceipeUsage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { count, error } = await supabase
-      .from("receipe_generations")
+      .from("recipe_generations")
       .select("*", { count: "exact", head: true })
       .gte("created_at", data.sinceIso);
     if (error) {
