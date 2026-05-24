@@ -200,6 +200,13 @@ export type Database = {
             referencedRelation: "paid_recipes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cookbook_recipes_paid_recipe_id_fkey"
+            columns: ["paid_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "paid_recipes_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cookbooks: {
@@ -503,6 +510,13 @@ export type Database = {
             referencedRelation: "paid_recipes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "recipe_purchases_paid_recipe_id_fkey"
+            columns: ["paid_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "paid_recipes_preview"
+            referencedColumns: ["id"]
+          },
         ]
       }
       saved_recipes: {
@@ -660,7 +674,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      paid_recipes_preview: {
+        Row: {
+          chef_user_id: string | null
+          cook_minutes: number | null
+          country: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          cuisine: string | null
+          description: string | null
+          dietary: string[] | null
+          id: string | null
+          is_published: boolean | null
+          prep_minutes: number | null
+          price_cents: number | null
+          serves: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          chef_user_id?: string | null
+          cook_minutes?: number | null
+          country?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          cuisine?: string | null
+          description?: string | null
+          dietary?: string[] | null
+          id?: string | null
+          is_published?: boolean | null
+          prep_minutes?: number | null
+          price_cents?: number | null
+          serves?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          chef_user_id?: string | null
+          cook_minutes?: number | null
+          country?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          cuisine?: string | null
+          description?: string | null
+          dietary?: string[] | null
+          id?: string | null
+          is_published?: boolean | null
+          prep_minutes?: number | null
+          price_cents?: number | null
+          serves?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_comment_on_recipe: { Args: { _recipe_id: string }; Returns: boolean }
