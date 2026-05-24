@@ -17,6 +17,7 @@ import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as CommunityRecipeIdRouteImport } from './routes/community.$recipeId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
@@ -64,6 +65,11 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
   id: '/checkout/cancel',
   path: '/checkout/cancel',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSellRoute = AuthenticatedSellRouteImport.update({
+  id: '/sell',
+  path: '/sell',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
   id: '/pricing',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
+  '/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
+  '/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
+  '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/cookbook'
     | '/my-recipes'
     | '/pricing'
+    | '/sell'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/cookbook'
     | '/my-recipes'
     | '/pricing'
+    | '/sell'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cookbook'
     | '/_authenticated/my-recipes'
     | '/_authenticated/pricing'
+    | '/_authenticated/sell'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -290,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCancelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/sell': {
+      id: '/_authenticated/sell'
+      path: '/sell'
+      fullPath: '/sell'
+      preLoaderRoute: typeof AuthenticatedSellRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/pricing': {
       id: '/_authenticated/pricing'
       path: '/pricing'
@@ -353,6 +372,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCookbookRoute: typeof AuthenticatedCookbookRoute
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
+  AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
 }
 
@@ -360,6 +380,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCookbookRoute: AuthenticatedCookbookRoute,
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
+  AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
 }
 
@@ -384,3 +405,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
