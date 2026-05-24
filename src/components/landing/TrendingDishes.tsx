@@ -81,8 +81,13 @@ export function TrendingDishes({ onPick }: Props) {
   if (!hero) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-[280px_280px] md:grid-rows-2 md:h-[640px] gap-4 md:gap-6">
-      <BentoTile dish={hero} onPick={onPick} variant="hero" className="col-span-2 row-span-2" />
+    <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] md:auto-rows-auto md:grid-rows-2 md:h-[640px] gap-3 md:gap-6">
+      <BentoTile
+        dish={hero}
+        onPick={onPick}
+        variant="hero"
+        className="col-span-2 row-span-2 md:row-span-2"
+      />
       {second && (
         <BentoTile
           dish={second}
