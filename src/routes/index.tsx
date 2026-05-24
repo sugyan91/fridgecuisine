@@ -775,13 +775,13 @@ function Index() {
 
 function PricingNote() {
   return (
-    <div className="mt-4 pt-3 border-t border-dashed border-border/30 text-[11px] text-muted-foreground flex items-center justify-between gap-3">
+    <div className="mt-4 pt-3 border-t border-dashed border-border/30 text-xs md:text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-2">
       <span>
         <span className="font-black text-foreground">$5.99/mo</span> · Premium · unlimited recipes
       </span>
       <Link
         to="/pricing"
-        className="font-black uppercase tracking-wide underline underline-offset-2 text-foreground"
+        className="font-black uppercase tracking-wide underline underline-offset-2 text-foreground shrink-0"
       >
         Upgrade
       </Link>
