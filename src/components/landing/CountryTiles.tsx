@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 type Country = { flag: string; cuisine: string; label: string };
 
 const COUNTRIES: Country[] = [
@@ -77,18 +75,6 @@ type Props = {
 };
 
 export function CountryTiles({ onPick }: Props) {
-  const [showCustom, setShowCustom] = useState(false);
-  const [custom, setCustom] = useState("");
-
-  const submitCustom = (e: React.FormEvent) => {
-    e.preventDefault();
-    const v = custom.trim();
-    if (v.length < 2) return;
-    onPick(v);
-    setCustom("");
-    setShowCustom(false);
-  };
-
   const half = Math.ceil(COUNTRIES.length / 2);
   const rowA = COUNTRIES.slice(0, half);
   const rowB = COUNTRIES.slice(half);
@@ -119,17 +105,6 @@ export function CountryTiles({ onPick }: Props) {
           {COUNTRIES.map((c, i) => (
             <Tile key={c.cuisine} c={c} i={i} />
           ))}
-          <button
-            type="button"
-            onClick={() => setShowCustom((s) => !s)}
-            className="snap-start shrink-0 w-[88px] bg-gradient-to-br from-paprika/15 to-turmeric/20 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-foreground rounded-2xl py-3 px-2 shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[4px_5px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
-            aria-label="Add your own cuisine"
-          >
-            <span className="text-4xl leading-none" aria-hidden>🌍</span>
-            <span className="text-[10px] font-black uppercase tracking-wide text-center leading-tight">
-              Your cuisine
-            </span>
-          </button>
         </div>
         <div className="pointer-events-none absolute top-0 right-0 h-full w-10 bg-gradient-to-l from-background to-transparent" />
         <p className="px-4 mt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -157,43 +132,7 @@ export function CountryTiles({ onPick }: Props) {
             ))}
           </div>
         </div>
-
-        {/* Your-cuisine CTA below marquee */}
-        <div className="flex justify-center mt-4">
-          <button
-            type="button"
-            onClick={() => setShowCustom((s) => !s)}
-            className="inline-flex items-center gap-2 bg-gradient-to-br from-paprika/15 to-turmeric/20 border-2 border-dashed border-foreground rounded-2xl px-4 py-2 shadow-[3px_3px_0px_0px_var(--border)] hover:-translate-y-0.5 hover:shadow-[4px_5px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
-          >
-            <span className="text-2xl" aria-hidden>🌍</span>
-            <span className="text-sm font-black uppercase tracking-wide">
-              Don't see yours? Add it
-            </span>
-          </button>
-        </div>
       </div>
-
-      {/* Inline custom-cuisine input */}
-      {showCustom && (
-        <form
-          onSubmit={submitCustom}
-          className="mx-4 md:mx-auto md:max-w-md mt-3 flex gap-2 bg-white border-2 border-border rounded-2xl p-2 shadow-[3px_3px_0px_0px_var(--border)]"
-        >
-          <input
-            autoFocus
-            value={custom}
-            onChange={(e) => setCustom(e.target.value)}
-            placeholder="e.g. Cambodian, Georgian, Bolivian…"
-            className="flex-1 bg-transparent outline-none px-2 text-sm font-medium placeholder:text-muted-foreground"
-          />
-          <button
-            type="submit"
-            className="bg-paprika text-white font-black uppercase text-xs px-4 py-2 rounded-xl border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] active:translate-y-0.5 active:shadow-none transition-all"
-          >
-            Cook it
-          </button>
-        </form>
-      )}
     </div>
   );
 }
