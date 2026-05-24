@@ -70,41 +70,41 @@
   --font-display: "Archivo Black", system-ui, sans-serif;
   --font-sans: "Hind", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --shadow-soft: 0 8px 24px -8px rgb(6 78 59 / 0.14);
-  --shadow-card: 0 24px 48px -16px rgb(6 78 59 / 0.20);
+  --shadow-soft: 0 6px 20px rgb(0 0 0 / 0.08);
+  --shadow-card: 0 16px 40px -12px rgb(0 0 0 / 0.18);
 }
 
 :root {
   --radius: 1rem;
-  /* Emerald Prestige — deep emerald, mid emerald, gold, parchment */
-  --background: oklch(0.955 0.030 95);     /* #f5f0e0 parchment */
-  --foreground: oklch(0.32 0.075 165);     /* #064e3b deep emerald */
+  /* Airbnb-inspired — coral primary, near-black ink, warm-neutral surfaces */
+  --background: oklch(1 0 0);                  /* #FFFFFF */
+  --foreground: oklch(0.26 0 0);               /* #222222 */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.32 0.075 165);
+  --card-foreground: oklch(0.26 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.32 0.075 165);
-  --primary: oklch(0.32 0.075 165);        /* #064e3b emerald */
-  --primary-foreground: oklch(0.955 0.030 95);
-  --secondary: oklch(0.92 0.028 90);       /* warm cream surface */
-  --secondary-foreground: oklch(0.32 0.075 165);
-  --muted: oklch(0.92 0.028 90);
-  --muted-foreground: oklch(0.45 0.060 165);
-  --accent: oklch(0.74 0.115 85);          /* #c9a84c gold */
-  --accent-foreground: oklch(0.32 0.075 165);
+  --popover-foreground: oklch(0.26 0 0);
+  --primary: oklch(0.65 0.235 18);             /* #FF385C Rausch */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.26 0 0);                /* #222222 ink */
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.972 0 0);                   /* #F7F7F7 */
+  --muted-foreground: oklch(0.52 0 0);         /* #717171 */
+  --accent: oklch(0.68 0.21 22);               /* #FF5A5F legacy coral */
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.32 0.075 165 / 0.14);  /* hairline emerald */
-  --input: oklch(0.32 0.075 165 / 0.16);
-  --ring: oklch(0.74 0.115 85 / 0.45);     /* gold focus ring */
-  /* Brand-legacy tokens redirected to Emerald Prestige */
-  --turmeric: oklch(0.74 0.115 85);        /* gold */
-  --paprika: oklch(0.32 0.075 165);        /* emerald */
-  --cardamom: oklch(0.48 0.105 165);       /* mid emerald #0d7a5f */
-  --saffron: oklch(0.92 0.028 90);
-  --sage: oklch(0.48 0.105 165);
-  --sage-soft: oklch(0.92 0.028 90);
-  --cream: oklch(0.955 0.030 95);
-  --ink: oklch(0.32 0.075 165);
+  --border: oklch(0.93 0 0);                   /* #EBEBEB hairline */
+  --input: oklch(0.93 0 0);
+  --ring: oklch(0.65 0.235 18 / 0.45);         /* coral focus ring */
+  /* Brand-legacy tokens remapped to Airbnb palette */
+  --turmeric: oklch(0.65 0.235 18);            /* coral */
+  --paprika: oklch(0.65 0.235 18);             /* coral */
+  --cardamom: oklch(0.26 0 0);                 /* ink */
+  --saffron: oklch(0.972 0 0);                 /* warm gray */
+  --sage: oklch(0.52 0 0);
+  --sage-soft: oklch(0.972 0 0);
+  --cream: oklch(1 0 0);
+  --ink: oklch(0.26 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
