@@ -125,7 +125,7 @@ function BentoTile({
         loading="lazy"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#1F2A1A]/80 via-[#1F2A1A]/10 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#2A0F0A]/85 via-[#2A0F0A]/10 to-transparent" />
 
       {variant === "hero" ? (
         <div className="absolute bottom-8 left-8 right-8 text-white space-y-3">
