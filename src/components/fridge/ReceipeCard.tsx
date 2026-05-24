@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Receipe } from "@/lib/receipes.functions";
-import { RecipeTimers } from "./RecipeTimers";
+import { ReceipeTimers } from "./ReceipeTimers";
 import { StepTimer } from "./StepTimer";
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
   showMissing?: boolean;
 };
 
-export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = true }: Props) {
+export function ReceipeCard({ receipe, index, saved, onToggleSave, showMissing = true }: Props) {
   const [open, setOpen] = useState(false);
   const allIngredients = [...receipe.usedIngredients, ...receipe.missingIngredients];
   const dietary = receipe.dietary ?? [];
@@ -82,7 +82,7 @@ export function RecipeCard({ receipe, index, saved, onToggleSave, showMissing = 
         <p className="text-sm mb-6 opacity-90">{receipe.blurb}</p>
 
         <div className="mb-5">
-          <RecipeTimers
+          <ReceipeTimers
             totalMinutes={total ?? receipe.cookTimeMinutes}
             variant="dark"
           />

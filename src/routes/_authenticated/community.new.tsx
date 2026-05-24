@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { createCommunityRecipe } from "@/lib/community.functions";
+import { createCommunityReceipe } from "@/lib/community.functions";
 import { DEFAULT_CUISINES, DEFAULT_DIETARY } from "@/lib/taxonomy";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,12 +35,12 @@ async function compressImage(file: File, maxDim = 1600, quality = 0.82): Promise
 }
 
 export const Route = createFileRoute("/_authenticated/community/new")({
-  component: NewRecipe,
+  component: NewReceipe,
 });
 
-function NewRecipe() {
+function NewReceipe() {
   const navigate = useNavigate();
-  const create = useServerFn(createCommunityRecipe);
+  const create = useServerFn(createCommunityReceipe);
   const [form, setForm] = useState({
     title: "",
     description: "",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { listCommunityRecipes } from "@/lib/community.functions";
+import { listCommunityReceipes } from "@/lib/community.functions";
 
 type Receipe = {
   id: string;
@@ -17,14 +17,14 @@ type Receipe = {
 };
 
 export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }) {
-  const fetchRecipes = useServerFn(listCommunityRecipes);
-  const [receipes, setRecipes] = useState<Receipe[] | null>(null);
+  const fetchReceipes = useServerFn(listCommunityReceipes);
+  const [receipes, setReceipes] = useState<Receipe[] | null>(null);
 
   useEffect(() => {
-    fetchRecipes({ data: { limit: 6 } })
-      .then((res) => setRecipes((res.receipes as Receipe[]) ?? []))
-      .catch(() => setRecipes([]));
-  }, [fetchRecipes]);
+    fetchReceipes({ data: { limit: 6 } })
+      .then((res) => setReceipes((res.receipes as Receipe[]) ?? []))
+      .catch(() => setReceipes([]));
+  }, [fetchReceipes]);
 
   if (receipes && receipes.length === 0) return null;
 

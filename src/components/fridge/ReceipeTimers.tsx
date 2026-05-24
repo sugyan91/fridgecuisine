@@ -6,7 +6,7 @@ type Props = {
   variant?: "light" | "dark";
 };
 
-export function RecipeTimers({ totalMinutes, variant = "light" }: Props) {
+export function ReceipeTimers({ totalMinutes, variant = "light" }: Props) {
   const { secondsLeft, isRunning, isFinished, start, pause, reset, skip } =
     useCountdown(Math.max(1, Math.round(totalMinutes * 60)));
 
@@ -25,7 +25,7 @@ export function RecipeTimers({ totalMinutes, variant = "light" }: Props) {
     >
       <div className="flex items-baseline gap-2">
         <span className="font-black text-[10px] uppercase tracking-widest opacity-70">
-          Recipe Timer
+          Receipe Timer
         </span>
         <span
           className={`font-mono font-black text-2xl tabular-nums ${

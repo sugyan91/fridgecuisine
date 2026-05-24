@@ -292,7 +292,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
     return { users, total: list.total ?? users.length };
   });
 
-export const adminListCommunityRecipes = createServerFn({ method: "POST" })
+export const adminListCommunityReceipes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) =>
     z
@@ -343,7 +343,7 @@ export const adminListCommunityRecipes = createServerFn({ method: "POST" })
     };
   });
 
-export const adminDeleteCommunityRecipe = createServerFn({ method: "POST" })
+export const adminDeleteCommunityReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) => z.object({ receipe_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
@@ -369,7 +369,7 @@ export const adminListComments = createServerFn({ method: "POST" })
       .range(from, to);
     if (data.search) {
       const q = safeLike(data.search);
-      const [{ data: matchProfiles }, { data: matchRecipes }] = await Promise.all([
+      const [{ data: matchProfiles }, { data: matchReceipes }] = await Promise.all([
         supabaseAdmin
           .from("profiles")
           .select("user_id")
@@ -382,7 +382,7 @@ export const adminListComments = createServerFn({ method: "POST" })
           .limit(500),
       ]);
       const uList = (matchProfiles ?? []).map((p) => p.user_id);
-      const rList = (matchRecipes ?? []).map((r) => r.id);
+      const rList = (matchReceipes ?? []).map((r) => r.id);
       const uIn = uList.length ? uList.join(",") : SENTINEL_UUID;
       const rIn = rList.length ? rList.join(",") : SENTINEL_UUID;
       query = query.or(`body.ilike.%${q}%,user_id.in.(${uIn}),receipe_id.in.(${rIn})`);

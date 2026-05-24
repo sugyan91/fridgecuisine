@@ -5,32 +5,32 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { IngredientInput } from "@/components/fridge/IngredientInput";
 import { FilterPanel } from "@/components/fridge/FilterPanel";
-import { RecipeCard } from "@/components/fridge/RecipeCard";
+import { ReceipeCard } from "@/components/fridge/ReceipeCard";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
 import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChefCTA } from "@/components/landing/ChefCTA";
-import { generateRecipes, type Receipe } from "@/lib/receipes.functions";
+import { generateReceipes, type Receipe } from "@/lib/receipes.functions";
 import {
-  listSavedRecipes,
-  saveRecipe as saveRecipeFn,
-  unsaveRecipe as unsaveRecipeFn,
+  listSavedReceipes,
+  saveReceipe as saveReceipeFn,
+  unsaveReceipe as unsaveReceipeFn,
   setCookedStatus,
-  type SavedRecipeRow,
+  type SavedReceipeRow,
 } from "@/lib/saved-receipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
-import { RecipeCounter } from "@/components/RecipeCounter";
+import { ReceipeCounter } from "@/components/ReceipeCounter";
 import { FreeTierBanner } from "@/components/FreeTierBanner";
-import { useRecipeUsage } from "@/hooks/use-receipe-usage";
+import { useReceipeUsage } from "@/hooks/use-receipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { AdminPanel } from "@/components/admin/AdminPanel";
-import { RecipeTimers } from "@/components/fridge/RecipeTimers";
+import { ReceipeTimers } from "@/components/fridge/ReceipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 
@@ -106,17 +106,17 @@ function Index() {
   const [dietary, setDietary] = useState<string[]>([]);
   const [cuisine, setCuisine] = useState("Any / Surprise Me");
   const [pantryMode, setPantryMode] = useState(false);
-  const [receipes, setRecipes] = useState<Receipe[] | null>(null);
+  const [receipes, setReceipes] = useState<Receipe[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [saved, setSaved] = useState<SavedRecipeRow[]>([]);
+  const [saved, setSaved] = useState<SavedReceipeRow[]>([]);
 
-  const generate = useServerFn(generateRecipes);
+  const generate = useServerFn(generateReceipes);
   const fetchDish = useServerFn(getDishHelper);
-  const listSaved = useServerFn(listSavedRecipes);
-  const saveRecipeRpc = useServerFn(saveRecipeFn);
-  const unsaveRecipeRpc = useServerFn(unsaveRecipeFn);
+  const listSaved = useServerFn(listSavedReceipes);
+  const saveReceipeRpc = useServerFn(saveReceipeFn);
+  const unsaveReceipeRpc = useServerFn(unsaveReceipeFn);
   const setCookedRpc = useServerFn(setCookedStatus);
 
   const [dishQuery, setDishQuery] = useState("");
@@ -124,7 +124,7 @@ function Index() {
   const [dishResult, setDishResult] = useState<
     Extract<DishHelperResult, { ok: true }>["data"] | null
   >(null);
-  const [showRecipe, setShowRecipe] = useState(false);
+  const [showReceipe, setShowReceipe] = useState(false);
 
   const dishPrompts = [
     "See something that made you hungry? Tell me the dish — I'll give you the ingredients and receipe.",
@@ -166,7 +166,7 @@ function Index() {
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium } = useSubscription(userId);
-  const { logGeneration, atLimit: usageAtLimit } = useRecipeUsage(userId);
+  const { logGeneration, atLimit: usageAtLimit } = useReceipeUsage(userId);
   const isAdmin = useIsAdmin(userId);
   const [adminOpen, setAdminOpen] = useState(false);
   const limitBlocked = !isPremium && usageAtLimit;
@@ -236,7 +236,7 @@ function Index() {
     }
     setDishLoading(true);
     setDishResult(null);
-    setShowRecipe(false);
+    setShowReceipe(false);
     try {
       const res = await fetchDish({ data: { dish: q } });
       if (!res.ok) toast.error(res.error);
@@ -260,7 +260,7 @@ function Index() {
     setDishQuery(name);
     setDishLoading(true);
     setDishResult(null);
-    setShowRecipe(false);
+    setShowReceipe(false);
     dishInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     try {
       const res = await fetchDish({ data: { dish: name } });
@@ -290,7 +290,7 @@ function Index() {
     }
     setPantryMode(false);
     setLoading(true);
-    setRecipes(null);
+    setReceipes(null);
     try {
       const res = await generate({
         data: { ingredients, dietary, cuisine, exclude: [] },
@@ -298,7 +298,7 @@ function Index() {
       if (!res.ok) {
         toast.error(res.error);
       } else {
-        setRecipes(res.receipes);
+        setReceipes(res.receipes);
         logGeneration();
       }
     } catch (err) {
@@ -317,14 +317,14 @@ function Index() {
     setPantryMode(true);
     setCuisine("Any / Surprise Me");
     setLoading(true);
-    setRecipes(null);
+    setReceipes(null);
     try {
       const res = await generate({
         data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [] },
       });
       if (!res.ok) toast.error(res.error);
       else {
-        setRecipes(res.receipes);
+        setReceipes(res.receipes);
         logGeneration();
       }
     } catch (err) {
@@ -359,7 +359,7 @@ function Index() {
         if (fresh.length === 0) {
           toast("No new receipes — try changing cuisine or dietary filters.");
         } else {
-          setRecipes([...receipes, ...fresh]);
+          setReceipes([...receipes, ...fresh]);
           logGeneration();
         }
       }
@@ -385,11 +385,11 @@ function Index() {
     }
     try {
       if (isSaved(receipe.title)) {
-        await unsaveRecipeRpc({ data: { title: receipe.title } });
+        await unsaveReceipeRpc({ data: { title: receipe.title } });
         setSaved((prev) => prev.filter((s) => s.title !== receipe.title));
         toast("Removed from saved");
       } else {
-        const res = await saveRecipeRpc({ data: { receipe: receipe } });
+        const res = await saveReceipeRpc({ data: { receipe: receipe } });
         setSaved((prev) => [res.row, ...prev.filter((s) => s.title !== receipe.title)]);
         toast.success("Saved!");
       }
@@ -399,7 +399,7 @@ function Index() {
     }
   };
 
-  const onToggleCooked = async (row: SavedRecipeRow) => {
+  const onToggleCooked = async (row: SavedReceipeRow) => {
     const nextCooked = !row.cooked_at;
     try {
       const res = await setCookedRpc({ data: { id: row.id, cooked: nextCooked } });
@@ -421,7 +421,7 @@ function Index() {
         saved={saved}
         onUnsave={async (title) => {
           try {
-            await unsaveRecipeRpc({ data: { title } });
+            await unsaveReceipeRpc({ data: { title } });
             setSaved((prev) => prev.filter((s) => s.title !== title));
           } catch {
             toast.error("Couldn't remove.");
@@ -472,7 +472,7 @@ function Index() {
                     to="/my-receipes"
                     className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 hidden lg:inline rounded-full hover:bg-secondary transition-colors"
                   >
-                    My Recipes
+                    My Receipes
                   </Link>
                   <Link
                     to="/cookbook"
@@ -544,7 +544,7 @@ function Index() {
               <div className="flex items-center justify-center gap-3 mb-5">
                 <span className="h-px w-8 bg-accent" />
                 <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
-                  Dish to Recipe
+                  Dish to Receipe
                 </p>
                 <span className="h-px w-8 bg-accent" />
               </div>
@@ -581,7 +581,7 @@ function Index() {
                 </button>
               </form>
               <div className="mt-4 flex justify-center">
-                <RecipeCounter userId={userId} isPremium={isPremium} />
+                <ReceipeCounter userId={userId} isPremium={isPremium} />
               </div>
             </div>
 
@@ -604,7 +604,7 @@ function Index() {
                     ))}
                   </ul>
 
-                  {!showRecipe ? (
+                  {!showReceipe ? (
                   <div className="bg-secondary border border-border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <p className="font-medium text-sm">
                         Do you want the receipe as well?
@@ -612,7 +612,7 @@ function Index() {
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => setShowRecipe(true)}
+                          onClick={() => setShowReceipe(true)}
                           className="bg-primary text-primary-foreground px-5 py-2 rounded-full font-display font-semibold text-sm hover:brightness-110 transition-all"
                         >
                           Yes
@@ -633,7 +633,7 @@ function Index() {
                   <div className="bg-secondary/60 border border-border rounded-2xl p-5">
                       <div className="flex items-center gap-3 mb-3">
                         <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
-                          Recipe
+                          Receipe
                         </p>
                         <div className="flex flex-wrap gap-1.5 text-[11px] font-medium">
                           {dishResult.receipe.prepTimeMinutes != null && (
@@ -649,7 +649,7 @@ function Index() {
                         </div>
                       </div>
                       <div className="mb-4">
-                        <RecipeTimers
+                        <ReceipeTimers
                           totalMinutes={
                             dishResult.receipe.totalTimeMinutes ??
                             dishResult.receipe.cookTimeMinutes
@@ -726,7 +726,7 @@ function Index() {
                   : "Show me the cuisine"}
               </button>
               <div className="mt-3 flex justify-center">
-                <RecipeCounter userId={userId} isPremium={isPremium} />
+                <ReceipeCounter userId={userId} isPremium={isPremium} />
               </div>
             </div>
           </section>
@@ -775,7 +775,7 @@ function Index() {
                 onPantryGenerate={onPantryGenerate}
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
-                counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} />}
+                counterSlot={<ReceipeCounter userId={userId} isPremium={isPremium} />}
               />
             </div>
           </section>
@@ -803,7 +803,7 @@ function Index() {
             {!loading &&
               receipes &&
               receipes.map((r, i) => (
-                <RecipeCard
+                <ReceipeCard
                   key={`${r.title}-${i}`}
                   receipe={r}
                   index={i}

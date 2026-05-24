@@ -2,22 +2,22 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { listMyRecipes, deleteCommunityRecipe } from "@/lib/community.functions";
+import { listMyReceipes, deleteCommunityReceipe } from "@/lib/community.functions";
 
 export const Route = createFileRoute("/_authenticated/my-receipes")({
-  component: MyRecipes,
+  component: MyReceipes,
 });
 
-function MyRecipes() {
-  const list = useServerFn(listMyRecipes);
-  const del = useServerFn(deleteCommunityRecipe);
-  const [receipes, setRecipes] = useState<any[]>([]);
+function MyReceipes() {
+  const list = useServerFn(listMyReceipes);
+  const del = useServerFn(deleteCommunityReceipe);
+  const [receipes, setReceipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = () => {
     setLoading(true);
     list().then((r) => {
-      setRecipes(r.receipes);
+      setReceipes(r.receipes);
       setLoading(false);
     });
   };

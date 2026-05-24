@@ -27,7 +27,7 @@ export type Receipe = {
   dietary: string[];
 };
 
-export type GenerateRecipesResult =
+export type GenerateReceipesResult =
   | { ok: true; receipes: Receipe[] }
   | {
       ok: false;
@@ -57,9 +57,9 @@ const responseSchema = z.object({
     .max(10),
 });
 
-export const generateRecipes = createServerFn({ method: "POST" })
+export const generateReceipes = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data }): Promise<GenerateRecipesResult> => {
+  .handler(async ({ data }): Promise<GenerateReceipesResult> => {
     const hasIngredients = data.ingredients.length > 0;
     const cuisineGuidance =
       data.cuisine === "Any / Surprise Me"
@@ -132,7 +132,7 @@ Return JSON shaped exactly like:
 
       return { ok: true, receipes: result.data.receipes };
     } catch (err) {
-      console.error("generateRecipes failed", err);
+      console.error("generateReceipes failed", err);
       return { ok: false, error: "Something went wrong. Try again.", code: "server" };
     }
   });

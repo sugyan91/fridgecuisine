@@ -3,10 +3,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  listSavedRecipes,
+  listSavedReceipes,
   setCookedStatus,
-  unsaveRecipe,
-  type SavedRecipeRow,
+  unsaveReceipe,
+  type SavedReceipeRow,
 } from "@/lib/saved-receipes.functions";
 
 export const Route = createFileRoute("/_authenticated/cookbook")({
@@ -31,10 +31,10 @@ function formatDate(iso: string) {
 }
 
 function CookbookPage() {
-  const list = useServerFn(listSavedRecipes);
+  const list = useServerFn(listSavedReceipes);
   const cook = useServerFn(setCookedStatus);
-  const unsave = useServerFn(unsaveRecipe);
-  const [rows, setRows] = useState<SavedRecipeRow[]>([]);
+  const unsave = useServerFn(unsaveReceipe);
+  const [rows, setRows] = useState<SavedReceipeRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"saved" | "history">("saved");
 
@@ -45,7 +45,7 @@ function CookbookPage() {
       .finally(() => setLoading(false));
   }, [list]);
 
-  const onCook = async (row: SavedRecipeRow) => {
+  const onCook = async (row: SavedReceipeRow) => {
     const nextCooked = !row.cooked_at;
     try {
       const res = await cook({ data: { id: row.id, cooked: nextCooked } });
@@ -56,7 +56,7 @@ function CookbookPage() {
     }
   };
 
-  const onRemove = async (row: SavedRecipeRow) => {
+  const onRemove = async (row: SavedReceipeRow) => {
     if (!confirm(`Remove "${row.title}" from your cookbook?`)) return;
     try {
       await unsave({ data: { title: row.title } });

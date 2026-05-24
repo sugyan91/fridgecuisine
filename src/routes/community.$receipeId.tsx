@@ -3,32 +3,32 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  getCommunityRecipe,
+  getCommunityReceipe,
   getMyVote,
-  setRecipeVote,
-  listRecipeComments,
-  addRecipeComment,
-  deleteRecipeComment,
-  setRecipeCommentsEnabled,
-  deleteCommunityRecipe,
+  setReceipeVote,
+  listReceipeComments,
+  addReceipeComment,
+  deleteReceipeComment,
+  setReceipeCommentsEnabled,
+  deleteCommunityReceipe,
 } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export const Route = createFileRoute("/community/$receipeId")({
-  component: RecipePage,
+  component: ReceipePage,
 });
 
-function RecipePage() {
+function ReceipePage() {
   const { receipeId } = Route.useParams();
-  const get = useServerFn(getCommunityRecipe);
+  const get = useServerFn(getCommunityReceipe);
   const fetchVote = useServerFn(getMyVote);
-  const submitVote = useServerFn(setRecipeVote);
-  const fetchComments = useServerFn(listRecipeComments);
-  const postComment = useServerFn(addRecipeComment);
-  const removeComment = useServerFn(deleteRecipeComment);
-  const toggleComments = useServerFn(setRecipeCommentsEnabled);
-  const removeRecipe = useServerFn(deleteCommunityRecipe);
+  const submitVote = useServerFn(setReceipeVote);
+  const fetchComments = useServerFn(listReceipeComments);
+  const postComment = useServerFn(addReceipeComment);
+  const removeComment = useServerFn(deleteReceipeComment);
+  const toggleComments = useServerFn(setReceipeCommentsEnabled);
+  const removeReceipe = useServerFn(deleteCommunityReceipe);
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
   const [data, setData] = useState<any>(null);
@@ -98,7 +98,7 @@ function RecipePage() {
 
   const r = data.receipe;
   const isOwner = !!userId && userId === r.user_id;
-  const canManageRecipe = isOwner || isAdmin;
+  const canManageReceipe = isOwner || isAdmin;
   const commentsEnabled = r.comments_enabled !== false;
 
   const submitComment = async () => {
@@ -139,11 +139,11 @@ function RecipePage() {
     }
   };
 
-  const onDeleteRecipe = async () => {
+  const onDeleteReceipe = async () => {
     if (!confirm(`Delete "${r.title}"? This cannot be undone.`)) return;
     setDeleting(true);
     try {
-      await removeRecipe({ data: { id: receipeId } });
+      await removeReceipe({ data: { id: receipeId } });
       toast.success("Receipe deleted");
       navigate({ to: "/community" });
     } catch {
@@ -178,11 +178,11 @@ function RecipePage() {
             {[r.city, r.country, r.cuisine].filter(Boolean).join(" · ")} · by {data.author_name}
           </p>
           {r.description && <p className="mb-5 text-base">{r.description}</p>}
-          {canManageRecipe && (
+          {canManageReceipe && (
             <div className="mb-5 flex justify-end">
               <button
                 type="button"
-                onClick={onDeleteRecipe}
+                onClick={onDeleteReceipe}
                 disabled={deleting}
                 className="bg-paprika text-white border-2 border-border rounded-full px-3 py-1.5 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
               >

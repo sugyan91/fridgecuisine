@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type SavedRecipeData = {
+export type SavedReceipeData = {
   title: string;
   blurb?: string;
   cookTimeMinutes?: number;
@@ -17,12 +17,12 @@ export type SavedRecipeData = {
   dietary?: string[];
 };
 
-export type SavedRecipeRow = {
+export type SavedReceipeRow = {
   id: string;
   title: string;
   cuisine: string | null;
   cook_time_minutes: number | null;
-  receipe: SavedRecipeData;
+  receipe: SavedReceipeData;
   saved_at: string;
   cooked_at: string | null;
 };
@@ -42,9 +42,9 @@ const receipeSchema = z.object({
   dietary: z.array(z.string().max(40)).max(10).optional(),
 }).passthrough();
 
-export const listSavedRecipes = createServerFn({ method: "GET" })
+export const listSavedReceipes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ rows: SavedRecipeRow[] }> => {
+  .handler(async ({ context }): Promise<{ rows: SavedReceipeRow[] }> => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("saved_receipes")
@@ -52,13 +52,13 @@ export const listSavedRecipes = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .order("saved_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { rows: (data ?? []) as unknown as SavedRecipeRow[] };
+    return { rows: (data ?? []) as unknown as SavedReceipeRow[] };
   });
 
-export const saveRecipe = createServerFn({ method: "POST" })
+export const saveReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ receipe: receipeSchema }).parse(input))
-  .handler(async ({ data, context }): Promise<{ row: SavedRecipeRow }> => {
+  .handler(async ({ data, context }): Promise<{ row: SavedReceipeRow }> => {
     const { supabase, userId } = context;
     const r = data.receipe;
     const { data: row, error } = await supabase
@@ -76,10 +76,10 @@ export const saveRecipe = createServerFn({ method: "POST" })
       .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    return { row: row as unknown as SavedRecipeRow };
+    return { row: row as unknown as SavedReceipeRow };
   });
 
-export const unsaveRecipe = createServerFn({ method: "POST" })
+export const unsaveReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({ title: z.string().min(1).max(200) }).parse(input),
@@ -113,5 +113,5 @@ export const setCookedStatus = createServerFn({ method: "POST" })
       .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    return { row: row as unknown as SavedRecipeRow };
+    return { row: row as unknown as SavedReceipeRow };
   });

@@ -1,13 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { useRecipeUsage } from "@/hooks/use-receipe-usage";
+import { useReceipeUsage } from "@/hooks/use-receipe-usage";
 
 type Props = {
   userId: string | undefined;
   isPremium: boolean;
 };
 
-export function RecipeCounter({ userId, isPremium }: Props) {
-  const { used, limit, countdown, loaded, atLimit } = useRecipeUsage(userId);
+export function ReceipeCounter({ userId, isPremium }: Props) {
+  const { used, limit, countdown, loaded, atLimit } = useReceipeUsage(userId);
 
   if (userId && isPremium) {
     return (

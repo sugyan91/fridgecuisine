@@ -113,7 +113,7 @@ function ChefsPage() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-4 min-h-[4rem]">
-                  {c.bio || "Recipes coming soon."}
+                  {c.bio || "Receipes coming soon."}
                 </p>
               </div>
             ))}

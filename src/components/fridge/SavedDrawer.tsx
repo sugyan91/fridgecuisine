@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import type { SavedRecipeRow } from "@/lib/saved-receipes.functions";
+import type { SavedReceipeRow } from "@/lib/saved-receipes.functions";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  saved: SavedRecipeRow[];
+  saved: SavedReceipeRow[];
   onUnsave: (title: string) => void;
-  onToggleCooked: (row: SavedRecipeRow) => void;
+  onToggleCooked: (row: SavedReceipeRow) => void;
 };
 
 export function SavedDrawer({ open, onClose, saved, onUnsave, onToggleCooked }: Props) {

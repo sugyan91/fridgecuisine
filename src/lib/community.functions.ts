@@ -17,7 +17,7 @@ const receipeInput = z.object({
   is_published: z.boolean().default(true),
 });
 
-export const listCommunityRecipes = createServerFn({ method: "GET" })
+export const listCommunityReceipes = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({
       search: z.string().trim().max(80).optional(),
@@ -89,7 +89,7 @@ export const listCommunityRecipes = createServerFn({ method: "GET" })
     };
   });
 
-export const getCommunityRecipe = createServerFn({ method: "GET" })
+export const getCommunityReceipe = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { data: receipe, error } = await supabaseAdmin
@@ -128,7 +128,7 @@ export const getCommunityRecipe = createServerFn({ method: "GET" })
     };
   });
 
-export const createCommunityRecipe = createServerFn({ method: "POST" })
+export const createCommunityReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => receipeInput.parse(input))
   .handler(async ({ data, context }) => {
@@ -162,7 +162,7 @@ export const createCommunityRecipe = createServerFn({ method: "POST" })
     return { id: row.id };
   });
 
-export const updateCommunityRecipe = createServerFn({ method: "POST" })
+export const updateCommunityReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => receipeInput.extend({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
@@ -175,7 +175,7 @@ export const updateCommunityRecipe = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const deleteCommunityRecipe = createServerFn({ method: "POST" })
+export const deleteCommunityReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
@@ -184,7 +184,7 @@ export const deleteCommunityRecipe = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const listMyRecipes = createServerFn({ method: "GET" })
+export const listMyReceipes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
@@ -209,7 +209,7 @@ export const getMyVote = createServerFn({ method: "POST" })
     return { vote: (row?.vote_type as "up" | "down" | undefined) ?? null };
   });
 
-export const setRecipeVote = createServerFn({ method: "POST" })
+export const setReceipeVote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
@@ -249,7 +249,7 @@ export const setRecipeVote = createServerFn({ method: "POST" })
     return { vote: data.vote };
   });
 
-export const listRecipeComments = createServerFn({ method: "GET" })
+export const listReceipeComments = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ receipe_id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { data: rows, error } = await supabaseAdmin
@@ -275,7 +275,7 @@ export const listRecipeComments = createServerFn({ method: "GET" })
     };
   });
 
-export const addRecipeComment = createServerFn({ method: "POST" })
+export const addReceipeComment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
@@ -323,7 +323,7 @@ export const addRecipeComment = createServerFn({ method: "POST" })
     };
   });
 
-export const deleteRecipeComment = createServerFn({ method: "POST" })
+export const deleteReceipeComment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
@@ -335,7 +335,7 @@ export const deleteRecipeComment = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const setRecipeCommentsEnabled = createServerFn({ method: "POST" })
+export const setReceipeCommentsEnabled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({

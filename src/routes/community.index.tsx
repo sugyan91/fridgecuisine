@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { listCommunityRecipes } from "@/lib/community.functions";
+import { listCommunityReceipes } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/community/")({
@@ -19,8 +19,8 @@ export const Route = createFileRoute("/community/")({
 });
 
 function CommunityPage() {
-  const list = useServerFn(listCommunityRecipes);
-  const [receipes, setRecipes] = useState<any[]>([]);
+  const list = useServerFn(listCommunityReceipes);
+  const [receipes, setReceipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
@@ -38,7 +38,7 @@ function CommunityPage() {
   const load = async () => {
     setLoading(true);
     const res = await list({ data: { search: search || undefined, city: city || undefined, limit: 30 } });
-    setRecipes(res.receipes ?? []);
+    setReceipes(res.receipes ?? []);
     setLoading(false);
   };
 

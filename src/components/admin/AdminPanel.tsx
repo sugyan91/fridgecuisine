@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   adminListUsers,
-  adminListCommunityRecipes,
+  adminListCommunityReceipes,
   adminListComments,
   adminGetUserSummary,
   adminResetUsage,
@@ -11,7 +11,7 @@ import {
   adminDeleteUser,
   adminGrantPremium,
   adminRevokePremium,
-  adminDeleteCommunityRecipe,
+  adminDeleteCommunityReceipe,
   adminDeleteComment,
 } from "@/lib/admin.functions";
 
@@ -27,7 +27,7 @@ type UserRow = {
   isPremium: boolean;
 };
 
-type RecipeRow = {
+type ReceipeRow = {
   id: string;
   user_id: string;
   title: string;
@@ -89,7 +89,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         </div>
 
         {tab === "users" && <UsersTab />}
-        {tab === "receipes" && <RecipesTab />}
+        {tab === "receipes" && <ReceipesTab />}
         {tab === "comments" && <CommentsTab />}
       </div>
     </div>
@@ -350,15 +350,15 @@ function UsersTab() {
   );
 }
 
-/* ----------------- RECIPES ----------------- */
+/* ----------------- RECEIPES ----------------- */
 
-function RecipesTab() {
-  const list = useServerFn(adminListCommunityRecipes);
-  const del = useServerFn(adminDeleteCommunityRecipe);
+function ReceipesTab() {
+  const list = useServerFn(adminListCommunityReceipes);
+  const del = useServerFn(adminDeleteCommunityReceipe);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [published, setPublished] = useState<"all" | "published" | "unpublished">("all");
-  const [rows, setRows] = useState<RecipeRow[]>([]);
+  const [rows, setRows] = useState<ReceipeRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -391,12 +391,12 @@ function RecipesTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, published]);
 
-  const onDelete = async (r: RecipeRow) => {
+  const onDelete = async (r: ReceipeRow) => {
     if (!confirm(`Delete receipe "${r.title}"? This also removes its comments and likes.`)) return;
     setBusy(r.id);
     try {
       await del({ data: { receipe_id: r.id } });
-      toast.success("Recipe deleted");
+      toast.success("Receipe deleted");
       await load();
     } catch (e: any) {
       toast.error(e?.message ?? "Delete failed");
