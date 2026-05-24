@@ -841,6 +841,47 @@ function Index() {
                 <ReceipeCounter userId={userId} isPremium={isPremium} />
               </div>
             </div>
+
+            {/* Inline results for the cuisine flow — sits right under the button */}
+            <div ref={cuisineResultsRef} className="mt-10 space-y-5 scroll-mt-32">
+              {!pantryMode && (loading || (receipes && receipes.length > 0)) && (
+                <div className="flex items-baseline justify-between">
+                  <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
+                    {loading ? "Cooking up 10 receipes…" : `${receipes!.length} receipes found`}
+                  </h3>
+                  {receipes && (
+                    <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
+                      AI · {cuisine.split(" /")[0]}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {!pantryMode && loading && <LoadingSkeleton />}
+
+              {!pantryMode && !loading && receipes && receipes.map((r, i) => (
+                <ReceipeCard
+                  key={`cuisine-${r.title}-${i}`}
+                  receipe={r}
+                  index={i}
+                  saved={isSaved(r.title)}
+                  onToggleSave={() => toggleSave(r)}
+                  dietary={dietary}
+                  showMissing={false}
+                />
+              ))}
+
+              {!pantryMode && !loading && receipes && receipes.length > 0 && (
+                <button
+                  type="button"
+                  onClick={onLoadMore}
+                  disabled={loadingMore}
+                  className="w-full bg-card border border-border text-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-all disabled:opacity-60"
+                >
+                  {loadingMore ? "Cooking up more…" : "Show more receipes"}
+                </button>
+              )}
+            </div>
           </section>
 
           <section className="lg:col-span-12">
