@@ -29,11 +29,11 @@ export function ChefCTA() {
           </Link>
         </div>
       </div>
-      <div className="md:col-span-5 grid grid-cols-2 gap-3">
+      <div className="md:col-span-5 grid grid-cols-2 gap-3 w-full">
         <Stat label="You set the price" value="$0–∞" />
-        <Stat label="Reach" value="Worldwide" />
+        <Stat label="Reach" value="Global" />
         <Stat label="Upfront cost" value="None" />
-        <Stat label="Payout" value="To your bank" />
+        <Stat label="Payout" value="Direct" />
       </div>
     </div>
   );
@@ -41,8 +41,8 @@ export function ChefCTA() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-primary-foreground/5 backdrop-blur-sm rounded-2xl p-5 border border-accent/20">
-      <p className="font-display text-2xl tracking-tight text-accent">
+    <div className="bg-primary-foreground/5 backdrop-blur-sm rounded-2xl p-5 border border-accent/20 min-w-0">
+      <p className="font-display text-xl md:text-2xl tracking-tight text-accent truncate">
         {value}
       </p>
       <p className="text-[10px] uppercase tracking-widest text-primary-foreground/60 mt-2 leading-snug">{label}</p>
