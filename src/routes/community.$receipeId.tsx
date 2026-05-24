@@ -50,7 +50,7 @@ function ReceipePage() {
       setData(r);
       setLoading(false);
     });
-    fetchComments({ data: { receipe_id: receipeId } })
+    fetchComments({ data: { recipe_id: receipeId } })
       .then((r) => setComments(r.comments))
       .catch(() => {});
     supabase.auth.getSession().then(({ data: s }) => {
@@ -61,7 +61,7 @@ function ReceipePage() {
       setUserEmail(u?.email ?? null);
       setEmailVerified(!!u?.email_confirmed_at);
       if (isAuthed) {
-        fetchVote({ data: { receipe_id: receipeId } })
+        fetchVote({ data: { recipe_id: receipeId } })
           .then((v) => setMyVote(v.vote))
           .catch(() => {});
       }
@@ -87,7 +87,7 @@ function ReceipePage() {
       return { ...d, up_count: up, down_count: down };
     });
     try {
-      await submitVote({ data: { receipe_id: receipeId, vote: target } });
+      await submitVote({ data: { recipe_id: receipeId, vote: target } });
     } catch {
       toast.error("Couldn't save vote");
     }
@@ -106,7 +106,7 @@ function ReceipePage() {
     if (body.length < 1) return;
     setPostingComment(true);
     try {
-      const res = await postComment({ data: { receipe_id: receipeId, body } });
+      const res = await postComment({ data: { recipe_id: receipeId, body } });
       setComments((c) => [...c, res.comment]);
       setCommentDraft("");
     } catch (err: any) {
@@ -131,7 +131,7 @@ function ReceipePage() {
     const prev = data;
     setData({ ...data, receipe: { ...r, comments_enabled: next } });
     try {
-      await toggleComments({ data: { receipe_id: receipeId, enabled: next } });
+      await toggleComments({ data: { recipe_id: receipeId, enabled: next } });
       toast.success(next ? "Comments turned on" : "Comments turned off");
     } catch {
       toast.error("Couldn't update");

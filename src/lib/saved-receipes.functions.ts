@@ -47,7 +47,7 @@ export const listSavedReceipes = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<{ rows: SavedReceipeRow[] }> => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
-      .from("saved_receipes")
+      .from("saved_recipes")
       .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
       .eq("user_id", userId)
       .order("saved_at", { ascending: false });
@@ -62,7 +62,7 @@ export const saveReceipe = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const r = data.receipe;
     const { data: row, error } = await supabase
-      .from("saved_receipes")
+      .from("saved_recipes")
       .upsert(
         {
           user_id: userId,
@@ -87,7 +87,7 @@ export const unsaveReceipe = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { error } = await supabase
-      .from("saved_receipes")
+      .from("saved_recipes")
       .delete()
       .eq("user_id", userId)
       .eq("title", data.title);
@@ -106,7 +106,7 @@ export const setCookedStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
-      .from("saved_receipes")
+      .from("saved_recipes")
       .update({ cooked_at: data.cooked ? new Date().toISOString() : null })
       .eq("user_id", userId)
       .eq("id", data.id)

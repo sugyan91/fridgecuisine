@@ -122,7 +122,7 @@ function SellPage() {
               <div className="bg-paprika text-white size-12 rounded-2xl border-2 border-border grid place-items-center shadow-[3px_3px_0px_0px_var(--border)]">
                 <ChefHat className="size-7" strokeWidth={2.5} />
               </div>
-              <h1 className="font-display text-3xl md:text-5xl uppercase">Sell your receipes</h1>
+              <h1 className="font-display text-xl md:text-4xl uppercase">Sell your receipes</h1>
             </div>
             <p className="text-muted-foreground max-w-xl">
               Share your signature dishes with home cooks worldwide. You set the price — we

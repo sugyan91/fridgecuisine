@@ -92,7 +92,7 @@ export function useReceipeUsage(userId: string | undefined) {
       return;
     }
     const { error } = await supabase
-      .from("receipe_generations")
+      .from("recipe_generations")
       .insert({ user_id: userId });
     if (error) console.error("log generation failed", error);
     refresh();
