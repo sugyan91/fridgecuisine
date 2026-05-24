@@ -14,7 +14,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ChefsRouteImport } from './routes/chefs'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
+import { Route as ShopReceipeIdRouteImport } from './routes/shop.$receipeId'
 import { Route as CommunityReceipeIdRouteImport } from './routes/community.$receipeId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
@@ -52,9 +54,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopIndexRoute = ShopIndexRouteImport.update({
+  id: '/shop/',
+  path: '/shop/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommunityIndexRoute = CommunityIndexRouteImport.update({
   id: '/community/',
   path: '/community/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopReceipeIdRoute = ShopReceipeIdRouteImport.update({
+  id: '/shop/$receipeId',
+  path: '/shop/$receipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommunityReceipeIdRoute = CommunityReceipeIdRouteImport.update({
@@ -133,7 +145,9 @@ export interface FileRoutesByFullPath {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/shop/$receipeId': typeof ShopReceipeIdRoute
   '/community/': typeof CommunityIndexRoute
+  '/shop/': typeof ShopIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -152,7 +166,9 @@ export interface FileRoutesByTo {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/shop/$receipeId': typeof ShopReceipeIdRoute
   '/community': typeof CommunityIndexRoute
+  '/shop': typeof ShopIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -173,7 +189,9 @@ export interface FileRoutesById {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/shop/$receipeId': typeof ShopReceipeIdRoute
   '/community/': typeof CommunityIndexRoute
+  '/shop/': typeof ShopIndexRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -194,7 +212,9 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$receipeId'
+    | '/shop/$receipeId'
     | '/community/'
+    | '/shop/'
     | '/community/new'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -213,7 +233,9 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$receipeId'
+    | '/shop/$receipeId'
     | '/community'
+    | '/shop'
     | '/community/new'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -233,7 +255,9 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$receipeId'
+    | '/shop/$receipeId'
     | '/community/'
+    | '/shop/'
     | '/_authenticated/community/new'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -250,7 +274,9 @@ export interface RootRouteChildren {
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CommunityReceipeIdRoute: typeof CommunityReceipeIdRoute
+  ShopReceipeIdRoute: typeof ShopReceipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
+  ShopIndexRoute: typeof ShopIndexRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -294,11 +320,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop/': {
+      id: '/shop/'
+      path: '/shop'
+      fullPath: '/shop/'
+      preLoaderRoute: typeof ShopIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/community/': {
       id: '/community/'
       path: '/community'
       fullPath: '/community/'
       preLoaderRoute: typeof CommunityIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop/$receipeId': {
+      id: '/shop/$receipeId'
+      path: '/shop/$receipeId'
+      fullPath: '/shop/$receipeId'
+      preLoaderRoute: typeof ShopReceipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/community/$receipeId': {
@@ -417,7 +457,9 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CommunityReceipeIdRoute: CommunityReceipeIdRoute,
+  ShopReceipeIdRoute: ShopReceipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
+  ShopIndexRoute: ShopIndexRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
@@ -426,3 +468,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
