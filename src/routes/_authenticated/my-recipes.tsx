@@ -24,7 +24,7 @@ function MyRecipes() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
   const onDelete = async (id: string) => {
-    if (!confirm("Delete this receipe?")) return;
+    if (!confirm("Delete this recipe?")) return;
     try {
       await del({ data: { id } });
       toast.success("Deleted");
@@ -40,14 +40,14 @@ function MyRecipes() {
         <div className="flex items-center justify-between mb-6">
           <Link to="/" className="font-black text-xs uppercase opacity-60">← Home</Link>
           <Link to="/community/new" className="bg-turmeric border-2 border-border px-4 py-2 rounded-full font-black text-xs uppercase">
-            + New receipe
+            + New recipe
           </Link>
         </div>
-        <h1 className="font-display text-4xl text-paprika mb-6">My receipes</h1>
+        <h1 className="font-display text-4xl text-paprika mb-6">My recipes</h1>
         {loading ? (
           <p className="opacity-60">Loading…</p>
         ) : receipes.length === 0 ? (
-          <p className="opacity-60">You haven't shared any receipes yet.</p>
+          <p className="opacity-60">You haven't shared any recipes yet.</p>
         ) : (
           <ul className="space-y-3">
             {receipes.map((r) => (

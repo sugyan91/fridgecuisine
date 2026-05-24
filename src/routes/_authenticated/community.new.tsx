@@ -129,7 +129,7 @@ function NewRecipe() {
         <Link to="/community" className="font-black text-xs uppercase opacity-60">
           ← Back
         </Link>
-        <h1 className="font-display text-4xl md:text-5xl text-paprika mt-3 mb-6">Share a receipe</h1>
+        <h1 className="font-display text-4xl md:text-5xl text-paprika mt-3 mb-6">Share a recipe</h1>
 
         <form onSubmit={submit} className="bg-white border-4 border-border rounded-3xl p-6 space-y-4 shadow-[6px_6px_0px_0px_var(--border)]">
           <Field label="Food name" required>
@@ -140,7 +140,7 @@ function NewRecipe() {
               value={form.description}
               maxLength={120}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Eg #comfortfood, #streetfood, #mom'sreceipe"
+              placeholder="Eg #comfortfood, #streetfood, #mom'srecipe"
               className={input}
             />
           </Field>
@@ -264,7 +264,7 @@ function NewRecipe() {
             disabled={busy}
             className="w-full bg-turmeric border-4 border-border py-4 rounded-2xl font-black text-xl uppercase shadow-[0px_5px_0px_0px_var(--border)] disabled:opacity-60"
           >
-            {busy ? "Publishing…" : "Publish receipe"}
+            {busy ? "Publishing…" : "Publish recipe"}
           </button>
         </form>
       </div>
