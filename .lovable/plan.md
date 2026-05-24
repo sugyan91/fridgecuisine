@@ -1,17 +1,45 @@
-Move the "Show me the cuisine" button + RecipeCounter under the Global Cuisine Vibe dropdown (below the country flags), so users can pick a cuisine and generate from one place.
+## Plan: First-Visit Free-Tier Info Banner
 
-### Changes — `src/routes/index.tsx`
+### Goal
+Add a dismissible banner on the homepage that immediately tells new visitors: "5 free recipes per day — sign up for free or upgrade to $5.99/mo for unlimited."
 
-1. **Add inside the flags section**, directly after the Global Cuisine Vibe `<select>`:
-   - "Show me the cuisine" button wired to `onSubmit` (same handler as today). Same primary styling.
-   - RecipeCounter row underneath (`mt-3 flex justify-center`).
-   - Also tweak `pickCuisine` so it no longer scrolls to the pantry — selecting a flag just sets cuisine; the user clicks the new button right there.
+### What We'll Build
 
-2. **Remove from the Pantry section** (lines 763–777):
-   - Delete the "Show me the cuisine" button.
-   - Delete the RecipeCounter row directly below it.
-   - Keep the rest of the pantry section (IngredientInput, FilterPanel with its pantry-generate button, etc.) intact.
+1. **Dismissible banner component** (`src/components/FreeTierBanner.tsx`)
+   - Shows for anonymous users and signed-in free users (hidden for premium)
+   - Uses `localStorage` to remember dismissal across sessions
+   - Styled to match the site's dark, warm global-cuisine aesthetic
+   - Contains:
+     - Bold headline: "5 free recipes today"
+     - Subline: "Sign up free to track across devices, or go unlimited for $5.99/mo"
+     - Two CTAs: "Sign up" and "Upgrade" buttons
+     - Dismiss / close button (X)
+   - Positioned just below the sticky header on the homepage
 
-### Out of scope
-- No changes to `onSubmit` logic, generation limits, FilterPanel, RecipeCounter, or pantry-generate flow.
-- No styling overhaul beyond placement.
+2. **Integrate into homepage** (`src/routes/index.tsx`)
+   - Import and render the banner inside `<main>`, right after the header offset padding begins
+   - Only renders when `!isPremium`
+
+3. **Styling notes**
+   - Use existing design tokens: `bg-card`, `border-border`, `text-foreground`, `text-accent`, `bg-primary`, `bg-turmeric`
+   - Make it visually distinct but not intrusive — border-left accent or subtle turmeric background
+   - Keep it responsive (stack on mobile)
+
+### Technical Details
+
+- **Dismissal persistence**: Store `fridge-banner-dismissed` in `localStorage` with an optional `expiresAt` (e.g. 7 days) so returning users see the reminder again after a week.
+- **Conditional visibility**: The banner checks `!isPremium && !dismissed`.
+- **No backend changes** required — purely frontend UI.
+- **No route changes** required — stays on `/`.
+
+### Files Changed
+- `src/components/FreeTierBanner.tsx` — new component
+- `src/routes/index.tsx` — import + render banner
+
+### Acceptance Criteria
+- [ ] Anonymous visitor sees the banner on first page load
+- [ ] Banner has clear "5 free recipes today" messaging
+- [ ] Two CTA buttons: Sign up (goes to `/login?mode=signup`) and Upgrade (goes to `/pricing`)
+- [ ] Clicking X dismisses the banner and remembers choice in localStorage
+- [ ] Premium users never see the banner
+- [ ] Banner reappears after 7 days if dismissed
