@@ -156,12 +156,10 @@ export const refreshChefAccountStatus = createServerFn({ method: "POST" })
 /** Public: list published chefs for the directory. */
 export const listChefs = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_PUBLISHABLE_KEY!,
-    );
-    const { data, error } = await supabase
+    // Use admin client (bypasses RLS) and explicitly select only non-sensitive
+    // columns so Stripe account IDs are never exposed via the public directory.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
       .from("chef_profiles")
       .select("user_id, bio, country, avatar_url")
       .eq("payouts_enabled", true)
