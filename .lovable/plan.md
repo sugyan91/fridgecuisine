@@ -1,24 +1,27 @@
-## Mobile header: collapse nav into a hamburger menu
+## What's wrong today
 
-The five tiny pills (Community / Share / Saved / Admin / Sign out) crammed next to "fridge cuisine" look messy at 390px no matter how I shrink them. Replace the cramped row with a clean mobile pattern:
+In `src/routes/index.tsx`, clicking **Show me the cuisine** calls `onSubmit`, but the results render in a separate section ~700px further down the page (`<section className="lg:col-span-7">` near line 890). The button gives no feedback near itself, so users see nothing happen — then have to scroll down to find the cards. Combined with the AI call latency (~5–15s), it feels broken and slow.
 
-### On mobile (< md)
-- Logo + wordmark on the left (full size, not truncated).
-- A single primary action visible on the right: **+ Share** (dark Admin-style pill) — the most important call to action.
-- A **hamburger icon button** next to Share that opens a slide-down dropdown menu containing: Community, Saved ({n}), My Receipes, Cookbook, Admin (if admin), the user email, and Sign out.
-- Menu items are full-width rows with comfortable tap targets (44px), separated by dividers; close on item click or outside click.
+## Fix
 
-### On desktop (md+)
-- Keep the current horizontal nav exactly as it is (Community, +Share, Saved, Admin, email, Sign out). No regression.
+### 1. Place results right under the button
+Render the loading state + receipe cards directly inside the same section as the cuisine selector and **Show me the cuisine** button (the `lg:col-span-12` "Cook the world tonight" section), instead of in the pantry section far below. The pantry section keeps its own results only when the user generates from the pantry flow.
 
-### Implementation notes
-- Add `mobileMenuOpen` state in `src/routes/index.tsx`.
-- Use `lucide-react`'s `Menu` and `X` icons (already a dependency in this stack).
-- Render the dropdown as an absolutely-positioned panel below the header, full width, with `bg-background border-b border-border shadow-lg`, only when `mobileMenuOpen && md:hidden`.
-- Restore the wordmark to its readable size on mobile (`text-base sm:text-lg md:text-xl`, drop the `text-[13px]` hack and `truncate`).
-- Keep the +Share button visible on mobile so the primary CTA stays one tap away.
+- Split the `receipes` state visually by `pantryMode`: when `pantryMode === false` (cuisine-only flow), render cards inside the cuisine section. When `pantryMode === true`, keep them in the pantry section as today.
 
-### Files
-- `src/routes/index.tsx` only (header/nav block).
+### 2. Make it feel fast
+- On click, immediately:
+  - Scroll the results area into view (smooth, `block: 'start'`) so the user's eye lands on the right place.
+  - Render **skeleton receipe cards** (3–4 placeholder cards with shimmer using existing `Skeleton` component) — so something visible appears within 50ms instead of a frozen button.
+- Replace the generic "Travelling the globe…" full-width button label with a tighter inline spinner + short text on the button, and let the skeletons carry the "loading" message.
+- Keep the existing AI call as-is (no model swap — actual latency is bounded by the model and reducing it risks quality regressions).
 
-No backend or routing changes.
+### 3. Minor polish
+- Disable the button + show a small "Generating 10 receipes…" caption directly under it while loading.
+- After results arrive, smooth-scroll to the first result card.
+
+## Files
+
+- `src/routes/index.tsx` — move the cuisine-flow results JSX into the cuisine section, add skeletons, add scroll-into-view on submit, tighten button label.
+
+No backend, schema, or server function changes.
