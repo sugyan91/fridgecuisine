@@ -294,6 +294,10 @@ function Index() {
     setPantryMode(false);
     setLoading(true);
     setReceipes(null);
+    // Scroll the results area into view right away so feedback is visible
+    requestAnimationFrame(() => {
+      cuisineResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     try {
       const res = await generate({
         data: { ingredients, dietary, cuisine, exclude: [] },
