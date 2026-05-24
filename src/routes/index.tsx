@@ -544,14 +544,14 @@ function Index() {
               )}
             </nav>
           </div>
-          <div className="max-w-6xl mx-auto flex justify-end px-4 md:px-8 pb-2">
-            <RecipeCounter userId={userId} isPremium={isPremium} />
-          </div>
         </header>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20">
           <section className="lg:col-span-12">
-            <div className="max-w-3xl mx-auto text-center pt-8 md:pt-16 pb-4">
+            <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4">
+              <div className="flex justify-center mb-6">
+                <RecipeCounter userId={userId} isPremium={isPremium} />
+              </div>
               <p className="font-display text-[10px] md:text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-5">
                 Dish to Recipe
               </p>
