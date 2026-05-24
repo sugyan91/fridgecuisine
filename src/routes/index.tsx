@@ -718,7 +718,7 @@ function Index() {
 
                   {!showReceipe ? (
                   <div className="bg-secondary border border-border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <p className="font-medium text-sm">
+                      <p className="font-medium text-sm text-foreground">
                         Do you want the receipe as well?
                       </p>
                       <div className="flex gap-2">
