@@ -701,7 +701,7 @@ function Index() {
             <SectionHeader
               eyebrow="Explore by country"
               title="Cook the world tonight"
-              subtitle="Tap a flag to set the cuisine — then add your ingredients below."
+              subtitle="50+ cuisines from every continent. Don't see yours? Add it with the 🌍 tile."
             />
             <CountryTiles onPick={pickCuisine} />
           </section>
