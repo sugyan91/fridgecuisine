@@ -552,11 +552,15 @@ function Index() {
               <div className="flex justify-center mb-6">
                 <RecipeCounter userId={userId} isPremium={isPremium} />
               </div>
-              <p className="font-display text-[10px] md:text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-5">
-                Dish to Recipe
-              </p>
-              <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05] text-foreground mb-6">
-                See something that<br className="hidden sm:inline" /> made you hungry?
+              <div className="flex items-center justify-center gap-3 mb-5">
+                <span className="h-px w-8 bg-accent" />
+                <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
+                  Dish to Recipe
+                </p>
+                <span className="h-px w-8 bg-accent" />
+              </div>
+              <h1 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight leading-[0.9] text-foreground mb-6">
+                See something that<br className="hidden sm:inline" /> made you <span className="text-accent">hungry?</span>
               </h1>
               <div className="min-h-[3.5rem] md:min-h-[3rem] mb-8 flex items-center justify-center overflow-hidden">
                 <p
