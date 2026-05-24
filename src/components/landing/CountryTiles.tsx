@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 type Country = { flag: string; cuisine: string; label: string };
 
 const COUNTRIES: Country[] = [
@@ -62,42 +60,43 @@ const COUNTRIES: Country[] = [
   { flag: "🇦🇺", cuisine: "Australian", label: "Australia" },
 ];
 
-const COLLAPSED = 14;
-
 type Props = {
   onPick: (cuisine: string) => void;
 };
 
 export function CountryTiles({ onPick }: Props) {
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? COUNTRIES : COUNTRIES.slice(0, COLLAPSED);
-  const remaining = COUNTRIES.length - COLLAPSED;
+  const mid = Math.ceil(COUNTRIES.length / 2);
+  const rowA = COUNTRIES.slice(0, mid);
+  const rowB = [...COUNTRIES.slice(mid)].reverse();
 
   return (
-    <div>
-      {/* Mobile: horizontal swipe so the row never wraps awkwardly */}
-      <div className="md:hidden -mx-4">
-        <div className="flex gap-2.5 overflow-x-auto px-4 pb-2 scrollbar-none snap-x">
-          {COUNTRIES.map((c) => (
-            <Chip key={c.cuisine} country={c} onPick={onPick} />
-          ))}
-        </div>
-      </div>
+    <div className="space-y-3 -mx-4 sm:-mx-6 lg:-mx-8">
+      <MarqueeRow countries={rowA} direction="left" onPick={onPick} />
+      <MarqueeRow countries={rowB} direction="right" onPick={onPick} />
+    </div>
+  );
+}
 
-      {/* Tablet / desktop: wrap-flow chip row */}
-      <div className="hidden md:flex flex-wrap gap-3">
-        {visible.map((c) => (
-          <Chip key={c.cuisine} country={c} onPick={onPick} />
+function MarqueeRow({
+  countries,
+  direction,
+  onPick,
+}: {
+  countries: Country[];
+  direction: "left" | "right";
+  onPick: (cuisine: string) => void;
+}) {
+  const loop = [...countries, ...countries];
+  return (
+    <div className="marquee-row marquee-mask overflow-hidden">
+      <div
+        className={`marquee-track gap-3 ${
+          direction === "left" ? "marquee-left" : "marquee-right"
+        }`}
+      >
+        {loop.map((c, i) => (
+          <Chip key={`${c.cuisine}-${i}`} country={c} onPick={onPick} />
         ))}
-        {!expanded && remaining > 0 && (
-          <button
-            type="button"
-            onClick={() => setExpanded(true)}
-            className="px-5 py-2.5 rounded-full border border-foreground/15 text-sm font-medium text-foreground hover:bg-secondary transition-all"
-          >
-            + {remaining} more
-          </button>
-        )}
       </div>
     </div>
   );
@@ -114,10 +113,10 @@ function Chip({
     <button
       type="button"
       onClick={() => onPick(country.cuisine)}
-      className="snap-start shrink-0 px-5 py-2.5 rounded-full bg-secondary border border-border hover:bg-primary hover:text-primary-foreground hover:border-transparent transition-all flex items-center gap-2.5 text-sm font-medium"
+      className="shrink-0 px-5 py-2.5 rounded-full bg-card border border-border text-foreground hover:bg-muted hover:border-primary/40 hover:shadow-sm transition-all flex items-center gap-2.5 text-sm font-medium"
       aria-label={`Cook ${country.cuisine} cuisine`}
     >
-      <span className="text-lg leading-none" aria-hidden>
+      <span className="text-lg leading-none animate-flag-spin" aria-hidden>
         {country.flag}
       </span>
       <span>{country.cuisine}</span>
