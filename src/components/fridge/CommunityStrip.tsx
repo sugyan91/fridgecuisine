@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { listCommunityRecipes } from "@/lib/community.functions";
+import { listCommunityReceipes } from "@/lib/community.functions";
 
 type Receipe = {
   id: string;
@@ -17,14 +17,14 @@ type Receipe = {
 };
 
 export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }) {
-  const fetchRecipes = useServerFn(listCommunityRecipes);
-  const [receipes, setRecipes] = useState<Receipe[] | null>(null);
+  const fetchReceipes = useServerFn(listCommunityReceipes);
+  const [receipes, setReceipes] = useState<Receipe[] | null>(null);
 
   useEffect(() => {
-    fetchRecipes({ data: { limit: 6 } })
-      .then((res) => setRecipes((res.receipes as Receipe[]) ?? []))
-      .catch(() => setRecipes([]));
-  }, [fetchRecipes]);
+    fetchReceipes({ data: { limit: 6 } })
+      .then((res) => setReceipes((res.receipes as Receipe[]) ?? []))
+      .catch(() => setReceipes([]));
+  }, [fetchReceipes]);
 
   if (receipes && receipes.length === 0) return null;
 
@@ -61,8 +61,8 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
           return (
             <Link
               key={r.id}
-              to="/community/$recipeId"
-              params={{ recipeId: r.id }}
+              to="/community/$receipeId"
+              params={{ receipeId: r.id }}
               className="group block bg-white border-2 border-border rounded-2xl overflow-hidden shadow-[3px_3px_0px_0px_var(--border)] hover:shadow-[5px_5px_0px_0px_var(--border)] hover:translate-y-[-2px] transition-all"
             >
               {r.image_url ? (
@@ -80,7 +80,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
                   {r.title}
                 </h3>
                 <p className="mt-1 text-[11px] font-bold uppercase tracking-wide opacity-60 truncate">
-                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community recipe"}
+                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community receipe"}
                 </p>
                 <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
                   <span className="opacity-70 truncate">by {r.author_name}</span>

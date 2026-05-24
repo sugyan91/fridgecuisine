@@ -65,7 +65,7 @@ function CheckoutReturn() {
             <CheckCircle2 className="mx-auto h-16 w-16 text-primary" />
             <h1 className="mt-6 text-3xl font-black">You're Premium! 🎉</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Unlimited AI recipes are unlocked. Time to cook.
+              Unlimited AI receipes are unlocked. Time to cook.
             </p>
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Button asChild>

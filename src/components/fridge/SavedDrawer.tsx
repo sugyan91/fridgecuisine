@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import type { SavedRecipeRow } from "@/lib/saved-recipes.functions";
+import type { SavedReceipeRow } from "@/lib/saved-receipes.functions";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  saved: SavedRecipeRow[];
+  saved: SavedReceipeRow[];
   onUnsave: (title: string) => void;
-  onToggleCooked: (row: SavedRecipeRow) => void;
+  onToggleCooked: (row: SavedReceipeRow) => void;
 };
 
 export function SavedDrawer({ open, onClose, saved, onUnsave, onToggleCooked }: Props) {
@@ -15,7 +15,7 @@ export function SavedDrawer({ open, onClose, saved, onUnsave, onToggleCooked }: 
     <div className="fixed inset-0 z-50 flex">
       <button
         type="button"
-        aria-label="Close saved recipes"
+        aria-label="Close saved receipes"
         onClick={onClose}
         className="flex-1 bg-foreground/40 backdrop-blur-sm"
       />
@@ -39,7 +39,7 @@ export function SavedDrawer({ open, onClose, saved, onUnsave, onToggleCooked }: 
         </Link>
         {saved.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Nothing saved yet. Tap the heart on any recipe.
+            Nothing saved yet. Tap the heart on any receipe.
           </p>
         ) : (
           <ul className="space-y-3">

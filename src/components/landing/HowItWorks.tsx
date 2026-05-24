@@ -4,12 +4,12 @@ const STEPS = [
     body: "Add ingredients from your fridge, or just name a dish you're craving. Our AI understands flavours and pairings perfectly.",
   },
   {
-    title: "AI plans the recipe",
-    body: "Our kitchen searches 500+ global cuisines and returns the perfect recipe with measurements, steps and timings.",
+    title: "AI plans the receipe",
+    body: "Our kitchen searches 500+ global cuisines and returns the perfect receipe with measurements, steps and timings.",
   },
   {
     title: "Cook & save",
-    body: "Follow step-by-step guidance, save recipes to your personal pantry, and share your creations with the community.",
+    body: "Follow step-by-step guidance, save receipes to your personal pantry, and share your creations with the community.",
   },
 ];
 

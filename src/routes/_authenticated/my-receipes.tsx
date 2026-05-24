@@ -2,29 +2,29 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { listMyRecipes, deleteCommunityRecipe } from "@/lib/community.functions";
+import { listMyReceipes, deleteCommunityReceipe } from "@/lib/community.functions";
 
-export const Route = createFileRoute("/_authenticated/my-recipes")({
-  component: MyRecipes,
+export const Route = createFileRoute("/_authenticated/my-receipes")({
+  component: MyReceipes,
 });
 
-function MyRecipes() {
-  const list = useServerFn(listMyRecipes);
-  const del = useServerFn(deleteCommunityRecipe);
-  const [receipes, setRecipes] = useState<any[]>([]);
+function MyReceipes() {
+  const list = useServerFn(listMyReceipes);
+  const del = useServerFn(deleteCommunityReceipe);
+  const [receipes, setReceipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = () => {
     setLoading(true);
     list().then((r) => {
-      setRecipes(r.receipes);
+      setReceipes(r.receipes);
       setLoading(false);
     });
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
   const onDelete = async (id: string) => {
-    if (!confirm("Delete this recipe?")) return;
+    if (!confirm("Delete this receipe?")) return;
     try {
       await del({ data: { id } });
       toast.success("Deleted");
@@ -40,20 +40,20 @@ function MyRecipes() {
         <div className="flex items-center justify-between mb-6">
           <Link to="/" className="font-black text-xs uppercase opacity-60">← Home</Link>
           <Link to="/community/new" className="bg-turmeric border-2 border-border px-4 py-2 rounded-full font-black text-xs uppercase">
-            + New recipe
+            + New receipe
           </Link>
         </div>
-        <h1 className="font-display text-4xl text-paprika mb-6">My recipes</h1>
+        <h1 className="font-display text-4xl text-paprika mb-6">My receipes</h1>
         {loading ? (
           <p className="opacity-60">Loading…</p>
         ) : receipes.length === 0 ? (
-          <p className="opacity-60">You haven't shared any recipes yet.</p>
+          <p className="opacity-60">You haven't shared any receipes yet.</p>
         ) : (
           <ul className="space-y-3">
             {receipes.map((r) => (
               <li key={r.id} className="bg-white border-2 border-border rounded-2xl p-4 flex items-center justify-between gap-3">
                 <div>
-                  <Link to="/community/$recipeId" params={{ recipeId: r.id }} className="font-display text-xl text-paprika">
+                  <Link to="/community/$receipeId" params={{ receipeId: r.id }} className="font-display text-xl text-paprika">
                     {r.title}
                   </Link>
                   <p className="text-[11px] uppercase opacity-60 font-black">

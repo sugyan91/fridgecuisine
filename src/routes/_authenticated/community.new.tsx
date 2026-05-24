@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { createCommunityRecipe } from "@/lib/community.functions";
+import { createCommunityReceipe } from "@/lib/community.functions";
 import { DEFAULT_CUISINES, DEFAULT_DIETARY } from "@/lib/taxonomy";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,12 +35,12 @@ async function compressImage(file: File, maxDim = 1600, quality = 0.82): Promise
 }
 
 export const Route = createFileRoute("/_authenticated/community/new")({
-  component: NewRecipe,
+  component: NewReceipe,
 });
 
-function NewRecipe() {
+function NewReceipe() {
   const navigate = useNavigate();
-  const create = useServerFn(createCommunityRecipe);
+  const create = useServerFn(createCommunityReceipe);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -74,10 +74,10 @@ function NewRecipe() {
       const ext = compressed.type.includes("webp") ? "webp" : "jpg";
       const path = `${user.id}/${Date.now()}.${ext}`;
       const { error } = await supabase.storage
-        .from("recipe-photos")
+        .from("receipe-photos")
         .upload(path, compressed, { cacheControl: "3600", upsert: false, contentType: compressed.type });
       if (error) throw error;
-      const { data } = supabase.storage.from("recipe-photos").getPublicUrl(path);
+      const { data } = supabase.storage.from("receipe-photos").getPublicUrl(path);
       setForm((f) => ({ ...f, image_url: data.publicUrl }));
       toast.success("Photo uploaded");
     } catch (err: any) {
@@ -115,7 +115,7 @@ function NewRecipe() {
         data: { ...form, dietary, ingredients: ing, steps: stp, is_published: true },
       });
       toast.success("Receipe shared!");
-      navigate({ to: "/community/$recipeId", params: { recipeId: res.id } });
+      navigate({ to: "/community/$receipeId", params: { receipeId: res.id } });
     } catch (err: any) {
       toast.error(err?.message ?? "Couldn't save");
     } finally {
@@ -129,7 +129,7 @@ function NewRecipe() {
         <Link to="/community" className="font-black text-xs uppercase opacity-60">
           ← Back
         </Link>
-        <h1 className="font-display text-4xl md:text-5xl text-paprika mt-3 mb-6">Share a recipe</h1>
+        <h1 className="font-display text-4xl md:text-5xl text-paprika mt-3 mb-6">Share a receipe</h1>
 
         <form onSubmit={submit} className="bg-white border-4 border-border rounded-3xl p-6 space-y-4 shadow-[6px_6px_0px_0px_var(--border)]">
           <Field label="Food name" required>
@@ -140,7 +140,7 @@ function NewRecipe() {
               value={form.description}
               maxLength={120}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Eg #comfortfood, #streetfood, #mom'srecipe"
+              placeholder="Eg #comfortfood, #streetfood, #mom'sreceipe"
               className={input}
             />
           </Field>
@@ -264,7 +264,7 @@ function NewRecipe() {
             disabled={busy}
             className="w-full bg-turmeric border-4 border-border py-4 rounded-2xl font-black text-xl uppercase shadow-[0px_5px_0px_0px_var(--border)] disabled:opacity-60"
           >
-            {busy ? "Publishing…" : "Publish recipe"}
+            {busy ? "Publishing…" : "Publish receipe"}
           </button>
         </form>
       </div>

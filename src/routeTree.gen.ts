@@ -15,12 +15,12 @@ import { Route as ChefsRouteImport } from './routes/chefs'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
-import { Route as CommunityRecipeIdRouteImport } from './routes/community.$recipeId'
+import { Route as CommunityReceipeIdRouteImport } from './routes/community.$receipeId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
-import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
+import { Route as AuthenticatedMyReceipesRouteImport } from './routes/_authenticated/my-receipes'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -57,9 +57,9 @@ const CommunityIndexRoute = CommunityIndexRouteImport.update({
   path: '/community/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CommunityRecipeIdRoute = CommunityRecipeIdRouteImport.update({
-  id: '/community/$recipeId',
-  path: '/community/$recipeId',
+const CommunityReceipeIdRoute = CommunityReceipeIdRouteImport.update({
+  id: '/community/$receipeId',
+  path: '/community/$receipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
@@ -82,9 +82,9 @@ const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedMyRecipesRoute = AuthenticatedMyRecipesRouteImport.update({
-  id: '/my-recipes',
-  path: '/my-recipes',
+const AuthenticatedMyReceipesRoute = AuthenticatedMyReceipesRouteImport.update({
+  id: '/my-receipes',
+  path: '/my-receipes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedCookbookRoute = AuthenticatedCookbookRouteImport.update({
@@ -127,12 +127,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
-  '/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/my-receipes': typeof AuthenticatedMyReceipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
-  '/community/$recipeId': typeof CommunityRecipeIdRoute
+  '/community/$receipeId': typeof CommunityReceipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -146,12 +146,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
-  '/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/my-receipes': typeof AuthenticatedMyReceipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
-  '/community/$recipeId': typeof CommunityRecipeIdRoute
+  '/community/$receipeId': typeof CommunityReceipeIdRoute
   '/community': typeof CommunityIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -167,12 +167,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
-  '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/_authenticated/my-receipes': typeof AuthenticatedMyReceipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
-  '/community/$recipeId': typeof CommunityRecipeIdRoute
+  '/community/$receipeId': typeof CommunityReceipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -188,12 +188,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/cookbook'
-    | '/my-recipes'
+    | '/my-receipes'
     | '/pricing'
     | '/sell'
     | '/checkout/cancel'
     | '/checkout/return'
-    | '/community/$recipeId'
+    | '/community/$receipeId'
     | '/community/'
     | '/community/new'
     | '/api/public/payments/webhook'
@@ -207,12 +207,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/cookbook'
-    | '/my-recipes'
+    | '/my-receipes'
     | '/pricing'
     | '/sell'
     | '/checkout/cancel'
     | '/checkout/return'
-    | '/community/$recipeId'
+    | '/community/$receipeId'
     | '/community'
     | '/community/new'
     | '/api/public/payments/webhook'
@@ -227,12 +227,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/_authenticated/cookbook'
-    | '/_authenticated/my-recipes'
+    | '/_authenticated/my-receipes'
     | '/_authenticated/pricing'
     | '/_authenticated/sell'
     | '/checkout/cancel'
     | '/checkout/return'
-    | '/community/$recipeId'
+    | '/community/$receipeId'
     | '/community/'
     | '/_authenticated/community/new'
     | '/api/public/payments/webhook'
@@ -249,7 +249,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
-  CommunityRecipeIdRoute: typeof CommunityRecipeIdRoute
+  CommunityReceipeIdRoute: typeof CommunityReceipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -301,11 +301,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/community/$recipeId': {
-      id: '/community/$recipeId'
-      path: '/community/$recipeId'
-      fullPath: '/community/$recipeId'
-      preLoaderRoute: typeof CommunityRecipeIdRouteImport
+    '/community/$receipeId': {
+      id: '/community/$receipeId'
+      path: '/community/$receipeId'
+      fullPath: '/community/$receipeId'
+      preLoaderRoute: typeof CommunityReceipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/return': {
@@ -336,11 +336,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPricingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/my-recipes': {
-      id: '/_authenticated/my-recipes'
-      path: '/my-recipes'
-      fullPath: '/my-recipes'
-      preLoaderRoute: typeof AuthenticatedMyRecipesRouteImport
+    '/_authenticated/my-receipes': {
+      id: '/_authenticated/my-receipes'
+      path: '/my-receipes'
+      fullPath: '/my-receipes'
+      preLoaderRoute: typeof AuthenticatedMyReceipesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cookbook': {
@@ -390,7 +390,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedCookbookRoute: typeof AuthenticatedCookbookRoute
-  AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
+  AuthenticatedMyReceipesRoute: typeof AuthenticatedMyReceipesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
@@ -398,7 +398,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCookbookRoute: AuthenticatedCookbookRoute,
-  AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
+  AuthenticatedMyReceipesRoute: AuthenticatedMyReceipesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
@@ -416,7 +416,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
-  CommunityRecipeIdRoute: CommunityRecipeIdRoute,
+  CommunityReceipeIdRoute: CommunityReceipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
@@ -426,3 +426,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type SavedRecipeData = {
+export type SavedReceipeData = {
   title: string;
   blurb?: string;
   cookTimeMinutes?: number;
@@ -17,17 +17,17 @@ export type SavedRecipeData = {
   dietary?: string[];
 };
 
-export type SavedRecipeRow = {
+export type SavedReceipeRow = {
   id: string;
   title: string;
   cuisine: string | null;
   cook_time_minutes: number | null;
-  recipe: SavedRecipeData;
+  receipe: SavedReceipeData;
   saved_at: string;
   cooked_at: string | null;
 };
 
-const recipeSchema = z.object({
+const receipeSchema = z.object({
   title: z.string().trim().min(1).max(200),
   blurb: z.string().max(2000).optional().default(""),
   cookTimeMinutes: z.number().int().min(0).max(1000).optional(),
@@ -42,44 +42,44 @@ const recipeSchema = z.object({
   dietary: z.array(z.string().max(40)).max(10).optional(),
 }).passthrough();
 
-export const listSavedRecipes = createServerFn({ method: "GET" })
+export const listSavedReceipes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ rows: SavedRecipeRow[] }> => {
+  .handler(async ({ context }): Promise<{ rows: SavedReceipeRow[] }> => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
-      .from("saved_recipes")
-      .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
+      .from("saved_receipes")
+      .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
       .eq("user_id", userId)
       .order("saved_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { rows: (data ?? []) as unknown as SavedRecipeRow[] };
+    return { rows: (data ?? []) as unknown as SavedReceipeRow[] };
   });
 
-export const saveRecipe = createServerFn({ method: "POST" })
+export const saveReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ recipe: recipeSchema }).parse(input))
-  .handler(async ({ data, context }): Promise<{ row: SavedRecipeRow }> => {
+  .inputValidator((input) => z.object({ receipe: receipeSchema }).parse(input))
+  .handler(async ({ data, context }): Promise<{ row: SavedReceipeRow }> => {
     const { supabase, userId } = context;
-    const r = data.recipe;
+    const r = data.receipe;
     const { data: row, error } = await supabase
-      .from("saved_recipes")
+      .from("saved_receipes")
       .upsert(
         {
           user_id: userId,
           title: r.title,
           cuisine: r.cuisine ?? null,
           cook_time_minutes: r.cookTimeMinutes ?? null,
-          recipe: r as never,
+          receipe: r as never,
         },
         { onConflict: "user_id,title" },
       )
-      .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
+      .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    return { row: row as unknown as SavedRecipeRow };
+    return { row: row as unknown as SavedReceipeRow };
   });
 
-export const unsaveRecipe = createServerFn({ method: "POST" })
+export const unsaveReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({ title: z.string().min(1).max(200) }).parse(input),
@@ -87,7 +87,7 @@ export const unsaveRecipe = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { error } = await supabase
-      .from("saved_recipes")
+      .from("saved_receipes")
       .delete()
       .eq("user_id", userId)
       .eq("title", data.title);
@@ -106,12 +106,12 @@ export const setCookedStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
-      .from("saved_recipes")
+      .from("saved_receipes")
       .update({ cooked_at: data.cooked ? new Date().toISOString() : null })
       .eq("user_id", userId)
       .eq("id", data.id)
-      .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
+      .select("id, title, cuisine, cook_time_minutes, receipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    return { row: row as unknown as SavedRecipeRow };
+    return { row: row as unknown as SavedReceipeRow };
   });

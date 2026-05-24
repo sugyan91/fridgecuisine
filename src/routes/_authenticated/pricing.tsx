@@ -72,7 +72,7 @@ function PricingPage() {
 
         <h1 className="text-4xl font-black tracking-tight text-foreground">Choose your plan</h1>
         <p className="mt-2 text-muted-foreground">
-          Generate recipes from whatever is in your fridge. Upgrade for unlimited.
+          Generate receipes from whatever is in your fridge. Upgrade for unlimited.
         </p>
 
         {checkoutOpen ? (
@@ -102,8 +102,8 @@ function PricingPage() {
                 <span className="text-muted-foreground">/ forever</span>
               </div>
               <ul className="mt-6 space-y-2 text-sm">
-                <Feature>5 AI recipe generations / day</Feature>
-                <Feature>Save & share recipes</Feature>
+                <Feature>5 AI receipe generations / day</Feature>
+                <Feature>Save & share receipes</Feature>
                 <Feature>Browse the community</Feature>
               </ul>
               <Button variant="outline" className="mt-6 w-full" disabled>
@@ -122,7 +122,7 @@ function PricingPage() {
                 <span className="text-muted-foreground">/ month</span>
               </div>
               <ul className="mt-6 space-y-2 text-sm">
-                <Feature>Unlimited AI recipe generations</Feature>
+                <Feature>Unlimited AI receipe generations</Feature>
                 <Feature>Priority AI responses</Feature>
                 <Feature>Cancel anytime — keep access until period ends</Feature>
                 <Feature>Everything in Free</Feature>

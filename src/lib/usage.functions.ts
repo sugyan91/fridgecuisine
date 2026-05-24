@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const FREE_DAILY_LIMIT = 5;
 
-export const getRecipeUsage = createServerFn({ method: "POST" })
+export const getReceipeUsage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z.object({ sinceIso: z.string().datetime() }).parse(input),
@@ -12,11 +12,11 @@ export const getRecipeUsage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { count, error } = await supabase
-      .from("recipe_generations")
+      .from("receipe_generations")
       .select("*", { count: "exact", head: true })
       .gte("created_at", data.sinceIso);
     if (error) {
-      console.error("getRecipeUsage failed", error);
+      console.error("getReceipeUsage failed", error);
       return { used: 0, limit: FREE_DAILY_LIMIT };
     }
     return { used: count ?? 0, limit: FREE_DAILY_LIMIT };
