@@ -865,18 +865,23 @@ function SectionHeader({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-8 md:mb-10">
-      <p className="font-display text-[10px] md:text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
-        {eyebrow}
-      </p>
-      <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight text-foreground">
-        {title}
-      </h2>
-      {subtitle && (
-        <p className="text-base md:text-lg text-muted-foreground mt-2 max-w-2xl">
-          {subtitle}
+    <div className="mb-8 md:mb-12 border-b border-border pb-5">
+      <div className="flex items-center gap-3 mb-3">
+        <span className="h-px w-8 bg-accent" />
+        <p className="font-display text-[10px] md:text-xs uppercase tracking-[0.3em] text-accent">
+          {eyebrow}
         </p>
-      )}
+      </div>
+      <div className="flex items-baseline justify-between gap-6 flex-wrap">
+        <h2 className="font-display text-3xl md:text-5xl uppercase tracking-tight leading-[0.95] text-foreground">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="text-sm md:text-base text-muted-foreground max-w-md leading-relaxed">
+            {subtitle}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
