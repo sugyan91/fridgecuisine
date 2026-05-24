@@ -206,7 +206,7 @@ function BentoTile({
   variant: "hero" | "wide" | "small";
   className?: string;
 }) {
-  const country = dish.origin.replace("-alt", "");
+  const country = dish.origin.replace(/-\d+$/, "");
   return (
     <button
       type="button"
