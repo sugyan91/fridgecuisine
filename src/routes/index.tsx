@@ -261,6 +261,38 @@ function Index() {
     }
   };
 
+  const runDishByName = async (name: string) => {
+    if (limitBlocked) {
+      limitToast();
+      return;
+    }
+    setDishQuery(name);
+    setDishLoading(true);
+    setDishResult(null);
+    setShowRecipe(false);
+    dishInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    try {
+      const res = await fetchDish({ data: { dish: name } });
+      if (!res.ok) toast.error(res.error);
+      else {
+        setDishResult(res.data);
+        logGeneration();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't reach the kitchen. Try again.");
+    } finally {
+      setDishLoading(false);
+    }
+  };
+
+  const pickCuisine = (c: string) => {
+    setCuisine(c);
+    setPantryMode(false);
+    toast.success(`Cuisine set to ${c}`);
+    pantryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const onSubmit = async () => {
     if (limitBlocked) {
       limitToast();
