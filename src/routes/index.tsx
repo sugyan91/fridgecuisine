@@ -714,10 +714,6 @@ function Index() {
             <HowItWorks />
           </section>
 
-          <section className="lg:col-span-12">
-            <ChefCTA />
-          </section>
-
           <section ref={pantryRef} className="lg:col-span-5 scroll-mt-32">
             <div className="bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)] lg:sticky lg:top-32">
               <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-1">
