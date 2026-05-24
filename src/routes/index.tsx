@@ -183,6 +183,7 @@ function Index() {
   const navRef = useRef<HTMLDivElement | null>(null);
   const pantryRef = useRef<HTMLElement | null>(null);
   const dishInputRef = useRef<HTMLInputElement | null>(null);
+  const cuisineResultsRef = useRef<HTMLDivElement | null>(null);
   const [headerOffset, setHeaderOffset] = useState(96);
   useEffect(() => {
     const compute = () => {
@@ -293,6 +294,10 @@ function Index() {
     setPantryMode(false);
     setLoading(true);
     setReceipes(null);
+    // Scroll the results area into view right away so feedback is visible
+    requestAnimationFrame(() => {
+      cuisineResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     try {
       const res = await generate({
         data: { ingredients, dietary, cuisine, exclude: [] },
@@ -836,6 +841,47 @@ function Index() {
                 <ReceipeCounter userId={userId} isPremium={isPremium} />
               </div>
             </div>
+
+            {/* Inline results for the cuisine flow — sits right under the button */}
+            <div ref={cuisineResultsRef} className="mt-10 space-y-5 scroll-mt-32">
+              {!pantryMode && (loading || (receipes && receipes.length > 0)) && (
+                <div className="flex items-baseline justify-between">
+                  <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
+                    {loading ? "Cooking up 10 receipes…" : `${receipes!.length} receipes found`}
+                  </h3>
+                  {receipes && (
+                    <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
+                      AI · {cuisine.split(" /")[0]}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {!pantryMode && loading && <LoadingSkeleton />}
+
+              {!pantryMode && !loading && receipes && receipes.map((r, i) => (
+                <ReceipeCard
+                  key={`cuisine-${r.title}-${i}`}
+                  receipe={r}
+                  index={i}
+                  saved={isSaved(r.title)}
+                  onToggleSave={() => toggleSave(r)}
+                  dietary={dietary}
+                  showMissing={false}
+                />
+              ))}
+
+              {!pantryMode && !loading && receipes && receipes.length > 0 && (
+                <button
+                  type="button"
+                  onClick={onLoadMore}
+                  disabled={loadingMore}
+                  className="w-full bg-card border border-border text-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-all disabled:opacity-60"
+                >
+                  {loadingMore ? "Cooking up more…" : "Show more receipes"}
+                </button>
+              )}
+            </div>
           </section>
 
           <section className="lg:col-span-12">
@@ -888,7 +934,7 @@ function Index() {
           </section>
 
           <section className="lg:col-span-7 space-y-5">
-            {(loading || (receipes && receipes.length > 0)) && (
+            {pantryMode && (loading || (receipes && receipes.length > 0)) && (
               <div className="flex items-baseline justify-between">
                 <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
                   {loading ? "Searching…" : `${receipes!.length} receipes found`}
@@ -905,9 +951,9 @@ function Index() {
               </div>
             )}
 
-            {loading && <LoadingSkeleton />}
+            {pantryMode && loading && <LoadingSkeleton />}
 
-            {!loading &&
+            {pantryMode && !loading &&
               receipes &&
               receipes.map((r, i) => (
                 <ReceipeCard
@@ -921,7 +967,7 @@ function Index() {
                 />
               ))}
 
-            {!loading && receipes && receipes.length > 0 && (
+            {pantryMode && !loading && receipes && receipes.length > 0 && (
               <button
                 type="button"
                 onClick={onLoadMore}
