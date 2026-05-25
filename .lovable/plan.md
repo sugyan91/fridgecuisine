@@ -1,35 +1,33 @@
-# Apple Pay — already enabled
+# Make the embedded checkout mobile-friendly so Apple Pay is front-and-center
 
-Your checkout already uses Stripe Embedded Checkout (`ui_mode: "embedded_page"` in `src/lib/payments.functions.ts`) with no `payment_method_types` restriction. That means Stripe automatically surfaces Apple Pay (and Google Pay, Link, etc.) as a payment option whenever the buyer's device supports it.
+The Stripe Embedded Checkout already renders the Apple Pay button at the top of the form on iOS Safari — but right now it lives inside an inline card on the pricing page (`src/routes/_authenticated/pricing.tsx`), which on a phone forces users to scroll past the page header before they see it. The fix is to put the checkout into a **mobile bottom sheet** that opens full-height, so Apple Pay is the first thing visible the moment a plan is tapped.
 
-## What this means in practice
+## Changes
 
-- **iOS Safari / macOS Safari** with a card in Apple Wallet → "Pay with Apple Pay" button appears at the top of the checkout form.
-- **Android / Chrome with Google Pay set up** → Google Pay button appears.
-- **Other browsers / no wallet** → standard card form.
-- All happens client-side based on device capability — no flag to flip.
+**1. Refactor `src/routes/_authenticated/pricing.tsx`**
 
-## What you still need to verify (one-time, in Stripe Dashboard)
+- Replace the conditional inline `EmbeddedCheckoutProvider` block (lines 78–94) with a shadcn `Drawer` (mobile) / `Dialog` (desktop) that holds the checkout.
+- Pattern: render plans always; opening checkout opens the drawer/dialog instead of swapping the page content. Use a `useIsMobile` check (already exists in `src/hooks/use-mobile.tsx`) to pick `Drawer` on phones and `Dialog` on tablet/desktop.
+- The drawer opens to ~90vh so the Apple Pay button at the top of the embedded form is visible without scrolling.
+- Closing the drawer/dialog resets `checkoutOpen` and `selectedPriceId` so the user can pick a different plan.
 
-For Apple Pay to render on **live** payments (sandbox always works for testing):
+**2. Pass the `wallets` option to Embedded Checkout for clarity**
 
-1. The Stripe account needs Apple Pay enabled under **Settings → Payments → Payment methods**. For new Stripe accounts this is on by default.
-2. For Apple Pay to work on your **custom domain** (`fridgecuisine.com`), Stripe needs to verify domain ownership. Stripe does this automatically for domains it manages, but for custom domains added later you may need to register the domain under **Settings → Payments → Apple Pay → Add new domain**. On `*.lovable.app` URLs this is already handled.
+The `EmbeddedCheckoutProvider` options stay as `{ fetchClientSecret }` — wallet display is already controlled by Stripe based on device capability, no extra config needed. (Apple Pay / Google Pay / Link auto-show.)
 
-These are dashboard settings on Stripe's side, not code changes.
+**3. No server-side changes**
 
-## Code changes required
+`src/lib/payments.functions.ts` stays as-is. The Checkout Session is already configured to surface every supported payment method.
 
-None.
+## Verification
 
-## How to test
+After changes, test on the preview at mobile width:
+- Tap "Upgrade to Pro" → drawer slides up from bottom, fills most of the screen, Apple Pay button visible at top of form (when tested in real Safari with a Wallet card).
+- Tap outside / drag drawer down → returns to plan picker.
+- Same flow on desktop opens a centered modal instead of a bottom drawer.
 
-1. Open the app in **Safari on an iPhone or Mac** with a card in Apple Wallet.
-2. Trigger any checkout (e.g. buy a recipe or subscribe on `/pricing`).
-3. The Apple Pay button should appear at the top of the embedded checkout sheet.
+## Out of scope (deliberately)
 
-If it doesn't show up there, the most common cause is the device/browser doesn't have a wallet card configured — try Chrome on the same device, which won't show Apple Pay regardless.
-
----
-
-If you'd rather have an explicit Apple Pay-only button outside the checkout form (e.g. a "Buy with Apple Pay" CTA on the product card itself), that's a different feature — Stripe Payment Request Button. Let me know and I'll plan that separately.
+- No dedicated express button on plan cards — we decided against the Express Checkout Element route because it requires a separate SetupIntent + manual subscription creation pipeline for recurring prices, which doubles the payment surface area for limited gain.
+- No backend changes.
+- No new dependencies (Drawer + Dialog already in `src/components/ui/`).
