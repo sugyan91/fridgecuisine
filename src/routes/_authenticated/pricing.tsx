@@ -138,7 +138,6 @@ function PricingPage() {
               )}
             </div>
           </div>
-        </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
           Already a member?{" "}
