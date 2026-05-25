@@ -8,6 +8,9 @@ import { createCheckoutSession, createPortalSession } from "@/lib/payments.funct
 import { useSubscription } from "@/hooks/use-subscription";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/_authenticated/pricing")({
   component: PricingPage,
@@ -15,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/pricing")({
 
 function PricingPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -75,25 +79,7 @@ function PricingPage() {
           Generate receipes from whatever is in your fridge. Upgrade for unlimited.
         </p>
 
-        {checkoutOpen ? (
-          <div className="mt-10">
-            <button
-              onClick={() => setCheckoutOpen(false)}
-              className="mb-4 text-sm text-muted-foreground underline"
-            >
-              ← Choose a different plan
-            </button>
-            <div className="rounded-2xl border bg-card p-2 shadow-sm">
-              <EmbeddedCheckoutProvider
-                stripe={getStripe()}
-                options={{ fetchClientSecret }}
-              >
-                <EmbeddedCheckout />
-              </EmbeddedCheckoutProvider>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
             {/* Free */}
             <div className="rounded-2xl border bg-card p-6 shadow-sm">
               <h2 className="text-xl font-bold">Free</h2>
@@ -152,7 +138,6 @@ function PricingPage() {
               )}
             </div>
           </div>
-        )}
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
           Already a member?{" "}
@@ -161,6 +146,36 @@ function PricingPage() {
           </Link>
         </p>
       </div>
+
+      {isMobile ? (
+        <Drawer open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+          <DrawerContent className="h-[92vh] p-0">
+            <div className="h-full overflow-y-auto px-2 pb-6 pt-4">
+              {checkoutOpen && (
+                <EmbeddedCheckoutProvider
+                  stripe={getStripe()}
+                  options={{ fetchClientSecret }}
+                >
+                  <EmbeddedCheckout />
+                </EmbeddedCheckoutProvider>
+              )}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+          <DialogContent className="max-w-2xl p-2 sm:p-4">
+            {checkoutOpen && (
+              <EmbeddedCheckoutProvider
+                stripe={getStripe()}
+                options={{ fetchClientSecret }}
+              >
+                <EmbeddedCheckout />
+              </EmbeddedCheckoutProvider>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
