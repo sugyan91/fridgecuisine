@@ -63,6 +63,15 @@ function PricingPage() {
     }
   };
 
+  const checkoutInner = checkoutOpen ? (
+    <EmbeddedCheckoutProvider
+      stripe={getStripe()}
+      options={{ fetchClientSecret }}
+    >
+      <EmbeddedCheckout />
+    </EmbeddedCheckoutProvider>
+  ) : null;
+
   return (
     <div className="min-h-screen bg-background">
       <PaymentTestModeBanner />
@@ -147,35 +156,14 @@ function PricingPage() {
         </p>
       </div>
 
-      {isMobile ? (
-        <Drawer open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-          <DrawerContent className="h-[92vh] p-0">
-            <div className="h-full overflow-y-auto px-2 pb-6 pt-4">
-              {checkoutOpen && (
-                <EmbeddedCheckoutProvider
-                  stripe={getStripe()}
-                  options={{ fetchClientSecret }}
-                >
-                  <EmbeddedCheckout />
-                </EmbeddedCheckoutProvider>
-              )}
-            </div>
-          </DrawerContent>
-        </Drawer>
-      ) : (
-        <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-          <DialogContent className="max-w-2xl p-2 sm:p-4">
-            {checkoutOpen && (
-              <EmbeddedCheckoutProvider
-                stripe={getStripe()}
-                options={{ fetchClientSecret }}
-              >
-                <EmbeddedCheckout />
-              </EmbeddedCheckoutProvider>
-            )}
-          </DialogContent>
-        </Dialog>
-      )}
+      <Drawer open={isMobile && checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DrawerContent className="h-[92vh] p-0">
+          <div className="h-full overflow-y-auto px-2 pb-6 pt-4">{checkoutInner}</div>
+        </DrawerContent>
+      </Drawer>
+      <Dialog open={!isMobile && checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="max-w-2xl p-2 sm:p-4">{checkoutInner}</DialogContent>
+      </Dialog>
     </div>
   );
 }
