@@ -1,4 +1,5 @@
 import { useState, useRef, type KeyboardEvent } from "react";
+import { FridgePhotoButton } from "./FridgePhotoButton";
 
 const SUGGESTIONS = [
   "Rice",
@@ -75,6 +76,18 @@ export function IngredientInput({ ingredients, onChange }: Props) {
     setDraft("");
   };
 
+  const addMany = (raws: string[]) => {
+    const merged = [...ingredients];
+    for (const raw of raws) {
+      const v = raw.trim().slice(0, 40);
+      if (!v) continue;
+      if (merged.some((i) => i.toLowerCase() === v.toLowerCase())) continue;
+      if (merged.length >= 30) break;
+      merged.push(v);
+    }
+    if (merged.length !== ingredients.length) onChange(merged);
+  };
+
   const remove = (v: string) => {
     onChange(ingredients.filter((i) => i !== v));
   };
@@ -110,6 +123,8 @@ export function IngredientInput({ ingredients, onChange }: Props) {
 
   return (
     <div>
+      <FridgePhotoButton onDetected={addMany} existing={ingredients} />
+
       <div className="flex flex-wrap gap-2 mb-3 min-h-[2.5rem]">
         {ingredients.map((ing, idx) => (
           <button
