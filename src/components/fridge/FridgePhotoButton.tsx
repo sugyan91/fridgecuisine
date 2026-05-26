@@ -21,7 +21,7 @@ export function FridgePhotoButton({ onDetected, existing }: Props) {
   const handleFile = async (file: File) => {
     setStatus({ kind: "running", phase: "loading" });
     try {
-      const { classifyImage, isModelMissingError } = await import("@/lib/ml/onnx-session");
+      const { classifyImage } = await import("@/lib/ml/onnx-session");
       setStatus({ kind: "running", phase: "inferring" });
       const preds = await classifyImage(file, 5);
       const usable = preds.filter((p) => p.confidence >= CONFIDENCE_FLOOR);
