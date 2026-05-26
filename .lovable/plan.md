@@ -1,74 +1,76 @@
-# Plan: In-browser PyTorch ingredient classifier for FridgeCuisine
+# Plan: Dish-photo → ingredients (no training, no model file)
 
-A portfolio-worthy ML feature with zero ongoing infra cost. You train in PyTorch, export to ONNX, run inference fully in the user's browser via `onnxruntime-web`. No GPU bill, no server, no API call — and a strong story: *"trained and shipped a CV model to production, runs on-device."*
+Throw out the manual ONNX/training scaffolding from last turn. Replace it with **Transformers.js**, which auto-downloads a ready-made food classifier from HuggingFace and runs it in the browser. Then chain it with your existing `getDishHelper` AI to turn the detected dish into ingredients.
 
-## The user-facing feature
+## What the user sees
 
-On the existing fridge ingredient input (`src/components/fridge/IngredientInput.tsx`), add a **"📷 Snap your fridge"** button. User uploads/captures a photo → model runs in the browser → top-K detected ingredients are added as chips to the existing input. User can edit before generating recipes. Total inference: ~200–500ms on mid-range laptop, ~1s on phone.
+1. Tap **📷 Snap your fridge / a dish** on the ingredient input
+2. ~5s on first use (model downloads + caches in browser, ~50MB one-time, served from HF CDN)
+3. Browser detects the dish: *"Apple Pie — 87%"*
+4. Server function expands it into ingredients via the existing recipe AI
+5. Ingredients appear as **checkable chips** — user ticks which ones they actually have, taps "Add"
 
 ## Architecture
 
 ```text
-┌───────────────────────────────────────┐     ┌────────────────────────┐
-│  PyTorch training repo (separate)     │     │  FridgeCuisine app     │
-│  - dataset prep                       │     │                        │
-│  - fine-tune MobileNetV3 / EffNet-Lite│ ──► │  public/models/        │
-│  - export to ONNX (quantized int8)    │ ONNX│    ingredients.onnx    │
-│  - eval + sample notebook             │ file│    labels.json         │
-└───────────────────────────────────────┘     │                        │
-                                              │  src/lib/ml/           │
-                                              │    onnx-session.ts     │
-                                              │    preprocess.ts       │
-                                              │  components/fridge/    │
-                                              │    FridgePhotoButton   │
-                                              └────────────────────────┘
+Photo file
+    │
+    ▼  (in browser, ~500ms after first load)
+@huggingface/transformers — image-classification pipeline
+    │   model: onnx-community/swin-finetuned-food101-ONNX
+    │   (auto-downloaded from HF CDN, cached in IndexedDB)
+    ▼
+"Apple Pie" (top-1 dish, 87% confidence)
+    │
+    ▼  (server function, ~1s)
+getDishHelper({ dish: "Apple Pie" })  ← already exists
+    │
+    ▼
+{ ingredients: ["flour", "butter", "apples", "sugar", "cinnamon", ...] }
+    │
+    ▼  (back in browser)
+Chips with checkboxes → user picks → addMany() in IngredientInput
 ```
 
-Two repos, one model file as the contract between them.
+Two AI systems chained: on-device CV → server LLM. That's the portfolio story.
 
-## Phase 1 — PyTorch project (separate repo, ~1–2 weekends)
+## Changes
 
-Not in FridgeCuisine. Lives at e.g. `github.com/you/fridge-vision`.
+### Remove (from last turn)
+- `bun remove onnxruntime-web`
+- Delete `public/models/` (README, labels.json — no longer needed; Transformers.js pulls the model from HF)
+- Delete `src/lib/ml/preprocess.ts` (Transformers.js handles preprocessing)
+- Delete `src/lib/ml/onnx-session.ts` (replaced)
 
-1. **Dataset**: start with [Food-101](https://www.kaggle.com/datasets/dansbecker/food-101) (101 classes, 101k images) or the smaller [Fruits-360](https://www.kaggle.com/datasets/moltean/fruits) for faster iteration. For raw ingredients specifically, [Fruit and Vegetable Image Recognition](https://www.kaggle.com/datasets/kritikseth/fruit-and-vegetable-image-recognition) (36 classes) is the best starting point.
-2. **Model**: fine-tune **MobileNetV3-Small** or **EfficientNet-Lite0** from `torchvision.models`. These are designed for mobile/edge — ~5MB quantized.
-3. **Training**: standard transfer learning — freeze backbone, train classifier head, unfreeze + fine-tune last block. ~15 epochs on Colab free tier.
-4. **Export**:
-   ```python
-   torch.onnx.export(model, dummy_input, "ingredients.onnx",
-                     opset_version=17, dynamic_axes={"input": {0: "batch"}})
-   ```
-   Then **dynamic int8 quantization** via `onnxruntime.quantization` → final size ~2–4MB.
-5. **Deliverables**: ONNX file, `labels.json`, README with metrics (top-1, top-5, confusion matrix), training notebook, HuggingFace Space demo (optional but +1 for portfolio).
+### Add
+- `bun add @huggingface/transformers`
+- **`src/lib/ml/dish-classifier.ts`** — lazy singleton that runs Transformers.js `pipeline('image-classification', 'onnx-community/swin-finetuned-food101-ONNX')`. Returns top-3 dish predictions. All imports inside async functions so it never touches the SSR/Worker bundle.
 
-## Phase 2 — Integrate into FridgeCuisine (~1 day)
+### Rewrite
+- **`src/components/fridge/FridgePhotoButton.tsx`** — new states:
+  - `idle` → button
+  - `loading-model` → "Downloading vision model (one-time, ~50MB)…" with progress %
+  - `classifying` → spinner "Identifying dish…"
+  - `expanding` → spinner "Getting ingredients…" (calling `getDishHelper`)
+  - `picking` → shows detected dish name + ingredient checklist (default all checked) + **Add to fridge** button
+  - `error` / `low-confidence` → graceful fallback ("Not sure what this is — try another angle")
 
-1. **Add dependency**: `bun add onnxruntime-web`.
-2. **Drop model artifacts** into `public/models/ingredients.onnx` and `public/models/labels.json`. These are static files — Cloudflare serves them with caching for free.
-3. **Create `src/lib/ml/onnx-session.ts`**: lazy-loads the ONNX session once, caches it. Uses the WASM backend (works everywhere; WebGPU as progressive enhancement).
-4. **Create `src/lib/ml/preprocess.ts`**: takes a `File` or `HTMLImageElement` → resizes to 224×224, normalizes with ImageNet mean/std, returns a `Float32Array` tensor.
-5. **Create `src/components/fridge/FridgePhotoButton.tsx`**: file input + camera capture, runs inference on selection, returns top-K labels via callback. Shows a small loading state while the model downloads on first use (~3MB one-time).
-6. **Wire into `IngredientInput.tsx`**: add the button next to the existing text input; on detection, append labels to the existing ingredients list (user can still edit/remove).
-7. **Lazy-load everything**: dynamic `import()` of both `onnxruntime-web` and the session module so the homepage bundle stays small and the model only downloads when a user actually clicks the photo button.
+### Keep as-is
+- `src/components/fridge/IngredientInput.tsx` already has `addMany` — no changes needed beyond what we did last turn
+- `getDishHelper` server function — used unchanged
 
-## Why this is the right shape
+## Honest trade-offs
 
-- **Real ML in production.** Inference runs on the user's device on every use. Not a one-shot demo.
-- **Zero ongoing cost.** Static file on CDN. No Modal, no Replicate, no GPU rental.
-- **No backend changes.** Server functions, Supabase, Stripe all untouched. Low risk of breaking what works.
-- **Strong narrative.** "Trained a CNN in PyTorch, quantized it, deployed it to run on-device in a React app via ONNX Runtime Web." Recruiters care about the end-to-end loop, and this is it.
-- **Honest scope.** First version covers ~30 common fridge ingredients well. You can grow the label set later without touching the app.
+- **First-load size:** the Swin Food-101 model is ~50MB. Transformers.js caches it in IndexedDB, so it's a one-time cost per browser. We'll show a clear progress indicator so it doesn't feel broken.
+- **Accuracy:** Food-101 covers 101 common dishes (pizza, sushi, tacos, ramen, apple pie, etc.). It will misclassify obscure or homemade dishes. We handle this by showing the confidence % and letting the user dismiss bad results.
+- **Latency:** ~5s first photo (download), ~500ms subsequent photos. Add ~1s for the LLM ingredient expansion. Total: feels snappy after first use.
+- **Mobile data:** 50MB download is real. We'll add a one-line "uses ~50MB on first photo" note next to the button so users on cellular aren't surprised.
 
 ## What I will NOT do
 
-- No Python in this repo. No `requirements.txt`, no edge function calls to a Python service. All ML training stays in the separate repo.
-- No replacement of the existing AI recipe generation (Gemini via Lovable AI). Those are different problems.
-- No changes to auth, pricing, payments, or community features.
+- No backend changes. `getDishHelper` is used as-is.
+- No new tables, no new auth, no Stripe/community/sell changes.
+- No training, no Python, no Colab, no separate repo. Pure JS/TS.
+- Won't replace the existing text input or suggestions — the photo button is additive.
 
-## Open questions before I build Phase 2
-
-1. **Label set**: start with ~30 common fridge ingredients (tomato, onion, carrot, egg, cheese, etc.) or the full Food-101 set (whole dishes)? For the "fridge" use case, ingredients makes much more sense.
-2. **Camera vs upload only**: should the button open the device camera directly on mobile (`<input capture="environment">`), or just a file picker?
-3. **Confidence threshold**: only add labels above e.g. 0.6 confidence, or always show top-5 with confidence scores so the user can pick?
-
-If you approve this plan, the next step is **switching to build mode** so I can wire up Phase 2 (the in-app integration). Phase 1 (training the model) is something you'd do yourself in Colab/locally — I can't train models from this environment, but I can scaffold the training repo with a starter notebook and export script if you want.
+If you approve, I'll switch to build mode and ship this.

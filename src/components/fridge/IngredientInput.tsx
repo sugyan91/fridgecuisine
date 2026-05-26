@@ -123,7 +123,7 @@ export function IngredientInput({ ingredients, onChange }: Props) {
 
   return (
     <div>
-      <FridgePhotoButton onDetected={addMany} existing={ingredients} />
+      <FridgePhotoButton onAdd={addMany} existing={ingredients} />
 
       <div className="flex flex-wrap gap-2 mb-3 min-h-[2.5rem]">
         {ingredients.map((ing, idx) => (
