@@ -15,6 +15,11 @@ export type ChatJSONResult =
 
 type ChatMsg = { role: "system" | "user" | "assistant"; content: string };
 
+type VisionContent =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } };
+type VisionMsg = { role: "system" | "user"; content: string | VisionContent[] };
+
 async function callOpenAICompat(
   url: string,
   apiKey: string,
@@ -114,5 +119,62 @@ export async function callChatJSON(
   } catch (err) {
     console.error("[lovable] threw:", err);
     return { ok: false, code: "server", error: "Something went wrong. Try again." };
+  }
+}
+
+/**
+ * Vision call via Lovable AI gateway (Gemini multimodal). Image is a data: URL
+ * (e.g. "data:image/jpeg;base64,..."). Returns parsed JSON or an error.
+ */
+export async function callVisionJSON(
+  systemPrompt: string,
+  userPrompt: string,
+  imageDataUrl: string,
+): Promise<ChatJSONResult> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  if (!lovableKey) {
+    return { ok: false, code: "server", error: "AI vision not configured." };
+  }
+
+  const messages: VisionMsg[] = [
+    { role: "system", content: systemPrompt },
+    {
+      role: "user",
+      content: [
+        { type: "text", text: userPrompt },
+        { type: "image_url", image_url: { url: imageDataUrl } },
+      ],
+    },
+  ];
+
+  try {
+    const res = await fetch(LOVABLE_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: LOVABLE_MODEL,
+        messages,
+        temperature: 0.2,
+        response_format: { type: "json_object" },
+      }),
+    });
+    const raw = await res.text();
+    if (res.status === 429) return { ok: false, code: "rate_limit", error: "Too many requests — try again in a moment." };
+    if (res.status === 402) return { ok: false, code: "credits", error: "AI credits exhausted. Add credits in Settings → Workspace → Usage." };
+    if (!res.ok) {
+      console.error("[lovable vision]", res.status, raw.slice(0, 300));
+      return { ok: false, code: "server", error: `AI vision error (${res.status}).` };
+    }
+    const payload = JSON.parse(raw) as { choices?: Array<{ message?: { content?: string } }> };
+    const content = payload.choices?.[0]?.message?.content ?? "";
+    const parsed = tryParseJSON(content);
+    if (!parsed) return { ok: false, code: "parse", error: "AI returned invalid JSON." };
+    return { ok: true, json: parsed, provider: "lovable" };
+  } catch (err) {
+    console.error("[lovable vision] threw:", err);
+    return { ok: false, code: "server", error: "Vision request failed." };
   }
 }
