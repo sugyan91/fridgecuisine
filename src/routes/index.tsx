@@ -689,8 +689,28 @@ function Index() {
           <div className="lg:col-span-12 -mb-6 md:-mb-12">
             <FreeTierBanner isPremium={isPremium} userId={userId} />
           </div>
-          <section className="lg:col-span-12">
-            <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4">
+          <section className="lg:col-span-12 relative">
+            {/* Hero food collage backdrop */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 -top-8 md:-top-16 -z-10 h-[520px] md:h-[640px] overflow-hidden"
+            >
+              <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-[0.55] md:opacity-60 blur-[2px] scale-110">
+                {[foodPasta, foodSushi, foodTacos, foodCurry, foodPizza, foodBurger].map(
+                  (src, i) => (
+                    <div
+                      key={i}
+                      className="bg-cover bg-center"
+                      style={{ backgroundImage: `url(${src})` }}
+                    />
+                  ),
+                )}
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--background)_70%)]" />
+            </div>
+
+            <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4 relative">
               <div className="flex items-center justify-center gap-3 mb-5">
                 <span className="h-px w-8 bg-accent" />
                 <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
@@ -732,6 +752,10 @@ function Index() {
               </form>
               <div className="mt-4 flex justify-center">
                 <ReceipeCounter userId={userId} isPremium={isPremium} />
+              </div>
+              <div className="mt-5 flex items-center justify-center gap-3 text-xs md:text-sm text-foreground/70">
+                <span className="text-[var(--accent-gold)] tracking-widest">★★★★★</span>
+                <span className="font-semibold">12,000+ meals cooked this week</span>
               </div>
             </div>
 
