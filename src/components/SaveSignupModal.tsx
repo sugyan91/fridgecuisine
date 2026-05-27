@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import type { Receipe } from "@/lib/receipes.functions";
 
 type Props = {
@@ -51,9 +52,8 @@ export function SaveSignupModal({ open, onClose, receipe }: Props) {
   const onGoogle = async () => {
     stashPending();
     try {
-      await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.origin },
+      await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
     } catch (err) {
       console.error(err);
