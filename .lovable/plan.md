@@ -1,76 +1,67 @@
-# Plan: Dish-photo → ingredients (no training, no model file)
+# Snap-the-fridge ingredient detector
 
-Throw out the manual ONNX/training scaffolding from last turn. Replace it with **Transformers.js**, which auto-downloads a ready-made food classifier from HuggingFace and runs it in the browser. Then chain it with your existing `getDishHelper` AI to turn the detected dish into ingredients.
+Reframe the camera button: instead of "snap a dish" (Food-101 classifier), it becomes "snap your fridge" (multi-ingredient detector). Detected items go into an editable checklist; confirmed items flow into your existing ingredient state, which already drives the dish/recipe results below.
 
-## What the user sees
-
-1. Tap **📷 Snap your fridge / a dish** on the ingredient input
-2. ~5s on first use (model downloads + caches in browser, ~50MB one-time, served from HF CDN)
-3. Browser detects the dish: *"Apple Pie — 87%"*
-4. Server function expands it into ingredients via the existing recipe AI
-5. Ingredients appear as **checkable chips** — user ticks which ones they actually have, taps "Add"
-
-## Architecture
+## The new flow
 
 ```text
-Photo file
-    │
-    ▼  (in browser, ~500ms after first load)
-@huggingface/transformers — image-classification pipeline
-    │   model: onnx-community/swin-finetuned-food101-ONNX
-    │   (auto-downloaded from HF CDN, cached in IndexedDB)
-    ▼
-"Apple Pie" (top-1 dish, 87% confidence)
-    │
-    ▼  (server function, ~1s)
-getDishHelper({ dish: "Apple Pie" })  ← already exists
-    │
-    ▼
-{ ingredients: ["flour", "butter", "apples", "sugar", "cinnamon", ...] }
-    │
-    ▼  (back in browser)
-Chips with checkboxes → user picks → addMany() in IngredientInput
+[Snap fridge]
+   ↓ (mobile/tablet only)
+[Server detects ingredients from photo]
+   ↓
+[Checklist: ✓ Tomato  ✓ Eggs  ✗ Butter  + free-text add]
+   ↓
+[Add to fridge] → existing recipe suggestion flow takes over
 ```
 
-Two AI systems chained: on-device CV → server LLM. That's the portfolio story.
+The dish suggestions + "missing ingredients" view you described is already what the rest of the page does once ingredients are in state — we just feed it.
+
+## Detection approach
+
+Use **server-side vision via the Lovable AI gateway** (Gemini 2.5 Flash, multimodal). Reasons over the in-browser model: ~2s instead of ~5s, no 50 MB download, far more accurate at identifying multiple raw items in a cluttered fridge scene. Cost is a few cents per snap on the existing gateway credits.
+
+If you'd rather pick the model later we can stub the server fn and swap providers behind it without changing UI.
 
 ## Changes
 
-### Remove (from last turn)
-- `bun remove onnxruntime-web`
-- Delete `public/models/` (README, labels.json — no longer needed; Transformers.js pulls the model from HF)
-- Delete `src/lib/ml/preprocess.ts` (Transformers.js handles preprocessing)
-- Delete `src/lib/ml/onnx-session.ts` (replaced)
+**Remove**
+- `@huggingface/transformers` dependency
+- `src/lib/ml/dish-classifier.ts`
 
-### Add
-- `bun add @huggingface/transformers`
-- **`src/lib/ml/dish-classifier.ts`** — lazy singleton that runs Transformers.js `pipeline('image-classification', 'onnx-community/swin-finetuned-food101-ONNX')`. Returns top-3 dish predictions. All imports inside async functions so it never touches the SSR/Worker bundle.
+**Add**
+- `src/lib/fridge-vision.functions.ts` — `detectFridgeIngredients` server fn:
+  - Input: base64 JPEG (resized client-side to ≤1024px to keep payload small)
+  - Calls Lovable gateway with Gemini vision, system prompt: "List distinct food ingredients visible. Return JSON `{ ingredients: string[] }`. Use common names (Tomato, not Solanum). Max 20 items."
+  - Validates with Zod, returns `{ ok, ingredients }` or `{ ok: false, error }`
+- Small `callVisionJSON(systemPrompt, userPrompt, imageBase64)` helper in `hf-client.server.ts` (Lovable gateway only — HF router doesn't reliably support images)
 
-### Rewrite
-- **`src/components/fridge/FridgePhotoButton.tsx`** — new states:
-  - `idle` → button
-  - `loading-model` → "Downloading vision model (one-time, ~50MB)…" with progress %
-  - `classifying` → spinner "Identifying dish…"
-  - `expanding` → spinner "Getting ingredients…" (calling `getDishHelper`)
-  - `picking` → shows detected dish name + ingredient checklist (default all checked) + **Add to fridge** button
-  - `error` / `low-confidence` → graceful fallback ("Not sure what this is — try another angle")
+**Rewrite `src/components/fridge/FridgePhotoButton.tsx`**
+- States: `idle` → `analyzing` → `picking` → `error`
+- Picking step: each detected ingredient as a toggleable chip, all checked by default, plus a small "+ add one" input so you can correct misses inline. "Add 5 to fridge" CTA at the bottom.
+- Button label: "📷 Snap your fridge"
+- Helper line under idle button: "Take a photo of your fridge contents"
+- Client-side resize via `<canvas>` before sending (keeps under ~300 KB)
 
-### Keep as-is
-- `src/components/fridge/IngredientInput.tsx` already has `addMany` — no changes needed beyond what we did last turn
-- `getDishHelper` server function — used unchanged
+**Desktop behavior**
+- On viewports ≥1024px, render the button disabled with a tooltip: *"Open on phone or tablet to snap your fridge"* (small camera icon + 📱 hint)
+- Use the existing `useIsMobile` hook + a tablet check (`window.innerWidth < 1024`) — or just a Tailwind `lg:` class combined with a disabled state. Tooltip via the existing shadcn `Tooltip` component.
 
-## Honest trade-offs
+**`IngredientInput.tsx`**
+- No logic change. `addMany` already handles the bulk add; just the button it renders behaves differently.
 
-- **First-load size:** the Swin Food-101 model is ~50MB. Transformers.js caches it in IndexedDB, so it's a one-time cost per browser. We'll show a clear progress indicator so it doesn't feel broken.
-- **Accuracy:** Food-101 covers 101 common dishes (pizza, sushi, tacos, ramen, apple pie, etc.). It will misclassify obscure or homemade dishes. We handle this by showing the confidence % and letting the user dismiss bad results.
-- **Latency:** ~5s first photo (download), ~500ms subsequent photos. Add ~1s for the LLM ingredient expansion. Total: feels snappy after first use.
-- **Mobile data:** 50MB download is real. We'll add a one-line "uses ~50MB on first photo" note next to the button so users on cellular aren't surprised.
+## What stays the same
 
-## What I will NOT do
+- `getDishHelper` server fn — untouched
+- The recipe results UI below the ingredient input — untouched (it already shows what you can make + what's missing once ingredients are in state)
+- `IngredientInput` chips, manual entry, suggestions — untouched
 
-- No backend changes. `getDishHelper` is used as-is.
-- No new tables, no new auth, no Stripe/community/sell changes.
-- No training, no Python, no Colab, no separate repo. Pure JS/TS.
-- Won't replace the existing text input or suggestions — the photo button is additive.
+## Out of scope for this change
 
-If you approve, I'll switch to build mode and ship this.
+- A separate "missing ingredients" widget in the snap modal itself — the existing recipe card area handles this once ingredients land in state.
+- Persistence of the detected list before confirmation — it's session-only.
+
+## Verification
+
+- Snap a photo on mobile preview → see chips → confirm → ingredients appear in fridge state → recipe area populates.
+- Resize preview to desktop → button is visible but disabled with tooltip.
+- Bad/empty photo → graceful "Couldn't spot any ingredients" error with retry.
