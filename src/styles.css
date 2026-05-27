@@ -67,6 +67,9 @@
   --color-sage-soft: var(--sage-soft);
   --color-cream: var(--cream);
   --color-ink: var(--ink);
+  --color-surface-cream: var(--surface-cream);
+  --color-surface-dark: var(--surface-dark);
+  --color-accent-gold: var(--accent-gold);
   --font-display: "Archivo Black", system-ui, sans-serif;
   --font-sans: "Hind", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -77,9 +80,9 @@
 :root {
   --radius: 1rem;
   /* Airbnb-inspired — coral primary, near-black ink, warm-neutral surfaces */
-  --background: oklch(1 0 0);                  /* #FFFFFF */
+  --background: oklch(0.985 0.008 75);          /* warm off-white */
   --foreground: oklch(0.26 0 0);               /* #222222 */
-  --card: oklch(1 0 0);
+  --card: oklch(0.995 0.004 75);
   --card-foreground: oklch(0.26 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.26 0 0);
@@ -105,6 +108,10 @@
   --sage-soft: oklch(0.972 0 0);
   --cream: oklch(1 0 0);
   --ink: oklch(0.26 0 0);
+  /* Section surface bands */
+  --surface-cream: oklch(0.965 0.018 70);       /* warm cream band */
+  --surface-dark: oklch(0.22 0.015 60);         /* warm charcoal band */
+  --accent-gold: oklch(0.78 0.13 80);           /* warm gold */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

@@ -13,6 +13,8 @@ import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChefCTA } from "@/components/landing/ChefCTA";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { generateReceipes, type Receipe } from "@/lib/receipes.functions";
 import {
   listSavedReceipes,
@@ -36,6 +38,12 @@ import { AdminPanel } from "@/components/admin/AdminPanel";
 import { ReceipeTimers } from "@/components/fridge/ReceipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
+import foodPasta from "@/assets/food-pasta.jpg";
+import foodSushi from "@/assets/food-sushi.jpg";
+import foodTacos from "@/assets/food-tacos.jpg";
+import foodCurry from "@/assets/food-curry.jpg";
+import foodPizza from "@/assets/food-pizza.jpg";
+import foodBurger from "@/assets/food-burger.jpg";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
@@ -681,8 +689,28 @@ function Index() {
           <div className="lg:col-span-12 -mb-6 md:-mb-12">
             <FreeTierBanner isPremium={isPremium} userId={userId} />
           </div>
-          <section className="lg:col-span-12">
-            <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4">
+          <section className="lg:col-span-12 relative">
+            {/* Hero food collage backdrop */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 -top-8 md:-top-16 -z-10 h-[520px] md:h-[640px] overflow-hidden"
+            >
+              <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-[0.55] md:opacity-60 blur-[2px] scale-110">
+                {[foodPasta, foodSushi, foodTacos, foodCurry, foodPizza, foodBurger].map(
+                  (src, i) => (
+                    <div
+                      key={i}
+                      className="bg-cover bg-center"
+                      style={{ backgroundImage: `url(${src})` }}
+                    />
+                  ),
+                )}
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--background)_70%)]" />
+            </div>
+
+            <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4 relative">
               <div className="flex items-center justify-center gap-3 mb-5">
                 <span className="h-px w-8 bg-accent" />
                 <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
@@ -724,6 +752,10 @@ function Index() {
               </form>
               <div className="mt-4 flex justify-center">
                 <ReceipeCounter userId={userId} isPremium={isPremium} />
+              </div>
+              <div className="mt-5 flex items-center justify-center gap-3 text-xs md:text-sm text-foreground/70">
+                <span className="text-[var(--accent-gold)] tracking-widest">★★★★★</span>
+                <span className="font-semibold">12,000+ meals cooked this week</span>
               </div>
             </div>
 
@@ -933,11 +965,30 @@ function Index() {
           </section>
 
           <section className="lg:col-span-12">
-            <SectionHeader
-              eyebrow="How it works"
-              title="From fridge to feast in 3 steps"
-            />
-            <HowItWorks />
+            <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-dark)] rounded-[2rem] md:rounded-[2.5rem] text-white relative overflow-hidden">
+              <div
+                aria-hidden
+                className="absolute -top-24 -right-24 size-72 rounded-full bg-primary/20 blur-3xl"
+              />
+              <div
+                aria-hidden
+                className="absolute -bottom-24 -left-24 size-72 rounded-full bg-[var(--accent-gold)]/15 blur-3xl"
+              />
+              <div className="relative">
+                <div className="mb-8 md:mb-12 border-b border-white/10 pb-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="h-px w-8 bg-[var(--accent-gold)]" />
+                    <p className="font-display text-[10px] md:text-xs uppercase tracking-[0.3em] text-[var(--accent-gold)]">
+                      How it works
+                    </p>
+                  </div>
+                  <h2 className="font-display text-3xl md:text-5xl uppercase tracking-tight leading-[0.95]">
+                    From fridge to feast in 3 steps
+                  </h2>
+                </div>
+                <HowItWorks />
+              </div>
+            </div>
           </section>
 
           <section ref={pantryRef} className="lg:col-span-5 scroll-mt-32">
@@ -1021,13 +1072,17 @@ function Index() {
 
         <CommunityStrip isAuthenticated={!!email} />
 
+        <section className="max-w-6xl mx-auto mt-16 md:mt-20">
+          <SectionHeader
+            eyebrow="Loved by home cooks"
+            title="What people are saying"
+          />
+          <Testimonials />
+        </section>
+
         <section className="max-w-6xl mx-auto mt-12">
           <ChefCTA />
         </section>
-
-        <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-border">
-          <PricingNote />
-        </div>
 
         {email && (
           <button
@@ -1040,23 +1095,8 @@ function Index() {
           </button>
         )}
       </main>
+      <SiteFooter />
     </>
-  );
-}
-
-function PricingNote() {
-  return (
-    <div className="mt-4 pt-3 border-t border-border text-xs md:text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-2">
-      <span>
-        <span className="font-semibold text-foreground">$5.99/mo</span> · Premium · unlimited receipes
-      </span>
-      <Link
-        to="/pricing"
-        className="font-medium underline underline-offset-2 text-foreground shrink-0"
-      >
-        Upgrade
-      </Link>
-    </div>
   );
 }
 
