@@ -34,12 +34,12 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [draft, setDraft] = useState("");
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isSnapEnabled, setIsSnapEnabled] = useState(false);
   const detect = useServerFn(detectFridgeIngredients);
 
   useEffect(() => {
-    const mql = window.matchMedia("(pointer: coarse)");
-    const update = () => setIsTouchDevice(mql.matches);
+    const mql = window.matchMedia("(pointer: coarse), (max-width: 1024px)");
+    const update = () => setIsSnapEnabled(mql.matches);
     update();
     mql.addEventListener("change", update);
     return () => mql.removeEventListener("change", update);
@@ -109,7 +109,7 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
   const triggerLabel =
     status.kind === "analyzing" ? "Scanning fridge…" : "📷 Snap your fridge";
   const busy = status.kind === "analyzing";
-  const isDesktop = !isTouchDevice;
+  const isDesktop = !isSnapEnabled;
   const disabled = busy || isDesktop;
 
   return (
