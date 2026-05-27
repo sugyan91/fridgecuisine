@@ -180,7 +180,11 @@ function RootComponent() {
       } catch {}
     })();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        // Fire-and-forget: drain any receipe the user tried to save before signup
+        drainPendingSave();
+      }
       router.invalidate();
       queryClient.invalidateQueries();
     });
