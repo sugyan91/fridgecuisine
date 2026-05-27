@@ -27,6 +27,8 @@ import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
 import { ReceipeCounter } from "@/components/ReceipeCounter";
 import { FreeTierBanner } from "@/components/FreeTierBanner";
+import { LimitReachedModal } from "@/components/LimitReachedModal";
+import { SaveSignupModal } from "@/components/SaveSignupModal";
 import { useReceipeUsage } from "@/hooks/use-receipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useIsAdmin } from "@/hooks/use-is-admin";
@@ -167,17 +169,18 @@ function Index() {
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium } = useSubscription(userId);
-  const { logGeneration, atLimit: usageAtLimit } = useReceipeUsage(userId);
+  const { logGeneration, atLimit: usageAtLimit, countdown } = useReceipeUsage(userId);
   const isAdmin = useIsAdmin(userId);
   const [adminOpen, setAdminOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [saveModal, setSaveModal] = useState<{ open: boolean; receipe: Receipe | null }>({
+    open: false,
+    receipe: null,
+  });
   const limitBlocked = !isPremium && usageAtLimit;
   const limitToast = () => {
-    toast.error(
-      userId
-        ? "Daily limit reached (5/day). Upgrade for unlimited receipes."
-        : "Daily limit reached (5/day). Sign up or upgrade for more.",
-    );
+    setLimitModalOpen(true);
   };
   const headerRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
@@ -400,13 +403,7 @@ function Index() {
   const isSaved = (title: string) => saved.some((s) => s.title === title);
   const toggleSave = async (receipe: Receipe) => {
     if (!email) {
-      toast("Sign in to save receipes", {
-        description: "Create a free account to keep receipes across devices.",
-        action: {
-          label: "Sign in",
-          onClick: () => navigate({ to: "/login" }),
-        },
-      });
+      setSaveModal({ open: true, receipe });
       return;
     }
     try {
