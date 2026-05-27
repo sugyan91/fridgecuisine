@@ -965,11 +965,30 @@ function Index() {
           </section>
 
           <section className="lg:col-span-12">
-            <SectionHeader
-              eyebrow="How it works"
-              title="From fridge to feast in 3 steps"
-            />
-            <HowItWorks />
+            <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-dark)] rounded-[2rem] md:rounded-[2.5rem] text-white relative overflow-hidden">
+              <div
+                aria-hidden
+                className="absolute -top-24 -right-24 size-72 rounded-full bg-primary/20 blur-3xl"
+              />
+              <div
+                aria-hidden
+                className="absolute -bottom-24 -left-24 size-72 rounded-full bg-[var(--accent-gold)]/15 blur-3xl"
+              />
+              <div className="relative">
+                <div className="mb-8 md:mb-12 border-b border-white/10 pb-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="h-px w-8 bg-[var(--accent-gold)]" />
+                    <p className="font-display text-[10px] md:text-xs uppercase tracking-[0.3em] text-[var(--accent-gold)]">
+                      How it works
+                    </p>
+                  </div>
+                  <h2 className="font-display text-3xl md:text-5xl uppercase tracking-tight leading-[0.95]">
+                    From fridge to feast in 3 steps
+                  </h2>
+                </div>
+                <HowItWorks />
+              </div>
+            </div>
           </section>
 
           <section ref={pantryRef} className="lg:col-span-5 scroll-mt-32">
