@@ -486,10 +486,13 @@ function Index() {
                 alt="Fridge Cuisine"
                 className="h-7 sm:h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
               />
-              <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1">
                 <h1 className="font-display tracking-tight text-foreground leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
+                <p className="text-[10px] sm:text-xs text-foreground/60 leading-tight mt-0.5 whitespace-nowrap">
+                  Your own AI powered personal chef
+                </p>
               </div>
             </Link>
 
