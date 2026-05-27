@@ -490,7 +490,7 @@ function Index() {
                 <h1 className="font-display tracking-tight text-foreground leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
-                <p className="text-[10px] sm:text-xs text-foreground/60 leading-tight mt-0.5 whitespace-nowrap">
+                <p className="text-[10px] sm:text-xs text-foreground/60 leading-tight mt-0.5 whitespace-nowrap font-bold">
                   Your own AI powered personal chef
                 </p>
               </div>
