@@ -13,6 +13,8 @@ import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChefCTA } from "@/components/landing/ChefCTA";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { generateReceipes, type Receipe } from "@/lib/receipes.functions";
 import {
   listSavedReceipes,
@@ -36,6 +38,12 @@ import { AdminPanel } from "@/components/admin/AdminPanel";
 import { ReceipeTimers } from "@/components/fridge/ReceipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
+import foodPasta from "@/assets/food-pasta.jpg";
+import foodSushi from "@/assets/food-sushi.jpg";
+import foodTacos from "@/assets/food-tacos.jpg";
+import foodCurry from "@/assets/food-curry.jpg";
+import foodPizza from "@/assets/food-pizza.jpg";
+import foodBurger from "@/assets/food-burger.jpg";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
