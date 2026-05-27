@@ -438,6 +438,17 @@ function Index() {
     <>
       <Toaster />
       <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
+      <LimitReachedModal
+        open={limitModalOpen}
+        onClose={() => setLimitModalOpen(false)}
+        isSignedIn={!!userId}
+        countdown={countdown}
+      />
+      <SaveSignupModal
+        open={saveModal.open}
+        receipe={saveModal.receipe}
+        onClose={() => setSaveModal({ open: false, receipe: null })}
+      />
       <SavedDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
