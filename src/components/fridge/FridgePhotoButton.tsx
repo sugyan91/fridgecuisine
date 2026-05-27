@@ -15,8 +15,6 @@ type Status =
   | { kind: "picking"; picks: Pick[] }
   | { kind: "error"; message: string };
 
-const DESKTOP_MIN = 1024;
-
 async function fileToResizedDataUrl(file: File, maxDim = 1024, quality = 0.82): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
@@ -36,12 +34,12 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [draft, setDraft] = useState("");
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const detect = useServerFn(detectFridgeIngredients);
 
   useEffect(() => {
-    const mql = window.matchMedia(`(min-width: ${DESKTOP_MIN}px)`);
-    const update = () => setIsDesktop(mql.matches);
+    const mql = window.matchMedia("(pointer: coarse)");
+    const update = () => setIsTouchDevice(mql.matches);
     update();
     mql.addEventListener("change", update);
     return () => mql.removeEventListener("change", update);
@@ -111,6 +109,7 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
   const triggerLabel =
     status.kind === "analyzing" ? "Scanning fridge…" : "📷 Snap your fridge";
   const busy = status.kind === "analyzing";
+  const isDesktop = !isTouchDevice;
   const disabled = busy || isDesktop;
 
   return (
