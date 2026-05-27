@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getDishHelper } from "@/lib/dish-helper.functions";
+import { detectFridgeIngredients } from "@/lib/fridge-vision.functions";
 
 type Props = {
   onAdd: (labels: string[]) => void;
@@ -11,57 +11,63 @@ type Pick = { ingredient: string; checked: boolean };
 
 type Status =
   | { kind: "idle" }
-  | { kind: "downloading"; pct: number }
-  | { kind: "classifying" }
-  | { kind: "expanding"; dish: string; score: number }
-  | { kind: "picking"; dish: string; score: number; picks: Pick[] }
-  | { kind: "low-confidence"; topGuess: string; score: number }
+  | { kind: "analyzing" }
+  | { kind: "picking"; picks: Pick[] }
   | { kind: "error"; message: string };
 
-const CONFIDENCE_FLOOR = 0.25;
+const DESKTOP_MIN = 1024;
+
+async function fileToResizedDataUrl(file: File, maxDim = 1024, quality = 0.82): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+  const w = Math.round(bitmap.width * scale);
+  const h = Math.round(bitmap.height * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas unavailable");
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close?.();
+  return canvas.toDataURL("image/jpeg", quality);
+}
 
 export function FridgePhotoButton({ onAdd, existing }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
-  const expandDish = useServerFn(getDishHelper);
+  const [draft, setDraft] = useState("");
+  const [isDesktop, setIsDesktop] = useState(false);
+  const detect = useServerFn(detectFridgeIngredients);
+
+  useEffect(() => {
+    const mql = window.matchMedia(`(min-width: ${DESKTOP_MIN}px)`);
+    const update = () => setIsDesktop(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
 
   const handleFile = async (file: File) => {
     try {
-      setStatus({ kind: "downloading", pct: 0 });
-      const { classifyDish } = await import("@/lib/ml/dish-classifier");
-
-      let sawDownload = false;
-      const preds = await classifyDish(file, (p) => {
-        if (p.kind === "download") {
-          sawDownload = true;
-          setStatus({ kind: "downloading", pct: Math.round(p.progress) });
-        } else if (p.kind === "ready") {
-          setStatus({ kind: "classifying" });
-        }
-      });
-      if (!sawDownload) setStatus({ kind: "classifying" });
-
-      const top = preds[0];
-      if (!top) {
-        setStatus({ kind: "error", message: "No prediction returned." });
-        return;
-      }
-      if (top.score < CONFIDENCE_FLOOR) {
-        setStatus({ kind: "low-confidence", topGuess: top.label, score: top.score });
-        return;
-      }
-
-      setStatus({ kind: "expanding", dish: top.label, score: top.score });
-      const result = await expandDish({ data: { dish: top.label } });
+      setStatus({ kind: "analyzing" });
+      const dataUrl = await fileToResizedDataUrl(file);
+      const result = await detect({ data: { imageDataUrl: dataUrl } });
       if (!result.ok) {
         setStatus({ kind: "error", message: result.error });
         return;
       }
-      const picks: Pick[] = result.data.ingredients.map((ingredient) => ({
+      if (result.ingredients.length === 0) {
+        setStatus({
+          kind: "error",
+          message: "Couldn't spot any ingredients. Try a closer, better-lit photo.",
+        });
+        return;
+      }
+      const picks: Pick[] = result.ingredients.map((ingredient) => ({
         ingredient,
         checked: !existing.some((e) => e.toLowerCase() === ingredient.toLowerCase()),
       }));
-      setStatus({ kind: "picking", dish: top.label, score: top.score, picks });
+      setStatus({ kind: "picking", picks });
     } catch (err) {
       console.error("Dish photo failed", err);
       setStatus({
@@ -77,27 +83,35 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
     setStatus({ ...status, picks: next });
   };
 
+  const addManual = () => {
+    if (status.kind !== "picking") return;
+    const v = draft.trim().slice(0, 40);
+    if (!v) return;
+    if (status.picks.some((p) => p.ingredient.toLowerCase() === v.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    setStatus({ ...status, picks: [...status.picks, { ingredient: v, checked: true }] });
+    setDraft("");
+  };
+
   const addPicked = () => {
     if (status.kind !== "picking") return;
     const chosen = status.picks.filter((p) => p.checked).map((p) => p.ingredient);
     if (chosen.length) onAdd(chosen);
     setStatus({ kind: "idle" });
+    setDraft("");
   };
 
-  const reset = () => setStatus({ kind: "idle" });
+  const reset = () => {
+    setStatus({ kind: "idle" });
+    setDraft("");
+  };
 
   const triggerLabel =
-    status.kind === "downloading"
-      ? `Loading vision model ${status.pct ? `(${status.pct}%)` : ""}…`
-      : status.kind === "classifying"
-        ? "Identifying dish…"
-        : status.kind === "expanding"
-          ? "Getting ingredients…"
-          : "📷 Snap a dish";
-  const busy =
-    status.kind === "downloading" ||
-    status.kind === "classifying" ||
-    status.kind === "expanding";
+    status.kind === "analyzing" ? "Scanning fridge…" : "📷 Snap your fridge";
+  const busy = status.kind === "analyzing";
+  const disabled = busy || isDesktop;
 
   return (
     <div className="mb-3">
@@ -116,29 +130,29 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
 
       <button
         type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={busy}
-        className="w-full bg-cardamom text-white border-2 border-border px-4 py-2.5 rounded-xl font-black text-sm shadow-[3px_3px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-transform disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
+        onClick={() => !isDesktop && inputRef.current?.click()}
+        disabled={disabled}
+        title={isDesktop ? "Open on phone or tablet to snap your fridge" : undefined}
+        aria-label={isDesktop ? "Snap your fridge — available on phone or tablet" : "Snap your fridge"}
+        className="w-full bg-cardamom text-white border-2 border-border px-4 py-2.5 rounded-xl font-black text-sm shadow-[3px_3px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-transform disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2"
       >
         {busy && (
           <span className="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
         )}
-        <span className="truncate">{triggerLabel}</span>
+        <span className="truncate">
+          {isDesktop ? "📱 Snap your fridge (phone / tablet only)" : triggerLabel}
+        </span>
       </button>
 
-      {status.kind === "idle" && (
+      {status.kind === "idle" && !isDesktop && (
         <p className="mt-1.5 text-[10px] text-muted-foreground text-center">
-          First photo downloads a ~50&nbsp;MB model (one-time, runs on-device)
+          Take a photo of your fridge — we'll spot the ingredients
         </p>
       )}
-
-      {status.kind === "downloading" && (
-        <div className="mt-2 h-1.5 w-full bg-border/30 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-cardamom transition-all"
-            style={{ width: `${status.pct}%` }}
-          />
-        </div>
+      {status.kind === "idle" && isDesktop && (
+        <p className="mt-1.5 text-[10px] text-muted-foreground text-center">
+          Open the site on your phone or tablet to snap your fridge
+        </p>
       )}
 
       {status.kind === "picking" && (
@@ -146,14 +160,9 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
           <div className="flex items-start justify-between mb-2">
             <div>
               <div className="text-[10px] font-black uppercase tracking-wide text-muted-foreground">
-                Detected dish
+                Spotted in your fridge
               </div>
-              <div className="font-black text-sm">
-                {status.dish}{" "}
-                <span className="text-xs font-normal text-muted-foreground">
-                  ({Math.round(status.score * 100)}%)
-                </span>
-              </div>
+              <div className="font-black text-sm">{status.picks.length} ingredients</div>
             </div>
             <button
               type="button"
@@ -165,7 +174,7 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
           </div>
 
           <div className="text-[10px] font-black uppercase tracking-wide text-muted-foreground mb-1.5">
-            Pick what you have
+            Uncheck anything wrong, add anything missed
           </div>
           <div className="flex flex-wrap gap-1.5 mb-3 max-h-40 overflow-y-auto">
             {status.picks.map((p, i) => (
@@ -185,29 +194,35 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
             ))}
           </div>
 
+          <div className="flex gap-1.5 mb-3">
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addManual();
+                }
+              }}
+              placeholder="Add something missed…"
+              maxLength={40}
+              className="flex-1 border-2 border-border bg-white px-3 py-1.5 rounded-xl font-bold text-xs outline-none"
+            />
+            <button
+              type="button"
+              onClick={addManual}
+              className="bg-turmeric border-2 border-border px-3 py-1.5 rounded-xl font-black text-xs uppercase"
+            >
+              +
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={addPicked}
             className="w-full bg-paprika text-white border-2 border-border px-3 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-transform"
           >
             Add {status.picks.filter((p) => p.checked).length} to fridge
-          </button>
-        </div>
-      )}
-
-      {status.kind === "low-confidence" && (
-        <div className="mt-3 border-2 border-dashed border-border/60 bg-turmeric/10 rounded-xl p-3 text-xs">
-          <strong className="font-black uppercase tracking-wide">Not sure what this is.</strong>
-          <p className="mt-1 text-muted-foreground">
-            Best guess was <em>{status.topGuess}</em> ({Math.round(status.score * 100)}%). Try a
-            closer or better-lit photo, or type ingredients manually.
-          </p>
-          <button
-            type="button"
-            onClick={reset}
-            className="mt-2 text-[10px] font-black uppercase text-paprika hover:underline"
-          >
-            OK
           </button>
         </div>
       )}
