@@ -1072,13 +1072,17 @@ function Index() {
 
         <CommunityStrip isAuthenticated={!!email} />
 
+        <section className="max-w-6xl mx-auto mt-16 md:mt-20">
+          <SectionHeader
+            eyebrow="Loved by home cooks"
+            title="What people are saying"
+          />
+          <Testimonials />
+        </section>
+
         <section className="max-w-6xl mx-auto mt-12">
           <ChefCTA />
         </section>
-
-        <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-border">
-          <PricingNote />
-        </div>
 
         {email && (
           <button
@@ -1091,6 +1095,7 @@ function Index() {
           </button>
         )}
       </main>
+      <SiteFooter />
     </>
   );
 }
