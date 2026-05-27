@@ -11,6 +11,30 @@ import {
 
 import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
+import { saveReceipe as saveReceipeFn } from "@/lib/saved-receipes.functions";
+
+const PENDING_SAVE_KEY = "fc-pending-save";
+
+async function drainPendingSave() {
+  if (typeof window === "undefined") return;
+  let raw: string | null = null;
+  try {
+    raw = localStorage.getItem(PENDING_SAVE_KEY);
+  } catch {
+    return;
+  }
+  if (!raw) return;
+  try {
+    const receipe = JSON.parse(raw);
+    await saveReceipeFn({ data: { receipe } });
+  } catch (e) {
+    console.error("Failed to drain pending save", e);
+  } finally {
+    try {
+      localStorage.removeItem(PENDING_SAVE_KEY);
+    } catch {}
+  }
+}
 
 function NotFoundComponent() {
   return (
