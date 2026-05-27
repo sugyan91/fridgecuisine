@@ -1,67 +1,76 @@
-# Quick wins to grow signups
+## What's wrong today
 
-Goal: convert more first-time anonymous visitors into accounts. You already have great hooks (5 free receipes/day, save receipes, community). The two highest-leverage moments right now are **(1) when an anonymous user hits the daily limit** and **(2) when they try to save a receipe** — both currently trigger a toast and disappear. Toasts don't convert. Modals do.
+Looking at the live homepage on mobile, the issues are:
 
-I'd ship these two features this session.
+- Huge white expanses between every section — the page reads like a form, not a food brand
+- Hero is text-only on a flat background; no appetite appeal
+- "Hungry for inspiration" is the only section with imagery; everything else is plain text on white
+- "What people are cooking" has three empty placeholder cards (dead space)
+- Section transitions all look identical (white → white), so nothing has hierarchy
+- Typography is uniform weight; no editorial rhythm
 
----
+## Proposed direction: "warm food magazine"
 
-## Feature 1 — "You've cooked through your free 5" upgrade modal
+Shift from clinical SaaS-white to a warm, editorial food publication feel — think Bon Appétit / Cupcakes & Cashmere — while keeping the existing coral/red accent.
 
-**Why it matters:** Right now, anonymous users hitting 5/day just get a red toast. They bounce. This is the single highest-intent moment in the funnel — they just experienced the product and want more.
+### 1. Background & color system
+- Replace pure white with a warm off-white base (`oklch(0.985 0.008 75)`) and introduce 2 alternate section surfaces (cream + deep charcoal) so sections alternate visually
+- Add a subtle noise/paper texture overlay on cream sections
+- Deep charcoal "feature" bands for "How it works" and "Monetize" so they pop
 
-**What changes:**
-- When an anonymous user (no userId) hits the daily limit, replace the toast with a modal.
-- Modal copy: "You've cooked through your 5 free receipes today 🔥"
-- Two CTAs:
-  - **Primary:** "Sign up free — keep cooking" → adds +5 receipes/day, unlocks save + meal history
-  - **Secondary:** "Go unlimited $5.99/mo" → /pricing
-- Show countdown to reset ("resets in 4h 12m") as a tertiary fallback.
-- Signed-in free users hitting the limit get a different modal: just the upgrade CTA + countdown.
-- Modal is dismissible but reappears on next generation attempt.
+### 2. Hero rebuild
+- Add a full-bleed background: blurred, darkened food photo collage (pasta + sushi + tacos already in assets) with warm gradient overlay
+- Keep headline but bump display font size and add a serif display face for "HEAD" emphasis
+- Add 3 small floating "ingredient chips" (🍅 tomato, 🧄 garlic, 🌿 basil) animated gently around the input — signals the fridge-to-recipe magic instantly
+- Add social proof line under CTA: "★★★★★ 12,000+ meals cooked this week"
 
-**Expected lift:** This is the standard "metered paywall" pattern (NYT, Medium, etc.) — typically 3–5× the conversion of a toast at the same moment.
+### 3. "Cook the world tonight"
+- Replace flag pills with larger image cards (one hero dish per cuisine) in a horizontal scroll
+- Each card: dish photo, cuisine name, "23 recipes" count
+- Drop the dropdown; tapping a card filters directly
 
----
+### 4. "Hungry for inspiration" (trending)
+- Already the strongest section — keep, but add a 4th tile and a "See all trending" link
+- Add small metadata: cook time, difficulty badge
 
-## Feature 2 — "Save this receipe" inline signup prompt
+### 5. "How it works" → dark feature band
+- Move onto charcoal background with cream text
+- Add a small illustration/icon per step (fridge, chef hat, bookmark)
+- Tighten vertical spacing ~40%
 
-**Why it matters:** When an anonymous user clicks the save (heart) icon today, they get a toast with a "Sign in" action — easy to miss, and clicking it dumps them on /login with no context. The receipe they wanted is gone.
+### 6. "What's in your Pantry"
+- Wrap in a card with soft shadow on cream background so it feels like a tool, not a form
+- Add example pantry preview chips above the input ("Try: chicken, lemon, garlic")
 
-**What changes:**
-- Clicking save while logged out opens a small inline modal anchored to the receipe.
-- Modal shows the receipe title + thumbnail and a single email field: "Enter your email to save *Spicy Tofu Stir-Fry* and keep cooking."
-- One-click magic-link signup via Supabase (`signInWithOtp`) — no password.
-- After email is submitted: receipe is stashed in localStorage with the title, and on auth completion (handled in `__root.tsx` auth listener) it's auto-saved to their account.
-- Already works with the existing Google sign-in button as a secondary option in the modal.
+### 7. Community section
+- Replace empty placeholder cards with either: (a) real recent recipes if any exist, or (b) hide the section entirely until N>0, or (c) show 3 curated example cards with "Be the first to share" overlay
+- Recommend option (c) for now
 
-**Expected lift:** Cuts signup friction from "navigate to login → choose method → set password → return" down to "type email → click link." Magic-link signup typically converts 2–3× higher than password forms for low-stakes apps.
+### 8. New section: "Loved by home cooks" (testimonials)
+- 3 short quotes with avatars/initials between community and Monetize
+- Adds warmth and trust, fills the awkward gap
 
----
+### 9. Monetize / Chefs CTA
+- Add a chef portrait image on the left, copy on the right (split layout on desktop, stacked on mobile)
+- Keep dark theme but add a warm gold accent for "$" / pricing
 
-## Why these two over alternatives
+### 10. Footer
+- Currently invisible from screenshot — add a proper footer with quick links, social icons, and the $5.99/mo line repositioned there
 
-I considered (and parked) these for later sessions:
-- **Recipe-of-the-day email** — needs an email infra setup and only helps after signup
-- **Referral program** — high effort, low immediate signup lift for an early product
-- **Onboarding tour** — your UI is already self-explanatory; tours rarely move signup numbers
-- **Image-based fridge scan upsell** — already a premium hook, but works best after we've grown the top of funnel first
+## Technical notes
 
-The two features above hit users at their two highest-intent moments and require no new infra (Supabase magic-link + email auth is already enabled).
+- All color changes via tokens in `src/styles.css` (new `--surface-cream`, `--surface-dark`, `--accent-gold`)
+- New section components under `src/components/landing/`: `HeroBackdrop`, `CuisineCardScroller`, `Testimonials`, `ChefCTA`
+- Reuse existing dish images in `src/assets/` for cuisine cards
+- Animations via existing framer-motion; keep entrance subtle (fade + 8px rise)
+- Mobile-first — current viewport is 390px; ensure horizontal scrollers and stacked split layouts work there first
 
----
+## Scope check before I build
 
-## Technical sketch (not user-facing)
+Three quick choices so I build the right thing:
 
-**Files to touch:**
-- `src/components/LimitReachedModal.tsx` (new) — controlled modal, anon vs signed-in variants
-- `src/components/SaveSignupModal.tsx` (new) — email field + Google button, calls `supabase.auth.signInWithOtp`
-- `src/routes/index.tsx` — replace `limitToast()` with `setLimitModalOpen(true)`; in `toggleSave`, replace the toast branch with `setSaveModalOpen({ receipe })`
-- `src/routes/__root.tsx` — extend the auth listener to drain a `fc-pending-save` localStorage entry into `saveReceipe` on first sign-in
-- Reuse existing `Dialog` from `src/components/ui/dialog.tsx`
+1. Hero treatment — full food-photo backdrop, or keep clean with just an ingredient-chip animation?
+2. Community section with no real data — show curated examples, or hide until users post?
+3. Add testimonials section — yes (I'll write placeholder copy you can edit), or skip?
 
-No DB changes. No new server functions. No new env vars.
-
----
-
-After we ship, the natural next quick-win is wiring the same magic-link prompt into the "Share your receipe" CTA on /community, but let's measure the first two first.
+Tell me your picks (or just say "go with your defaults": photo backdrop, curated examples, yes to testimonials) and I'll implement.
