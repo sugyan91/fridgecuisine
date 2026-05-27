@@ -1100,22 +1100,6 @@ function Index() {
   );
 }
 
-function PricingNote() {
-  return (
-    <div className="mt-4 pt-3 border-t border-border text-xs md:text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-2">
-      <span>
-        <span className="font-semibold text-foreground">$5.99/mo</span> · Premium · unlimited receipes
-      </span>
-      <Link
-        to="/pricing"
-        className="font-medium underline underline-offset-2 text-foreground shrink-0"
-      >
-        Upgrade
-      </Link>
-    </div>
-  );
-}
-
 function SectionHeader({
   eyebrow,
   title,
