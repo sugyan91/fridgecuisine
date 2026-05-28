@@ -6,6 +6,7 @@ import {
   listPublicPaidReceipes,
   type PaidReceipeListItem,
 } from "@/lib/paid-receipes.functions";
+import { fakeRating, Stars } from "@/lib/fake-ratings";
 
 export const Route = createFileRoute("/shop/")({
   head: () => ({
@@ -57,7 +58,11 @@ function ShopPage() {
           <p className="text-muted-foreground">No receipes yet — check back soon.</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {rows.map((r) => (
+            {rows.map((r) => {
+              const { rating, count } = fakeRating(r.id);
+              const author = r.author_name || "Home chef";
+              const initial = author.charAt(0).toUpperCase();
+              return (
               <Link
                 key={r.id}
                 to="/shop/$receipeId"
@@ -87,13 +92,35 @@ function ShopPage() {
                       {r.local_name}
                     </p>
                   )}
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    {r.author_avatar_url ? (
+                      <img
+                        src={r.author_avatar_url}
+                        alt=""
+                        className="size-5 rounded-full object-cover border border-border"
+                      />
+                    ) : (
+                      <span className="size-5 rounded-full bg-paprika/20 text-paprika text-[10px] font-black grid place-items-center border border-border">
+                        {initial}
+                      </span>
+                    )}
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      by <span className="font-bold text-foreground/80">{author}</span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Stars rating={rating} size="text-xs" />
+                    <span className="text-[11px] font-bold">{rating.toFixed(1)}</span>
+                    <span className="text-[11px] text-muted-foreground">({count})</span>
+                  </div>
                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                     <MapPin className="size-3" />
                     {[r.city, r.country].filter(Boolean).join(", ") || "—"}
                   </p>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

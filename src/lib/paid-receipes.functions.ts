@@ -14,6 +14,8 @@ export type PaidReceipeListItem = {
   cuisine: string | null;
   cover_image_url: string | null;
   price_cents: number;
+  author_name?: string | null;
+  author_avatar_url?: string | null;
 };
 
 export type PaidReceipeFull = PaidReceipeListItem & {
@@ -120,7 +122,26 @@ export const listPublicPaidReceipes = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(120);
     if (error) throw new Error(error.message);
-    return { rows: (data ?? []) as PaidReceipeListItem[] };
+    const rows = (data ?? []) as PaidReceipeListItem[];
+    const chefIds = Array.from(new Set(rows.map((r) => r.chef_user_id)));
+    if (chefIds.length > 0) {
+      const { data: profiles } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, display_name, username, avatar_url")
+        .in("user_id", chefIds);
+      const byId = new Map(
+        (profiles ?? []).map((p: { user_id: string; display_name: string | null; username: string | null; avatar_url: string | null }) => [
+          p.user_id,
+          { name: p.display_name || p.username || null, avatar: p.avatar_url || null },
+        ]),
+      );
+      for (const r of rows) {
+        const p = byId.get(r.chef_user_id);
+        r.author_name = p?.name ?? null;
+        r.author_avatar_url = p?.avatar ?? null;
+      }
+    }
+    return { rows };
   });
 
 /**
@@ -152,6 +173,13 @@ export const getPaidReceipeDetail = createServerFn({ method: "GET" })
       price_cents: pub.price_cents,
       description: pub.description,
     };
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name, username, avatar_url")
+      .eq("user_id", pub.chef_user_id)
+      .maybeSingle();
+    receipe.author_name = (prof?.display_name || prof?.username) ?? null;
+    receipe.author_avatar_url = prof?.avatar_url ?? null;
     return { receipe, unlocked: false } as const;
   });
 

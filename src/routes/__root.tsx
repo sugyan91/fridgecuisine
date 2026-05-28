@@ -12,6 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
 import { saveReceipe as saveReceipeFn } from "@/lib/saved-receipes.functions";
+import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
 
 const PENDING_SAVE_KEY = "fc-pending-save";
 
@@ -159,6 +160,9 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    // Make flag emojis render on Windows/Chromium desktop.
+    try { polyfillCountryFlagEmojis(); } catch {}
+
     // Remember-me enforcement: if the user signed in without "Remember me",
     // we set a sessionStorage marker. When the browser is closed the marker
     // is gone, so on the next load we sign them out.

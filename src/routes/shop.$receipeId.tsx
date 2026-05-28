@@ -10,6 +10,7 @@ import {
 } from "@/lib/paid-receipes.functions";
 import { createRecipePurchaseCheckout } from "@/lib/payments.functions";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
+import { fakeRating, Stars } from "@/lib/fake-ratings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -137,6 +138,11 @@ function ReceipeDetail() {
         {data.local_name && (
           <p className="text-lg text-muted-foreground italic">{data.local_name}</p>
         )}
+        <AuthorAndRating
+          id={receipeId}
+          name={data.author_name ?? null}
+          avatar={data.author_avatar_url ?? null}
+        />
         <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
           <MapPin className="size-4" />
           {[data.city, data.country].filter(Boolean).join(", ") || "—"}
@@ -217,6 +223,47 @@ function UnlockedView({ receipe }: { receipe: PaidReceipeFull }) {
           ))}
         </ol>
       </section>
+    </div>
+  );
+}
+
+function AuthorAndRating({
+  id,
+  name,
+  avatar,
+}: {
+  id: string;
+  name: string | null;
+  avatar: string | null;
+}) {
+  const { rating, count } = fakeRating(id);
+  const author = name || "Home chef";
+  const initial = author.charAt(0).toUpperCase();
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-2">
+        {avatar ? (
+          <img
+            src={avatar}
+            alt=""
+            className="size-8 rounded-full object-cover border-2 border-border"
+          />
+        ) : (
+          <span className="size-8 rounded-full bg-paprika/20 text-paprika text-sm font-black grid place-items-center border-2 border-border">
+            {initial}
+          </span>
+        )}
+        <p className="text-sm">
+          by <span className="font-black">{author}</span>
+        </p>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Stars rating={rating} size="text-base" />
+        <span className="text-sm font-black">{rating.toFixed(1)}</span>
+        <span className="text-xs text-muted-foreground">
+          · {count} ratings
+        </span>
+      </div>
     </div>
   );
 }
