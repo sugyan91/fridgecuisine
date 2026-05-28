@@ -13,6 +13,7 @@ import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChefCTA } from "@/components/landing/ChefCTA";
+import { PremiumRecipesStrip } from "@/components/landing/PremiumRecipesStrip";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { generateReceipes, type Receipe } from "@/lib/receipes.functions";
