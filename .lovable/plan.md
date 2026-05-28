@@ -1,11 +1,12 @@
-Add small emoji icons to each dietary/allergy button in the FilterPanel for instant visual recognition.
+Add emoji icons next to every ingredient in the IngredientInput component, including user-added ones.
 
-**What I will change:**
-- `src/components/fridge/FilterPanel.tsx`: Add emoji icons mapped to each dietary option (e.g. 🥬 Vegetarian, 🌱 Vegan, 🌾 Gluten-Free, 🥛 Dairy-Free, etc.) displayed left of the label text on every button.
-- Adjust button padding and gap so the icon + text layout feels balanced and the buttons stay the same overall size.
-- No new dependencies — using emoji keeps it lightweight and sharp at all sizes.
+**Approach:**
+- Create `src/lib/ingredient-icons.ts` with a comprehensive emoji map (rice 🍚, eggs 🥚, onion 🧅, tomato 🍅, spinach 🥬, potato 🥔, pasta 🍝, chicken 🍗, mushroom 🍄, cheese 🧀, avocado 🥑, lemon 🍋, garlic 🧄, carrot 🥕, bell pepper 🫑, fish 🐟, shrimp 🦐, beef 🥩, bacon 🥓, bread 🍞, corn 🌽, broccoli 🥦, etc.) plus a `getIngredientIcon(name)` helper with keyword fallback (matches partial words: anything with "cheese" → 🧀, "fish" → 🐟, "sauce" → 🥫, etc.) and a final default 🥄 for unknowns.
+- Update `src/components/fridge/IngredientInput.tsx`:
+  - Show the icon before each ingredient chip in the selected list.
+  - Show the icon before each suggestion chip at the bottom.
+- No changes to data model — purely presentational.
 
-**Icon mapping:**
-- Vegetarian 🥬, Vegan 🌱, Gluten-Free 🌾, Dairy-Free 🥛, High Protein 🍗, Low-Carb 🥑, Keto 🥓, Quick Meal ⚡, Halal 🕌, Kosher ✡️, Nut-Free 🥜❌, Pescatarian 🐟
-
-No other files touched.
+**Files changed:**
+- `src/lib/ingredient-icons.ts` (new)
+- `src/components/fridge/IngredientInput.tsx` (edit)
