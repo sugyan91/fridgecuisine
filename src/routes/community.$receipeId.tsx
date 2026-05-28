@@ -354,9 +354,6 @@ function ReceipePage() {
                             </span>
                           )}
                         </span>
-                        <span className="text-[10px] opacity-50 font-mono">
-                          {new Date(c.created_at).toLocaleDateString()}
-                        </span>
                       </div>
                       <p className="text-sm whitespace-pre-wrap">{c.body}</p>
                       {canDelete && (
