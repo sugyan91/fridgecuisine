@@ -1,76 +1,43 @@
-## What's wrong today
+# More visual improvements
 
-Looking at the live homepage on mobile, the issues are:
+Here are concrete next-level polish moves I can apply, grouped so you can pick what to ship.
 
-- Huge white expanses between every section — the page reads like a form, not a food brand
-- Hero is text-only on a flat background; no appetite appeal
-- "Hungry for inspiration" is the only section with imagery; everything else is plain text on white
-- "What people are cooking" has three empty placeholder cards (dead space)
-- Section transitions all look identical (white → white), so nothing has hierarchy
-- Typography is uniform weight; no editorial rhythm
+## A. Hero — make it stop-scrolling
 
-## Proposed direction: "warm food magazine"
+1. **Headline typography upgrade**: switch the H1 to a serif display face (Fraunces or Instrument Serif) at ~88px desktop / ~52px mobile with tight leading, and italicize one word ("*tonight*", "*world*") in the accent coral for editorial feel.
+2. **Animated ingredient ticker** under the search bar: a slow horizontal marquee of pill chips ("🥑 avocado · 🍅 tomato · 🧄 garlic · 🍋 lemon …") so the hero feels alive even before you type.
+3. **Replace the blurred photo grid backdrop** with one large, sharp hero photo on the right (split-screen on desktop) + a subtle film-grain overlay. The blur grid currently reads as "stock-photo noise".
+4. **Real social-proof avatars**: replace the plain "★★★★★ 12,000+ meals" line with 4 overlapping circular avatars + the stat, like Linear/Notion landing pages.
 
-Shift from clinical SaaS-white to a warm, editorial food publication feel — think Bon Appétit / Cupcakes & Cashmere — while keeping the existing coral/red accent.
+## B. Section rhythm & color
 
-### 1. Background & color system
-- Replace pure white with a warm off-white base (`oklch(0.985 0.008 75)`) and introduce 2 alternate section surfaces (cream + deep charcoal) so sections alternate visually
-- Add a subtle noise/paper texture overlay on cream sections
-- Deep charcoal "feature" bands for "How it works" and "Monetize" so they pop
+5. **Alternate three surface tones** down the page — cream → white → dark → cream — instead of mostly white. Right now only "How it works" is dark; one more dark band (around Testimonials or ChefCTA) creates real rhythm.
+6. **Section eyebrows**: small uppercase coral labels above every H2 ("01 — Tonight's idea", "02 — How it works"). Cheap, instantly more magazine-like.
+7. **Gold hairline dividers** between sections using `--accent-gold` at low opacity instead of plain whitespace breaks.
 
-### 2. Hero rebuild
-- Add a full-bleed background: blurred, darkened food photo collage (pasta + sushi + tacos already in assets) with warm gradient overlay
-- Keep headline but bump display font size and add a serif display face for "HEAD" emphasis
-- Add 3 small floating "ingredient chips" (🍅 tomato, 🧄 garlic, 🌿 basil) animated gently around the input — signals the fridge-to-recipe magic instantly
-- Add social proof line under CTA: "★★★★★ 12,000+ meals cooked this week"
+## C. Cards & imagery
 
-### 3. "Cook the world tonight"
-- Replace flag pills with larger image cards (one hero dish per cuisine) in a horizontal scroll
-- Each card: dish photo, cuisine name, "23 recipes" count
-- Drop the dropdown; tapping a card filters directly
+8. **Cuisine / country tiles**: give them a 4:5 portrait aspect, real food photo, dish name + country in a bottom gradient overlay (Airbnb-card pattern). Today they read as flat tiles.
+9. **Trending dishes carousel**: add hover-lift + image zoom on hover, a small "🔥 Trending" badge, and the cuisine flag emoji in the corner.
+10. **Testimonial cards**: add a tiny circular avatar (initials on a coral background works fine, no photos needed) and a soft cream background instead of white-on-white.
 
-### 4. "Hungry for inspiration" (trending)
-- Already the strongest section — keep, but add a 4th tile and a "See all trending" link
-- Add small metadata: cook time, difficulty badge
+## D. Motion & micro-delight
 
-### 5. "How it works" → dark feature band
-- Move onto charcoal background with cream text
-- Add a small illustration/icon per step (fridge, chef hat, bookmark)
-- Tighten vertical spacing ~40%
+11. **Scroll-reveal** on every section heading + first card row (fade + 12px up, framer-motion, 400ms). Already imported, just not used on the new sections.
+12. **Sticky compact nav** that appears after 400px scroll — logo + "Start cooking" CTA — so the primary action is always one click away (directly helps signups).
+13. **Hover state on the main input**: ring glow in coral + a tiny "⌘K" hint, makes the input feel like the hero of the page.
 
-### 6. "What's in your Pantry"
-- Wrap in a card with soft shadow on cream background so it feels like a tool, not a form
-- Add example pantry preview chips above the input ("Try: chicken, lemon, garlic")
+## E. Footer & trust
 
-### 7. Community section
-- Replace empty placeholder cards with either: (a) real recent recipes if any exist, or (b) hide the section entirely until N>0, or (c) show 3 curated example cards with "Be the first to share" overlay
-- Recommend option (c) for now
+14. **Logo lockup row** above the footer ("As seen in / Built with") even if just decorative icons — instantly increases perceived legitimacy.
+15. **Footer redesign**: dark surface, 4 columns, newsletter input on the right, social icons, fine-print copyright. Current footer is a single block.
 
-### 8. New section: "Loved by home cooks" (testimonials)
-- 3 short quotes with avatars/initials between community and Monetize
-- Adds warmth and trust, fills the awkward gap
+---
 
-### 9. Monetize / Chefs CTA
-- Add a chef portrait image on the left, copy on the right (split layout on desktop, stacked on mobile)
-- Keep dark theme but add a warm gold accent for "$" / pricing
+## Recommended shortlist for biggest visual jump (if you want me to just pick)
 
-### 10. Footer
-- Currently invisible from screenshot — add a proper footer with quick links, social icons, and the $5.99/mo line repositioned there
+Ship **1, 2, 3, 5, 8, 11, 12** together — that's the set that transforms "clean SaaS page" into "editorial food product" and also nudges signups via the sticky CTA (#12).
 
-## Technical notes
+## Question for you
 
-- All color changes via tokens in `src/styles.css` (new `--surface-cream`, `--surface-dark`, `--accent-gold`)
-- New section components under `src/components/landing/`: `HeroBackdrop`, `CuisineCardScroller`, `Testimonials`, `ChefCTA`
-- Reuse existing dish images in `src/assets/` for cuisine cards
-- Animations via existing framer-motion; keep entrance subtle (fade + 8px rise)
-- Mobile-first — current viewport is 390px; ensure horizontal scrollers and stacked split layouts work there first
-
-## Scope check before I build
-
-Three quick choices so I build the right thing:
-
-1. Hero treatment — full food-photo backdrop, or keep clean with just an ingredient-chip animation?
-2. Community section with no real data — show curated examples, or hide until users post?
-3. Add testimonials section — yes (I'll write placeholder copy you can edit), or skip?
-
-Tell me your picks (or just say "go with your defaults": photo backdrop, curated examples, yes to testimonials) and I'll implement.
+Tell me which letters/numbers above to implement (e.g. "do A + C + 12"), or say "do the shortlist" and I'll execute the 7-item recommendation in one pass.

@@ -42,8 +42,6 @@ import foodPasta from "@/assets/food-pasta.jpg";
 import foodSushi from "@/assets/food-sushi.jpg";
 import foodTacos from "@/assets/food-tacos.jpg";
 import foodCurry from "@/assets/food-curry.jpg";
-import foodPizza from "@/assets/food-pizza.jpg";
-import foodBurger from "@/assets/food-burger.jpg";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
@@ -695,19 +693,36 @@ function Index() {
               aria-hidden
               className="pointer-events-none absolute inset-x-0 -top-8 md:-top-16 -z-10 h-[520px] md:h-[640px] overflow-hidden"
             >
-              <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-[0.55] md:opacity-60 blur-[2px] scale-110">
-                {[foodPasta, foodSushi, foodTacos, foodCurry, foodPizza, foodBurger].map(
-                  (src, i) => (
-                    <div
-                      key={i}
-                      className="bg-cover bg-center"
-                      style={{ backgroundImage: `url(${src})` }}
-                    />
-                  ),
-                )}
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--background)_70%)]" />
+              {/* Soft warm radial wash */}
+              <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_25%,oklch(0.965_0.05_55_/_0.9)_0%,transparent_70%)]" />
+              {/* Decorative dish photos floated at the edges, not behind the text */}
+              <div
+                className="hidden md:block absolute -left-10 top-8 size-56 rounded-[2rem] bg-cover bg-center rotate-[-8deg] shadow-[var(--shadow-card)] opacity-90"
+                style={{ backgroundImage: `url(${foodPasta})` }}
+              />
+              <div
+                className="hidden md:block absolute -right-10 top-2 size-48 rounded-[2rem] bg-cover bg-center rotate-[6deg] shadow-[var(--shadow-card)] opacity-90"
+                style={{ backgroundImage: `url(${foodSushi})` }}
+              />
+              <div
+                className="hidden lg:block absolute left-16 bottom-4 size-40 rounded-[1.75rem] bg-cover bg-center rotate-[10deg] shadow-[var(--shadow-card)] opacity-85"
+                style={{ backgroundImage: `url(${foodTacos})` }}
+              />
+              <div
+                className="hidden lg:block absolute right-20 bottom-6 size-44 rounded-[1.75rem] bg-cover bg-center rotate-[-7deg] shadow-[var(--shadow-card)] opacity-85"
+                style={{ backgroundImage: `url(${foodCurry})` }}
+              />
+              {/* Small floating accents on mobile */}
+              <div
+                className="md:hidden absolute -left-6 top-6 size-24 rounded-2xl bg-cover bg-center rotate-[-8deg] shadow-[var(--shadow-card)] opacity-90"
+                style={{ backgroundImage: `url(${foodPasta})` }}
+              />
+              <div
+                className="md:hidden absolute -right-6 top-2 size-20 rounded-2xl bg-cover bg-center rotate-[8deg] shadow-[var(--shadow-card)] opacity-90"
+                style={{ backgroundImage: `url(${foodSushi})` }}
+              />
+              {/* Bottom fade so text sits cleanly */}
+              <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
 
             <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4 relative">
@@ -719,7 +734,14 @@ function Index() {
                 <span className="h-px w-8 bg-accent" />
               </div>
               <h1 className="font-display text-4xl md:text-6xl lg:text-7xl uppercase tracking-tight leading-[0.9] text-foreground mb-6">
-                What food is living rent-free<br className="hidden sm:inline" /> in your <span className="text-accent">head</span> right now?
+                What food is living rent-free<br className="hidden sm:inline" /> in your{" "}
+                <span
+                  className="text-accent italic normal-case tracking-tight"
+                  style={{ fontFamily: "var(--font-serif)", fontWeight: 400 }}
+                >
+                  head
+                </span>{" "}
+                right now?
               </h1>
               <div className="min-h-[3.5rem] md:min-h-[3rem] mb-8 flex items-center justify-center overflow-hidden">
                 <p
@@ -757,6 +779,7 @@ function Index() {
                 <span className="text-[var(--accent-gold)] tracking-widest">★★★★★</span>
                 <span className="font-semibold">12,000+ meals cooked this week</span>
               </div>
+              <IngredientTicker />
             </div>
 
               {dishResult && (
@@ -1072,12 +1095,20 @@ function Index() {
 
         <CommunityStrip isAuthenticated={!!email} />
 
-        <section className="max-w-6xl mx-auto mt-16 md:mt-20">
-          <SectionHeader
-            eyebrow="Loved by home cooks"
-            title="What people are saying"
-          />
-          <Testimonials />
+        <section className="mt-16 md:mt-20">
+          <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
+            <div
+              aria-hidden
+              className="absolute -top-16 -left-16 size-64 rounded-full bg-[var(--accent-gold)]/20 blur-3xl"
+            />
+            <div className="max-w-6xl mx-auto relative">
+              <SectionHeader
+                eyebrow="Loved by home cooks"
+                title="What people are saying"
+              />
+              <Testimonials />
+            </div>
+          </div>
         </section>
 
         <section className="max-w-6xl mx-auto mt-12">
@@ -1147,6 +1178,31 @@ function LoadingSkeleton() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+const TICKER_ITEMS = [
+  "🥑 avocado", "🍅 tomato", "🧄 garlic", "🍋 lemon", "🌶️ chili",
+  "🥬 spinach", "🧅 onion", "🥕 carrot", "🍄 mushroom", "🌿 basil",
+  "🥒 cucumber", "🫑 pepper", "🥚 egg", "🧀 cheese", "🍞 bread",
+  "🍗 chicken", "🐟 fish", "🍚 rice", "🍝 pasta", "🥥 coconut",
+];
+
+function IngredientTicker() {
+  const loop = [...TICKER_ITEMS, ...TICKER_ITEMS];
+  return (
+    <div className="mt-7 marquee-row marquee-mask overflow-hidden">
+      <div className="marquee-track marquee-left gap-2">
+        {loop.map((item, i) => (
+          <span
+            key={`${item}-${i}`}
+            className="shrink-0 px-4 py-1.5 rounded-full bg-card/80 backdrop-blur border border-border text-xs md:text-sm text-foreground/80 font-medium"
+          >
+            {item}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

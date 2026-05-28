@@ -73,6 +73,7 @@
   --font-display: "Archivo Black", system-ui, sans-serif;
   --font-sans: "Hind", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-serif: "Fraunces", "Instrument Serif", Georgia, serif;
   --shadow-soft: 0 6px 20px rgb(0 0 0 / 0.08);
   --shadow-card: 0 16px 40px -12px rgb(0 0 0 / 0.18);
 }
