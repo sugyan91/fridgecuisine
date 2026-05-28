@@ -1,159 +1,208 @@
-type Accent = "gold" | "paprika" | "sage";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { TESTIMONIALS, type Testimonial, type TestimonialAccent } from "./testimonials-data";
 
-const ACCENT_VAR: Record<Accent, string> = {
+const ACCENT_VAR: Record<TestimonialAccent, string> = {
   gold: "var(--accent-gold)",
   paprika: "var(--paprika)",
   sage: "var(--sage)",
 };
 
-const QUOTES: {
-  quote: string;
-  name: string;
-  role: string;
-  initials: string;
-  accent: Accent;
-}[] = [
-  {
-    quote:
-      "I had three sad ingredients in my fridge and ended up making the best stir-fry of my life. This app is my new best friend.",
-    name: "Priya M.",
-    role: "Home cook · London",
-    initials: "PM",
-    accent: "gold",
-  },
-  {
-    quote:
-      "Finally — a recipe app that doesn't bury the recipe under a life story. Type a dish, get a real recipe. That's it.",
-    name: "Marco D.",
-    role: "Weeknight dad · Milan",
-    initials: "MD",
-    accent: "paprika",
-  },
-  {
-    quote:
-      "I cook from 8 countries in a week now. My partner thinks I went to culinary school in secret.",
-    name: "Jess K.",
-    role: "Curious eater · Brooklyn",
-    initials: "JK",
-    accent: "sage",
-  },
-  {
-    quote:
-      "Pantry mode is genius. Half an onion, leftover rice, one egg — and somehow dinner. No grocery run, no guilt.",
-    name: "Aisha R.",
-    role: "Grad student · Toronto",
-    initials: "AR",
-    accent: "paprika",
-  },
-  {
-    quote:
-      "My kid is gluten-free and I'm out of ideas by Tuesday. This thing rescued my whole week — twice.",
-    name: "Daniel O.",
-    role: "Dad of two · Austin",
-    initials: "DO",
-    accent: "sage",
-  },
-  {
-    quote:
-      "I asked for ‘something my Sicilian grandmother would approve of’ and it actually delivered. I'm a little emotional.",
-    name: "Elena V.",
-    role: "Food writer · Lisbon",
-    initials: "EV",
-    accent: "gold",
-  },
-  {
-    quote:
-      "11pm, starving, three things in the fridge. Thirty seconds later I'm eating shakshuka. This shouldn't be legal.",
-    name: "Sam T.",
-    role: "Night owl · Berlin",
-    initials: "ST",
-    accent: "gold",
-  },
-  {
-    quote:
-      "I travel a lot and I miss the food. Typing ‘Hanoi street breakfast’ and getting it right — that's the magic.",
-    name: "Noor A.",
-    role: "Designer · Dubai",
-    initials: "NA",
-    accent: "sage",
-  },
-  {
-    quote:
-      "I cancelled two recipe subscriptions. No ads, no scrolling past someone's divorce — just dinner. Perfect.",
-    name: "Hiro K.",
-    role: "Engineer · Osaka",
-    initials: "HK",
-    accent: "paprika",
-  },
-];
-
 export function Testimonials() {
+  const railRef = useRef<HTMLDivElement>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const updateScrollState = useCallback(() => {
+    const el = railRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setAtStart(el.scrollLeft <= 2);
+    setAtEnd(el.scrollLeft >= max - 2);
+    setProgress(max > 0 ? Math.min(1, Math.max(0, el.scrollLeft / max)) : 0);
+  }, []);
+
+  useEffect(() => {
+    updateScrollState();
+    const el = railRef.current;
+    if (!el) return;
+    const onResize = () => updateScrollState();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [updateScrollState]);
+
+  const scrollByCards = (dir: 1 | -1) => {
+    const el = railRef.current;
+    if (!el) return;
+    const first = el.querySelector<HTMLElement>("[data-card]");
+    const cardW = first ? first.offsetWidth + 20 : el.clientWidth * 0.8;
+    el.scrollBy({ left: dir * cardW, behavior: "smooth" });
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      scrollByCards(1);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      scrollByCards(-1);
+    }
+  };
+
+  // Pointer drag-to-scroll (desktop mouse users)
+  const dragRef = useRef<{ active: boolean; startX: number; startLeft: number; moved: boolean }>({
+    active: false,
+    startX: 0,
+    startLeft: 0,
+    moved: false,
+  });
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse") return;
+    const el = railRef.current;
+    if (!el) return;
+    dragRef.current = { active: true, startX: e.clientX, startLeft: el.scrollLeft, moved: false };
+    el.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current.active) return;
+    const el = railRef.current;
+    if (!el) return;
+    const dx = e.clientX - dragRef.current.startX;
+    if (Math.abs(dx) > 4) dragRef.current.moved = true;
+    el.scrollLeft = dragRef.current.startLeft - dx;
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current.active) return;
+    dragRef.current.active = false;
+    const el = railRef.current;
+    if (el) el.releasePointerCapture(e.pointerId);
+  };
+
   return (
-    <>
-      {/* Mobile: horizontal snap scroller */}
-      <div className="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-        <div className="flex gap-4 pb-2">
-          {QUOTES.map((q) => (
+    <div className="relative">
+      {/* Top-right arrow controls (desktop/tablet) */}
+      <div className="hidden md:flex absolute -top-16 right-0 gap-2 z-10">
+        <ArrowButton
+          dir="prev"
+          disabled={atStart}
+          onClick={() => scrollByCards(-1)}
+        />
+        <ArrowButton
+          dir="next"
+          disabled={atEnd}
+          onClick={() => scrollByCards(1)}
+        />
+      </div>
+
+      <div
+        ref={railRef}
+        tabIndex={0}
+        role="region"
+        aria-label="Testimonials"
+        onScroll={updateScrollState}
+        onKeyDown={onKeyDown}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        className="-mx-4 md:-mx-8 px-4 md:px-8 overflow-x-auto snap-x snap-mandatory cursor-grab active:cursor-grabbing focus:outline-none [&::-webkit-scrollbar]:hidden [scrollbar-width:none] select-none"
+      >
+        <div className="flex items-stretch gap-4 md:gap-5 pb-2">
+          {TESTIMONIALS.map((t) => (
             <div
-              key={q.name}
-              className="snap-start shrink-0 w-[82%] first:pl-0"
+              key={t.name + t.role}
+              data-card
+              className="snap-start shrink-0 w-[82%] sm:w-[60%] md:w-[46%] lg:w-[34%] xl:w-[30%]"
             >
-              <Card q={q} />
+              <Card t={t} />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Desktop: masonry via CSS columns */}
-      <div className="hidden md:block columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
-        {QUOTES.map((q) => (
-          <div key={q.name} className="mb-5 break-inside-avoid">
-            <Card q={q} />
-          </div>
-        ))}
+      {/* Progress + caption */}
+      <div className="mt-6 md:mt-8 flex items-center gap-4">
+        <div className="flex-1 h-[3px] bg-border/60 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-foreground/80 rounded-full transition-[width] duration-150"
+            style={{ width: `${Math.max(8, progress * 100)}%` }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground whitespace-nowrap">
+          {TESTIMONIALS.length} stories
+        </p>
       </div>
-    </>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Drag, swipe, or use the arrows to read more.
+      </p>
+    </div>
   );
 }
 
-function Card({
-  q,
+function ArrowButton({
+  dir,
+  disabled,
+  onClick,
 }: {
-  q: {
-    quote: string;
-    name: string;
-    role: string;
-    initials: string;
-    accent: Accent;
-  };
+  dir: "prev" | "next";
+  disabled: boolean;
+  onClick: () => void;
 }) {
-  const accent = ACCENT_VAR[q.accent];
   return (
-    <figure className="group h-full bg-card border border-border rounded-3xl p-6 shadow-[var(--shadow-soft)] flex flex-col transition duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift,var(--shadow-soft))]">
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={dir === "prev" ? "Previous testimonials" : "Next testimonials"}
+      className="size-11 rounded-full border border-border bg-card grid place-items-center shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 disabled:opacity-30 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={`size-5 ${dir === "prev" ? "" : "rotate-180"}`}
+        aria-hidden
+      >
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+    </button>
+  );
+}
+
+function Card({ t }: { t: Testimonial }) {
+  const accent = ACCENT_VAR[t.accent];
+  return (
+    <figure className="group h-full bg-card border border-border rounded-3xl p-6 md:p-8 shadow-[var(--shadow-soft)] flex flex-col transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-22px_rgb(0_0_0_/_0.22)]">
       <span
         aria-hidden
-        className="font-display text-5xl leading-none mb-2"
+        className="font-display text-6xl md:text-7xl leading-[0.7] mb-3"
         style={{ color: accent }}
       >
         “
       </span>
-      <blockquote className="text-[15px] leading-relaxed text-foreground/90 flex-1">
-        {q.quote}
+      <blockquote className="text-[15px] md:text-lg leading-relaxed text-foreground/90 flex-1">
+        {t.quote}
       </blockquote>
-      <figcaption className="mt-5 pt-4 border-t border-border flex items-center gap-3">
+      <figcaption className="mt-6 pt-4 border-t border-border flex items-center gap-3">
         <span
           aria-hidden
-          className="size-10 rounded-full grid place-items-center font-display font-bold text-sm text-foreground shrink-0"
-          style={{ backgroundColor: `color-mix(in oklab, ${accent} 28%, transparent)` }}
+          className="size-11 rounded-full grid place-items-center font-display font-bold text-sm text-foreground shrink-0"
+          style={{
+            backgroundColor: `color-mix(in oklab, ${accent} 28%, transparent)`,
+          }}
         >
-          {q.initials}
+          {t.initials}
         </span>
         <div className="min-w-0">
           <p className="font-display font-semibold text-sm tracking-tight truncate">
-            {q.name}
+            {t.name}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5 truncate">
-            {q.role}
+            {t.role}
           </p>
         </div>
       </figcaption>
