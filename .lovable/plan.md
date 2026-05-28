@@ -1,35 +1,21 @@
-# Fix recipe purchase sign-in flow
+Add explicit close/cancel buttons to the embedded checkout modal and drawer so users can easily back out of a purchase.
 
-## Problem
+**Current state**
+- Desktop: `DialogContent` has a built-in `X` close button, but the `p-2 sm:p-4` padding override makes it cramped and hard to spot.
+- Mobile: `DrawerContent` has **no** close button at all. Users can only close by tapping outside or swiping.
 
-On a premium recipe page (`/shop/<receipeId>`), users who aren't logged in see a button labeled **"Sign up to buy"**. Two issues:
+**Changes**
 
-1. The label only says "sign up", but the destination page also supports sign-in for existing users.
-2. The link goes to `/login` with no `redirect`, so after auth the user lands on `/` (homepage) and has to scroll all the way back down to find the recipe they were trying to buy.
+1. **Desktop Dialog (`shop.$receipeId.tsx`)**
+   - Remove the `p-2 sm:p-4` override on `DialogContent` (restore default padding so the built-in `X` button is properly positioned).
+   - Add a `DialogHeader` with a title "Secure checkout" and keep the built-in `X` close button for a polished look.
 
-## Changes (UI only)
+2. **Mobile Drawer (`shop.$receipeId.tsx`)**
+   - Add a top bar inside `DrawerContent` with a "Cancel" button that calls `setCheckoutOpen(false)`.
+   - Use `DrawerClose` from `@/components/ui/drawer` wrapped around the cancel button so it also closes natively.
+   - Add a small header text "Secure checkout" for context.
 
-**File:** `src/routes/shop.$receipeId.tsx` (the `<Link to="/login">` block around line 235)
+**Result:** Users on both mobile and desktop can clearly see and tap a close/cancel control if they decide not to buy.
 
-1. Change the button text from `Sign up to buy` to `Sign in or sign up to buy`.
-2. Pass the current recipe URL as a redirect param so the login page returns the user straight to this recipe after authentication:
-   ```tsx
-   <Link
-     to="/login"
-     search={{ redirect: `/shop/${receipeId}` }}
-     ...
-   >
-     Sign in or sign up to buy
-   </Link>
-   ```
-   The login route already reads `search.redirect` and navigates there after a successful sign-in or sign-up — no changes needed in `src/routes/login.tsx`.
-
-## Result
-
-- Existing users immediately understand they can sign in (not just sign up).
-- After authenticating, users land back on the recipe detail page at the top, with the "Buy & unlock" button visible — no scrolling required.
-
-## Out of scope
-
-- No change to the login page itself.
-- No change to homepage scroll behavior (the redirect bypasses the homepage entirely).
+**Files edited:**
+- `src/routes/shop.$receipeId.tsx`
