@@ -1097,12 +1097,20 @@ function Index() {
 
         <CommunityStrip isAuthenticated={!!email} />
 
-        <section className="max-w-6xl mx-auto mt-16 md:mt-20">
-          <SectionHeader
-            eyebrow="Loved by home cooks"
-            title="What people are saying"
-          />
-          <Testimonials />
+        <section className="mt-16 md:mt-20">
+          <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
+            <div
+              aria-hidden
+              className="absolute -top-16 -left-16 size-64 rounded-full bg-[var(--accent-gold)]/20 blur-3xl"
+            />
+            <div className="max-w-6xl mx-auto relative">
+              <SectionHeader
+                eyebrow="Loved by home cooks"
+                title="What people are saying"
+              />
+              <Testimonials />
+            </div>
+          </div>
         </section>
 
         <section className="max-w-6xl mx-auto mt-12">
