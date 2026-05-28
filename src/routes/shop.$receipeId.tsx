@@ -10,6 +10,7 @@ import {
 } from "@/lib/paid-receipes.functions";
 import { createRecipePurchaseCheckout } from "@/lib/payments.functions";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
+import { fakeRating, Stars } from "@/lib/fake-ratings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -137,6 +138,11 @@ function ReceipeDetail() {
         {data.local_name && (
           <p className="text-lg text-muted-foreground italic">{data.local_name}</p>
         )}
+        <AuthorAndRating
+          id={receipeId}
+          name={data.author_name ?? null}
+          avatar={data.author_avatar_url ?? null}
+        />
         <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
           <MapPin className="size-4" />
           {[data.city, data.country].filter(Boolean).join(", ") || "—"}
