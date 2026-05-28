@@ -34,7 +34,7 @@ function ReceipePage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(false);
-  const [myVote, setMyVote] = useState<"up" | "down" | null>(null);
+  const [myVote, setMyVote] = useState<"up" | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const isAdmin = useIsAdmin(userId);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -68,23 +68,20 @@ function ReceipePage() {
     });
   }, [get, fetchVote, fetchComments, receipeId]);
 
-  const vote = async (next: "up" | "down") => {
+  const vote = async (next: "up") => {
     if (!authed) {
       toast("Sign in to vote");
       return;
     }
-    const target: "up" | "down" | null = myVote === next ? null : next;
+    const target: "up" | null = myVote === next ? null : next;
     const prevVote = myVote;
     setMyVote(target);
     setData((d: any) => {
       if (!d) return d;
       let up = d.up_count ?? 0;
-      let down = d.down_count ?? 0;
       if (prevVote === "up") up -= 1;
-      if (prevVote === "down") down -= 1;
       if (target === "up") up += 1;
-      if (target === "down") down += 1;
-      return { ...d, up_count: up, down_count: down };
+      return { ...d, up_count: up };
     });
     try {
       await submitVote({ data: { recipe_id: receipeId, vote: target } });
@@ -243,15 +240,6 @@ function ReceipePage() {
               }`}
             >
               👍 {data.up_count}
-            </button>
-            <button
-              onClick={() => vote("down")}
-              aria-pressed={myVote === "down"}
-              className={`border-2 border-border px-4 py-2 rounded-full font-black text-sm uppercase shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-all ${
-                myVote === "down" ? "bg-foreground text-background" : "bg-white"
-              }`}
-            >
-              👎 {data.down_count}
             </button>
             {!authed && (
               <span className="text-xs opacity-70">
