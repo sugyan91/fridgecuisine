@@ -942,8 +942,9 @@ function Index() {
             </div>
 
             {/* Inline results for the cuisine flow — sits right under the button */}
+            {!pantryMode && (loading || (receipes && receipes.length > 0)) && (
             <div ref={cuisineResultsRef} className="mt-10 space-y-5 scroll-mt-32">
-              {!pantryMode && (loading || (receipes && receipes.length > 0)) && (
+              {(loading || (receipes && receipes.length > 0)) && (
                 <div className="flex items-baseline justify-between">
                   <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
                     {loading ? "Cooking up 10 receipes…" : `${receipes!.length} receipes found`}
@@ -956,9 +957,9 @@ function Index() {
                 </div>
               )}
 
-              {!pantryMode && loading && <LoadingSkeleton />}
+              {loading && <LoadingSkeleton />}
 
-              {!pantryMode && !loading && receipes && receipes.map((r, i) => (
+              {!loading && receipes && receipes.map((r, i) => (
                 <ReceipeCard
                   key={`cuisine-${r.title}-${i}`}
                   receipe={r}
@@ -970,7 +971,7 @@ function Index() {
                 />
               ))}
 
-              {!pantryMode && !loading && receipes && receipes.length > 0 && (
+              {!loading && receipes && receipes.length > 0 && (
                 <button
                   type="button"
                   onClick={onLoadMore}
@@ -981,6 +982,7 @@ function Index() {
                 </button>
               )}
             </div>
+            )}
           </section>
 
           <section className="lg:col-span-12">
