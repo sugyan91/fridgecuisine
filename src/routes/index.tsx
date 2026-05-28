@@ -1096,6 +1096,8 @@ function Index() {
 
         <CommunityStrip isAuthenticated={!!email} />
 
+        <PremiumRecipesStrip />
+
         <section className="mt-16 md:mt-20">
           <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
             <div
