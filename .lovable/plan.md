@@ -1,31 +1,24 @@
-## Problem
+## Two changes
 
-When signing in with a **username** (instead of an email), the login page shows:
+### 1. Remove date from comments
 
-> Couldn't reach the server. Try again.
+In `src/routes/community.$receipeId.tsx` (line 357–359), delete the `<span>` that renders `new Date(c.created_at).toLocaleDateString()`. Comments will just show the author name (and "Author" badge) on the left.
 
-## Root cause
+No backend change — the timestamp stays in the database, we simply don't display it.
 
-The login form calls two SQL functions through the API:
+### 2. Add realistic likes and dislikes to community recipes
 
-- `email_for_username(_username)` — resolves a username to its email so we can sign in
-- `username_available(_username)` — checks if a username is free during signup
+The community recipe pool is 125 recipes with 92 fake user accounts. Today the seed gave each recipe only 1–5 upvotes and zero downvotes, which looks thin.
 
-Both functions exist, but they were created **without granting EXECUTE permission to the `anon` and `authenticated` roles**. Because nobody is signed in yet on the login page, the request runs as `anon`, the database refuses it, and the UI shows the generic "Couldn't reach the server" message.
+I'll insert into `community_recipe_likes` using the existing 92 fake users so that, for every published community recipe:
 
-Email + password sign-in works because it doesn't go through these helpers.
+- **Upvotes ("likes"):** randomized between **18 and 95** per recipe, varied so popular dishes feel more loved and niche dishes still get healthy engagement.
+- **Downvotes ("dislikes"):** **0 to 4** per recipe, with most recipes getting 0–1 and only a few hitting 3–4 — matching how real food communities look (overwhelmingly positive, occasional critic).
+- Each fake user only votes once per recipe (primary key is `recipe_id + user_id`), and a user can't both upvote and downvote the same recipe.
+- Existing votes are preserved via `ON CONFLICT DO NOTHING`.
 
-## Fix
-
-Add a migration that grants the missing permissions:
-
-```sql
-GRANT EXECUTE ON FUNCTION public.email_for_username(text) TO anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.username_available(text)  TO anon, authenticated;
-```
-
-No code, schema, or RLS changes — just permissions. After this, signing in with `@username` + password works, and the live username availability check on the signup form starts responding too.
+This runs as a one-time data insert; no schema or RLS changes. The `up_count` / `down_count` derived counters on the recipe cards will pick up the new totals automatically.
 
 ## Out of scope
-
-- No changes to the login UI, auth flow, or any other tables.
+- No new tables, columns, or policies.
+- No changes to how voting works for real signed-in users.
