@@ -203,7 +203,7 @@ export const getMyVote = createServerFn({ method: "POST" })
       .eq("recipe_id", data.recipe_id)
       .eq("user_id", userId)
       .maybeSingle();
-    return { vote: (row?.vote_type as "up" | "down" | undefined) ?? null };
+    return { vote: (row?.vote_type as "up" | undefined) ?? null };
   });
 
 export const setReceipeVote = createServerFn({ method: "POST" })
