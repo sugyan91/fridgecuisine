@@ -690,10 +690,8 @@ function Index() {
           )}
         </header>
 
+        <FreeTierBanner isPremium={isPremium} userId={userId} />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20">
-          <div className="lg:col-span-12 -mb-6 md:-mb-12">
-            <FreeTierBanner isPremium={isPremium} userId={userId} />
-          </div>
           <section className="lg:col-span-12 relative">
             {/* Hero food collage backdrop */}
             <div
