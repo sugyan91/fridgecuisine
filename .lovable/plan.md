@@ -1,24 +1,28 @@
-## Two changes
+## Make seeded comments sound like real humans
 
-### 1. Remove date from comments
+The current 256 community comments read like marketing copy ("Pure comfort food", "Quick weeknight winner") and repeat a small set of polished one-liners. I'll replace them all with a much larger, naturally-voiced pool.
 
-In `src/routes/community.$receipeId.tsx` (line 357–359), delete the `<span>` that renders `new Date(c.created_at).toLocaleDateString()`. Comments will just show the author name (and "Author" badge) on the left.
+### What changes
 
-No backend change — the timestamp stays in the database, we simply don't display it.
+For each existing seeded comment in `community_recipe_comments`, rewrite the `body` text to sound like a real person typed it on their phone. Keep all other fields (recipe_id, user_id, timestamps) untouched so the threads, authors, and ordering stay the same.
 
-### 2. Add realistic likes and dislikes to community recipes
+### Voice rules for the new pool (~120 unique lines)
 
-The community recipe pool is 125 recipes with 92 fake user accounts. Today the seed gave each recipe only 1–5 upvotes and zero downvotes, which looks thin.
+- **Lowercase-leaning, casual**: "made this last night, sooo good", "ok the smell alone 🤤"
+- **Real reactions, not slogans**: "i was skeptical about the cumin amount tbh but trust the recipe", "took me longer than 30 min but worth it"
+- **Mixed lengths**: some 3-word ("absolute banger"), some 1–3 sentence stories ("made it for my flatmate who hates spicy food and even she went back for seconds. only thing i'd change is less oil maybe")
+- **Light typos / abbreviations**: "def making again", "lol my kitchen is destroyed", "btw used canned tomatoes, still 🔥"
+- **Honest critique sprinkled in** (matches the downvotes that exist): "was a bit bland for me, added extra chili and it saved it", "steps 4 and 5 could be clearer", "mine came out drier than the photo, prob my oven"
+- **Questions to the author**: "what brand of paprika do you use?", "can i swap the yogurt for coconut milk?"
+- **Occasional emoji** (not on every line): 🔥 🤤 👏 😋 — used sparingly
+- **No hashtags, no "5 stars", no influencer phrasing**
 
-I'll insert into `community_recipe_likes` using the existing 92 fake users so that, for every published community recipe:
+### How it runs
 
-- **Upvotes ("likes"):** randomized between **18 and 95** per recipe, varied so popular dishes feel more loved and niche dishes still get healthy engagement.
-- **Downvotes ("dislikes"):** **0 to 4** per recipe, with most recipes getting 0–1 and only a few hitting 3–4 — matching how real food communities look (overwhelmingly positive, occasional critic).
-- Each fake user only votes once per recipe (primary key is `recipe_id + user_id`), and a user can't both upvote and downvote the same recipe.
-- Existing votes are preserved via `ON CONFLICT DO NOTHING`.
+A single data update on the existing 256 rows: for each row, set `body` to a random pick from the new pool (allowing repeats since real communities do repeat phrases, but the pool is large enough that duplicates feel natural). Rows already authored by real signed-in users are left alone — only the seeded comments from fake users are rewritten.
 
-This runs as a one-time data insert; no schema or RLS changes. The `up_count` / `down_count` derived counters on the recipe cards will pick up the new totals automatically.
+### Out of scope
 
-## Out of scope
-- No new tables, columns, or policies.
-- No changes to how voting works for real signed-in users.
+- No schema changes, no new comments added, none deleted.
+- Comment dates are already hidden (done last turn) — staying hidden.
+- The recipe text itself, titles, and image captions are not touched.
