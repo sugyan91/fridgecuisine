@@ -1,35 +1,31 @@
 ## Problem
 
-The 18 seeded premium recipes exist at `/shop` with full titles, prices, cover images, and locations — but nothing on the home page or in the site nav links there, so visitors never find them.
+When signing in with a **username** (instead of an email), the login page shows:
 
-## Plan
+> Couldn't reach the server. Try again.
 
-### 1. Add a "Premium chef recipes" strip to the home page (`src/routes/index.tsx`)
+## Root cause
 
-A new horizontal-scroll section, similar in spirit to the existing `CommunityStrip`, placed just below the trending/community area. For each of the top ~8 published paid recipes it shows:
+The login form calls two SQL functions through the API:
 
-- Cover image
-- Dish title + (optional) local name
-- City, country
-- Price badge (e.g. `$5.99`)
-- A small "Premium" / lock chip so it reads as paid content
+- `email_for_username(_username)` — resolves a username to its email so we can sign in
+- `username_available(_username)` — checks if a username is free during signup
 
-The whole card links to `/shop/$receipeId`. A "See all chef recipes →" link at the section header goes to `/shop`.
+Both functions exist, but they were created **without granting EXECUTE permission to the `anon` and `authenticated` roles**. Because nobody is signed in yet on the login page, the request runs as `anon`, the database refuses it, and the UI shows the generic "Couldn't reach the server" message.
 
-Data source: reuse `listPublicPaidReceipes()` (already exists in `src/lib/paid-receipes.functions.ts`). We'll create a tiny presentational component `src/components/landing/PremiumRecipesStrip.tsx` so `index.tsx` stays clean.
+Email + password sign-in works because it doesn't go through these helpers.
 
-### 2. Add a "Shop" entry to the site navigation
+## Fix
 
-Add a `Shop` link to the home header / nav (and `SiteFooter` if it lists destinations) pointing to `/shop`, so the section is reachable from every page.
+Add a migration that grants the missing permissions:
 
-### 3. No backend, no schema, no auth changes
+```sql
+GRANT EXECUTE ON FUNCTION public.email_for_username(text) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.username_available(text)  TO anon, authenticated;
+```
 
-The shop page, server function, RLS, and seeded data are all already in place. This is purely a frontend discoverability change.
+No code, schema, or RLS changes — just permissions. After this, signing in with `@username` + password works, and the live username availability check on the signup form starts responding too.
 
 ## Out of scope
 
-- Redesigning `/shop` itself
-- Recommending/personalising which premium recipes appear
-- Any payments wiring (already done)
-
-Approve and I'll build it.
+- No changes to the login UI, auth flow, or any other tables.
