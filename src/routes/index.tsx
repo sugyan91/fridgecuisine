@@ -511,6 +511,12 @@ function Index() {
               >
                 Community
               </Link>
+              <Link
+                to="/shop"
+                className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
+              >
+                Shop
+              </Link>
               {email ? (
                 <>
                   <Link
