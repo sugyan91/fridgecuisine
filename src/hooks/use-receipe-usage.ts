@@ -55,6 +55,11 @@ export function useReceipeUsage(userId: string | undefined) {
       setUsed(readAnonUsage());
       return;
     }
+    const { data: sess } = await supabase.auth.getSession();
+    if (!sess.session?.access_token) {
+      // Session not hydrated yet — skip; will retry on next tick.
+      return;
+    }
     try {
       const res = await fetchUsage({
         data: { sinceIso: startOfTodayLocal().toISOString() },
