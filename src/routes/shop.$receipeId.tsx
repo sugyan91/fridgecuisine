@@ -227,6 +227,47 @@ function UnlockedView({ receipe }: { receipe: PaidReceipeFull }) {
   );
 }
 
+function AuthorAndRating({
+  id,
+  name,
+  avatar,
+}: {
+  id: string;
+  name: string | null;
+  avatar: string | null;
+}) {
+  const { rating, count } = fakeRating(id);
+  const author = name || "Home chef";
+  const initial = author.charAt(0).toUpperCase();
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-2">
+        {avatar ? (
+          <img
+            src={avatar}
+            alt=""
+            className="size-8 rounded-full object-cover border-2 border-border"
+          />
+        ) : (
+          <span className="size-8 rounded-full bg-paprika/20 text-paprika text-sm font-black grid place-items-center border-2 border-border">
+            {initial}
+          </span>
+        )}
+        <p className="text-sm">
+          by <span className="font-black">{author}</span>
+        </p>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Stars rating={rating} size="text-base" />
+        <span className="text-sm font-black">{rating.toFixed(1)}</span>
+        <span className="text-xs text-muted-foreground">
+          · {count} ratings
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function LockedView({
   priceCents,
   authed,
