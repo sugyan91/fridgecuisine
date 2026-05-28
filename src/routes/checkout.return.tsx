@@ -135,7 +135,7 @@ function CheckoutReturn() {
             )}
             <Button asChild className="mt-6">
               {isRecipe && recipeId ? (
-                <Link to="/shop/$receipeId" params={{ receipeId }}>
+                <Link to="/shop/$receipeId" params={{ receipeId: recipeId }}>
                   Back to recipe
                 </Link>
               ) : (
