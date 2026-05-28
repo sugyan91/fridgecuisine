@@ -151,6 +151,7 @@ function ReceipeDetail() {
             priceCents={data.price_cents ?? 0}
             authed={!!authed}
             onBuy={() => setCheckoutOpen(true)}
+            receipeId={receipeId}
           />
         )}
       </div>
@@ -208,10 +209,12 @@ function LockedView({
   priceCents,
   authed,
   onBuy,
+  receipeId,
 }: {
   priceCents: number;
   authed: boolean;
   onBuy: () => void;
+  receipeId: string;
 }) {
   return (
     <div className="mt-6 bg-turmeric/15 border-4 border-dashed border-border rounded-3xl p-6 text-center">
@@ -234,9 +237,10 @@ function LockedView({
       ) : (
         <Link
           to="/login"
+          search={{ redirect: `/shop/${receipeId}` }}
           className="mt-4 inline-block bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
         >
-          Sign up to buy
+          Sign in or sign up to buy
         </Link>
       )}
     </div>
