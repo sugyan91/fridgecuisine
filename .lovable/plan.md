@@ -1,32 +1,35 @@
-## Goal
+## Problem
 
-Make the app feel lived-in by seeding realistic-looking community activity: cooks with avatars and usernames, recipes from many cities/cuisines, social proof (likes + comments), and a handful of chefs selling premium recipes.
+The 18 seeded premium recipes exist at `/shop` with full titles, prices, cover images, and locations — but nothing on the home page or in the site nav links there, so visitors never find them.
 
-## What gets seeded
+## Plan
 
-- **~90 fake user profiles** — diverse display names, usernames, avatar URLs (using DiceBear / pravatar deterministic URLs so they always render), spread across realistic cities/countries.
-- **~120 community recipes** — 1–3 per cook, drawn from a curated list of real dishes (e.g., Pad Krapow, Shakshuka, Bibimbap, Cacio e Pepe, Jollof Rice, Khachapuri, Pho Bo, Birria Tacos, Butter Chicken, Ramen, Arepas, Moussaka, etc.) with:
-  - Real city/country/cuisine
-  - 6–10 ingredients each (using the same emoji-mapped names your `ingredient-icons.ts` already knows)
-  - 4–8 step methods + brief history blurb
-  - Food cover image (stable Unsplash food photo URLs by dish)
-  - 1–3 dietary tags pulled from your existing taxonomy
-- **~600 likes** — distributed so popular recipes have 15–40 upvotes and long-tail recipes have a few; gives the leaderboard/feed visible heat.
-- **~250 comments** — short, natural-sounding messages ("Made this for dinner — family loved it", "Subbed coriander for parsley, still great", etc.) by random other cooks.
-- **~12 chef profiles + 18 paid recipes** — a subset of the cooks become "chefs" with bios, country, and a paid recipe priced $3–$9 (cents). Marked `is_published = true` so they appear in `/shop`. No real Stripe accounts — `payouts_enabled` stays false, which is fine for browsing.
+### 1. Add a "Premium chef recipes" strip to the home page (`src/routes/index.tsx`)
 
-## Technical notes
+A new horizontal-scroll section, similar in spirit to the existing `CommunityStrip`, placed just below the trending/community area. For each of the top ~8 published paid recipes it shows:
 
-- `profiles.user_id`, `community_recipes.user_id`, `chef_profiles.user_id`, `paid_recipes.chef_user_id` are plain UUID columns with no FK to `auth.users`, so seeded UUIDs are safe. These users won't be able to log in (they're display-only), which is exactly what we want.
-- Inserts go through the `supabase--insert` tool in a few batched statements (profiles → recipes → likes/comments → chef_profiles → paid_recipes).
-- Images: use `https://images.unsplash.com/photo-...` URLs hand-picked per dish + `https://i.pravatar.cc/150?u=<username>` for avatars — both are deterministic and load without API calls.
-- Existing seed remains untouched; this is purely additive. If you ever want to wipe it, every seeded row will have a tag we can filter on — I'll mark all seeded profiles with usernames in a known list so a cleanup query is one line.
-- No schema changes, no RLS changes, no code changes. Read paths (`/community`, `/shop`, recipe detail) already render anything in these tables.
+- Cover image
+- Dish title + (optional) local name
+- City, country
+- Price badge (e.g. `$5.99`)
+- A small "Premium" / lock chip so it reads as paid content
+
+The whole card links to `/shop/$receipeId`. A "See all chef recipes →" link at the section header goes to `/shop`.
+
+Data source: reuse `listPublicPaidReceipes()` (already exists in `src/lib/paid-receipes.functions.ts`). We'll create a tiny presentational component `src/components/landing/PremiumRecipesStrip.tsx` so `index.tsx` stays clean.
+
+### 2. Add a "Shop" entry to the site navigation
+
+Add a `Shop` link to the home header / nav (and `SiteFooter` if it lists destinations) pointing to `/shop`, so the section is reachable from every page.
+
+### 3. No backend, no schema, no auth changes
+
+The shop page, server function, RLS, and seeded data are all already in place. This is purely a frontend discoverability change.
 
 ## Out of scope
 
-- Real auth users / login for fake accounts
-- Real Stripe onboarding for fake chefs
-- AI-generated images (using curated Unsplash URLs to stay fast and free)
+- Redesigning `/shop` itself
+- Recommending/personalising which premium recipes appear
+- Any payments wiring (already done)
 
-Approve and I'll run the inserts.
+Approve and I'll build it.

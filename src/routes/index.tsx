@@ -13,6 +13,7 @@ import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChefCTA } from "@/components/landing/ChefCTA";
+import { PremiumRecipesStrip } from "@/components/landing/PremiumRecipesStrip";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { generateReceipes, type Receipe } from "@/lib/receipes.functions";
@@ -509,6 +510,12 @@ function Index() {
                 className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
               >
                 Community
+              </Link>
+              <Link
+                to="/shop"
+                className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
+              >
+                Shop
               </Link>
               {email ? (
                 <>
@@ -1094,6 +1101,8 @@ function Index() {
         </div>
 
         <CommunityStrip isAuthenticated={!!email} />
+
+        <PremiumRecipesStrip />
 
         <section className="mt-16 md:mt-20">
           <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
