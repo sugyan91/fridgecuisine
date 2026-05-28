@@ -1176,3 +1176,28 @@ function LoadingSkeleton() {
   );
 }
 
+const TICKER_ITEMS = [
+  "🥑 avocado", "🍅 tomato", "🧄 garlic", "🍋 lemon", "🌶️ chili",
+  "🥬 spinach", "🧅 onion", "🥕 carrot", "🍄 mushroom", "🌿 basil",
+  "🥒 cucumber", "🫑 pepper", "🥚 egg", "🧀 cheese", "🍞 bread",
+  "🍗 chicken", "🐟 fish", "🍚 rice", "🍝 pasta", "🥥 coconut",
+];
+
+function IngredientTicker() {
+  const loop = [...TICKER_ITEMS, ...TICKER_ITEMS];
+  return (
+    <div className="mt-7 marquee-row marquee-mask overflow-hidden">
+      <div className="marquee-track marquee-left gap-2">
+        {loop.map((item, i) => (
+          <span
+            key={`${item}-${i}`}
+            className="shrink-0 px-4 py-1.5 rounded-full bg-card/80 backdrop-blur border border-border text-xs md:text-sm text-foreground/80 font-medium"
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
