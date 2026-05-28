@@ -5,6 +5,37 @@ import { toast } from "sonner";
 import { CORE_DIETARY, EXTRA_DIETARY, DEFAULT_DIETARY, DEFAULT_CUISINES } from "@/lib/taxonomy";
 import { getUserPreferences, saveUserPreferences } from "@/lib/user-preferences.functions";
 
+const DIETARY_ICONS: Record<string, string> = {
+  Vegetarian: "🥬",
+  Vegan: "🌱",
+  "Gluten-Free": "🌾",
+  "Dairy-Free": "🥛",
+  "High Protein": "🍗",
+  "Low-Carb": "🥑",
+  Keto: "🥓",
+  "Quick Meal": "⚡",
+  Halal: "🕌",
+  Kosher: "✡️",
+  "Nut-Free": "🥜",
+  Pescatarian: "🐟",
+};
+
+function iconFor(label: string): string {
+  if (DIETARY_ICONS[label]) return DIETARY_ICONS[label];
+  const l = label.toLowerCase();
+  if (l.includes("peanut") || l.includes("nut")) return "🥜";
+  if (l.includes("egg")) return "🥚";
+  if (l.includes("soy")) return "🫘";
+  if (l.includes("shellfish") || l.includes("shrimp")) return "🦐";
+  if (l.includes("fish")) return "🐟";
+  if (l.includes("dairy") || l.includes("lactose")) return "🥛";
+  if (l.includes("gluten") || l.includes("wheat")) return "🌾";
+  if (l.includes("sugar")) return "🍬";
+  if (l.includes("spice") || l.includes("spicy")) return "🌶️";
+  if (l.includes("sesame")) return "🌰";
+  return "🍽️";
+}
+
 type Props = {
   dietary: string[];
   cuisine: string;
@@ -102,7 +133,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
                 <button
                   type="button"
                   onClick={() => toggle(d)}
-                  className={`w-full h-full min-h-[48px] flex items-center justify-center text-center leading-tight break-words border-2 border-border py-2 px-2 rounded-xl font-black text-[11px] uppercase transition-all ${
+                  className={`w-full h-full min-h-[48px] flex items-center justify-center gap-1.5 text-center leading-tight break-words border-2 border-border py-2 px-2 rounded-xl font-black text-[11px] uppercase transition-all ${
                     active
                       ? "bg-paprika text-white shadow-[3px_3px_0px_0px_var(--border)]"
                       : isCustom
@@ -110,7 +141,10 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
                         : "bg-white hover:bg-turmeric/10"
                   }`}
                 >
-                  {d}
+                  <span aria-hidden className="text-base leading-none shrink-0">
+                    {iconFor(d)}
+                  </span>
+                  <span>{d}</span>
                 </button>
                 {isCustom && (
                   <button
