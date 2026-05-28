@@ -2,11 +2,18 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Lock, MapPin, Clock } from "lucide-react";
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import {
   getPaidReceipeDetail,
   getPaidReceipeFull,
   type PaidReceipeFull,
 } from "@/lib/paid-receipes.functions";
+import { createRecipePurchaseCheckout } from "@/lib/payments.functions";
+import { getStripe, getStripeEnvironment } from "@/lib/stripe";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/shop/$receipeId")({
@@ -20,11 +27,14 @@ function ReceipeDetail() {
   const { receipeId } = Route.useParams();
   const fetchPublic = useServerFn(getPaidReceipeDetail);
   const fetchFull = useServerFn(getPaidReceipeFull);
+  const startCheckout = useServerFn(createRecipePurchaseCheckout);
+  const isMobile = useIsMobile();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<Partial<PaidReceipeFull> | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,8 +90,33 @@ function ReceipeDetail() {
     );
   }
 
+  const fetchClientSecret = async (): Promise<string> => {
+    const returnUrl = `${window.location.origin}/checkout/return?type=recipe&recipe_id=${receipeId}&session_id={CHECKOUT_SESSION_ID}`;
+    const res = await startCheckout({
+      data: {
+        recipeId: receipeId,
+        returnUrl,
+        environment: getStripeEnvironment(),
+      },
+    });
+    if (res.alreadyPurchased) {
+      // Refresh into unlocked state.
+      window.location.reload();
+      throw new Error("Already purchased");
+    }
+    if (!res.clientSecret) throw new Error("No client secret");
+    return res.clientSecret;
+  };
+
+  const checkoutInner = checkoutOpen ? (
+    <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret }}>
+      <EmbeddedCheckout />
+    </EmbeddedCheckoutProvider>
+  ) : null;
+
   return (
     <main className="min-h-screen bg-background text-foreground px-4 md:px-8 py-8">
+      <PaymentTestModeBanner />
       <div className="max-w-2xl mx-auto">
         <Link
           to="/shop"
@@ -112,9 +147,22 @@ function ReceipeDetail() {
         {unlocked ? (
           <UnlockedView receipe={data as PaidReceipeFull} />
         ) : (
-          <LockedView priceCents={data.price_cents ?? 0} authed={!!authed} />
+          <LockedView
+            priceCents={data.price_cents ?? 0}
+            authed={!!authed}
+            onBuy={() => setCheckoutOpen(true)}
+          />
         )}
       </div>
+
+      <Drawer open={isMobile && checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DrawerContent className="h-[92vh] p-0">
+          <div className="h-full overflow-y-auto px-2 pb-6 pt-4">{checkoutInner}</div>
+        </DrawerContent>
+      </Drawer>
+      <Dialog open={!isMobile && checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="max-w-2xl p-2 sm:p-4">{checkoutInner}</DialogContent>
+      </Dialog>
     </main>
   );
 }
@@ -156,7 +204,15 @@ function UnlockedView({ receipe }: { receipe: PaidReceipeFull }) {
   );
 }
 
-function LockedView({ priceCents, authed }: { priceCents: number; authed: boolean }) {
+function LockedView({
+  priceCents,
+  authed,
+  onBuy,
+}: {
+  priceCents: number;
+  authed: boolean;
+  onBuy: () => void;
+}) {
   return (
     <div className="mt-6 bg-turmeric/15 border-4 border-dashed border-border rounded-3xl p-6 text-center">
       <div className="size-12 rounded-2xl bg-foreground text-background border-2 border-border grid place-items-center mx-auto mb-3">
@@ -170,10 +226,10 @@ function LockedView({ priceCents, authed }: { priceCents: number; authed: boolea
       {authed ? (
         <button
           type="button"
-          disabled
-          className="mt-4 bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] disabled:opacity-70"
+          onClick={onBuy}
+          className="mt-4 bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
         >
-          Buy & unlock (coming soon)
+          Buy & unlock
         </button>
       ) : (
         <Link
