@@ -42,8 +42,6 @@ import foodPasta from "@/assets/food-pasta.jpg";
 import foodSushi from "@/assets/food-sushi.jpg";
 import foodTacos from "@/assets/food-tacos.jpg";
 import foodCurry from "@/assets/food-curry.jpg";
-import foodPizza from "@/assets/food-pizza.jpg";
-import foodBurger from "@/assets/food-burger.jpg";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
