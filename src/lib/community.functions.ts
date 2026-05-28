@@ -72,10 +72,10 @@ export const listCommunityReceipes = createServerFn({ method: "GET" })
       );
     }
     const upCount = new Map<string, number>();
-    const downCount = new Map<string, number>();
     (votes ?? []).forEach((v) => {
-      const m = v.vote_type === "down" ? downCount : upCount;
-      m.set(v.recipe_id, (m.get(v.recipe_id) ?? 0) + 1);
+      if (v.vote_type === "up") {
+        upCount.set(v.recipe_id, (upCount.get(v.recipe_id) ?? 0) + 1);
+      }
     });
 
     return {
@@ -83,7 +83,6 @@ export const listCommunityReceipes = createServerFn({ method: "GET" })
         ...r,
         author_name: nameMap.get(r.user_id) ?? "Anonymous",
         up_count: upCount.get(r.id) ?? 0,
-        down_count: downCount.get(r.id) ?? 0,
       })),
       error: null,
     };
@@ -98,7 +97,7 @@ export const getCommunityReceipe = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .eq("is_published", true)
       .maybeSingle();
-    if (error || !receipe) return { receipe: null, author_name: null, up_count: 0, down_count: 0 };
+    if (error || !receipe) return { receipe: null, author_name: null, up_count: 0 };
     const [{ data: profile }, { data: votes }] = await Promise.all([
       supabaseAdmin.from("profiles").select("display_name").eq("user_id", receipe.user_id).maybeSingle(),
       supabaseAdmin.from("community_recipe_likes").select("vote_type").eq("recipe_id", receipe.id),
@@ -118,13 +117,11 @@ export const getCommunityReceipe = createServerFn({ method: "GET" })
           .upsert({ user_id: receipe.user_id, display_name: author_name }, { onConflict: "user_id" });
       }
     }
-    const up_count = (votes ?? []).filter((v) => v.vote_type !== "down").length;
-    const down_count = (votes ?? []).filter((v) => v.vote_type === "down").length;
+    const up_count = (votes ?? []).filter((v) => v.vote_type === "up").length;
     return {
       receipe,
       author_name: author_name ?? "Anonymous",
       up_count,
-      down_count,
     };
   });
 
@@ -214,7 +211,7 @@ export const setReceipeVote = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({
       recipe_id: z.string().uuid(),
-      vote: z.enum(["up", "down"]).nullable(),
+      vote: z.enum(["up"]).nullable(),
     }).parse(input),
   )
   .handler(async ({ data, context }) => {

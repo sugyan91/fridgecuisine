@@ -145,7 +145,7 @@ function CommunityPage() {
                   <p className="text-sm mt-2 line-clamp-2 opacity-80">{r.description}</p>
                 )}
                 <div className="mt-3 flex items-center justify-between text-xs">
-                  <span className="font-black">👍 {r.up_count ?? 0} · 👎 {r.down_count ?? 0}</span>
+                  <span className="font-black">👍 {r.up_count ?? 0}</span>
                 </div>
               </Link>
             ))}

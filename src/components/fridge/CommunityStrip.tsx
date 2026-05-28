@@ -13,7 +13,6 @@ type Receipe = {
   image_url: string | null;
   author_name: string;
   up_count: number;
-  down_count: number;
 };
 
 export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }) {
@@ -84,7 +83,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
                 </p>
                 <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
                   <span className="opacity-70 truncate">by {r.author_name}</span>
-                  <span className="opacity-70 whitespace-nowrap">👍 {r.up_count} · 👎 {r.down_count}</span>
+                  <span className="opacity-70 whitespace-nowrap">👍 {r.up_count}</span>
                 </div>
               </div>
             </Link>
