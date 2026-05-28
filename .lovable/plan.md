@@ -1,30 +1,32 @@
-## Problem
+## Goal
+Add more testimonials under "What people are saying" and elevate the visual presentation so the larger set still feels curated, not cluttered.
 
-In `src/routes/index.tsx`, the "Cook the world tonight" section contains an inline results container (lines ~945–983):
+## Changes
 
-```tsx
-<div ref={cuisineResultsRef} className="mt-10 space-y-5 scroll-mt-32">
-  {!pantryMode && (loading || receipes?.length > 0) && (...)}
-  {!pantryMode && loading && <LoadingSkeleton />}
-  {!pantryMode && !loading && receipes && receipes.map(...)}
-  {!pantryMode && !loading && receipes && receipes.length > 0 && (<button .../>)}
-</div>
-```
+**`src/components/landing/Testimonials.tsx`** — only file touched.
 
-When the user hasn't generated cuisine receipes yet (default state), every child is hidden, but the wrapper still renders with `mt-10` adding 40 px of empty space. The parent grid then adds another 48 px (mobile) / 80 px (desktop) gap before "Trending right now" — producing the visible vertical dead zone.
+1. Expand `QUOTES` from 3 to 9 entries (diverse personas, cuisines, use-cases — pantry mode, late-night cooking, dietary needs, kids, travel-inspired, etc.). Each entry gets:
+   - `quote`, `name`, `role`
+   - `initials` (for an avatar chip)
+   - `accent` — one of `gold`, `terracotta`, `sage` — drives the quote-mark color and avatar background, rotated across cards for rhythm.
 
-## Fix
+2. Replace the flat 3-column grid with a responsive **masonry-style layout**:
+   - Mobile: horizontal snap scroller (`flex overflow-x-auto snap-x snap-mandatory`) so 9 cards don't make the page huge on a 390px viewport; each card `w-[80%]` with snap points and a subtle scrollbar-hidden treatment.
+   - `md+`: CSS columns (`columns-2 lg:columns-3 gap-5`) with `break-inside-avoid` on cards — gives a staggered editorial feel instead of rigid rows, and naturally absorbs varied quote lengths without empty whitespace.
 
-Only render the results wrapper when it actually has content. Wrap the entire `<div ref={cuisineResultsRef} ...>` in a conditional:
+3. Card refinements (keeps existing tokens, no new colors):
+   - Circular avatar chip with `initials`, colored by `accent` (using existing `--accent-gold`, plus `--terracotta` / `--sage` already defined in `styles.css` — verified below).
+   - Large opening quote mark uses the per-card accent color.
+   - Subtle hover lift (`hover:-translate-y-0.5 transition`) for desktop.
+   - Footer row: avatar on the left, name + role stacked on the right (replaces the current top-border block) — denser, more human.
 
-```tsx
-{(!pantryMode && (loading || (receipes && receipes.length > 0))) && (
-  <div ref={cuisineResultsRef} className="mt-10 space-y-5 scroll-mt-32">
-    {/* existing children */}
-  </div>
-)}
-```
+4. No prop changes; `<Testimonials />` call site in `index.tsx` stays identical.
 
-This eliminates the 40 px margin when the section is idle. The ref is only used for `scrollIntoView` after a generation kicks off — by that point the wrapper exists, so scrolling still works.
+## Technical notes
+- Will confirm `--terracotta` and `--sage` exist in `src/styles.css` before referencing; if not, fall back to `--accent-gold` + `--primary` + `--accent` so we stay inside the existing token system (no hardcoded hex).
+- Mobile horizontal scroller uses Tailwind utilities only — no new deps.
+- `columns-*` + `break-inside-avoid` is supported by Tailwind v4 out of the box.
 
-No other files touched. Trending section keeps its normal grid-gap spacing, which now reads as intentional rather than excessive.
+## Out of scope
+- Section header, surrounding `bg-[var(--surface-cream)]` panel, and `index.tsx` layout stay unchanged.
+- No new images, no avatar photos (initials only — keeps it tasteful and avoids fake stock faces).
