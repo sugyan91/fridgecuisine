@@ -10,8 +10,8 @@ import {
 } from "@/lib/paid-receipes.functions";
 import { createRecipePurchaseCheckout } from "@/lib/payments.functions";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,11 +158,27 @@ function ReceipeDetail() {
 
       <Drawer open={isMobile && checkoutOpen} onOpenChange={setCheckoutOpen}>
         <DrawerContent className="h-[92vh] p-0">
-          <div className="h-full overflow-y-auto px-2 pb-6 pt-4">{checkoutInner}</div>
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <p className="font-display text-sm uppercase tracking-wide">Secure checkout</p>
+            <DrawerClose asChild>
+              <button
+                type="button"
+                className="text-xs font-black uppercase tracking-wide text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border-2 border-border"
+              >
+                Cancel
+              </button>
+            </DrawerClose>
+          </div>
+          <div className="h-full overflow-y-auto px-2 pb-6 pt-2">{checkoutInner}</div>
         </DrawerContent>
       </Drawer>
       <Dialog open={!isMobile && checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="max-w-2xl p-2 sm:p-4">{checkoutInner}</DialogContent>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Secure checkout</DialogTitle>
+          </DialogHeader>
+          {checkoutInner}
+        </DialogContent>
       </Dialog>
     </main>
   );
