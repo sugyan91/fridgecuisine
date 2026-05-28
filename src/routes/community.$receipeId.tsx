@@ -211,18 +211,27 @@ function ReceipePage() {
 
           <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-2">Ingredients</h2>
           <ul className="mb-6 space-y-1">
-            {(r.ingredients as string[]).map((ing, i) => (
-              <li key={i} className="text-sm before:content-['▸'] before:mr-2 before:text-turmeric">
-                {ing}
-              </li>
-            ))}
+            {(r.ingredients as Array<string | { name?: string; quantity?: string }>).map((ing, i) => {
+              const text =
+                typeof ing === "string"
+                  ? ing
+                  : [ing?.quantity, ing?.name].filter(Boolean).join(" ");
+              return (
+                <li key={i} className="text-sm before:content-['▸'] before:mr-2 before:text-turmeric">
+                  {text}
+                </li>
+              );
+            })}
           </ul>
 
           <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground mb-2">Steps</h2>
           <ol className="space-y-3 list-decimal list-inside mb-6">
-            {(r.steps as string[]).map((s, i) => (
-              <li key={i} className="text-sm leading-relaxed">{s}</li>
-            ))}
+            {(r.steps as Array<string | { text?: string; instruction?: string }>).map((s, i) => {
+              const text = typeof s === "string" ? s : s?.text ?? s?.instruction ?? "";
+              return (
+                <li key={i} className="text-sm leading-relaxed">{text}</li>
+              );
+            })}
           </ol>
 
           <div className="flex items-center gap-3">
