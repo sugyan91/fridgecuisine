@@ -78,6 +78,47 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     .eq("environment", env);
 }
 
+async function handleCheckoutCompleted(session: any) {
+  // Only handle one-off recipe purchases here (subscriptions go through
+  // customer.subscription.* events).
+  if (session.mode !== "payment") return;
+  if (session.metadata?.type !== "recipe_purchase") return;
+
+  const sessionId = session.id as string;
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id ?? null;
+
+  const purchasedAt = new Date().toISOString();
+
+  // Upsert by stripe_checkout_session_id (unique) so we cover both the
+  // pre-inserted pending row and any case where the row is missing.
+  const { error } = await (getSupabase().from("recipe_purchases") as any).upsert(
+    {
+      stripe_checkout_session_id: sessionId,
+      stripe_payment_intent_id: paymentIntentId,
+      status: "paid",
+      purchased_at: purchasedAt,
+      updated_at: purchasedAt,
+      // Defensive backfill from metadata in case the pending row is gone.
+      buyer_user_id: session.metadata?.userId ?? undefined,
+      chef_user_id: session.metadata?.chef_user_id ?? undefined,
+      paid_recipe_id: session.metadata?.paid_recipe_id ?? undefined,
+      gross_cents: session.amount_total ?? undefined,
+      platform_fee_cents: session.metadata?.platform_fee_cents
+        ? Number(session.metadata.platform_fee_cents)
+        : undefined,
+      chef_net_cents: session.metadata?.chef_net_cents
+        ? Number(session.metadata.chef_net_cents)
+        : undefined,
+      currency: (session.currency as string) ?? "usd",
+    },
+    { onConflict: "stripe_checkout_session_id" },
+  );
+  if (error) console.error("Failed to upsert recipe_purchase:", error);
+}
+
 async function handleWebhook(req: Request, env: StripeEnv) {
   const event = await verifyWebhook(req, env);
 
@@ -90,6 +131,9 @@ async function handleWebhook(req: Request, env: StripeEnv) {
       break;
     case "customer.subscription.deleted":
       await handleSubscriptionDeleted(event.data.object, env);
+      break;
+    case "checkout.session.completed":
+      await handleCheckoutCompleted(event.data.object);
       break;
     default:
       console.log("Unhandled event:", event.type);
