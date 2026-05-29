@@ -794,6 +794,18 @@ function Index() {
                 <span className="text-[var(--accent-gold)] tracking-widest">★★★★★</span>
                 <span className="font-semibold">12,000+ meals cooked this week</span>
               </div>
+              <div className="mt-4 flex justify-center">
+                <Link
+                  to="/sell"
+                  className="group inline-flex items-center gap-2 rounded-full border border-[var(--accent-gold)]/40 bg-[var(--accent-gold)]/10 px-4 py-2 text-xs md:text-sm font-semibold text-foreground hover:bg-[var(--accent-gold)]/20 transition-all shadow-sm"
+                >
+                  <span aria-hidden className="text-base">💰</span>
+                  <span>
+                    Got a signature dish? <span className="underline decoration-[var(--accent-gold)] underline-offset-2">Sell your recipe</span>
+                  </span>
+                  <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
+                </Link>
+              </div>
               <IngredientTicker />
             </div>
 
