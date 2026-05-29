@@ -289,7 +289,7 @@ function LoginPage() {
           ← Back to site
         </Link>
         <Link to="/" className="block text-center mb-6">
-          <h1 className="font-display text-5xl md:text-6xl uppercase tracking-tighter text-paprika leading-none">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tighter text-paprika leading-none">
             FridgeCuisine
           </h1>
           <p className="font-black uppercase tracking-widest text-[10px] mt-2">
