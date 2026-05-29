@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ChefsRouteImport } from './routes/chefs'
@@ -30,6 +31,11 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/chefs': typeof ChefsRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/my-receipes': typeof AuthenticatedMyReceipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByTo {
   '/chefs': typeof ChefsRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/my-receipes': typeof AuthenticatedMyReceipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/chefs': typeof ChefsRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
   '/_authenticated/my-receipes': typeof AuthenticatedMyReceipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/chefs'
     | '/login'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/cookbook'
     | '/my-receipes'
     | '/pricing'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/chefs'
     | '/login'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/cookbook'
     | '/my-receipes'
     | '/pricing'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/chefs'
     | '/login'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/_authenticated/cookbook'
     | '/_authenticated/my-receipes'
     | '/_authenticated/pricing'
@@ -271,6 +283,7 @@ export interface RootRouteChildren {
   ChefsRoute: typeof ChefsRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CommunityReceipeIdRoute: typeof CommunityReceipeIdRoute
@@ -285,6 +298,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -454,6 +474,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChefsRoute: ChefsRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CommunityReceipeIdRoute: CommunityReceipeIdRoute,
@@ -468,13 +489,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

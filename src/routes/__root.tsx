@@ -106,6 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Type the ingredients in your fridge and get AI-generated receipes with steps, cook time, and substitutions. Any cuisine, any diet.",
       },
       { name: "author", content: "Fridge Chef" },
+      { name: "google-site-verification", content: "VLZZMynlIIESF6ygQoSSBH10dZntp_KolorFqbOrcRo" },
       { property: "og:title", content: "Fridge Chef — What Can I Cook With What I Have?" },
       {
         property: "og:description",
