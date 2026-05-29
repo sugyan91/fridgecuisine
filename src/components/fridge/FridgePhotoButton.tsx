@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { detectFridgeIngredients } from "@/lib/fridge-vision.functions";
+import { useLanguage } from "@/lib/language";
 
 type Props = {
   onAdd: (labels: string[]) => void;
@@ -36,6 +37,7 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
   const [draft, setDraft] = useState("");
   const [isSnapEnabled, setIsSnapEnabled] = useState(false);
   const detect = useServerFn(detectFridgeIngredients);
+  const { language } = useLanguage();
 
   useEffect(() => {
     const mql = window.matchMedia("(pointer: coarse), (max-width: 1024px)");
@@ -49,7 +51,7 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
     try {
       setStatus({ kind: "analyzing" });
       const dataUrl = await fileToResizedDataUrl(file);
-      const result = await detect({ data: { imageDataUrl: dataUrl } });
+      const result = await detect({ data: { imageDataUrl: dataUrl, language: language.name } });
       if (!result.ok) {
         setStatus({ kind: "error", message: result.error });
         return;

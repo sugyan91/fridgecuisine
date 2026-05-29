@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
 import { saveReceipe as saveReceipeFn } from "@/lib/saved-receipes.functions";
 import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
+import { LanguageProvider } from "@/lib/language";
 
 const PENDING_SAVE_KEY = "fc-pending-save";
 
@@ -198,7 +199,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <LanguageProvider>
+        <Outlet />
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

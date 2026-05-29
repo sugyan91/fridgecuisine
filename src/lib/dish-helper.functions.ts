@@ -1,9 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { callChatJSON } from "./hf-client.server";
+import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
 
 const inputSchema = z.object({
   dish: z.string().trim().min(2).max(200),
+  language: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((v) => (v && SUPPORTED_LANGUAGE_NAMES.includes(v) ? v : "English")),
 });
 
 const responseSchema = z.object({
@@ -33,7 +40,7 @@ Rules:
 - Ingredients list should be specific (with quantities for a typical serving) and complete.
 - Steps should be concrete, ordered, 4-12 short steps.
 - ALSO provide: prepTimeMinutes (chopping/measuring), totalTimeMinutes (prep + cook), and stepTimings — an array of integer minutes per step, SAME LENGTH as steps. Use 1 if a step is near-instant.
-- Return ONLY valid JSON matching the schema. No prose.`;
+- Return ONLY valid JSON matching the schema. No prose.${languageInstruction(data.language)}`;
 
     const userPrompt = `Dish: ${data.dish}
 

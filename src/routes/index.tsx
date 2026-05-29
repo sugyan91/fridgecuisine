@@ -43,6 +43,8 @@ import foodPasta from "@/assets/food-pasta.jpg";
 import foodSushi from "@/assets/food-sushi.jpg";
 import foodTacos from "@/assets/food-tacos.jpg";
 import foodCurry from "@/assets/food-curry.jpg";
+import { LanguagePicker } from "@/components/LanguagePicker";
+import { useLanguage } from "@/lib/language";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
@@ -128,6 +130,7 @@ function Index() {
   const saveReceipeRpc = useServerFn(saveReceipeFn);
   const unsaveReceipeRpc = useServerFn(unsaveReceipeFn);
   const setCookedRpc = useServerFn(setCookedStatus);
+  const { language } = useLanguage();
 
   const [dishQuery, setDishQuery] = useState("");
   const [dishLoading, setDishLoading] = useState(false);
@@ -259,7 +262,7 @@ function Index() {
     setDishResult(null);
     setShowReceipe(false);
     try {
-      const res = await fetchDish({ data: { dish: q } });
+      const res = await fetchDish({ data: { dish: q, language: language.name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
@@ -283,7 +286,7 @@ function Index() {
     setDishResult(null);
     setShowReceipe(false);
     try {
-      const res = await fetchDish({ data: { dish: name } });
+      const res = await fetchDish({ data: { dish: name, language: language.name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
@@ -321,7 +324,7 @@ function Index() {
     });
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine, exclude: [] },
+        data: { ingredients, dietary, cuisine, exclude: [], language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
@@ -351,7 +354,7 @@ function Index() {
     setReceipes(null);
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [] },
+        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) toast.error(res.error);
@@ -383,6 +386,7 @@ function Index() {
           dietary,
           cuisine,
           exclude: receipes.map((r) => r.title),
+          language: language.name,
         },
       });
       if (cancelGenerationRef.current) return;
@@ -509,6 +513,7 @@ function Index() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-2 shrink-0">
+              <LanguagePicker />
               <Link
                 to="/community"
                 className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
@@ -589,6 +594,7 @@ function Index() {
 
             {/* Mobile nav */}
             <div className="flex md:hidden items-center gap-2 shrink-0">
+              <LanguagePicker variant="compact" />
               {email ? (
                 <Link
                   to="/community/new"
