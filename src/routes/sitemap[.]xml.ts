@@ -25,7 +25,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         try {
           const { data: paid } = await supabaseAdmin
-            .from("paid_receipes")
+            .from("paid_recipes")
             .select("id, updated_at")
             .eq("is_published", true);
           for (const r of paid ?? []) {
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         try {
           const { data: community } = await supabaseAdmin
-            .from("community_receipes")
+            .from("community_recipes")
             .select("id, updated_at")
             .eq("is_published", true);
           for (const r of community ?? []) {
