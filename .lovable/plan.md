@@ -1,24 +1,36 @@
-## Problem
+## Goal
+Make sure visitors on laptop, iPad, and phone see the "you can make money selling your recipe" message without scrolling.
 
-On mobile the header tagline "Your own AI powered personal chef" is `whitespace-nowrap`, so it overflows behind the language/Sign up/menu buttons on the right. The logo image isn't actually overlapping — the tagline is just being clipped by the buttons. We need a different mobile lockup.
+## Current State
+The ChefCTA ("Monetize your culinary flair") lives far down the homepage — after Explore by Country, Trending, How It Works, Pantry, Community Strip, and Premium Recipes Strip. Most visitors never scroll that far.
 
-## Proposed direction
+## Option A: Compact Hero Banner (Recommended)
+Add a small, eye-catching pill/bar directly in the hero section — just above or below the search input — saying something like:
+> "Home chefs are earning $500+/month selling recipes. Start selling →"
 
-Rework the brand lockup so mobile gets a clean wordmark only, and the tagline either disappears or moves out of the header.
+- **Why it works**: Sits right in the hero where 100% of visitors look. Doesn't push other content down. Works on all screen sizes.
+- **Trade-off**: Adds one more element to an already busy hero.
 
-### Changes (`src/routes/index.tsx`, lines ~490–512)
+## Option B: Sticky Announcement Bar
+A thin, dismissible bar that sits fixed below the header (like "Home cooks are monetizing their recipes — Learn more →").
 
-1. **Hide the tagline `<p>` on mobile** — add `hidden sm:block` to the `Your own AI powered personal chef` paragraph. It will still appear from `sm:` (≥640px) upward where there's room.
-2. **Slightly bump the wordmark on mobile** — `text-lg` instead of `text-base` so "fridge cuisine." reads as the clear brand without the tagline crutch.
-3. **Allow the wordmark to shrink gracefully** — keep `whitespace-nowrap` on the h1 but remove `whitespace-nowrap` from the (now hidden on mobile) tagline so it can wrap if it ever shows on a narrow `sm` device.
-4. **Optional: surface the tagline in the hero** — add a small "Your own AI-powered personal chef" eyebrow above or under the main H1 on mobile so the value-prop isn't lost. (Confirm before adding.)
+- **Why it works**: Impossible to miss. Stays visible while scrolling.
+- **Trade-off**: Takes vertical space on every device. Can feel like an ad if styled poorly.
 
-### Out of scope
+## Option C: Hero Mini-Card
+A small card/pill inside the hero's left or right margin (on desktop) or centered below the search (on mobile) with a money icon + short pitch.
 
-- Logo image redesign
-- Header restructure beyond the brand lockup
-- Desktop layout (already fits)
+- **Why it works**: Visually distinct from the main headline.
+- **Trade-off**: Needs careful responsive handling so it doesn't crowd the food photos or input.
 
-### Open question
+## What I'll Build (Option A)
+1. Add a compact, styled eyebrow/pill right below the star-rating line in the hero.
+2. Uses a money/earn icon + short copy like: "Chefs are earning money sharing recipes → Start selling"
+3. Clicking takes you to /sell.
+4. Styled to match the existing warm design system (accent gold color, subtle border/pill look).
+5. Responsive: sits cleanly on mobile without wrapping awkwardly.
 
-Do you want the tagline moved into the hero on mobile (so the message still lands), or just dropped from mobile entirely?
+## Files to edit
+- `src/routes/index.tsx` — add the sell-pill element in the hero section
+
+No backend changes needed.
