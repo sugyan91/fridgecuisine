@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { callChatJSON } from "./hf-client.server";
+import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
 
 const inputSchema = z.object({
   ingredients: z
@@ -10,6 +11,12 @@ const inputSchema = z.object({
   dietary: z.array(z.string().max(40)).max(10).default([]),
   cuisine: z.string().min(1).max(40),
   exclude: z.array(z.string().max(120)).max(60).default([]),
+  language: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((v) => (v && SUPPORTED_LANGUAGE_NAMES.includes(v) ? v : "English")),
 });
 
 export type Receipe = {
@@ -85,7 +92,7 @@ Rules:
 - Honor dietary constraints STRICTLY: ${dietary}. Every single receipe MUST comply with ALL listed dietary tags. Treat each tag as a hard allergy/diet constraint — if a tag names an ingredient or food family (e.g. "Peanut allergy", "No shellfish", "No mushrooms", "Lactose intolerant"), exclude that ingredient AND its derivatives/cross-contaminants entirely, and mention a safe swap in "substitutions". If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any receipe that would violate a tag — do not include it.
 - If "Quick Meal" is selected, all receipes must be <= 20 minutes.
 - For every receipe, set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy". Include any user-selected dietary tags that apply, plus any other tags that are obviously true for the dish. Max 6 tags. Use [] if none apply.
-- Return ONLY valid JSON matching the schema. No prose.`;
+- Return ONLY valid JSON matching the schema. No prose.${languageInstruction(data.language)}`;
 
     const excludeBlock = data.exclude.length
       ? `\n\nDo NOT repeat or closely resemble these receipes already shown:\n- ${data.exclude.join("\n- ")}`
