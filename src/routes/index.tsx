@@ -594,7 +594,7 @@ function Index() {
 
             {/* Mobile nav */}
             <div className="flex md:hidden items-center gap-2 shrink-0">
-              <LanguagePicker variant="compact" />
+              <LanguagePicker variant="icon" />
               {email ? (
                 <Link
                   to="/community/new"

@@ -10,7 +10,7 @@ import {
 import { LANGUAGES, useLanguage } from "@/lib/language";
 
 type Props = {
-  variant?: "header" | "compact";
+  variant?: "header" | "compact" | "icon";
   className?: string;
 };
 
@@ -18,7 +18,9 @@ export function LanguagePicker({ variant = "header", className = "" }: Props) {
   const { language, setLanguage } = useLanguage();
 
   const triggerClass =
-    variant === "compact"
+    variant === "icon"
+      ? "inline-flex items-center justify-center h-9 w-9 rounded-full border border-border hover:bg-secondary transition-colors"
+      : variant === "compact"
       ? "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full border border-border hover:bg-secondary transition-colors"
       : "flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-full border border-border hover:bg-secondary transition-colors";
 
@@ -29,7 +31,7 @@ export function LanguagePicker({ variant = "header", className = "" }: Props) {
         className={`${triggerClass} ${className}`}
       >
         <Globe size={variant === "compact" ? 14 : 16} />
-        <span>{language.native}</span>
+        {variant !== "icon" && <span>{language.native}</span>}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-[60vh] overflow-y-auto w-56">
         <DropdownMenuLabel>Language</DropdownMenuLabel>
