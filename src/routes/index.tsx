@@ -513,6 +513,7 @@ function Index() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-2 shrink-0">
+              <LanguagePicker />
               <Link
                 to="/community"
                 className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
@@ -593,6 +594,7 @@ function Index() {
 
             {/* Mobile nav */}
             <div className="flex md:hidden items-center gap-2 shrink-0">
+              <LanguagePicker variant="compact" />
               {email ? (
                 <Link
                   to="/community/new"
