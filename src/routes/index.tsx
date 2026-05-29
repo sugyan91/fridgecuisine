@@ -262,7 +262,7 @@ function Index() {
     setDishResult(null);
     setShowReceipe(false);
     try {
-      const res = await fetchDish({ data: { dish: q } });
+      const res = await fetchDish({ data: { dish: q, language: language.name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
@@ -286,7 +286,7 @@ function Index() {
     setDishResult(null);
     setShowReceipe(false);
     try {
-      const res = await fetchDish({ data: { dish: name } });
+      const res = await fetchDish({ data: { dish: name, language: language.name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
@@ -324,7 +324,7 @@ function Index() {
     });
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine, exclude: [] },
+        data: { ingredients, dietary, cuisine, exclude: [], language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
@@ -354,7 +354,7 @@ function Index() {
     setReceipes(null);
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [] },
+        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) toast.error(res.error);
@@ -386,6 +386,7 @@ function Index() {
           dietary,
           cuisine,
           exclude: receipes.map((r) => r.title),
+          language: language.name,
         },
       });
       if (cancelGenerationRef.current) return;
