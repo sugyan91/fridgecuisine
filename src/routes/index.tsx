@@ -43,6 +43,8 @@ import foodPasta from "@/assets/food-pasta.jpg";
 import foodSushi from "@/assets/food-sushi.jpg";
 import foodTacos from "@/assets/food-tacos.jpg";
 import foodCurry from "@/assets/food-curry.jpg";
+import { LanguagePicker } from "@/components/LanguagePicker";
+import { useLanguage } from "@/lib/language";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
@@ -128,6 +130,7 @@ function Index() {
   const saveReceipeRpc = useServerFn(saveReceipeFn);
   const unsaveReceipeRpc = useServerFn(unsaveReceipeFn);
   const setCookedRpc = useServerFn(setCookedStatus);
+  const { language } = useLanguage();
 
   const [dishQuery, setDishQuery] = useState("");
   const [dishLoading, setDishLoading] = useState(false);
