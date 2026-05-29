@@ -491,6 +491,10 @@ function Index() {
               <img
                 src={logoImg}
                 alt="Fridge Cuisine"
+                width={36}
+                height={36}
+                fetchPriority="high"
+                decoding="async"
                 className="h-7 sm:h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
               />
                 <div className="min-w-0 flex-1">
