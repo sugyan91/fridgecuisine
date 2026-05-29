@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { callVisionJSON } from "./hf-client.server";
+import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
 
 const inputSchema = z.object({
   imageDataUrl: z
@@ -8,6 +9,12 @@ const inputSchema = z.object({
     .min(32)
     .max(2_000_000)
     .regex(/^data:image\/(jpeg|jpg|png|webp);base64,/i, "Must be a base64 image data URL"),
+  language: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((v) => (v && SUPPORTED_LANGUAGE_NAMES.includes(v) ? v : "English")),
 });
 
 const responseSchema = z.object({
@@ -25,9 +32,9 @@ export const detectFridgeIngredients = createServerFn({ method: "POST" })
 Rules:
 - List only items that could be cooked with (vegetables, fruit, dairy, meat, eggs, condiments, herbs, packaged goods).
 - Skip non-food items (containers, shelves, drinks like soda unless clearly a cooking liquid).
-- Use short common English names, Title Case (e.g. "Tomato", "Greek Yogurt", "Bell Pepper").
+- Use short common names in ${data.language}, Title Case (e.g. "Tomato", "Greek Yogurt", "Bell Pepper" — translated).
 - Deduplicate. Max 20 items.
-- Return ONLY valid JSON: { "ingredients": ["..."] }. No prose.`;
+- Return ONLY valid JSON: { "ingredients": ["..."] }. No prose.${languageInstruction(data.language)}`;
 
     const userPrompt = `What ingredients can you see? Return JSON: { "ingredients": ["Tomato", "Eggs", ...] }`;
 
