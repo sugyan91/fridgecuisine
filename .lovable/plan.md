@@ -1,35 +1,39 @@
-## 1. Fix country flags on desktop ("Cook the world tonight")
+# Multi-language support
 
-**Problem:** Flag emojis render fine on mobile (iOS/Android ship color flag glyphs) but on Windows/Chrome desktop they fall back to plain letter codes (e.g. "IT", "FR") because Windows has no flag emoji font.
+Let users interact with FridgeCuisine in their own language. They pick a language, type ingredients or a dish name in it, and the AI returns the recipe (dish name, ingredients, steps, tips) in that same language.
 
-**Fix:** Install the `country-flag-emoji-polyfill` web font (Twemoji Country Flags). It's a single tiny CSS+woff2 that maps regional indicator pairs to color SVG glyphs across all desktop browsers — zero markup change needed.
+## Scope (this iteration)
 
-- `bun add country-flag-emoji-polyfill`
-- In `src/styles.css`, import the font and prepend `"Twemoji Country Flags"` to the body/font stack (or apply via a `.flag` utility) so flag emojis render everywhere.
-- No change needed in `CountryTiles.tsx`.
+- AI output language: every recipe-generating server function returns content in the chosen language.
+- User input: free-text inputs (ingredients, dish name, fridge photo results) are accepted in any language.
+- UI chrome (buttons, nav, labels): stays in English for now. Full UI i18n is a much bigger effort — call out as a follow-up.
 
-## 2. Chef recipe cards: author + fake ratings
+## UX
 
-Make each chef recipe in `/shop` look like it was posted by a real user with social proof.
+1. **Language picker** in the top nav (next to the existing controls), with a globe icon and the current language label.
+   - Initial supported languages: English, Spanish, French, German, Italian, Portuguese, Hindi, Bengali, Tamil, Arabic, Japanese, Chinese (Simplified), Korean, Turkish, Russian.
+   - Selection persists in `localStorage` (`fc.lang`) and defaults to the browser language if supported, else English.
+2. A small hint near the ingredient input / dish search: "Type in {Language} — recipe will be in {Language}."
+3. Selected language is also surfaced on recipe pages (badge: "Recipe in Hindi").
 
-**Grid cards (`src/routes/shop.index.tsx`):**
-- Add a small author row under the title: tiny avatar circle (initial of author name on a colored disc) + "by {author name}".
-- Add a star-rating row: filled stars (★) + numeric rating + count, e.g. `★★★★☆ 4.6 (218)`.
+## Technical plan
 
-**Detail page (`src/routes/shop.$receipeId.tsx`):** show the same author byline + larger star block ("4.6 out of 5 · rated by 218 home cooks") near the title.
+- **Language context**: new `src/lib/language.tsx` with `LanguageProvider`, `useLanguage()` hook, language list, and localStorage persistence. Mount provider in `src/routes/__root.tsx`.
+- **Language picker component**: `src/components/LanguagePicker.tsx` (shadcn `DropdownMenu`), placed in the header.
+- **Server functions updated** to accept an optional `language: string` (BCP-47 name like "Spanish") and inject it into the system/user prompt. The response JSON schema stays the same — only the natural-language strings change.
+  - `src/lib/receipes.functions.ts` (fridge → recipes)
+  - `src/lib/dish-helper.functions.ts` (dish → recipe)
+  - `src/lib/fridge-vision.functions.ts` (photo → ingredients, returned in the chosen language)
+  - Any other AI recipe generator under `src/lib/*.functions.ts` discovered during implementation.
+  - Prompt addition: *"Respond entirely in {language}. Translate dish name, ingredients (keep quantities/units), steps, and tips. Do not mix languages."*
+- **Client call sites** pass `language` from `useLanguage()` when invoking those server functions (fridge page, dish helper, etc.).
+- **Validation**: server-side `z.string().min(2).max(40)` against an allow-list to avoid prompt injection via the language field.
+- **No DB changes.** Stored community/shop recipes remain in their original language; only newly generated AI recipes follow the selected language.
 
-**Fake but stable ratings:**
-- Add a small helper `src/lib/fake-ratings.ts` that takes a recipe id and deterministically returns `{ rating: number, count: number }` by hashing the id.
-- Rating range: **3.6 – 4.9** (so every recipe is above 3.5). Count range: **120 – 850**.
-- Deterministic so a given recipe always shows the same numbers across reloads and across the list/detail pages.
+## Out of scope (call out to user)
 
-**Author name source:** use the existing chef/author field already returned by `listPublicPaidReceipes` / the detail server function. If a recipe has no author name on record, fall back to a friendly label like "Home chef".
+- Translating static UI strings, marketing copy, country tiles, testimonials.
+- Translating already-saved recipes.
+- SEO/hreflang per language.
 
-## Files touched
-- `package.json` (new dep)
-- `src/styles.css` (font import + font-family update)
-- `src/lib/fake-ratings.ts` (new)
-- `src/routes/shop.index.tsx` (card author + stars)
-- `src/routes/shop.$receipeId.tsx` (header author + stars)
-
-No backend, schema, or business-logic changes.
+Happy to add any of those in a follow-up.
