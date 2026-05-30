@@ -23,6 +23,7 @@ type ChefRow = {
   bio: string | null;
   country: string | null;
   avatar_url: string | null;
+  name?: string | null;
 };
 
 function ChefsPage() {
@@ -104,7 +105,9 @@ function ChefsPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-display text-lg uppercase truncate">Chef</p>
+                    <p className="font-display text-lg uppercase truncate">
+                      {c.name || "Home chef"}
+                    </p>
                     {c.country && (
                       <p className="text-[11px] font-black uppercase tracking-wide text-muted-foreground">
                         {c.country}
