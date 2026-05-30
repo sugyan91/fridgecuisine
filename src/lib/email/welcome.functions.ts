@@ -12,17 +12,6 @@ export const sendWelcomeEmail = createServerFn({ method: 'POST' })
   .handler(async ({ context }) => {
     const { userId } = context
 
-    // Idempotency: skip if we already enqueued/sent a welcome for this user.
-    const { data: existing } = await supabaseAdmin
-      .from('email_send_log')
-      .select('id')
-      .eq('template_name', 'welcome')
-      .eq('recipient_email_metadata', userId) // best-effort, may not exist
-      .limit(1)
-      .maybeSingle()
-      .then((r) => r, () => ({ data: null }))
-
-    // Primary idempotency: check by user_id stored in profile + send log lookup
     const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(userId)
     if (!user?.email) return { ok: false, reason: 'no_email' }
 
@@ -35,7 +24,6 @@ export const sendWelcomeEmail = createServerFn({ method: 'POST' })
       .limit(1)
       .maybeSingle()
     if (priorByEmail) return { ok: false, reason: 'already_sent' }
-    if (existing) return { ok: false, reason: 'already_sent' }
 
     // Pull first name from profile if available
     const { data: profile } = await supabaseAdmin
