@@ -2,7 +2,7 @@ const STEPS = [
   {
     icon: "🥬",
     title: "Tell us what you have",
-    body: "Add fridge ingredients, or just name a dish you're craving.",
+    body: "Add whatever's in your fridge, or name a dish you're craving.",
   },
   {
     icon: "👨‍🍳",
