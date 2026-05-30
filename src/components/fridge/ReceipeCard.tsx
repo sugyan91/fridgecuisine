@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import type { Receipe } from "@/lib/receipes.functions";
 import { ReceipeTimers } from "./ReceipeTimers";
 import { StepTimer } from "./StepTimer";
 import { ShareButton } from "./ShareButton";
 import { swapIngredient, type IngredientSwap } from "@/lib/ingredient-swap.functions";
+import { generateReceipeImage } from "@/lib/receipe-image.functions";
 
 type Props = {
   receipe: Receipe;
@@ -35,6 +36,28 @@ export function ReceipeCard({
   const [swapResults, setSwapResults] = useState<IngredientSwap[] | null>(null);
   const [swapError, setSwapError] = useState<string | null>(null);
   const runSwap = useServerFn(swapIngredient);
+  const runImage = useServerFn(generateReceipeImage);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setImageLoading(true);
+    setImageUrl(null);
+    runImage({ data: { dishName: receipe.title, cuisine: receipe.cuisine } })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.ok) setImageUrl(res.dataUrl);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setImageLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [receipe.title, receipe.cuisine, runImage]);
+
   const allIngredients = [...receipe.usedIngredients, ...receipe.missingIngredients];
   const dietary = receipe.dietary ?? [];
   const timings = receipe.stepTimings ?? [];
@@ -117,6 +140,22 @@ export function ReceipeCard({
         className="bg-cardamom text-white border-4 border-border rounded-[32px] p-6 md:p-8 shadow-[8px_8px_0px_0px_var(--border)] animate-pop"
         style={{ animationDelay: `${index * 80}ms` }}
       >
+        {(imageLoading || imageUrl) && (
+          <div className="mb-6 -mx-2 md:-mx-4 rounded-2xl overflow-hidden border-2 border-white/20 bg-white/5 aspect-[16/9]">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={receipe.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-[10px] font-black uppercase tracking-widest text-white/60 animate-pulse">
+                Plating your dish…
+              </div>
+            )}
+          </div>
+        )}
         <div className="flex justify-between items-start mb-6 gap-4">
           <div>
             <h4 className="font-display text-3xl md:text-4xl uppercase tracking-tight leading-none">
@@ -353,6 +392,22 @@ export function ReceipeCard({
       className="group bg-white border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
       style={{ animationDelay: `${index * 80}ms` }}
     >
+      {(imageLoading || imageUrl) && (
+        <div className="aspect-[16/9] bg-muted border-b-4 border-border overflow-hidden">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={receipe.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full grid place-items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+              Plating your dish…
+            </div>
+          )}
+        </div>
+      )}
       <div className="p-5 flex-1">
         <div className="flex justify-between items-start mb-2 gap-3">
           <h4 className="font-black text-xl md:text-2xl leading-tight">
