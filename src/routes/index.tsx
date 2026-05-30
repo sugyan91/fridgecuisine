@@ -127,6 +127,8 @@ function Index() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saved, setSaved] = useState<SavedReceipeRow[]>([]);
+  const [kidFriendly, setKidFriendly] = useState(false);
+  const [showNutrition, setShowNutrition] = useState(false);
 
   const generate = useServerFn(generateReceipes);
   const fetchDish = useServerFn(getDishHelper);
@@ -328,7 +330,7 @@ function Index() {
     });
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine, exclude: [], language: language.name },
+        data: { ingredients, dietary, cuisine, exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
@@ -358,7 +360,7 @@ function Index() {
     setReceipes(null);
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], language: language.name },
+        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) toast.error(res.error);
@@ -390,6 +392,8 @@ function Index() {
           dietary,
           cuisine,
           exclude: receipes.map((r) => r.title),
+          kidFriendly,
+          includeNutrition: showNutrition,
           language: language.name,
         },
       });
@@ -1013,6 +1017,12 @@ function Index() {
                   dietary={dietary}
                   showMissing={false}
                   isAuthenticated={!!email}
+                  pantry={ingredients}
+                  onRecipeUpdate={(next) =>
+                    setReceipes((prev) =>
+                      prev ? prev.map((p, idx) => (idx === i ? next : p)) : prev,
+                    )
+                  }
                 />
               ))}
 
@@ -1071,6 +1081,10 @@ function Index() {
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
                 counterSlot={<ReceipeCounter userId={userId} isPremium={isPremium} />}
+                kidFriendly={kidFriendly}
+                onKidFriendly={setKidFriendly}
+                showNutrition={showNutrition}
+                onShowNutrition={setShowNutrition}
               />
             </div>
           </section>
@@ -1117,6 +1131,12 @@ function Index() {
                   dietary={dietary}
                   showMissing={pantryMode && ingredients.length > 0}
                   isAuthenticated={!!email}
+                  pantry={ingredients}
+                  onRecipeUpdate={(next) =>
+                    setReceipes((prev) =>
+                      prev ? prev.map((p, idx) => (idx === i ? next : p)) : prev,
+                    )
+                  }
                 />
               ))}
 
