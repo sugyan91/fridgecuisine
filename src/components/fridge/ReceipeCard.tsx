@@ -379,6 +379,18 @@ export function ReceipeCard({
             <span className="size-2 rounded-full bg-cardamom" />
             {receipe.cuisine}
           </span>
+          {difficulty && (
+            <span
+              className={`${difficultyStyles[difficulty]} border-2 border-border rounded-full px-2 py-0.5 uppercase`}
+            >
+              {difficulty}
+            </span>
+          )}
+          {receipe.kidFriendly && (
+            <span className="bg-turmeric border-2 border-border rounded-full px-2 py-0.5 uppercase">
+              🧒 Kid-friendly
+            </span>
+          )}
         </div>
         {dietary.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
