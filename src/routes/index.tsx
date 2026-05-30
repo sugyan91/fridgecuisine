@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { IngredientInput } from "@/components/fridge/IngredientInput";
 import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { ReceipeCard } from "@/components/fridge/ReceipeCard";
+import { ShareButton } from "@/components/fridge/ShareButton";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
 import { CountryTiles } from "@/components/landing/CountryTiles";
@@ -981,6 +982,7 @@ function Index() {
                   onToggleSave={() => toggleSave(r)}
                   dietary={dietary}
                   showMissing={false}
+                  isAuthenticated={!!email}
                 />
               ))}
 
@@ -1084,6 +1086,7 @@ function Index() {
                   onToggleSave={() => toggleSave(r)}
                   dietary={dietary}
                   showMissing={pantryMode && ingredients.length > 0}
+                  isAuthenticated={!!email}
                 />
               ))}
 
