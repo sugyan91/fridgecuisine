@@ -5,6 +5,17 @@ export function SiteFooter() {
   return (
     <footer className="bg-[var(--surface-dark)] text-white/85 mt-16">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 md:py-16">
+        {/* Oversized editorial wordmark */}
+        <div className="border-b border-white/10 pb-10 md:pb-14 mb-10 md:mb-14">
+          <p className="font-display text-6xl md:text-8xl lg:text-9xl uppercase tracking-tight leading-[0.9] text-white">
+            fridge<span className="text-primary">.</span>
+            <br />
+            cuisine
+          </p>
+          <p className="mt-4 md:mt-6 text-sm md:text-base text-white/55 max-w-md">
+            Turn whatever&apos;s in your fridge into dinner — recipes from 50+ cuisines.
+          </p>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
           <div className="col-span-2 md:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
@@ -22,10 +33,6 @@ export function SiteFooter() {
                 </p>
               </div>
             </div>
-            <p className="text-sm text-white/65 max-w-sm leading-relaxed">
-              Turn whatever's in your fridge into dinner — recipes from 50+
-              cuisines, plotted around your ingredients and your time.
-            </p>
             <div className="flex items-center gap-2 pt-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] px-3 py-1 text-xs font-semibold">
                 ★ 4.9 from 12,000+ cooks
