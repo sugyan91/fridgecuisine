@@ -167,5 +167,40 @@ export const listChefs = createServerFn({ method: "GET" })
       .order("onboarding_completed_at", { ascending: false })
       .limit(60);
     if (error) throw new Error(error.message);
-    return { chefs: data ?? [] };
+    const rows = (data ?? []) as Array<{
+      user_id: string;
+      bio: string | null;
+      country: string | null;
+      avatar_url: string | null;
+    }>;
+    const ids = rows.map((r) => r.user_id);
+    let nameById = new Map<string, { name: string | null; avatar: string | null }>();
+    if (ids.length > 0) {
+      const { data: profiles } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, display_name, username, avatar_url")
+        .in("user_id", ids);
+      nameById = new Map(
+        (profiles ?? []).map(
+          (p: {
+            user_id: string;
+            display_name: string | null;
+            username: string | null;
+            avatar_url: string | null;
+          }) => [
+            p.user_id,
+            { name: p.display_name || p.username || null, avatar: p.avatar_url || null },
+          ],
+        ),
+      );
+    }
+    const chefs = rows.map((r) => {
+      const p = nameById.get(r.user_id);
+      return {
+        ...r,
+        name: p?.name ?? "Home chef",
+        avatar_url: r.avatar_url ?? p?.avatar ?? null,
+      };
+    });
+    return { chefs };
   });
