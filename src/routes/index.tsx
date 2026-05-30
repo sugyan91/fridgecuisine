@@ -1210,42 +1210,62 @@ const POPULAR_COMBOS: { label: string; emoji: string; ingredients: string[] }[] 
 ];
 
 function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
+  const tints = [
+    "bg-amber-50 text-amber-600",
+    "bg-red-50 text-red-500",
+    "bg-emerald-50 text-emerald-600",
+    "bg-sky-50 text-sky-600",
+    "bg-fuchsia-50 text-fuchsia-600",
+    "bg-orange-50 text-orange-600",
+  ];
   return (
-    <div className="bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)]">
-      <div className="flex items-center gap-3 mb-2">
-        <span className="h-px w-8 bg-accent" />
-        <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
-          Quick start
-        </p>
-      </div>
-      <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-1">
-        Popular pantry combos
-      </h3>
-      <p className="text-sm text-muted-foreground mb-5">
-        Tap one to drop the ingredients in your pantry and hit generate.
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {POPULAR_COMBOS.map((c) => (
-          <button
-            key={c.label}
-            type="button"
-            onClick={() => onPick(c.ingredients)}
-            className="group text-left bg-secondary/60 hover:bg-secondary border border-border rounded-2xl p-4 transition-all hover:shadow-[var(--shadow-soft)] hover:-translate-y-0.5"
+    <div className="p-1">
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="h-1 w-8 bg-accent rounded-full" />
+          <p className="font-display text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground">
+            Chef's Picks
+          </p>
+        </div>
+        <h3 className="font-display text-3xl md:text-4xl font-black uppercase tracking-tight leading-none text-foreground">
+          Popular pantry{" "}
+          <span
+            className="text-accent italic normal-case tracking-normal"
+            style={{ fontFamily: "var(--font-serif)", fontWeight: 600 }}
           >
-            <div className="flex items-center gap-2 mb-1.5">
-              <span aria-hidden className="text-xl">{c.emoji}</span>
-              <span className="font-display text-base font-semibold tracking-tight">
+            combos
+          </span>
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
+        {POPULAR_COMBOS.map((c, i) => {
+          const tint = tints[i % tints.length];
+          return (
+            <button
+              key={c.label}
+              type="button"
+              onClick={() => onPick(c.ingredients)}
+              className="group text-left bg-card p-4 md:p-5 rounded-[2rem] border border-border/60 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.08)] flex flex-col items-start transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_48px_-18px_rgba(0,0,0,0.12)] active:scale-[0.98]"
+            >
+              <div
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 text-2xl ${tint}`}
+                aria-hidden
+              >
+                {c.emoji}
+              </div>
+              <h4 className="font-display text-base md:text-lg font-black uppercase tracking-tight leading-tight mb-1.5 text-foreground">
                 {c.label}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {c.ingredients.join(" · ")}
-            </p>
-            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-              Use these <span aria-hidden>→</span>
-            </span>
-          </button>
-        ))}
+              </h4>
+              <p
+                className="text-xs text-muted-foreground italic leading-snug"
+                style={{ fontFamily: "var(--font-serif)" }}
+              >
+                {c.ingredients.slice(0, 3).join(", ")}
+              </p>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
