@@ -86,6 +86,23 @@ export function PremiumRecipesStrip() {
                       {row.local_name}
                     </p>
                   )}
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    {row.author_avatar_url ? (
+                      <img
+                        src={row.author_avatar_url}
+                        alt=""
+                        loading="lazy"
+                        className="size-5 rounded-full object-cover border border-border shrink-0"
+                      />
+                    ) : (
+                      <span className="size-5 rounded-full bg-paprika/20 text-paprika text-[10px] font-black grid place-items-center border border-border shrink-0">
+                        {(row.author_name || "C").charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      by <span className="font-bold text-foreground/80">{row.author_name || "Home chef"}</span>
+                    </p>
+                  </div>
                   <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1 truncate">
                     <MapPin className="size-3 shrink-0" />
                     <span className="truncate">
