@@ -142,16 +142,16 @@ function Index() {
   const [showReceipe, setShowReceipe] = useState(false);
 
   const dishPrompts = [
-    "See something that made you hungry? Tell me the dish — I'll give you the ingredients and receipe.",
-    "Caught drooling? Name the food and I'll spill the ingredients and receipe.",
-    "Food crush? Tell me what it was and I'll hand over the ingredients and receipe.",
-    "That dish got your attention, huh? Drop the name — I've got the receipe and ingredients.",
-    "If your stomach just said 'yes please,' tell me the dish and I'll generate the receipe and ingredients.",
-    "Name the dish you can't stop thinking about — I'll recreate it with ingredients and receipe.",
-    "Saw something delicious online? Tell me what it is and I'll break down the receipe and ingredients.",
-    "From craving to cooking — tell me the dish and I'll give you the ingredients and receipe.",
-    "That food looked dangerously good. Want the ingredients and receipe?",
-    "Tell me what made you hungry — I'll turn it into a receipe with ingredients.",
+    "Staring at a half-empty fridge? Tell me what's inside — I'll turn it into dinner.",
+    "Got eggs, rice, and no plan? List your ingredients and I'll build the meal.",
+    "Don't let leftovers go to waste. Name what you have and I'll craft a receipe.",
+    "Three random ingredients and zero inspiration? I'll turn them into something delicious.",
+    "Your fridge is full of possibilities. Show me what you've got and I'll plan dinner.",
+    "Tonight's dinner is hiding in your kitchen. List your ingredients and I'll find it.",
+    "No time to shop? Work with what's already in your fridge. I'll do the rest.",
+    "Turn whatever's in your fridge into a real dinner — just name the ingredients.",
+    "That wilting veg in the crisper? I'll turn it into the star of the show.",
+    "Open your fridge, tell me what you see, and I'll hand you a complete receipe.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
   const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
@@ -746,7 +746,7 @@ function Index() {
               <div className="flex items-center justify-center gap-3 mb-3">
                 <span className="h-px w-8 bg-accent" />
                 <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
-                  Dish to Receipe
+                  Fridge to Dinner
                 </p>
                 <span className="h-px w-8 bg-accent" />
               </div>
