@@ -1,21 +1,39 @@
-# Redesign "Popular pantry combos"
+# Surface fake chefs everywhere
 
-Replace the dull gray-boxes design with the chosen "Appetizing pantry grid" direction: white cards on a transparent section, tinted rounded-square emoji badges, bold uppercase titles, and an elegant italic serif ingredient line.
+Good news: 12 fake chef profiles + 18 premium recipes already exist in the DB, with real display names ("Aiko Carter", "Marco Sato", "Sofia Becker"…). They're just not showing up because:
 
-## Changes (single file: `src/routes/index.tsx`, function `PopularCombos`)
+1. The `/chefs` directory filter requires `payouts_enabled=true` (Stripe onboarding flag) — all seed chefs have `payouts_enabled=false`, so the list returns empty.
+2. The `/chefs` page only renders the literal word "Chef" — it never reads `display_name` from `profiles`.
+3. `PremiumRecipesStrip` (homepage chef-recipe rail) shows title + city/country but **never displays the chef's name or avatar**.
 
-1. **Drop the heavy outer card wrapper** — no more `bg-card border rounded-[2rem] p-6` shell. The section sits directly on the page background so the white cards pop.
-2. **New header** — small red pill + `CHEF'S PICKS` eyebrow, then a bold uppercase `Popular pantry` heading with the word `combos` in the accent-colored italic serif (matches the hero treatment).
-3. **2-column grid on all sizes** — `grid-cols-2 gap-3 md:gap-4` (was 1 col on mobile, 2 on sm). Denser, no awkward stacking.
-4. **New card style** — each combo is a white card with `rounded-[2rem]`, soft drop shadow, no heavy border. Inside:
-   - 48×48 tinted rounded-square badge holding the emoji (tint rotates per index: amber, red, emerald, sky, fuchsia, orange).
-   - Bold uppercase title (`font-display font-black`).
-   - Italic serif ingredient line, trimmed to first 3 ingredients for cleanness.
-5. **Hover/active** — subtle `-translate-y-0.5` lift + deeper shadow on hover, `scale-[0.98]` on tap. Drop the old "Use these →" hover label (the card itself is the affordance).
+## Changes
+
+**1. Migration — flip the seed chefs to fully-onboarded**
+```sql
+UPDATE public.chef_profiles
+SET payouts_enabled = true,
+    onboarding_completed_at = COALESCE(onboarding_completed_at, now())
+WHERE user_id::text LIKE '00000000-0000-0000-0000-0000000f%';
+```
+Single-row UPDATE on existing seed data only — no schema change, no real users touched.
+
+**2. `src/lib/marketplace.functions.ts` — `listChefs` returns names + avatars**
+Enrich the result with each chef's `display_name` / `username` / `avatar_url` from `public.profiles` (same join pattern already used in `listPublicPaidReceipes`). New return shape: `{ user_id, bio, country, avatar_url, name }` where `name` falls back through `display_name → username → "Home chef"`.
+
+**3. `src/routes/chefs.tsx` — render the chef's name**
+- Replace the hard-coded `<p>Chef</p>` with the real `name` from the enriched payload.
+- Prefer the profile `avatar_url` when present (already wired).
+- Tighten copy: "Recipes coming soon" → keep, but country/name now visible.
+
+**4. `src/components/landing/PremiumRecipesStrip.tsx` — show "by <Chef Name>"**
+The strip already receives `author_name` and `author_avatar_url` via `listPublicPaidReceipes`. Add a 1-line `by <Author>` row with the small avatar (mirrors the existing `/shop` card treatment) under the title, above the location. Truncate with `truncate` so long names don't break the card.
 
 ## Out of scope
-- `POPULAR_COMBOS` data, click behavior, surrounding sections.
-- No new files, no token changes; uses existing `--accent`, `--font-serif`, and Tailwind tint utilities already in the project.
+- New fake chefs (12 already seeded). If you want more, ask and I'll add a second seeding migration.
+- The receipe detail page (`/shop/$receipeId`) — it already pulls `author_name` from the same backend; will benefit automatically.
+- Real Stripe onboarding flow — untouched; only the seed rows get the flags flipped.
 
 ## Verify
-At 390px viewport: 2 columns, no overflow, emoji badges colored, italic serif visible on ingredient line.
+- Visit `/chefs` → 12 chef cards with names like "Aiko Carter", country labels, avatars.
+- Homepage premium rail → each card shows "by <Chef Name>" with avatar.
+- `/shop` index → already shows author; confirm still correct.
