@@ -1017,6 +1017,12 @@ function Index() {
                   dietary={dietary}
                   showMissing={false}
                   isAuthenticated={!!email}
+                  pantry={ingredients}
+                  onRecipeUpdate={(next) =>
+                    setReceipes((prev) =>
+                      prev ? prev.map((p, idx) => (idx === i ? next : p)) : prev,
+                    )
+                  }
                 />
               ))}
 
@@ -1125,6 +1131,12 @@ function Index() {
                   dietary={dietary}
                   showMissing={pantryMode && ingredients.length > 0}
                   isAuthenticated={!!email}
+                  pantry={ingredients}
+                  onRecipeUpdate={(next) =>
+                    setReceipes((prev) =>
+                      prev ? prev.map((p, idx) => (idx === i ? next : p)) : prev,
+                    )
+                  }
                 />
               ))}
 
