@@ -4,10 +4,22 @@
 
 const HF_URL = "https://router.huggingface.co/v1/chat/completions";
 const LOVABLE_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const HF_IMAGE_URL = "https://router.huggingface.co/v1/images/generations";
+const LOVABLE_IMAGE_URL = "https://ai.gateway.lovable.dev/v1/images/generations";
 
-// Solid free-tier instruction model on HF Inference Providers.
-const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
+// HF Inference Providers models, tried in order. Stronger models first.
+const HF_MODEL_CHAIN = [
+  "Qwen/Qwen2.5-72B-Instruct",
+  "meta-llama/Llama-3.3-70B-Instruct",
+  "meta-llama/Llama-3.1-8B-Instruct",
+];
 const LOVABLE_MODEL = "google/gemini-3-flash-preview";
+
+const HF_IMAGE_MODEL_CHAIN = [
+  "black-forest-labs/FLUX.1-schnell",
+  "stabilityai/stable-diffusion-xl-base-1.0",
+];
+const LOVABLE_IMAGE_MODEL = "google/gemini-2.5-flash-image";
 
 export type ChatJSONResult =
   | { ok: true; json: unknown; provider: "huggingface" | "lovable" }
@@ -84,19 +96,25 @@ export async function callChatJSON(
 
   const hfKey = process.env.HUGGINGFACE_API_KEY;
   if (hfKey) {
-    try {
-      // HF router doesn't reliably honor response_format; rely on prompt + parse.
-      const r = await callOpenAICompat(HF_URL, hfKey, HF_MODEL, messages, false);
-      if (r.status === 200) {
-        const parsed = tryParseJSON(r.content);
-        if (parsed) return { ok: true, json: parsed, provider: "huggingface" };
-        console.warn("[hf] returned unparseable JSON, falling back to Lovable");
-      } else {
-        console.warn(`[hf] ${r.status}, falling back to Lovable. Body: ${r.raw.slice(0, 200)}`);
+    for (const model of HF_MODEL_CHAIN) {
+      try {
+        // HF router doesn't reliably honor response_format; rely on prompt + parse.
+        const r = await callOpenAICompat(HF_URL, hfKey, model, messages, false);
+        if (r.status === 200) {
+          const parsed = tryParseJSON(r.content);
+          if (parsed) {
+            console.log(`[hf] success with ${model}`);
+            return { ok: true, json: parsed, provider: "huggingface" };
+          }
+          console.warn(`[hf] ${model} returned unparseable JSON, trying next model`);
+        } else {
+          console.warn(`[hf] ${model} ${r.status}, trying next. Body: ${r.raw.slice(0, 200)}`);
+        }
+      } catch (err) {
+        console.warn(`[hf] ${model} threw, trying next:`, err);
       }
-    } catch (err) {
-      console.warn("[hf] threw, falling back to Lovable:", err);
     }
+    console.warn("[hf] all HF models failed, falling back to Lovable");
   } else {
     console.warn("[hf] HUGGINGFACE_API_KEY not set — using Lovable only");
   }
@@ -176,5 +194,89 @@ export async function callVisionJSON(
   } catch (err) {
     console.error("[lovable vision] threw:", err);
     return { ok: false, code: "server", error: "Vision request failed." };
+  }
+}
+
+export type ImageGenResult =
+  | { ok: true; dataUrl: string; provider: "huggingface" | "lovable" }
+  | { ok: false; error: string };
+
+async function callImageEndpoint(
+  url: string,
+  apiKey: string,
+  body: Record<string, unknown>,
+): Promise<{ status: number; b64: string | null; raw: string }> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const raw = await res.text();
+  if (!res.ok) return { status: res.status, b64: null, raw };
+  try {
+    const payload = JSON.parse(raw) as {
+      data?: Array<{ b64_json?: string; url?: string }>;
+    };
+    const b64 = payload.data?.[0]?.b64_json ?? null;
+    return { status: res.status, b64, raw };
+  } catch {
+    return { status: res.status, b64: null, raw };
+  }
+}
+
+/**
+ * HF-first image generation with Lovable AI fallback. Returns a data URL.
+ */
+export async function callImageGen(prompt: string): Promise<ImageGenResult> {
+  const hfKey = process.env.HUGGINGFACE_API_KEY;
+  if (hfKey) {
+    for (const model of HF_IMAGE_MODEL_CHAIN) {
+      try {
+        const r = await callImageEndpoint(HF_IMAGE_URL, hfKey, {
+          model,
+          prompt,
+          response_format: "b64_json",
+        });
+        if (r.status === 200 && r.b64) {
+          console.log(`[hf-image] success with ${model}`);
+          return {
+            ok: true,
+            dataUrl: `data:image/png;base64,${r.b64}`,
+            provider: "huggingface",
+          };
+        }
+        console.warn(`[hf-image] ${model} ${r.status}, trying next. Body: ${r.raw.slice(0, 200)}`);
+      } catch (err) {
+        console.warn(`[hf-image] ${model} threw, trying next:`, err);
+      }
+    }
+    console.warn("[hf-image] all HF image models failed, falling back to Lovable");
+  }
+
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  if (!lovableKey) {
+    return { ok: false, error: "Image generation not configured." };
+  }
+  try {
+    const r = await callImageEndpoint(LOVABLE_IMAGE_URL, lovableKey, {
+      model: LOVABLE_IMAGE_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      modalities: ["image", "text"],
+    });
+    if (r.status === 200 && r.b64) {
+      return {
+        ok: true,
+        dataUrl: `data:image/png;base64,${r.b64}`,
+        provider: "lovable",
+      };
+    }
+    console.error("[lovable-image]", r.status, r.raw.slice(0, 300));
+    return { ok: false, error: `Image generation failed (${r.status}).` };
+  } catch (err) {
+    console.error("[lovable-image] threw:", err);
+    return { ok: false, error: "Image generation failed." };
   }
 }
