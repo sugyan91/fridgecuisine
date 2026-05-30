@@ -28,7 +28,7 @@ import {
   type SavedReceipeRow,
 } from "@/lib/saved-receipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
-import { POPULAR_COMBOS } from "@/data/popular-combos";
+import { POPULAR_COMBOS as ALL_POPULAR_COMBOS } from "@/data/popular-combos";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
@@ -1246,7 +1246,7 @@ function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
-    const pool = POPULAR_COMBOS.slice();
+    const pool = ALL_POPULAR_COMBOS.slice();
     // Fisher–Yates partial shuffle for first 6
     for (let i = 0; i < 6 && i < pool.length; i++) {
       const j = i + Math.floor(rand() * (pool.length - i));
