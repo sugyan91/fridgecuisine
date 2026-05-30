@@ -1017,7 +1017,7 @@ function Index() {
           </section>
 
           <section className="lg:col-span-12">
-            <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-dark)] rounded-[2rem] md:rounded-[2.5rem] text-white relative overflow-hidden">
+            <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-10 md:py-14 bg-[var(--surface-dark)] rounded-[2rem] md:rounded-[2.5rem] text-white relative overflow-hidden">
               <div
                 aria-hidden
                 className="absolute -top-24 -right-24 size-72 rounded-full bg-primary/20 blur-3xl"
@@ -1076,6 +1076,16 @@ function Index() {
           </section>
 
           <section className="lg:col-span-7 space-y-5">
+            {!pantryMode && (!receipes || receipes.length === 0) && !loading && (
+              <PopularCombos
+                onPick={(combo) => {
+                  setIngredients(combo);
+                  requestAnimationFrame(() => {
+                    pantryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  });
+                }}
+              />
+            )}
             {pantryMode && (loading || (receipes && receipes.length > 0)) && (
               <div className="flex items-baseline justify-between">
                 <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
@@ -1126,17 +1136,17 @@ function Index() {
 
         <PremiumRecipesStrip />
 
-        <section className="max-w-6xl mx-auto mt-20 md:mt-28 px-4 md:px-0">
+        <section className="max-w-7xl mx-auto mt-12 md:mt-16 px-4 md:px-0">
           <ChefCTA />
         </section>
 
-        <section className="mt-20 md:mt-28">
-          <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
+        <section className="mt-12 md:mt-16">
+          <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-10 md:py-14 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
             <div
               aria-hidden
               className="absolute -top-16 -left-16 size-64 rounded-full bg-[var(--accent-gold)]/20 blur-3xl"
             />
-            <div className="max-w-6xl mx-auto relative">
+            <div className="max-w-7xl mx-auto relative">
               <SectionHeader
                 eyebrow="Loved by home cooks"
                 title="What people are saying"
