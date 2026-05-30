@@ -14,7 +14,7 @@ import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorksStrip } from "@/components/landing/HowItWorksStrip";
 import { ChefCTA } from "@/components/landing/ChefCTA";
-import { ChefSellBanner } from "@/components/landing/ChefSellBanner";
+// ChefSellBanner removed from homepage — single Chef CTA strip is used near the footer.
 import { LiveActivityTicker } from "@/components/landing/LiveActivityTicker";
 import { PremiumRecipesStrip } from "@/components/landing/PremiumRecipesStrip";
 import { Testimonials } from "@/components/landing/Testimonials";
