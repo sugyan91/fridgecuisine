@@ -13,6 +13,8 @@ import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorksStrip } from "@/components/landing/HowItWorksStrip";
 import { ChefCTA } from "@/components/landing/ChefCTA";
+import { ChefSellBanner } from "@/components/landing/ChefSellBanner";
+import { LiveActivityTicker } from "@/components/landing/LiveActivityTicker";
 import { PremiumRecipesStrip } from "@/components/landing/PremiumRecipesStrip";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { SiteFooter } from "@/components/landing/SiteFooter";
