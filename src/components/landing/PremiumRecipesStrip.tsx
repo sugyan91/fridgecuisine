@@ -27,7 +27,8 @@ export function PremiumRecipesStrip() {
     };
   }, [fetchList]);
 
-  if (!loading && rows.length === 0) return null;
+  // Skip skeletons entirely — don't render the section until we have real data.
+  if (loading || rows.length === 0) return null;
 
   return (
     <section className="mt-12 md:mt-16">
@@ -50,22 +51,7 @@ export function PremiumRecipesStrip() {
 
       <div className="-mx-4 md:mx-0 overflow-x-auto no-scrollbar">
         <div className="flex gap-3 md:gap-4 px-4 md:px-0 pb-2 snap-x snap-mandatory">
-          {(loading ? Array.from({ length: 4 }) : rows).map((r, i) => {
-            const row = r as PaidReceipeListItem | undefined;
-            if (!row) {
-              return (
-                <div
-                  key={i}
-                  className="shrink-0 w-44 md:w-52 bg-card border-4 border-border rounded-3xl overflow-hidden animate-pulse"
-                >
-                  <div className="aspect-square bg-muted" />
-                  <div className="p-3 space-y-2">
-                    <div className="h-3 bg-muted rounded" />
-                    <div className="h-3 bg-muted rounded w-2/3" />
-                  </div>
-                </div>
-              );
-            }
+          {rows.map((row) => {
             return (
               <Link
                 key={row.id}

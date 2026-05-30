@@ -25,7 +25,8 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
       .catch(() => setReceipes([]));
   }, [fetchReceipes]);
 
-  if (receipes && receipes.length === 0) return null;
+  // Don't render anything until data loads — avoids the empty-frame gap.
+  if (!receipes || receipes.length === 0) return null;
 
   return (
     <section className="max-w-6xl mx-auto mt-10 md:mt-14">
@@ -47,15 +48,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(receipes ?? Array.from({ length: 3 })).map((r, i) => {
-          if (!r) {
-            return (
-              <div
-                key={i}
-                className="h-44 rounded-2xl border-2 border-border bg-white/50 animate-pulse"
-              />
-            );
-          }
+        {receipes.map((r) => {
           const place = [r.city, r.country].filter(Boolean).join(", ");
           return (
             <Link

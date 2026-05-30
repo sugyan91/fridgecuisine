@@ -153,8 +153,8 @@ function pickUnique(pool: Dish[], cursor: number, count: number): Dish[] {
 }
 
 export function TrendingDishes({ onPick }: Props) {
-  // Four bento slots: 0=hero (large), 1=wide secondary, 2/3=small squares.
-  const SLOTS = 4;
+  // Uniform Airbnb-style dish grid: 8 equal cards, 2 rows of 4 on desktop.
+  const SLOTS = 8;
   const [cursor, setCursor] = useState(0);
 
   useEffect(() => {
@@ -165,32 +165,17 @@ export function TrendingDishes({ onPick }: Props) {
   }, []);
 
   const visible = useMemo(() => pickUnique(DISHES, cursor, SLOTS), [cursor]);
-  const [hero, second, third, fourth] = visible;
 
-  if (!hero) return null;
+  if (visible.length === 0) return null;
 
   return (
-    <div key={cursor} className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] md:auto-rows-auto md:grid-rows-2 md:h-[640px] gap-3 md:gap-6 animate-fade-in">
-      <BentoTile
-        dish={hero}
-        onPick={onPick}
-        variant="hero"
-        className="col-span-2 row-span-2 md:row-span-2"
-      />
-      {second && (
-        <BentoTile
-          dish={second}
-          onPick={onPick}
-          variant="wide"
-          className="col-span-2 md:col-span-2"
-        />
-      )}
-      {third && (
-        <BentoTile dish={third} onPick={onPick} variant="small" className="col-span-1" />
-      )}
-      {fourth && (
-        <BentoTile dish={fourth} onPick={onPick} variant="small" className="col-span-1" />
-      )}
+    <div
+      key={cursor}
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 animate-fade-in"
+    >
+      {visible.map((d) => (
+        <BentoTile key={d.origin} dish={d} onPick={onPick} variant="small" />
+      ))}
     </div>
   );
 }
@@ -211,7 +196,7 @@ function BentoTile({
     <button
       type="button"
       onClick={() => onPick(dish.name)}
-      className={`relative group overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-secondary text-left transition-all hover:shadow-[0_24px_48px_-16px_rgb(31_42_26/0.18)] ${className ?? ""}`}
+      className={`relative group overflow-hidden rounded-2xl md:rounded-3xl bg-secondary text-left transition-all hover:shadow-[0_18px_36px_-14px_rgb(31_42_26/0.22)] aspect-[4/5] ${className ?? ""}`}
     >
       <img
         src={dish.img}

@@ -701,12 +701,12 @@ function Index() {
         </header>
 
         <FreeTierBanner isPremium={isPremium} userId={userId} />
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           <section className="lg:col-span-12 relative">
             {/* Hero food collage backdrop */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -top-8 md:-top-16 -z-10 h-[520px] md:h-[640px] overflow-hidden"
+              className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 -z-10 h-[360px] md:h-[440px] overflow-hidden"
             >
               {/* Soft warm radial wash */}
               <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_25%,oklch(0.965_0.05_55_/_0.9)_0%,transparent_70%)]" />
@@ -740,15 +740,15 @@ function Index() {
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
 
-            <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4 relative">
-              <div className="flex items-center justify-center gap-3 mb-5">
+            <div className="max-w-3xl mx-auto text-center pt-1 pb-2 relative">
+              <div className="flex items-center justify-center gap-3 mb-3">
                 <span className="h-px w-8 bg-accent" />
                 <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
                   Dish to Receipe
                 </p>
                 <span className="h-px w-8 bg-accent" />
               </div>
-              <h1 className="font-display text-4xl md:text-6xl lg:text-7xl uppercase tracking-tight leading-[0.9] text-foreground mb-6">
+              <h1 className="font-display text-3xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9] text-foreground mb-4">
                 What food is living rent-free<br className="hidden sm:inline" /> in your{" "}
                 <span
                   className="text-accent italic normal-case tracking-tight"
@@ -758,10 +758,10 @@ function Index() {
                 </span>{" "}
                 right now?
               </h1>
-              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-8 flex items-center justify-center overflow-hidden">
+              <div className="min-h-[3rem] md:min-h-[2.5rem] mb-4 flex items-center justify-center overflow-hidden">
                 <p
                   key={promptIndex}
-                  className={`text-base md:text-lg leading-relaxed text-muted-foreground max-w-xl ${
+                  className={`text-sm md:text-base leading-relaxed text-muted-foreground max-w-xl ${
                     promptAnim === "in"
                       ? "animate-fade-down-in"
                       : "animate-fade-down-out"
@@ -777,24 +777,24 @@ function Index() {
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
                   placeholder={`eg: ${worldFoods[worldFoodIndex].food} from ${worldFoods[worldFoodIndex].country}`}
-                  className="w-full bg-card border border-border rounded-2xl py-4 sm:py-5 md:py-6 pl-6 pr-4 sm:pr-36 md:pr-44 text-base md:text-lg shadow-[var(--shadow-soft)] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/60"
+                  className="w-full bg-card border border-border rounded-2xl py-3 sm:py-4 md:py-5 pl-5 pr-4 sm:pr-36 md:pr-44 text-base md:text-lg shadow-[var(--shadow-soft)] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/60"
                 />
                 <button
                   type="submit"
                   disabled={dishLoading}
-                  className="mt-2 w-full py-3 sm:mt-0 sm:w-auto sm:py-0 sm:absolute sm:right-2 sm:top-2 sm:bottom-2 bg-primary text-primary-foreground px-5 md:px-7 rounded-xl font-display font-semibold text-sm md:text-base hover:brightness-110 transition-all disabled:opacity-60"
+                  className="mt-2 w-full py-3 sm:mt-0 sm:w-auto sm:py-0 sm:absolute sm:right-1.5 sm:top-1.5 sm:bottom-1.5 bg-primary text-primary-foreground px-5 md:px-7 rounded-xl font-display font-semibold text-sm md:text-base hover:brightness-110 transition-all disabled:opacity-60"
                 >
                   {dishLoading ? "Thinking…" : "Start cooking"}
                 </button>
               </form>
-              <div className="mt-4 flex justify-center">
+              <div className="mt-3 flex justify-center">
                 <ReceipeCounter userId={userId} isPremium={isPremium} />
               </div>
-              <div className="mt-5 flex items-center justify-center gap-3 text-xs md:text-sm text-foreground/70">
+              <div className="mt-3 flex items-center justify-center gap-3 text-xs md:text-sm text-foreground/70">
                 <span className="text-[var(--accent-gold)] tracking-widest">★★★★★</span>
                 <span className="font-semibold">12,000+ meals cooked this week</span>
               </div>
-              <div className="mt-4 flex justify-center">
+              <div className="mt-3 flex justify-center">
                 <Link
                   to="/sell"
                   className="group inline-flex items-center gap-2 rounded-full border border-[var(--accent-gold)]/40 bg-[var(--accent-gold)]/10 px-4 py-2 text-xs md:text-sm font-semibold text-foreground hover:bg-[var(--accent-gold)]/20 transition-all shadow-sm"
@@ -1017,7 +1017,7 @@ function Index() {
           </section>
 
           <section className="lg:col-span-12">
-            <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-dark)] rounded-[2rem] md:rounded-[2.5rem] text-white relative overflow-hidden">
+            <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-10 md:py-14 bg-[var(--surface-dark)] rounded-[2rem] md:rounded-[2.5rem] text-white relative overflow-hidden">
               <div
                 aria-hidden
                 className="absolute -top-24 -right-24 size-72 rounded-full bg-primary/20 blur-3xl"
@@ -1076,6 +1076,16 @@ function Index() {
           </section>
 
           <section className="lg:col-span-7 space-y-5">
+            {!pantryMode && (!receipes || receipes.length === 0) && !loading && (
+              <PopularCombos
+                onPick={(combo) => {
+                  setIngredients(combo);
+                  requestAnimationFrame(() => {
+                    pantryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  });
+                }}
+              />
+            )}
             {pantryMode && (loading || (receipes && receipes.length > 0)) && (
               <div className="flex items-baseline justify-between">
                 <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
@@ -1126,17 +1136,17 @@ function Index() {
 
         <PremiumRecipesStrip />
 
-        <section className="max-w-6xl mx-auto mt-20 md:mt-28 px-4 md:px-0">
+        <section className="max-w-7xl mx-auto mt-12 md:mt-16 px-4 md:px-0">
           <ChefCTA />
         </section>
 
-        <section className="mt-20 md:mt-28">
-          <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
+        <section className="mt-12 md:mt-16">
+          <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-10 md:py-14 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
             <div
               aria-hidden
               className="absolute -top-16 -left-16 size-64 rounded-full bg-[var(--accent-gold)]/20 blur-3xl"
             />
-            <div className="max-w-6xl mx-auto relative">
+            <div className="max-w-7xl mx-auto relative">
               <SectionHeader
                 eyebrow="Loved by home cooks"
                 title="What people are saying"
@@ -1209,6 +1219,57 @@ function LoadingSkeleton() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+const POPULAR_COMBOS: { label: string; emoji: string; ingredients: string[] }[] = [
+  { label: "Pasta night", emoji: "🍝", ingredients: ["pasta", "tomato", "garlic", "basil", "olive oil"] },
+  { label: "Chicken & rice", emoji: "🍗", ingredients: ["chicken", "rice", "onion", "garlic", "soy sauce"] },
+  { label: "Stir-fry basics", emoji: "🥢", ingredients: ["egg", "rice", "soy sauce", "ginger", "scallion"] },
+  { label: "Taco Tuesday", emoji: "🌮", ingredients: ["ground beef", "tortilla", "tomato", "onion", "lime"] },
+  { label: "Veggie bowl", emoji: "🥗", ingredients: ["quinoa", "chickpea", "spinach", "lemon", "feta"] },
+  { label: "Cozy curry", emoji: "🍛", ingredients: ["chicken", "coconut milk", "curry paste", "onion", "rice"] },
+];
+
+function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
+  return (
+    <div className="bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)]">
+      <div className="flex items-center gap-3 mb-2">
+        <span className="h-px w-8 bg-accent" />
+        <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
+          Quick start
+        </p>
+      </div>
+      <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-1">
+        Popular pantry combos
+      </h3>
+      <p className="text-sm text-muted-foreground mb-5">
+        Tap one to drop the ingredients in your pantry and hit generate.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {POPULAR_COMBOS.map((c) => (
+          <button
+            key={c.label}
+            type="button"
+            onClick={() => onPick(c.ingredients)}
+            className="group text-left bg-secondary/60 hover:bg-secondary border border-border rounded-2xl p-4 transition-all hover:shadow-[var(--shadow-soft)] hover:-translate-y-0.5"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <span aria-hidden className="text-xl">{c.emoji}</span>
+              <span className="font-display text-base font-semibold tracking-tight">
+                {c.label}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {c.ingredients.join(" · ")}
+            </p>
+            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+              Use these <span aria-hidden>→</span>
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
