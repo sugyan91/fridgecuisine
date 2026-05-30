@@ -4,17 +4,11 @@ export function ChefCTA() {
   return (
     <div className="bg-secondary text-secondary-foreground rounded-[2.5rem] p-8 md:p-14 shadow-[var(--shadow-card)]">
       <div className="space-y-6 max-w-3xl">
-        <p className="font-display text-[10px] tracking-[0.3em] uppercase text-[var(--accent-gold)]">
+        <p className="font-display text-[10px] tracking-[0.3em] uppercase text-primary">
           For chefs &amp; home cooks
         </p>
         <h2 className="font-display text-4xl md:text-6xl uppercase tracking-tight leading-[0.95]">
-          Monetize your{" "}
-          <span
-            className="text-[var(--accent-gold)] italic normal-case tracking-tight"
-            style={{ fontFamily: "var(--font-serif)", fontWeight: 400 }}
-          >
-            culinary flair.
-          </span>
+          Monetize your <span className="text-primary">culinary flair.</span>
         </h2>
         <p className="text-lg text-secondary-foreground/80 max-w-xl leading-relaxed">
           Share your signature dishes with home cooks worldwide. Set your own

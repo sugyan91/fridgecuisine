@@ -15,7 +15,7 @@ export function SiteFooter() {
               />
               <div>
                 <p className="font-display text-lg lowercase tracking-tight">
-                  fridge cuisine<span className="text-[var(--accent-gold)]">.</span>
+                  fridge cuisine<span className="text-primary">.</span>
                 </p>
                 <p className="text-[11px] text-white/55 mt-0.5">
                   Your own AI powered personal chef

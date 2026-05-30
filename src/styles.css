@@ -70,49 +70,49 @@
   --color-surface-cream: var(--surface-cream);
   --color-surface-dark: var(--surface-dark);
   --color-accent-gold: var(--accent-gold);
-  --font-display: "Outfit", system-ui, sans-serif;
-  --font-sans: "Figtree", system-ui, sans-serif;
+  --font-display: "Archivo Black", system-ui, sans-serif;
+  --font-sans: "Hind", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --font-serif: "Instrument Serif", "Fraunces", Georgia, serif;
+  --font-serif: "Fraunces", "Instrument Serif", Georgia, serif;
   --shadow-soft: 0 6px 20px rgb(0 0 0 / 0.08);
   --shadow-card: 0 16px 40px -12px rgb(0 0 0 / 0.18);
 }
 
 :root {
   --radius: 1rem;
-  /* Sage & Cream — calm editorial food magazine palette */
-  --background: oklch(0.955 0.012 90);          /* #f5f0e8 cream */
-  --foreground: oklch(0.32 0.028 140);          /* #2c3a28 deep sage ink */
-  --card: oklch(0.98 0.008 90);                 /* near-white cream */
-  --card-foreground: oklch(0.32 0.028 140);
-  --popover: oklch(0.985 0.006 90);
-  --popover-foreground: oklch(0.32 0.028 140);
-  --primary: oklch(0.63 0.068 140);             /* #7d9b76 sage */
-  --primary-foreground: oklch(0.97 0.012 90);   /* cream */
-  --secondary: oklch(0.32 0.028 140);           /* deep sage ink for dark panels */
-  --secondary-foreground: oklch(0.96 0.012 90);
-  --muted: oklch(0.905 0.024 135);              /* #dce5d4 sage tint */
-  --muted-foreground: oklch(0.55 0.028 140);    /* muted sage */
-  --accent: oklch(0.78 0.05 138);               /* #a8c0a0 light sage accent */
-  --accent-foreground: oklch(0.32 0.028 140);
+  /* Airbnb-inspired — coral primary, near-black ink, warm-neutral surfaces */
+  --background: oklch(0.985 0.008 75);          /* warm off-white */
+  --foreground: oklch(0.26 0 0);               /* #222222 */
+  --card: oklch(0.995 0.004 75);
+  --card-foreground: oklch(0.26 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.26 0 0);
+  --primary: oklch(0.65 0.235 18);             /* #FF385C Rausch */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.26 0 0);                /* #222222 ink */
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.972 0 0);                   /* #F7F7F7 */
+  --muted-foreground: oklch(0.52 0 0);         /* #717171 */
+  --accent: oklch(0.68 0.21 22);               /* #FF5A5F legacy coral */
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.89 0.022 135);              /* sage hairline */
-  --input: oklch(0.89 0.022 135);
-  --ring: oklch(0.63 0.068 140 / 0.45);         /* sage focus ring */
-  /* Brand-legacy tokens remapped to Sage & Cream */
-  --turmeric: oklch(0.63 0.068 140);            /* sage primary */
-  --paprika: oklch(0.63 0.068 140);             /* sage primary */
-  --cardamom: oklch(0.32 0.028 140);            /* deep sage ink */
-  --saffron: oklch(0.905 0.024 135);            /* sage tint */
-  --sage: oklch(0.63 0.068 140);
-  --sage-soft: oklch(0.905 0.024 135);
-  --cream: oklch(0.955 0.012 90);
-  --ink: oklch(0.32 0.028 140);
+  --border: oklch(0.93 0 0);                   /* #EBEBEB hairline */
+  --input: oklch(0.93 0 0);
+  --ring: oklch(0.65 0.235 18 / 0.45);         /* coral focus ring */
+  /* Brand-legacy tokens remapped to Airbnb palette */
+  --turmeric: oklch(0.65 0.235 18);            /* coral */
+  --paprika: oklch(0.65 0.235 18);             /* coral */
+  --cardamom: oklch(0.26 0 0);                 /* ink */
+  --saffron: oklch(0.972 0 0);                 /* warm gray */
+  --sage: oklch(0.52 0 0);
+  --sage-soft: oklch(0.972 0 0);
+  --cream: oklch(1 0 0);
+  --ink: oklch(0.26 0 0);
   /* Section surface bands */
-  --surface-cream: oklch(0.955 0.012 90);       /* cream band */
-  --surface-dark: oklch(0.32 0.028 140);        /* deep sage band */
-  --accent-gold: oklch(0.74 0.075 85);          /* muted mossy gold */
+  --surface-cream: oklch(0.965 0.018 70);       /* warm cream band */
+  --surface-dark: oklch(0.22 0.015 60);         /* warm charcoal band */
+  --accent-gold: oklch(0.78 0.13 80);           /* warm gold */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -171,8 +171,8 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: "Twemoji Country Flags", "Figtree", system-ui, -apple-system,
-      "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Twemoji Country Flags", system-ui, -apple-system, "Segoe UI",
+      Roboto, Helvetica, Arial, sans-serif;
   }
 
 button:not(:disabled),
