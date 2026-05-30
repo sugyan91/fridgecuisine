@@ -558,6 +558,39 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_recipes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cuisine: string | null
+          id: string
+          recipe: Json
+          slug: string
+          title: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cuisine?: string | null
+          id?: string
+          recipe: Json
+          slug: string
+          title: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cuisine?: string | null
+          id?: string
+          recipe?: Json
+          slug?: string
+          title?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
