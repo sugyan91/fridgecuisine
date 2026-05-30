@@ -918,6 +918,10 @@ function Index() {
           </section>
 
           <section className="lg:col-span-12">
+            <HowItWorksStrip />
+          </section>
+
+          <section className="lg:col-span-12">
             <SectionHeader
               eyebrow="Explore by country"
               title="Cook the world tonight"
