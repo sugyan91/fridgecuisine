@@ -1075,6 +1075,10 @@ function Index() {
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
                 counterSlot={<ReceipeCounter userId={userId} isPremium={isPremium} />}
+                kidFriendly={kidFriendly}
+                onKidFriendly={setKidFriendly}
+                showNutrition={showNutrition}
+                onShowNutrition={setShowNutrition}
               />
             </div>
           </section>
