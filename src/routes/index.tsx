@@ -330,7 +330,7 @@ function Index() {
     });
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine, exclude: [], language: language.name },
+        data: { ingredients, dietary, cuisine, exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
@@ -360,7 +360,7 @@ function Index() {
     setReceipes(null);
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], language: language.name },
+        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) toast.error(res.error);
@@ -392,6 +392,8 @@ function Index() {
           dietary,
           cuisine,
           exclude: receipes.map((r) => r.title),
+          kidFriendly,
+          includeNutrition: showNutrition,
           language: language.name,
         },
       });
