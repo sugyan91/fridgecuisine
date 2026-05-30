@@ -904,10 +904,6 @@ function Index() {
           </section>
 
           <section className="lg:col-span-12">
-            <HowItWorksStrip />
-          </section>
-
-          <section className="lg:col-span-12">
             <ChefSellBanner />
           </section>
 
@@ -1009,6 +1005,10 @@ function Index() {
               subtitle="Tap any dish and we'll spin up the full receipe instantly."
             />
             <TrendingDishes onPick={runDishByName} />
+          </section>
+
+          <section className="lg:col-span-12">
+            <HowItWorksStrip />
           </section>
 
           <section ref={pantryRef} className="lg:col-span-5 scroll-mt-32">
