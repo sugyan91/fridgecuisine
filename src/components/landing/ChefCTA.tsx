@@ -42,7 +42,7 @@ export function ChefCTA() {
             Browse chefs
           </Link>
           <p className="text-[11px] uppercase tracking-[0.2em] text-secondary-foreground/50 mt-1 lg:text-right">
-            No subscription · keep 85%
+            No subscription · you keep the lion's share
           </p>
         </div>
       </div>

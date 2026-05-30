@@ -26,7 +26,7 @@ export function ChefSellBanner() {
             <span className="italic font-serif text-[var(--accent-gold)]">deserves an audience.</span>
           </h2>
           <p className="mt-4 md:mt-5 text-sm md:text-base text-white/80 max-w-md">
-            Publish a recipe, set your own price, keep 90%. Reach home cooks hungry for the real thing.
+            Publish a recipe, set your own price, you keep the lion's share. Reach home cooks hungry for the real thing.
           </p>
           <div className="mt-6 md:mt-8 flex flex-wrap items-center gap-4">
             <Link
