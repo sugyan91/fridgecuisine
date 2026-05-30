@@ -3,6 +3,23 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+export type SharedReceipeData = {
+  title: string;
+  blurb?: string;
+  cookTimeMinutes?: number;
+  prepTimeMinutes?: number;
+  totalTimeMinutes?: number;
+  cuisine?: string;
+  usedIngredients?: string[];
+  missingIngredients?: string[];
+  steps?: string[];
+  stepTimings?: number[];
+  substitutions?: string[];
+  dietary?: string[];
+  tips?: string[];
+  serves?: string;
+};
+
 const receipeSchema = z.object({
   title: z.string().trim().min(1).max(200),
   blurb: z.string().max(2000).optional().default(""),
@@ -18,9 +35,7 @@ const receipeSchema = z.object({
   dietary: z.array(z.string().max(40)).max(10).optional(),
   tips: z.array(z.string().max(400)).max(20).optional(),
   serves: z.string().max(40).optional(),
-}).passthrough();
-
-export type SharedReceipeData = z.infer<typeof receipeSchema>;
+});
 
 export type SharedReceipeRow = {
   slug: string;
@@ -42,7 +57,11 @@ function makeSlug(len = 8): string {
 
 export const createSharedReceipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ receipe: receipeSchema }).parse(input))
+  .inputValidator((input) =>
+    z.object({ receipe: receipeSchema.passthrough() }).parse(input) as {
+      receipe: SharedReceipeData;
+    },
+  )
   .handler(async ({ data, context }): Promise<{ slug: string }> => {
     const { supabase, userId } = context;
     const r = data.receipe;
