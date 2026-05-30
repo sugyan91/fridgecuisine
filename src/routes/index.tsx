@@ -799,9 +799,38 @@ function Index() {
 
               {dishResult && (
               <div className="max-w-3xl mx-auto mt-10 bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)]">
-                <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-foreground mb-2">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
                     {dishResult.dishName}
                   </h3>
+                  <ShareButton
+                    isAuthenticated={!!email}
+                    variant="pill"
+                    receipe={{
+                      title: dishResult.dishName,
+                      cuisine: cuisine !== "Any / Surprise Me" ? cuisine : undefined,
+                      usedIngredients: dishResult.ingredients,
+                      missingIngredients: [],
+                      steps: showReceipe ? dishResult.receipe.steps : [],
+                      stepTimings: showReceipe
+                        ? dishResult.receipe.stepTimings ?? undefined
+                        : undefined,
+                      tips: showReceipe ? dishResult.receipe.tips : undefined,
+                      prepTimeMinutes: showReceipe
+                        ? dishResult.receipe.prepTimeMinutes ?? undefined
+                        : undefined,
+                      cookTimeMinutes: showReceipe
+                        ? dishResult.receipe.cookTimeMinutes
+                        : undefined,
+                      totalTimeMinutes: showReceipe
+                        ? dishResult.receipe.totalTimeMinutes ?? undefined
+                        : undefined,
+                      serves: showReceipe
+                        ? dishResult.receipe.serves ?? undefined
+                        : undefined,
+                    }}
+                  />
+                </div>
                 <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mb-3">
                     Ingredients
                   </p>
