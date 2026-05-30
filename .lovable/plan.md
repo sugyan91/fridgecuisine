@@ -1,70 +1,55 @@
-## The problem
+# Lean more on Hugging Face
 
-The homepage currently pitches 5 products in parallel (AI chef, community, marketplace, sell-your-recipe, global cuisines). Each section reads like its own hero. Visitors can't answer "what is this?" in 5 seconds.
+Today only `callChatJSON` uses HF (Llama-3.1-8B), and recipes have no images. We'll do two things, both HF-first with Lovable fallback (current pattern).
 
-## The fix: one promise, four supporting roles
+## 1. Upgrade the HF text model
 
-**Core promise (everything ladders up to this):**
-> "Your AI personal chef. Tell it what's in your fridge — it cooks the world for you."
+In `src/lib/hf-client.server.ts`:
 
-Everything else on the page must visibly *serve* that promise, not compete with it. Each supporting section gets a one-line framing that connects it back to the AI chef.
+- Switch `HF_MODEL` from `meta-llama/Llama-3.1-8B-Instruct` to a stronger model served by HF Inference Providers. Default: **`Qwen/Qwen2.5-72B-Instruct`** (good JSON adherence + multilingual, important since prompts already pass a language). Fallback chain inside HF, in order:
+  1. `Qwen/Qwen2.5-72B-Instruct`
+  2. `meta-llama/Llama-3.3-70B-Instruct`
+  3. `meta-llama/Llama-3.1-8B-Instruct` (current — last resort before Lovable)
+- Loop through the chain: on non-200 or unparseable JSON, try next HF model; only after all HF attempts fail do we fall back to Lovable (unchanged behavior).
+- Keep `temperature: 0.7`, no `response_format` for HF, JSON repair via existing `tryParseJSON`.
 
-| Section | Today's framing | New framing (supporting role) |
-|---|---|---|
-| AI fridge generator | Hero | **Hero — unchanged, sharpened** |
-| Global cuisines (CountryTiles) | "Cook cuisines worldwide" (own hero) | "Don't know what to cook? Pick a country — your AI chef takes it from there." |
-| Community recipes (CommunityStrip) | "What people are cooking" (own hero) | "See what other fridges turned into dinner tonight." (social proof for the AI) |
-| Premium chef recipes (PremiumRecipesStrip) | "Premium chef marketplace" (own hero) | "Want a chef's version instead? Unlock a single recipe for $X." (upgrade path from the free AI) |
-| Sell-your-recipe / ChefCTA + ChefSellBanner | "Monetize your culinary flair" (own hero) | Move to footer-adjacent strip: "Are you a chef? Sell your recipes here →" (one line, one link) |
+Affects all existing HF callers automatically: `receipes.functions.ts`, `dish-helper.functions.ts`, `ingredient-swap.functions.ts`, `community.functions.ts`, etc. No call-site changes.
 
-Result: one hero, one product, three supporting sections, one footer CTA for creators. Nothing is cut.
+## 2. New HF-powered recipe image generation
 
-## Homepage order (new)
+New server function for generating a single hero image per recipe, using HF Inference Providers' image endpoint.
 
-```text
-1. Hero          → AI Personal Chef (fridge input, big and alone)
-2. Live ticker   → social proof (kept)
-3. How it works  → 3 steps, reinforces the AI promise
-4. Cuisines      → "stuck? pick a country" (framed as input to the AI)
-5. Community     → "what other fridges cooked tonight" (social proof)
-6. Premium       → "want a chef's take? unlock one for $X" (monetization)
-7. Testimonials  → kept
-8. Chef CTA      → SINGLE small strip near footer (not a full hero)
-9. Footer
-```
+**New file:** `src/lib/receipe-image.functions.ts`
 
-Remove the standalone `ChefSellBanner` mid-page; merge into the single footer-adjacent `ChefCTA` strip.
+- `createServerFn({ method: "POST" })` named `generateReceipeImage`.
+- Input: `{ dishName: string; ingredients?: string[] }` (zod-validated, dishName 2–200 chars).
+- Prompt template: `"Professional overhead food photography of {dishName}, natural lighting, shallow depth of field, rustic wooden table, garnished, appetizing, high detail"`.
+- Provider chain (HF-first, Lovable fallback):
+  1. **HF**: POST to `https://router.huggingface.co/v1/images/generations` with model `black-forest-labs/FLUX.1-schnell` (fast, free-tier friendly), then `stabilityai/stable-diffusion-xl-base-1.0` as second HF try. Returns base64 PNG.
+  2. **Lovable AI fallback**: `https://ai.gateway.lovable.dev/v1/images/generations` with `google/gemini-2.5-flash-image` (non-streaming, `stream: false`, returns base64 from `data[0].b64_json`). Kept simple — no SSE streaming needed for a card thumbnail.
+- Returns `{ ok: true; dataUrl: string; provider: "huggingface" | "lovable" } | { ok: false; error: string }`.
+- Add helper `callImageGen(...)` inside `hf-client.server.ts` next to existing helpers, exported and reused.
 
-## Copy changes (concrete)
+**Where to surface it:** `src/components/fridge/ReceipeCard.tsx`
+- On first render of a recipe card (after the recipe loads), call `generateReceipeImage` once and display the returned data URL as the card hero image, with a soft skeleton while loading.
+- Cache the data URL in component state for that session; no DB persistence in this pass (keeps scope minimal and avoids storage migration).
+- If generation fails, fall back to the existing card visual (no image).
 
-- **Hero H1:** "Your AI personal chef." **Sub:** "Tell us what's in your fridge. Get recipes from any cuisine in the world — in 30 seconds."
-- **CountryTiles heading:** ~~"Cook cuisines worldwide"~~ → "Not sure what to cook? Pick a country."
-- **CommunityStrip heading:** ~~"Community recipes"~~ → "Tonight's fridges, turned into dinner."
-- **PremiumRecipesStrip heading:** ~~"Premium chef marketplace"~~ → "Want a chef's version? Unlock a single recipe."
-- **ChefCTA (footer strip):** "Are you a chef? Sell your recipes on FridgeCuisine →"
+## 3. Out of scope
 
-Each H2 ends with a verb or link that points back to the AI chef OR the buy-a-recipe upgrade — never a separate brand.
+- No DB table for cached recipe images (can add later if cost becomes an issue).
+- No streaming partials for the image (full image arrives once, simpler client).
+- No changes to fridge-vision (stays on Lovable AI Gemini — HF vision routing was not selected).
+- No UI redesign of cards beyond adding the image slot.
 
-## Monetization clarity (since paying customer = home cooks, one-off purchases)
+## Files touched
 
-Make the upgrade path obvious and singular: free AI recipes → unlock one premium chef recipe for a flat price. The Premium section should preview locked recipes inline (image + chef name + "$X — unlock") rather than feel like a separate marketplace tab. No subscription messaging anywhere on the homepage.
-
-## Files to edit
-
-- `src/routes/index.tsx` — reorder sections, remove duplicate `ChefSellBanner`, swap headings.
-- `src/components/landing/CountryTiles.tsx` — heading + sub copy.
-- `src/components/landing/CommunityStrip.tsx` — heading + sub copy.
-- `src/components/landing/PremiumRecipesStrip.tsx` — heading + sub copy + ensure "unlock for $X" CTA on each card.
-- `src/components/landing/ChefCTA.tsx` — slim to one-line strip.
-- Delete usage of `ChefSellBanner` from homepage (keep the component file in case it's used elsewhere).
-
-## Out of scope
-
-- No new routes, no new DB tables, no auth changes.
-- No pricing logic changes (assumes premium recipe purchase flow already exists).
-- No redesign of the hero visuals — copy + section order + heading reframes only.
-- Logo/brand untouched.
+- edit `src/lib/hf-client.server.ts` — model fallback chain + new `callImageGen` helper.
+- create `src/lib/receipe-image.functions.ts` — `generateReceipeImage` server fn.
+- edit `src/components/fridge/ReceipeCard.tsx` — fetch + render hero image.
 
 ## Success check
 
-After the change, a first-time visitor reading only the H1 + first 3 section headings should be able to answer: *"It's an AI that turns my fridge into recipes, with optional chef recipes I can buy."* If they still can't, we iterate on copy — not on adding more sections.
+After the change:
+- Recipes generated from fridge ingredients should report `provider: "huggingface"` in server logs the majority of the time (visible via `server-function-logs`).
+- Each recipe card shows an AI-generated hero image within ~5–10s, with graceful fallback if both providers fail.
