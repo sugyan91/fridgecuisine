@@ -1,54 +1,82 @@
 ## Goal
-Rotate the "Popular pantry combos" tiles every ~10 hours, drawing from a pool of **500+ combos** so visitors keep seeing fresh, globally diverse ideas.
 
-## Approach
-Pure client-side, deterministic time-bucketed selection. All visitors see the same 6 tiles within a rotation window, then the set changes together at the next bucket boundary. No backend.
+Add four upgrades to AI-generated recipes: **difficulty**, **kid-friendly toggle**, **per-ingredient "I don't have this" swap**, and **optional approximate nutrition (calories + macros)**.
 
-## Changes
+All changes are additive — existing saved recipes keep working (new fields are optional).
 
-### 1. New file: `src/data/popular-combos.ts`
-Export a typed array of **500+ combos**, each `{ label, emoji, ingredients: string[] }`. Curated by cuisine families for global breadth — examples:
+---
 
-- **Italian** (~40): Pasta night, Carbonara, Cacio e pepe, Pesto pasta, Risotto, Margherita, Lasagna, Gnocchi, Caprese, Minestrone…
-- **Mexican / Latin** (~40): Taco Tuesday, Quesadilla, Fajitas, Enchiladas, Chilaquiles, Pozole, Arepas, Ceviche…
-- **East Asian** (~60): Stir-fry, Fried rice, Ramen, Pho, Pad Thai, Bibimbap, Sushi bowl, Mapo tofu, Dumplings, Kung pao…
-- **South Asian** (~40): Cozy curry, Tandoori, Butter chicken, Dal, Biryani, Chana masala, Samosa filling…
-- **Middle East / Mediterranean** (~40): Shakshuka, Mezze board, Hummus bowl, Falafel wrap, Tabbouleh, Kofta…
-- **French / European** (~30): Ratatouille, Croque monsieur, Coq au vin, Galette, Bouillabaisse…
-- **American comfort** (~40): Mac & cheese, Burger night, BBQ pulled pork, Chili, Meatloaf, Grilled cheese…
-- **Breakfast / brunch** (~30): Breakfast hash, Pancake stack, Avocado toast, Omelette, Granola bowl…
-- **Healthy bowls / salads** (~40): Buddha bowl, Quinoa bowl, Poke bowl, Greek salad, Cobb…
-- **Soups / stews** (~30): Lentil soup, Tom yum, French onion, Borscht, Gumbo…
-- **Vegan / vegetarian** (~40): Veggie chili, Mushroom risotto, Cauliflower steak, Tofu scramble…
-- **Sandwiches / wraps** (~30): Banh mi, Reuben, Caprese panini, Wrap…
-- **Desserts** (~30): Chocolate mousse, Tiramisu, Crumble, Pancakes…
-- **African / Caribbean / Brazilian** (~30): Jollof, Tagine, Jerk chicken, Feijoada…
+## 1. Difficulty
 
-Each entry has emoji + 5 representative pantry ingredients. The file is data-only and tree-shake-friendly.
+Easy / Medium / Hard badge on every recipe.
 
-To keep this manageable I will generate the list programmatically during the edit (drawing on standard global recipes), then hand-check for duplicates and obviously broken entries before committing.
+- Extend the AI JSON schema in `src/lib/receipes.functions.ts`:
+  - Add `difficulty: "easy" | "medium" | "hard"` to `Receipe` type and `responseSchema` (optional, defaulted).
+  - Prompt rule: "Set `difficulty` based on technique + step count + time (easy ≤25min and ≤5 simple steps; hard = advanced technique or >45min)."
+- Render a small pill in `ReceipeCard.tsx` (both collapsed and expanded) next to time/cuisine — color by level (turmeric / saffron / paprika).
+- Persisted automatically via the existing `recipe` JSONB in `saved_recipes` (no migration needed).
 
-### 2. Edit `src/routes/index.tsx`
-- Remove the inline `POPULAR_COMBOS` constant.
-- Import the new list from `@/data/popular-combos`.
-- Inside `PopularCombos`, add (memoized):
-  ```ts
-  const ROTATION_HOURS = 10; // within 8–12h band
-  const bucket = Math.floor(Date.now() / (ROTATION_HOURS * 3600 * 1000));
-  const visible = useMemo(() => seededPick(ALL_COMBOS, 6, bucket), [bucket]);
+---
+
+## 2. Kid-friendly toggle
+
+A toggle in the ingredient/filters area that biases generation toward mild, familiar, kid-approved dishes.
+
+- New boolean state `kidFriendly` in `src/routes/index.tsx`, passed in `generate({ ... kidFriendly })`.
+- Add to `inputSchema` and prompt: when true, "Prefer mild flavors, no chili heat, no strong funk (blue cheese, anchovy, fish sauce), nothing raw, hide vegetables in sauces/blends, fun shapes/finger foods where natural."
+- New compact toggle button in the filters row of `IngredientInput.tsx` (or directly in index.tsx next to the dietary/cuisine controls — whichever fits the existing layout) styled like the existing chip toggles. Label: "Kid-friendly 🧒".
+- Surface a small "Kid-friendly" badge on cards when the flag was used (passed through on the Receipe object).
+
+---
+
+## 3. "I don't have this ingredient" → swap
+
+Per-ingredient swap inside the expanded recipe view.
+
+- Add `swapIngredient` server fn in a new `src/lib/ingredient-swap.functions.ts`:
+  - Input: `{ recipeTitle, cuisine, ingredient, pantry: string[], dietary: string[] }`.
+  - Calls the LLM for 1–2 substitution suggestions tailored to the user's pantry, plus a one-line note on how it changes the dish.
+  - Returns `{ swaps: { name: string; note: string }[] }`.
+- In `ReceipeCard.tsx` (expanded view), render a small ✕/↻ button next to each item in `usedIngredients` and `missingIngredients`. Clicking opens a popover with suggested swaps and an "Apply" action that:
+  - Updates local recipe state (replaces the ingredient in the list and appends the swap note to `substitutions`).
+  - If the recipe is already saved, re-saves the updated copy via existing `saveReceipe`.
+- Loading + error states inline; no schema changes.
+
+---
+
+## 4. Optional approximate nutrition
+
+Calories + macros (protein/carbs/fat) per serving, clearly labeled as approximate, and gated by a user toggle so we don't slow generation for users who don't care.
+
+- User preference: add `showNutrition` boolean to `user_preferences` is overkill — instead store as a simple `useLocalStorage("show-nutrition", false)` flag (matches the existing `use-local-storage` hook). No DB migration.
+- Extend `inputSchema` + prompt with `includeNutrition`. When true, prompt asks for:
   ```
-  where `seededPick` uses a tiny mulberry32 PRNG seeded by the bucket — deterministic, no deps.
-- Render `visible` in the existing grid; tile markup/styling untouched.
+  "nutrition": { "servings": 2, "perServing": { "calories": 420, "proteinG": 18, "carbsG": 52, "fatG": 14 } }
+  ```
+  Mark all numbers as estimates in the system prompt.
+- Add `nutrition` (optional) to `Receipe` type + `responseSchema`.
+- Render in expanded `ReceipeCard.tsx` as a small "Approx. per serving" strip (only when present). Include a tiny "estimates only" disclaimer.
+- Add a toggle in the filters area: "Show nutrition (approx.)".
 
-## Why this shape
-- **Deterministic per window** → same 6 tiles for every visitor in a ~10h window, no flicker on re-mount.
-- **500+ pool** → with 6 shown per window, the rotation effectively never repeats for months.
-- **Zero backend** → no DB, cron, or server function.
-- **Easy to tune** → change `ROTATION_HOURS` (8–12) or extend the data file freely.
+---
+
+## Files touched
+
+```
+src/lib/receipes.functions.ts          # difficulty, kidFriendly, nutrition in schema + prompt
+src/lib/ingredient-swap.functions.ts   # NEW server fn for swaps
+src/lib/saved-receipes.functions.ts    # widen receipeSchema (add optional difficulty + nutrition)
+src/components/fridge/ReceipeCard.tsx  # render difficulty badge, nutrition strip, per-ingredient swap UI
+src/components/fridge/IngredientInput.tsx  # (or index.tsx) kid-friendly + nutrition toggles
+src/routes/index.tsx                   # state for kidFriendly + showNutrition, pass to generate
+```
+
+No database migrations. No new env vars. Uses existing Lovable AI Gateway.
+
+---
 
 ## Out of scope
-- Per-user personalization or A/B
-- Server-side rotation
-- Transition animation between buckets
-- Visual restyle of the tiles
-- Localization of combo labels
+
+- Recipe images (item 1 from earlier list) — skipped per your selection.
+- Storing nutrition preference server-side (local-only is enough for v1).
+- Editing nutrition values manually.
