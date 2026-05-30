@@ -701,12 +701,12 @@ function Index() {
         </header>
 
         <FreeTierBanner isPremium={isPremium} userId={userId} />
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           <section className="lg:col-span-12 relative">
             {/* Hero food collage backdrop */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -top-8 md:-top-16 -z-10 h-[520px] md:h-[640px] overflow-hidden"
+              className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 -z-10 h-[360px] md:h-[440px] overflow-hidden"
             >
               {/* Soft warm radial wash */}
               <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_25%,oklch(0.965_0.05_55_/_0.9)_0%,transparent_70%)]" />
@@ -740,15 +740,15 @@ function Index() {
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
 
-            <div className="max-w-3xl mx-auto text-center pt-2 md:pt-6 pb-4 relative">
-              <div className="flex items-center justify-center gap-3 mb-5">
+            <div className="max-w-3xl mx-auto text-center pt-1 pb-2 relative">
+              <div className="flex items-center justify-center gap-3 mb-3">
                 <span className="h-px w-8 bg-accent" />
                 <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
                   Dish to Receipe
                 </p>
                 <span className="h-px w-8 bg-accent" />
               </div>
-              <h1 className="font-display text-4xl md:text-6xl lg:text-7xl uppercase tracking-tight leading-[0.9] text-foreground mb-6">
+              <h1 className="font-display text-3xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9] text-foreground mb-4">
                 What food is living rent-free<br className="hidden sm:inline" /> in your{" "}
                 <span
                   className="text-accent italic normal-case tracking-tight"
@@ -758,10 +758,10 @@ function Index() {
                 </span>{" "}
                 right now?
               </h1>
-              <div className="min-h-[3.5rem] md:min-h-[3rem] mb-8 flex items-center justify-center overflow-hidden">
+              <div className="min-h-[3rem] md:min-h-[2.5rem] mb-4 flex items-center justify-center overflow-hidden">
                 <p
                   key={promptIndex}
-                  className={`text-base md:text-lg leading-relaxed text-muted-foreground max-w-xl ${
+                  className={`text-sm md:text-base leading-relaxed text-muted-foreground max-w-xl ${
                     promptAnim === "in"
                       ? "animate-fade-down-in"
                       : "animate-fade-down-out"
@@ -777,24 +777,24 @@ function Index() {
                   value={dishQuery}
                   onChange={(e) => setDishQuery(e.target.value)}
                   placeholder={`eg: ${worldFoods[worldFoodIndex].food} from ${worldFoods[worldFoodIndex].country}`}
-                  className="w-full bg-card border border-border rounded-2xl py-4 sm:py-5 md:py-6 pl-6 pr-4 sm:pr-36 md:pr-44 text-base md:text-lg shadow-[var(--shadow-soft)] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/60"
+                  className="w-full bg-card border border-border rounded-2xl py-3 sm:py-4 md:py-5 pl-5 pr-4 sm:pr-36 md:pr-44 text-base md:text-lg shadow-[var(--shadow-soft)] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/60"
                 />
                 <button
                   type="submit"
                   disabled={dishLoading}
-                  className="mt-2 w-full py-3 sm:mt-0 sm:w-auto sm:py-0 sm:absolute sm:right-2 sm:top-2 sm:bottom-2 bg-primary text-primary-foreground px-5 md:px-7 rounded-xl font-display font-semibold text-sm md:text-base hover:brightness-110 transition-all disabled:opacity-60"
+                  className="mt-2 w-full py-3 sm:mt-0 sm:w-auto sm:py-0 sm:absolute sm:right-1.5 sm:top-1.5 sm:bottom-1.5 bg-primary text-primary-foreground px-5 md:px-7 rounded-xl font-display font-semibold text-sm md:text-base hover:brightness-110 transition-all disabled:opacity-60"
                 >
                   {dishLoading ? "Thinking…" : "Start cooking"}
                 </button>
               </form>
-              <div className="mt-4 flex justify-center">
+              <div className="mt-3 flex justify-center">
                 <ReceipeCounter userId={userId} isPremium={isPremium} />
               </div>
-              <div className="mt-5 flex items-center justify-center gap-3 text-xs md:text-sm text-foreground/70">
+              <div className="mt-3 flex items-center justify-center gap-3 text-xs md:text-sm text-foreground/70">
                 <span className="text-[var(--accent-gold)] tracking-widest">★★★★★</span>
                 <span className="font-semibold">12,000+ meals cooked this week</span>
               </div>
-              <div className="mt-4 flex justify-center">
+              <div className="mt-3 flex justify-center">
                 <Link
                   to="/sell"
                   className="group inline-flex items-center gap-2 rounded-full border border-[var(--accent-gold)]/40 bg-[var(--accent-gold)]/10 px-4 py-2 text-xs md:text-sm font-semibold text-foreground hover:bg-[var(--accent-gold)]/20 transition-all shadow-sm"
