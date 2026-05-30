@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Mail } from "lucide-react";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 export function SiteFooter() {
@@ -61,11 +62,30 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-white/55">
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col items-center gap-4 text-xs text-white/55">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+            <a
+              href="mailto:main@fridgecuisine.com"
+              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+            >
+              <Mail size={14} />
+              main@fridgecuisine.com
+            </a>
+            <span className="hidden sm:inline text-white/25">·</span>
+            <a
+              href="mailto:support@fridgecuisine.com"
+              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+            >
+              <Mail size={14} />
+              support@fridgecuisine.com
+            </a>
+          </div>
+          <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <p>
             <span className="font-semibold text-white/85">$5.99/mo</span> · Premium · unlimited recipes
           </p>
           <p>© {new Date().getFullYear()} Fridge Cuisine. Made with garlic and butter.</p>
+          </div>
         </div>
       </div>
     </footer>
