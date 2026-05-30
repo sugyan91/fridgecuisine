@@ -15,6 +15,17 @@ export type SavedReceipeData = {
   stepTimings?: number[];
   substitutions?: string[];
   dietary?: string[];
+  difficulty?: "easy" | "medium" | "hard";
+  kidFriendly?: boolean;
+  nutrition?: {
+    servings?: number;
+    perServing?: {
+      calories?: number;
+      proteinG?: number;
+      carbsG?: number;
+      fatG?: number;
+    };
+  };
 };
 
 export type SavedReceipeRow = {
@@ -40,6 +51,21 @@ const receipeSchema = z.object({
   stepTimings: z.array(z.number().int().min(0).max(600)).max(40).optional(),
   substitutions: z.array(z.string().max(400)).max(40).optional(),
   dietary: z.array(z.string().max(40)).max(10).optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+  kidFriendly: z.boolean().optional(),
+  nutrition: z
+    .object({
+      servings: z.number().int().min(1).max(20).optional(),
+      perServing: z
+        .object({
+          calories: z.number().int().min(0).max(5000).optional(),
+          proteinG: z.number().int().min(0).max(500).optional(),
+          carbsG: z.number().int().min(0).max(500).optional(),
+          fatG: z.number().int().min(0).max(500).optional(),
+        })
+        .optional(),
+    })
+    .optional(),
 }).passthrough();
 
 export const listSavedReceipes = createServerFn({ method: "GET" })
