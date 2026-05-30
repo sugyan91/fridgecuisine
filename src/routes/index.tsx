@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { Menu, X } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -28,6 +29,7 @@ import {
   type SavedReceipeRow,
 } from "@/lib/saved-receipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
+import { POPULAR_COMBOS } from "@/data/popular-combos";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
