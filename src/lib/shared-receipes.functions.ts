@@ -66,18 +66,20 @@ export const createSharedReceipe = createServerFn({ method: "POST" })
     throw new Error("Couldn't generate a unique share link, please try again.");
   });
 
+type GetSharedResult = { row: SharedReceipeRow | null };
+
 export const getSharedReceipe = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({ slug: z.string().min(4).max(32).regex(/^[a-z0-9]+$/) }).parse(input),
   )
-  .handler(async ({ data }): Promise<{ row: SharedReceipeRow } | { row: null }> => {
+  .handler(async ({ data }): Promise<GetSharedResult> => {
     const { data: row, error } = await supabaseAdmin
       .from("shared_recipes")
       .select("slug, title, cuisine, recipe, view_count, created_at")
       .eq("slug", data.slug)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!row) return { row: null };
+    if (!row) return { row: null } as GetSharedResult;
 
     // Best-effort view count bump.
     supabaseAdmin
