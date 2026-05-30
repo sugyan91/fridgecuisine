@@ -12,6 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
 import { saveReceipe as saveReceipeFn } from "@/lib/saved-receipes.functions";
+import { sendWelcomeEmail } from "@/lib/email/welcome.functions";
 import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
 import { LanguageProvider } from "@/lib/language";
 
@@ -190,6 +191,15 @@ function RootComponent() {
       if (event === "SIGNED_IN" && session) {
         // Fire-and-forget: drain any receipe the user tried to save before signup
         drainPendingSave();
+        // Fire-and-forget welcome email (server-side idempotent — at most one per user).
+        try {
+          const flagKey = `fc-welcome-sent-${session.user.id}`;
+          if (!localStorage.getItem(flagKey)) {
+            sendWelcomeEmail().then(() => {
+              try { localStorage.setItem(flagKey, "1"); } catch {}
+            }).catch(() => {});
+          }
+        } catch {}
       }
       router.invalidate();
       queryClient.invalidateQueries();

@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { sendTransactionalEmailServer } from "@/lib/email/send.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export type SavedReceipeData = {
   title: string;
@@ -102,7 +104,28 @@ export const saveReceipe = createServerFn({ method: "POST" })
       .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    return { row: row as unknown as SavedReceipeRow };
+    const typed = row as unknown as SavedReceipeRow;
+    // Fire-and-forget save confirmation email (idempotent per user+recipe).
+    (async () => {
+      try {
+        const { data: u } = await supabaseAdmin.auth.admin.getUserById(userId);
+        if (u?.user?.email) {
+          await sendTransactionalEmailServer({
+            templateName: "recipe-saved",
+            recipientEmail: u.user.email,
+            idempotencyKey: `saved-${userId}-${typed.id}`,
+            templateData: {
+              recipeTitle: typed.title,
+              cuisine: typed.cuisine ?? undefined,
+              cookbookUrl: "https://fridgecuisine.com/cookbook",
+            },
+          });
+        }
+      } catch (e) {
+        console.error("recipe-saved email failed", e);
+      }
+    })();
+    return { row: typed };
   });
 
 export const unsaveReceipe = createServerFn({ method: "POST" })

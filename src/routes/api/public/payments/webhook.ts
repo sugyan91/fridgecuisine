@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { type StripeEnv, verifyWebhook } from "@/lib/stripe.server";
+import { sendTransactionalEmailServer } from "@/lib/email/send.server";
 
 let _supabase: ReturnType<typeof createClient> | null = null;
 function getSupabase() {
@@ -117,6 +118,32 @@ async function handleCheckoutCompleted(session: any) {
     { onConflict: "stripe_checkout_session_id" },
   );
   if (error) console.error("Failed to upsert recipe_purchase:", error);
+
+  // Fire-and-forget purchase receipt email.
+  try {
+    const buyerEmail: string | undefined =
+      session.customer_details?.email ?? session.customer_email ?? undefined;
+    if (buyerEmail) {
+      const amount = session.amount_total
+        ? (Number(session.amount_total) / 100).toFixed(2)
+        : "0.00";
+      await sendTransactionalEmailServer({
+        templateName: "purchase-receipt",
+        recipientEmail: buyerEmail,
+        idempotencyKey: `receipt-${sessionId}`,
+        templateData: {
+          recipeTitle: session.metadata?.recipe_title ?? "your recipe",
+          chefName: session.metadata?.chef_name ?? undefined,
+          amount,
+          currency: (session.currency as string) ?? "usd",
+          orderId: sessionId,
+          recipeUrl: "https://fridgecuisine.com/cookbook",
+        },
+      });
+    }
+  } catch (e) {
+    console.error("purchase-receipt email failed", e);
+  }
 }
 
 async function handleWebhook(req: Request, env: StripeEnv) {
