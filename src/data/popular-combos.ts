@@ -1,5 +1,4 @@
 // Auto-generated curated list of global pantry combos (500+).
-// Used by the home page to rotate visible tiles every ROTATION_HOURS.
 export type PantryCombo = { label: string; emoji: string; ingredients: string[] };
 
 export const POPULAR_COMBOS: PantryCombo[] = [
@@ -5208,17 +5207,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
   },
   {
     "emoji": "🥣",
-    "label": "Minestrone",
-    "ingredients": [
-      "beans",
-      "tomato",
-      "carrot",
-      "celery",
-      "pasta"
-    ]
-  },
-  {
-    "emoji": "🥣",
     "label": "Split pea",
     "ingredients": [
       "split pea",
@@ -5406,17 +5394,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
   },
   {
     "emoji": "🥣",
-    "label": "Egg drop soup",
-    "ingredients": [
-      "egg",
-      "chicken broth",
-      "cornstarch",
-      "scallion",
-      "white pepper"
-    ]
-  },
-  {
-    "emoji": "🥣",
     "label": "Pho broth",
     "ingredients": [
       "beef bones",
@@ -5435,17 +5412,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
       "egg",
       "mushroom",
       "ginger"
-    ]
-  },
-  {
-    "emoji": "🥣",
-    "label": "Beef stew",
-    "ingredients": [
-      "beef chuck",
-      "potato",
-      "carrot",
-      "onion",
-      "red wine"
     ]
   },
   {
@@ -5479,17 +5445,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
       "chili",
       "lemon",
       "sea salt"
-    ]
-  },
-  {
-    "emoji": "🍳",
-    "label": "Eggs benedict",
-    "ingredients": [
-      "english muffin",
-      "egg",
-      "ham",
-      "hollandaise",
-      "chives"
     ]
   },
   {
@@ -5548,17 +5503,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
     ]
   },
   {
-    "emoji": "🥐",
-    "label": "Croissant breakfast",
-    "ingredients": [
-      "croissant",
-      "butter",
-      "jam",
-      "coffee",
-      "fruit"
-    ]
-  },
-  {
     "emoji": "🍓",
     "label": "Yogurt parfait",
     "ingredients": [
@@ -5611,17 +5555,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
       "yogurt",
       "granola",
       "chia"
-    ]
-  },
-  {
-    "emoji": "🍳",
-    "label": "Huevos rancheros",
-    "ingredients": [
-      "egg",
-      "tortilla",
-      "salsa",
-      "beans",
-      "cheese"
     ]
   },
   {
@@ -5956,17 +5889,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
   },
   {
     "emoji": "🥪",
-    "label": "Lobster roll",
-    "ingredients": [
-      "bun",
-      "lobster",
-      "mayo",
-      "celery",
-      "chives"
-    ]
-  },
-  {
-    "emoji": "🥪",
     "label": "Shrimp po boy",
     "ingredients": [
       "baguette",
@@ -6073,17 +5995,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
       "pine nut",
       "parmesan",
       "olive oil"
-    ]
-  },
-  {
-    "emoji": "🥘",
-    "label": "Mushroom risotto",
-    "ingredients": [
-      "arborio rice",
-      "mushroom",
-      "parmesan",
-      "white wine",
-      "shallot"
     ]
   },
   {
@@ -6637,50 +6548,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
     ]
   },
   {
-    "emoji": "🍮",
-    "label": "Crème brûlée",
-    "ingredients": [
-      "cream",
-      "egg yolk",
-      "sugar",
-      "vanilla",
-      "salt"
-    ]
-  },
-  {
-    "emoji": "🍮",
-    "label": "Flan",
-    "ingredients": [
-      "egg",
-      "milk",
-      "sugar",
-      "vanilla",
-      "caramel"
-    ]
-  },
-  {
-    "emoji": "🍮",
-    "label": "Panna cotta",
-    "ingredients": [
-      "cream",
-      "sugar",
-      "vanilla",
-      "gelatin",
-      "berries"
-    ]
-  },
-  {
-    "emoji": "🍰",
-    "label": "Tiramisu",
-    "ingredients": [
-      "mascarpone",
-      "espresso",
-      "ladyfingers",
-      "cocoa",
-      "egg"
-    ]
-  },
-  {
     "emoji": "🍫",
     "label": "Chocolate mousse",
     "ingredients": [
@@ -6744,28 +6611,6 @@ export const POPULAR_COMBOS: PantryCombo[] = [
       "graham cracker",
       "whipped cream",
       "butter"
-    ]
-  },
-  {
-    "emoji": "🥧",
-    "label": "Pecan pie",
-    "ingredients": [
-      "pecan",
-      "corn syrup",
-      "egg",
-      "butter",
-      "pie crust"
-    ]
-  },
-  {
-    "emoji": "🥧",
-    "label": "Pumpkin pie",
-    "ingredients": [
-      "pumpkin",
-      "cream",
-      "egg",
-      "sugar",
-      "cinnamon"
     ]
   },
   {
