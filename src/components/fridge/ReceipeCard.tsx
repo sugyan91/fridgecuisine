@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Receipe } from "@/lib/receipes.functions";
 import { ReceipeTimers } from "./ReceipeTimers";
 import { StepTimer } from "./StepTimer";
+import { ShareButton } from "./ShareButton";
 
 type Props = {
   receipe: Receipe;
@@ -10,9 +11,17 @@ type Props = {
   onToggleSave: () => void;
   dietary?: string[];
   showMissing?: boolean;
+  isAuthenticated?: boolean;
 };
 
-export function ReceipeCard({ receipe, index, saved, onToggleSave, showMissing = true }: Props) {
+export function ReceipeCard({
+  receipe,
+  index,
+  saved,
+  onToggleSave,
+  showMissing = true,
+  isAuthenticated = false,
+}: Props) {
   const [open, setOpen] = useState(false);
   const allIngredients = [...receipe.usedIngredients, ...receipe.missingIngredients];
   const dietary = receipe.dietary ?? [];
@@ -165,6 +174,11 @@ export function ReceipeCard({ receipe, index, saved, onToggleSave, showMissing =
             >
               {saved ? "★ Saved" : "♡ Save Receipe"}
             </button>
+            <ShareButton
+              receipe={receipe}
+              isAuthenticated={isAuthenticated}
+              variant="full"
+            />
           </div>
         </div>
       </article>
@@ -227,16 +241,23 @@ export function ReceipeCard({ receipe, index, saved, onToggleSave, showMissing =
           >
             View Receipe
           </button>
-          <button
-            type="button"
-            onClick={onToggleSave}
-            aria-label={saved ? "Unsave receipe" : "Save receipe"}
-            className={`size-10 border-2 border-border rounded-full grid place-items-center transition-colors ${
-              saved ? "bg-paprika text-white" : "bg-white hover:bg-paprika/10"
-            }`}
-          >
-            {saved ? "★" : "♡"}
-          </button>
+          <div className="flex items-center gap-2">
+            <ShareButton
+              receipe={receipe}
+              isAuthenticated={isAuthenticated}
+              variant="icon"
+            />
+            <button
+              type="button"
+              onClick={onToggleSave}
+              aria-label={saved ? "Unsave receipe" : "Save receipe"}
+              className={`size-10 border-2 border-border rounded-full grid place-items-center transition-colors ${
+                saved ? "bg-paprika text-white" : "bg-white hover:bg-paprika/10"
+              }`}
+            >
+              {saved ? "★" : "♡"}
+            </button>
+          </div>
         </div>
       </div>
     </article>

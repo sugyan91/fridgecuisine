@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as ShopReceipeIdRouteImport } from './routes/shop.$receipeId'
+import { Route as SharedSlugRouteImport } from './routes/shared.$slug'
 import { Route as CommunityReceipeIdRouteImport } from './routes/community.$receipeId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
@@ -73,6 +74,11 @@ const CommunityIndexRoute = CommunityIndexRouteImport.update({
 const ShopReceipeIdRoute = ShopReceipeIdRouteImport.update({
   id: '/shop/$receipeId',
   path: '/shop/$receipeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SharedSlugRoute = SharedSlugRouteImport.update({
+  id: '/shared/$slug',
+  path: '/shared/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommunityReceipeIdRoute = CommunityReceipeIdRouteImport.update({
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/shared/$slug': typeof SharedSlugRoute
   '/shop/$receipeId': typeof ShopReceipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/shared/$slug': typeof SharedSlugRoute
   '/shop/$receipeId': typeof ShopReceipeIdRoute
   '/community': typeof CommunityIndexRoute
   '/shop': typeof ShopIndexRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/shared/$slug': typeof SharedSlugRoute
   '/shop/$receipeId': typeof ShopReceipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
@@ -222,6 +231,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$receipeId'
+    | '/shared/$slug'
     | '/shop/$receipeId'
     | '/community/'
     | '/shop/'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$receipeId'
+    | '/shared/$slug'
     | '/shop/$receipeId'
     | '/community'
     | '/shop'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$receipeId'
+    | '/shared/$slug'
     | '/shop/$receipeId'
     | '/community/'
     | '/shop/'
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CommunityReceipeIdRoute: typeof CommunityReceipeIdRoute
+  SharedSlugRoute: typeof SharedSlugRoute
   ShopReceipeIdRoute: typeof ShopReceipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
@@ -359,6 +372,13 @@ declare module '@tanstack/react-router' {
       path: '/shop/$receipeId'
       fullPath: '/shop/$receipeId'
       preLoaderRoute: typeof ShopReceipeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shared/$slug': {
+      id: '/shared/$slug'
+      path: '/shared/$slug'
+      fullPath: '/shared/$slug'
+      preLoaderRoute: typeof SharedSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/community/$receipeId': {
@@ -478,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CommunityReceipeIdRoute: CommunityReceipeIdRoute,
+  SharedSlugRoute: SharedSlugRoute,
   ShopReceipeIdRoute: ShopReceipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
@@ -489,3 +510,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
