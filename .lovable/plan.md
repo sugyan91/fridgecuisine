@@ -1,30 +1,21 @@
-# Surface "How it works" above the fold
+# Redesign "Popular pantry combos"
 
-Move the 3-step explainer right under the hero so users understand the product before scrolling. Remove the heavy dark panel further down.
+Replace the dull gray-boxes design with the chosen "Appetizing pantry grid" direction: white cards on a transparent section, tinted rounded-square emoji badges, bold uppercase titles, and an elegant italic serif ingredient line.
 
-## Changes
+## Changes (single file: `src/routes/index.tsx`, function `PopularCombos`)
 
-**1. New compact strip — `src/components/landing/HowItWorksStrip.tsx` (new file)**
-- Horizontal 3-step layout: each step is a card with a big numeral, a 1-line title, and a 1-line description.
-- `grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4`, light card backgrounds (`bg-card border border-border rounded-2xl p-5`).
-- Connecting hairline between cards on desktop (subtle decorative line).
-- Compact — fits in ~160px tall.
-
-**2. Mount it in the hero — `src/routes/index.tsx`**
-- Insert `<HowItWorksStrip />` right after the hero section closes (after the `dishResult` block ends, before the `Explore by country` section).
-- Wrap in `<section className="lg:col-span-12 mt-2 md:mt-4">…`.
-
-**3. Remove the old dark panel — `src/routes/index.tsx`**
-- Delete the entire `<section className="lg:col-span-12">…dark surface…<HowItWorks /></section>` block.
-- Remove the now-unused `import { HowItWorks } from "@/components/landing/HowItWorks";`.
-
-**4. (Optional) Delete unused component file**
-- Leave `src/components/landing/HowItWorks.tsx` on disk in case it's reused later. No deletion.
+1. **Drop the heavy outer card wrapper** — no more `bg-card border rounded-[2rem] p-6` shell. The section sits directly on the page background so the white cards pop.
+2. **New header** — small red pill + `CHEF'S PICKS` eyebrow, then a bold uppercase `Popular pantry` heading with the word `combos` in the accent-colored italic serif (matches the hero treatment).
+3. **2-column grid on all sizes** — `grid-cols-2 gap-3 md:gap-4` (was 1 col on mobile, 2 on sm). Denser, no awkward stacking.
+4. **New card style** — each combo is a white card with `rounded-[2rem]`, soft drop shadow, no heavy border. Inside:
+   - 48×48 tinted rounded-square badge holding the emoji (tint rotates per index: amber, red, emerald, sky, fuchsia, orange).
+   - Bold uppercase title (`font-display font-black`).
+   - Italic serif ingredient line, trimmed to first 3 ingredients for cleanness.
+5. **Hover/active** — subtle `-translate-y-0.5` lift + deeper shadow on hover, `scale-[0.98]` on tap. Drop the old "Use these →" hover label (the card itself is the affordance).
 
 ## Out of scope
-Colors, copy of the steps (reuse existing wording), other sections.
+- `POPULAR_COMBOS` data, click behavior, surrounding sections.
+- No new files, no token changes; uses existing `--accent`, `--font-serif`, and Tailwind tint utilities already in the project.
 
-## Technical notes
-- Copy the 3 step titles/descriptions verbatim from the current `HowItWorks.tsx` so the message stays identical.
-- All edits Tailwind-only, no token changes.
-- Verify at 390px (current) and 1280px.
+## Verify
+At 390px viewport: 2 columns, no overflow, emoji badges colored, italic serif visible on ingredient line.
