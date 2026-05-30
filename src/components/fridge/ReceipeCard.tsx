@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import type { Receipe } from "@/lib/receipes.functions";
 import { ReceipeTimers } from "./ReceipeTimers";
 import { StepTimer } from "./StepTimer";
 import { ShareButton } from "./ShareButton";
+import { swapIngredient, type IngredientSwap } from "@/lib/ingredient-swap.functions";
 
 type Props = {
   receipe: Receipe;
@@ -12,6 +14,8 @@ type Props = {
   dietary?: string[];
   showMissing?: boolean;
   isAuthenticated?: boolean;
+  pantry?: string[];
+  onRecipeUpdate?: (next: Receipe) => void;
 };
 
 export function ReceipeCard({
@@ -21,13 +25,91 @@ export function ReceipeCard({
   onToggleSave,
   showMissing = true,
   isAuthenticated = false,
+  dietary: dietaryProp,
+  pantry = [],
+  onRecipeUpdate,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [swapOpen, setSwapOpen] = useState<{ kind: "used" | "missing"; name: string } | null>(null);
+  const [swapLoading, setSwapLoading] = useState(false);
+  const [swapResults, setSwapResults] = useState<IngredientSwap[] | null>(null);
+  const [swapError, setSwapError] = useState<string | null>(null);
+  const runSwap = useServerFn(swapIngredient);
   const allIngredients = [...receipe.usedIngredients, ...receipe.missingIngredients];
   const dietary = receipe.dietary ?? [];
   const timings = receipe.stepTimings ?? [];
   const prep = receipe.prepTimeMinutes;
   const total = receipe.totalTimeMinutes;
+  const difficulty = receipe.difficulty;
+  const nutrition = receipe.nutrition?.perServing;
+  const servings = receipe.nutrition?.servings;
+
+  const difficultyStyles: Record<NonNullable<Receipe["difficulty"]>, string> = {
+    easy: "bg-turmeric",
+    medium: "bg-saffron text-white",
+    hard: "bg-paprika text-white",
+  };
+
+  const openSwap = async (kind: "used" | "missing", name: string) => {
+    setSwapOpen({ kind, name });
+    setSwapResults(null);
+    setSwapError(null);
+    setSwapLoading(true);
+    try {
+      const res = await runSwap({
+        data: {
+          recipeTitle: receipe.title,
+          cuisine: receipe.cuisine,
+          ingredient: name,
+          pantry,
+          dietary: dietaryProp ?? receipe.dietary ?? [],
+        },
+      });
+      if (res.ok) setSwapResults(res.swaps);
+      else setSwapError(res.error);
+    } catch {
+      setSwapError("Couldn't reach the kitchen. Try again.");
+    } finally {
+      setSwapLoading(false);
+    }
+  };
+
+  const applySwap = (swap: IngredientSwap) => {
+    if (!swapOpen || !onRecipeUpdate) {
+      setSwapOpen(null);
+      return;
+    }
+    const original = swapOpen.name;
+    const replaceIn = (arr: string[]) =>
+      arr.map((i) => (i === original ? swap.name : i));
+    const next: Receipe = {
+      ...receipe,
+      usedIngredients: replaceIn(receipe.usedIngredients),
+      missingIngredients: replaceIn(receipe.missingIngredients),
+      substitutions: [
+        ...(receipe.substitutions ?? []),
+        `${original} → ${swap.name}. ${swap.note}`,
+      ],
+    };
+    onRecipeUpdate(next);
+    setSwapOpen(null);
+  };
+
+  const renderIngredient = (item: string, kind: "used" | "missing", key: string) => (
+    <li key={key} className="flex items-center gap-2 group">
+      <span className={`size-1.5 rounded-full ${kind === "missing" ? "bg-paprika" : "bg-turmeric"}`} />
+      <span className="flex-1">{item}</span>
+      <button
+        type="button"
+        onClick={() => openSwap(kind, item)}
+        title="I don't have this — suggest a swap"
+        aria-label={`Swap ${item}`}
+        className="text-[10px] font-black uppercase tracking-wide bg-white/15 hover:bg-white/30 border border-white/30 rounded-full px-2 py-0.5 transition-colors opacity-70 hover:opacity-100"
+      >
+        ↻ Swap
+      </button>
+    </li>
+  );
 
   if (open) {
     return (
@@ -61,6 +143,18 @@ export function ReceipeCard({
                 <span className="size-2 rounded-full bg-saffron" />
                 {receipe.cuisine}
               </span>
+              {difficulty && (
+                <span
+                  className={`${difficultyStyles[difficulty]} border-2 border-border rounded-full px-2 py-0.5 uppercase`}
+                >
+                  {difficulty}
+                </span>
+              )}
+              {receipe.kidFriendly && (
+                <span className="bg-white text-cardamom border-2 border-border rounded-full px-2 py-0.5 uppercase">
+                  🧒 Kid-friendly
+                </span>
+              )}
             </div>
             {dietary.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5 mt-3">
@@ -89,6 +183,32 @@ export function ReceipeCard({
         </div>
 
         <p className="text-sm mb-6 opacity-90">{receipe.blurb}</p>
+
+        {nutrition && (
+          <div className="mb-5 bg-white/10 border border-white/20 rounded-2xl p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h5 className="font-black uppercase text-[10px] tracking-widest text-turmeric">
+                Approx. per serving{servings ? ` · ${servings} serv` : ""}
+              </h5>
+              <span className="text-[9px] uppercase tracking-wide opacity-60">Estimates only</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              {[
+                { label: "kcal", value: nutrition.calories },
+                { label: "Protein", value: nutrition.proteinG, suffix: "g" },
+                { label: "Carbs", value: nutrition.carbsG, suffix: "g" },
+                { label: "Fat", value: nutrition.fatG, suffix: "g" },
+              ].map((m) => (
+                <div key={m.label} className="bg-white/10 rounded-xl py-2">
+                  <div className="font-black text-base leading-none">
+                    {m.value != null ? `${m.value}${m.suffix ?? ""}` : "—"}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wide opacity-70 mt-1">{m.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mb-5">
           <ReceipeTimers
@@ -128,12 +248,12 @@ export function ReceipeCard({
                   Ingredients
                 </h5>
                 <ul className="text-sm space-y-1.5 font-medium">
-                  {allIngredients.map((m, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="size-1.5 bg-turmeric rounded-full" />
-                      {m}
-                    </li>
-                  ))}
+                  {receipe.usedIngredients.map((m, i) =>
+                    renderIngredient(m, "used", `u-${i}-${m}`),
+                  )}
+                  {receipe.missingIngredients.map((m, i) =>
+                    renderIngredient(m, "missing", `m-${i}-${m}`),
+                  )}
                 </ul>
               </div>
             )}
@@ -143,13 +263,56 @@ export function ReceipeCard({
                   Missing
                 </h5>
                 <ul className="text-sm space-y-1.5 font-medium">
-                  {receipe.missingIngredients.map((m, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="size-1.5 bg-paprika rounded-full" />
-                      {m}
-                    </li>
-                  ))}
+                  {receipe.missingIngredients.map((m, i) =>
+                    renderIngredient(m, "missing", `mm-${i}-${m}`),
+                  )}
                 </ul>
+              </div>
+            )}
+            {swapOpen && (
+              <div className="bg-white text-foreground p-4 rounded-2xl border-2 border-border shadow-[4px_4px_0px_0px_var(--border)]">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h5 className="font-black uppercase text-[10px] tracking-widest">
+                    Swap "{swapOpen.name}"
+                  </h5>
+                  <button
+                    type="button"
+                    onClick={() => setSwapOpen(null)}
+                    aria-label="Close"
+                    className="text-xs font-black opacity-60 hover:opacity-100"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {swapLoading && (
+                  <p className="text-xs font-medium opacity-70">Finding swaps…</p>
+                )}
+                {swapError && (
+                  <p className="text-xs font-bold text-paprika">{swapError}</p>
+                )}
+                {!swapLoading && !swapError && swapResults && (
+                  <ul className="space-y-2">
+                    {swapResults.map((s, i) => (
+                      <li key={i} className="border border-border rounded-xl p-2.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="font-black text-sm">{s.name}</div>
+                            <div className="text-xs opacity-80 mt-0.5">{s.note}</div>
+                          </div>
+                          {onRecipeUpdate && (
+                            <button
+                              type="button"
+                              onClick={() => applySwap(s)}
+                              className="text-[10px] font-black uppercase tracking-wide bg-cardamom text-white border-2 border-border rounded-full px-2.5 py-1 hover:opacity-90 shrink-0"
+                            >
+                              Use it
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
             {receipe.substitutions.length > 0 && (
