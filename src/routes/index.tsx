@@ -127,6 +127,8 @@ function Index() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saved, setSaved] = useState<SavedReceipeRow[]>([]);
+  const [kidFriendly, setKidFriendly] = useState(false);
+  const [showNutrition, setShowNutrition] = useState(false);
 
   const generate = useServerFn(generateReceipes);
   const fetchDish = useServerFn(getDishHelper);
