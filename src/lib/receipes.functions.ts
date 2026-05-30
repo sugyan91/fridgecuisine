@@ -11,6 +11,8 @@ const inputSchema = z.object({
   dietary: z.array(z.string().max(40)).max(10).default([]),
   cuisine: z.string().min(1).max(40),
   exclude: z.array(z.string().max(120)).max(60).default([]),
+  kidFriendly: z.boolean().optional().default(false),
+  includeNutrition: z.boolean().optional().default(false),
   language: z
     .string()
     .trim()
@@ -32,6 +34,17 @@ export type Receipe = {
   stepTimings?: number[];
   substitutions: string[];
   dietary: string[];
+  difficulty?: "easy" | "medium" | "hard";
+  kidFriendly?: boolean;
+  nutrition?: {
+    servings?: number;
+    perServing?: {
+      calories?: number;
+      proteinG?: number;
+      carbsG?: number;
+      fatG?: number;
+    };
+  };
 };
 
 export type GenerateReceipesResult =
@@ -58,6 +71,21 @@ const responseSchema = z.object({
         stepTimings: z.array(z.number()).optional(),
         substitutions: z.array(z.string()).default([]),
         dietary: z.array(z.string().max(40)).max(6).default([]),
+        difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+        kidFriendly: z.boolean().optional(),
+        nutrition: z
+          .object({
+            servings: z.number().optional(),
+            perServing: z
+              .object({
+                calories: z.number().optional(),
+                proteinG: z.number().optional(),
+                carbsG: z.number().optional(),
+                fatG: z.number().optional(),
+              })
+              .optional(),
+          })
+          .optional(),
       })
     )
     .min(1)
@@ -83,12 +111,21 @@ export const generateReceipes = createServerFn({ method: "POST" })
       ? `Use as many of the user's ingredients as possible.\n- It's OK to require 1-3 missing pantry staples (oil, salt, common spices) - list them in missingIngredients.`
       : `The user has not listed any pantry ingredients. Generate 10 classic, iconic, beloved receipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
 
+    const kidFriendlyRule = data.kidFriendly
+      ? `\n- KID-FRIENDLY MODE: All receipes MUST be kid-approved. Prefer mild flavors, no chili heat, no strong funk (blue cheese, anchovy, fish sauce, strong fermented items), nothing raw (no tartare, no runny eggs unless cooked through), and avoid bitter greens. Hide vegetables in sauces/blends where possible. Favor familiar shapes (meatballs, pasta, pancakes, finger foods). Set "kidFriendly": true on every receipe.`
+      : "";
+
+    const nutritionRule = data.includeNutrition
+      ? `\n- NUTRITION: Include a "nutrition" object with "servings" (integer) and "perServing" with integer "calories", "proteinG", "carbsG", "fatG". These are APPROXIMATE estimates — do your best, do not pretend precision.`
+      : "";
+
     const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious receipes${hasIngredients ? " the user can cook with mostly the ingredients they have on hand" : " for the selected cuisine"}. ${cuisineGuidance}
 Rules:
 - ${ingredientRule}
 - Steps must be concrete and ordered (4-8 short steps).
 - cookTimeMinutes must be realistic (5-90) — active cooking time only.
 - ALSO provide: prepTimeMinutes (chopping/measuring/marinating), totalTimeMinutes (prep + cook), and stepTimings — an array of integer minutes per step, SAME LENGTH as steps. If a step is instant, use 1.
+- Set "difficulty" to "easy" (≤25 min total, ≤5 simple steps, basic technique), "medium" (most weeknight cooking), or "hard" (advanced technique, multi-component, or >45 min total).${kidFriendlyRule}${nutritionRule}
 - Honor dietary constraints STRICTLY: ${dietary}. Every single receipe MUST comply with ALL listed dietary tags. Treat each tag as a hard allergy/diet constraint — if a tag names an ingredient or food family (e.g. "Peanut allergy", "No shellfish", "No mushrooms", "Lactose intolerant"), exclude that ingredient AND its derivatives/cross-contaminants entirely, and mention a safe swap in "substitutions". If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any receipe that would violate a tag — do not include it.
 - If "Quick Meal" is selected, all receipes must be <= 20 minutes.
 - For every receipe, set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy". Include any user-selected dietary tags that apply, plus any other tags that are obviously true for the dish. Max 6 tags. Use [] if none apply.
