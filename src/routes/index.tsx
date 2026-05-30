@@ -939,14 +939,10 @@ function Index() {
           </section>
 
           <section className="lg:col-span-12">
-            <ChefSellBanner />
-          </section>
-
-          <section className="lg:col-span-12">
             <SectionHeader
-              eyebrow="Explore by country"
-              title="Cook the world tonight"
-              subtitle="Explore 50+ cuisines from every corner of the globe."
+              eyebrow="Stuck on dinner?"
+              title="Pick a country — your AI chef takes it from there."
+              subtitle="50+ cuisines. Tap one and we'll cook it from what's in your fridge."
             />
             <CountryTiles onPick={pickCuisine} />
             <div className="max-w-md mx-auto mt-6">
