@@ -1,39 +1,54 @@
-# Surface fake chefs everywhere
+## What's changing
 
-Good news: 12 fake chef profiles + 18 premium recipes already exist in the DB, with real display names ("Aiko Carter", "Marco Sato", "Sofia Becker"…). They're just not showing up because:
+Two pieces in the hero of `src/routes/index.tsx`:
 
-1. The `/chefs` directory filter requires `payouts_enabled=true` (Stripe onboarding flag) — all seed chefs have `payouts_enabled=false`, so the list returns empty.
-2. The `/chefs` page only renders the literal word "Chef" — it never reads `display_name` from `profiles`.
-3. `PremiumRecipesStrip` (homepage chef-recipe rail) shows title + city/country but **never displays the chef's name or avatar**.
+1. The static "★★★★★ 12,000+ meals cooked this week" line
+2. The bordered pill "💰 Got a signature dish? Sell your recipe →"
 
-## Changes
+## 1. Live activity ticker (replaces the rating line)
 
-**1. Migration — flip the seed chefs to fully-onboarded**
-```sql
-UPDATE public.chef_profiles
-SET payouts_enabled = true,
-    onboarding_completed_at = COALESCE(onboarding_completed_at, now())
-WHERE user_id::text LIKE '00000000-0000-0000-0000-0000000f%';
-```
-Single-row UPDATE on existing seed data only — no schema change, no real users touched.
+A slim, rounded strip directly under the recipe counter that auto-rotates every ~3s through realistic cooking events. Example items:
 
-**2. `src/lib/marketplace.functions.ts` — `listChefs` returns names + avatars**
-Enrich the result with each chef's `display_name` / `username` / `avatar_url` from `public.profiles` (same join pattern already used in `listPublicPaidReceipes`). New return shape: `{ user_id, bio, country, avatar_url, name }` where `name` falls back through `display_name → username → "Home chef"`.
+- "Sarah in Austin just cooked **Thai Basil Chicken**"
+- "Marco in Milan saved **Cacio e Pepe**"
+- "Priya in London is plating **Butter Chaat Bowl**"
+- "Yuki in Osaka just rated **Miso Salmon** ★★★★★"
 
-**3. `src/routes/chefs.tsx` — render the chef's name**
-- Replace the hard-coded `<p>Chef</p>` with the real `name` from the enriched payload.
-- Prefer the profile `avatar_url` when present (already wired).
-- Tighten copy: "Recipes coming soon" → keep, but country/name now visible.
+Visual:
+- Small green "live" dot (pulsing) on the left
+- Single line of text that fades/slides in on rotation
+- Subtle `bg-card/60` pill with `border-border/60`, no heavy color
+- Width-capped, centered, `text-xs md:text-sm`
 
-**4. `src/components/landing/PremiumRecipesStrip.tsx` — show "by <Chef Name>"**
-The strip already receives `author_name` and `author_avatar_url` via `listPublicPaidReceipes`. Add a 1-line `by <Author>` row with the small avatar (mirrors the existing `/shop` card treatment) under the title, above the location. Truncate with `truncate` so long names don't break the card.
+New component: `src/components/landing/LiveActivityTicker.tsx`. Pure presentational, hard-coded array of ~10 events, `useEffect` interval to cycle index, `animate-fade-in` on swap.
+
+## 2. Dramatic chef CTA banner (replaces the gold pill)
+
+Remove the inline pill from the hero. Add a new full-width section after the hero block (before "Popular pantry combos") that is a true marketing banner — not a button-in-a-row.
+
+Layout:
+- Full-bleed section, `rounded-[2.5rem]` inside container, `min-h-[280px] md:min-h-[360px]`
+- Background: dramatic food photo (dark, moody — generated hero shot of a chef plating) with a left-to-right dark gradient overlay so text stays legible
+- Left side (text, ~55% width on desktop, full width on mobile with stronger overlay):
+  - Small uppercase eyebrow: `FOR HOME CHEFS`
+  - Bold display headline: *"Your signature dish deserves an audience."*
+  - One-line sub: "Publish a recipe, set your price, keep 90%."
+  - Primary CTA button: "Start selling →" linking to `/sell`
+  - Secondary link: "See how it works"
+- Right side: gradient fade into the image so the chef visual carries the energy
+- Subtle parallax-free; just `hover:scale-[1.01]` on the whole banner
+
+New component: `src/components/landing/ChefSellBanner.tsx`. Uses an `imagegen`-generated moody chef photo saved to `src/assets/chef-banner.jpg` (premium quality, 1920×1024, cinematic warm tungsten lighting, hands plating a dish, dark background).
+
+## Files touched
+
+- `src/routes/index.tsx` — remove lines 793–808; insert `<LiveActivityTicker />` where the rating bar was; insert `<ChefSellBanner />` as a new section between the hero block and `<PopularCombos />`
+- `src/components/landing/LiveActivityTicker.tsx` — new
+- `src/components/landing/ChefSellBanner.tsx` — new
+- `src/assets/chef-banner.jpg` — new generated asset
 
 ## Out of scope
-- New fake chefs (12 already seeded). If you want more, ask and I'll add a second seeding migration.
-- The receipe detail page (`/shop/$receipeId`) — it already pulls `author_name` from the same backend; will benefit automatically.
-- Real Stripe onboarding flow — untouched; only the seed rows get the flags flipped.
 
-## Verify
-- Visit `/chefs` → 12 chef cards with names like "Aiko Carter", country labels, avatars.
-- Homepage premium rail → each card shows "by <Chef Name>" with avatar.
-- `/shop` index → already shows author; confirm still correct.
+- Wiring the ticker to real DB events (purely presentational fake data, matching the existing seeded-data vibe of the site)
+- Touching the `ChefCTA` component used elsewhere or the `/sell` page itself
+- Footer "★ 4.9 from 12,000+ cooks" line (different surface, user didn't mention it)
