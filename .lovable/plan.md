@@ -1,55 +1,90 @@
-# Lean more on Hugging Face
+## Goal
 
-Today only `callChatJSON` uses HF (Llama-3.1-8B), and recipes have no images. We'll do two things, both HF-first with Lovable fallback (current pattern).
+Replace Lovable's default transactional emails with FridgeCuisine-branded ones, sending from **info@fridgecuisine.com** via the already-verified `notify.fridgecuisine.com` sender. No marketing/newsletter work (use Mailchimp/Beehiiv separately when ready).
 
-## 1. Upgrade the HF text model
+## What gets built
 
-In `src/lib/hf-client.server.ts`:
+### 1. Email infrastructure (one-time setup)
 
-- Switch `HF_MODEL` from `meta-llama/Llama-3.1-8B-Instruct` to a stronger model served by HF Inference Providers. Default: **`Qwen/Qwen2.5-72B-Instruct`** (good JSON adherence + multilingual, important since prompts already pass a language). Fallback chain inside HF, in order:
-  1. `Qwen/Qwen2.5-72B-Instruct`
-  2. `meta-llama/Llama-3.3-70B-Instruct`
-  3. `meta-llama/Llama-3.1-8B-Instruct` (current — last resort before Lovable)
-- Loop through the chain: on non-200 or unparseable JSON, try next HF model; only after all HF attempts fail do we fall back to Lovable (unchanged behavior).
-- Keep `temperature: 0.7`, no `response_format` for HF, JSON repair via existing `tryParseJSON`.
+- Provision the email queue (pgmq queues, RPC wrappers, send log, suppression list, unsubscribe tokens, cron dispatcher).
+- Required prerequisite for everything below. Idempotent — safe to re-run.
 
-Affects all existing HF callers automatically: `receipes.functions.ts`, `dish-helper.functions.ts`, `ingredient-swap.functions.ts`, `community.functions.ts`, etc. No call-site changes.
+### 2. Branded auth emails (replace Lovable defaults)
 
-## 2. New HF-powered recipe image generation
+Customized templates for:
+- **Signup verification** — "Confirm your email to start cooking"
+- **Magic link** — passwordless sign-in
+- **Password recovery** — "Reset your FridgeCuisine password"
+- **Email change** — confirm new email
+- **Re-authentication** — sensitive action confirmation
+- **Invite** — (kept for completeness, low use)
 
-New server function for generating a single hero image per recipe, using HF Inference Providers' image endpoint.
+Each will use FridgeCuisine's brand: warm food-app aesthetic, accent color from the design tokens, the FridgeCuisine wordmark in the header, and a friendly tone ("Hey — welcome to the kitchen 🍳").
 
-**New file:** `src/lib/receipe-image.functions.ts`
+### 3. App (transactional) emails
 
-- `createServerFn({ method: "POST" })` named `generateReceipeImage`.
-- Input: `{ dishName: string; ingredients?: string[] }` (zod-validated, dishName 2–200 chars).
-- Prompt template: `"Professional overhead food photography of {dishName}, natural lighting, shallow depth of field, rustic wooden table, garnished, appetizing, high detail"`.
-- Provider chain (HF-first, Lovable fallback):
-  1. **HF**: POST to `https://router.huggingface.co/v1/images/generations` with model `black-forest-labs/FLUX.1-schnell` (fast, free-tier friendly), then `stabilityai/stable-diffusion-xl-base-1.0` as second HF try. Returns base64 PNG.
-  2. **Lovable AI fallback**: `https://ai.gateway.lovable.dev/v1/images/generations` with `google/gemini-2.5-flash-image` (non-streaming, `stream: false`, returns base64 from `data[0].b64_json`). Kept simple — no SSE streaming needed for a card thumbnail.
-- Returns `{ ok: true; dataUrl: string; provider: "huggingface" | "lovable" } | { ok: false; error: string }`.
-- Add helper `callImageGen(...)` inside `hf-client.server.ts` next to existing helpers, exported and reused.
+Three new templates triggered by user actions:
 
-**Where to surface it:** `src/components/fridge/ReceipeCard.tsx`
-- On first render of a recipe card (after the recipe loads), call `generateReceipeImage` once and display the returned data URL as the card hero image, with a soft skeleton while loading.
-- Cache the data URL in component state for that session; no DB persistence in this pass (keeps scope minimal and avoids storage migration).
-- If generation fails, fall back to the existing card visual (no image).
+| Template | Trigger | Sent to |
+|---|---|---|
+| `welcome` | First successful sign-in (after email verification) | The new user |
+| `purchase-receipt` | Stripe webhook confirms a paid premium recipe | The buyer |
+| `recipe-saved` | User saves a recipe to their cookbook | The user who saved it |
 
-## 3. Out of scope
+### 4. Trigger wiring
 
-- No DB table for cached recipe images (can add later if cost becomes an issue).
-- No streaming partials for the image (full image arrives once, simpler client).
-- No changes to fridge-vision (stays on Lovable AI Gemini — HF vision routing was not selected).
-- No UI redesign of cards beyond adding the image slot.
+- **Welcome**: fire from the existing `onAuthStateChange` handler the first time a user appears, guarded by an idempotency key (`welcome-{userId}`) so it never sends twice.
+- **Purchase receipt**: send inside the Stripe webhook handler at `src/routes/api/public/payments/webhook.ts` after marking the purchase paid. Idempotency key: `receipt-{stripeSessionId}`.
+- **Recipe-saved**: send from inside `src/lib/saved-receipes.functions.ts` after the insert succeeds. Idempotency key: `saved-{userId}-{receipeId}`.
+
+### 5. Unsubscribe page
+
+A branded `/unsubscribe` route so the auto-appended unsubscribe footer on transactional emails (legally required) lands on a FridgeCuisine-styled page, not a raw API URL. Auth emails do NOT get the unsubscribe footer.
+
+## Sender configuration
+
+- **SENDER_DOMAIN** (verified subdomain, used to send): `notify.fridgecuisine.com`
+- **From address** (what recipients see): `info@fridgecuisine.com`
+- Reply-to: same (`info@fridgecuisine.com`)
+
+> ⚠️ **About `info@fridgecuisine.com` as a mailbox**: This address only *sends*. If someone hits "Reply" to a FridgeCuisine email, the reply will bounce unless you set up an actual inbox at `info@fridgecuisine.com` separately (Google Workspace, Zoho Mail free tier, or GoDaddy 365 — done outside Lovable). I'll flag this in the final summary so you remember to set up a real inbox at GoDaddy when you're ready to receive replies.
+
+## What I will NOT do (and why)
+
+- ❌ **Monthly recipe newsletter / marketing emails** — explicitly out of scope and not supported by Lovable's email system. Mixing marketing with transactional mail tanks deliverability on your password resets.
+- ❌ **"Email all users" / bulk send features** — same reason.
+- ❌ **File attachments** — Lovable email doesn't support attachments; if a receipt ever needs a PDF, we'd link to a download URL instead.
+
+## Technical notes
+
+- Templates live in `src/lib/email-templates/` as React Email components and are registered in `registry.ts`.
+- Auth emails are intercepted by an `auth-email-hook` server route at `/lovable/email/auth/webhook` (Supabase Auth webhook).
+- Transactional emails go through `/lovable/email/transactional/send`. Public triggers (Stripe webhook) call it server-side with the service role; authenticated triggers (recipe-saved) call it with the user's JWT.
+- All sends are queued in pgmq with retry + suppression handling. Throughput ~120 emails/min, plenty for FridgeCuisine's current volume.
+- Brand styling pulled from `src/styles.css` design tokens; email body background stays white (deliverability rule) with FridgeCuisine accent on buttons and dividers.
 
 ## Files touched
 
-- edit `src/lib/hf-client.server.ts` — model fallback chain + new `callImageGen` helper.
-- create `src/lib/receipe-image.functions.ts` — `generateReceipeImage` server fn.
-- edit `src/components/fridge/ReceipeCard.tsx` — fetch + render hero image.
+**New:**
+- `src/lib/email-templates/registry.ts`
+- `src/lib/email-templates/welcome.tsx`
+- `src/lib/email-templates/purchase-receipt.tsx`
+- `src/lib/email-templates/recipe-saved.tsx`
+- `src/lib/email-templates/*.tsx` (6 branded auth templates — replace existing stubs in `src/lib/email-templates/{signup,magic-link,recovery,email-change,reauthentication,invite}.tsx`)
+- `src/routes/lovable/email/auth/webhook.ts` (auth hook)
+- `src/routes/lovable/email/transactional/send.ts` (send endpoint)
+- `src/routes/lovable/email/transactional/preview.ts` (dashboard preview)
+- `src/routes/email/unsubscribe.tsx` (branded page)
+- `src/routes/lovable/email/suppression.ts` (bounce/complaint webhook)
+- `src/lib/email/send.ts` (client helper)
 
-## Success check
+**Edited:**
+- `src/routes/__root.tsx` — wire welcome-email trigger into the auth state listener
+- `src/routes/api/public/payments/webhook.ts` — send receipt after marking paid
+- `src/lib/saved-receipes.functions.ts` — send confirmation after save
 
-After the change:
-- Recipes generated from fridge ingredients should report `provider: "huggingface"` in server logs the majority of the time (visible via `server-function-logs`).
-- Each recipe card shows an AI-generated hero image within ~5–10s, with graceful fallback if both providers fail.
+## After this ships
+
+1. Test password reset and signup flows in the live preview.
+2. (Optional, separate) Set up a real `info@fridgecuisine.com` inbox at GoDaddy so replies don't bounce.
+3. When you want a newsletter, sign up for Mailchimp or Beehiiv and use a different subdomain like `news.fridgecuisine.com` so it doesn't conflict.

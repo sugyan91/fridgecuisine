@@ -1,68 +1,28 @@
 import * as React from 'react'
-
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Text,
-} from '@react-email/components'
+import { Button, Heading, Text } from '@react-email/components'
+import { EmailShell, button, h1, muted, text } from './_shell'
 
 interface MagicLinkEmailProps {
-  siteName: string
-  confirmationUrl: string
+  siteName?: string
+  confirmationUrl?: string
 }
 
-export const MagicLinkEmail = ({
-  siteName,
-  confirmationUrl,
-}: MagicLinkEmailProps) => (
-  <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>Your login link for {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Your login link</Heading>
-        <Text style={text}>
-          Click the button below to log in to {siteName}. This link will expire
-          shortly.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Log In
-        </Button>
-        <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
+export const MagicLinkEmail = ({ confirmationUrl }: MagicLinkEmailProps) => (
+  <EmailShell preview="Your one-click sign-in link for FridgeCuisine">
+    <Heading as="h1" style={h1}>Your sign-in link</Heading>
+    <Text style={text}>
+      Tap the button below to jump straight into FridgeCuisine. The link is
+      single-use and expires shortly — no password required.
+    </Text>
+    {confirmationUrl ? (
+      <Button style={button} href={confirmationUrl}>
+        Sign me in
+      </Button>
+    ) : null}
+    <Text style={muted}>
+      Didn't ask for this link? You can safely ignore this email.
+    </Text>
+  </EmailShell>
 )
 
 export default MagicLinkEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
