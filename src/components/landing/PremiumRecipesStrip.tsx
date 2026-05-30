@@ -35,10 +35,10 @@ export function PremiumRecipesStrip() {
       <div className="flex items-end justify-between mb-4 px-1">
         <div>
           <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-            Premium
+            Want a chef's version?
           </p>
           <h2 className="font-display text-2xl md:text-3xl uppercase">
-            Chef recipes
+            Unlock a single recipe.
           </h2>
         </div>
         <Link

@@ -1,82 +1,70 @@
-## Goal
+## The problem
 
-Add four upgrades to AI-generated recipes: **difficulty**, **kid-friendly toggle**, **per-ingredient "I don't have this" swap**, and **optional approximate nutrition (calories + macros)**.
+The homepage currently pitches 5 products in parallel (AI chef, community, marketplace, sell-your-recipe, global cuisines). Each section reads like its own hero. Visitors can't answer "what is this?" in 5 seconds.
 
-All changes are additive — existing saved recipes keep working (new fields are optional).
+## The fix: one promise, four supporting roles
 
----
+**Core promise (everything ladders up to this):**
+> "Your AI personal chef. Tell it what's in your fridge — it cooks the world for you."
 
-## 1. Difficulty
+Everything else on the page must visibly *serve* that promise, not compete with it. Each supporting section gets a one-line framing that connects it back to the AI chef.
 
-Easy / Medium / Hard badge on every recipe.
+| Section | Today's framing | New framing (supporting role) |
+|---|---|---|
+| AI fridge generator | Hero | **Hero — unchanged, sharpened** |
+| Global cuisines (CountryTiles) | "Cook cuisines worldwide" (own hero) | "Don't know what to cook? Pick a country — your AI chef takes it from there." |
+| Community recipes (CommunityStrip) | "What people are cooking" (own hero) | "See what other fridges turned into dinner tonight." (social proof for the AI) |
+| Premium chef recipes (PremiumRecipesStrip) | "Premium chef marketplace" (own hero) | "Want a chef's version instead? Unlock a single recipe for $X." (upgrade path from the free AI) |
+| Sell-your-recipe / ChefCTA + ChefSellBanner | "Monetize your culinary flair" (own hero) | Move to footer-adjacent strip: "Are you a chef? Sell your recipes here →" (one line, one link) |
 
-- Extend the AI JSON schema in `src/lib/receipes.functions.ts`:
-  - Add `difficulty: "easy" | "medium" | "hard"` to `Receipe` type and `responseSchema` (optional, defaulted).
-  - Prompt rule: "Set `difficulty` based on technique + step count + time (easy ≤25min and ≤5 simple steps; hard = advanced technique or >45min)."
-- Render a small pill in `ReceipeCard.tsx` (both collapsed and expanded) next to time/cuisine — color by level (turmeric / saffron / paprika).
-- Persisted automatically via the existing `recipe` JSONB in `saved_recipes` (no migration needed).
+Result: one hero, one product, three supporting sections, one footer CTA for creators. Nothing is cut.
 
----
+## Homepage order (new)
 
-## 2. Kid-friendly toggle
-
-A toggle in the ingredient/filters area that biases generation toward mild, familiar, kid-approved dishes.
-
-- New boolean state `kidFriendly` in `src/routes/index.tsx`, passed in `generate({ ... kidFriendly })`.
-- Add to `inputSchema` and prompt: when true, "Prefer mild flavors, no chili heat, no strong funk (blue cheese, anchovy, fish sauce), nothing raw, hide vegetables in sauces/blends, fun shapes/finger foods where natural."
-- New compact toggle button in the filters row of `IngredientInput.tsx` (or directly in index.tsx next to the dietary/cuisine controls — whichever fits the existing layout) styled like the existing chip toggles. Label: "Kid-friendly 🧒".
-- Surface a small "Kid-friendly" badge on cards when the flag was used (passed through on the Receipe object).
-
----
-
-## 3. "I don't have this ingredient" → swap
-
-Per-ingredient swap inside the expanded recipe view.
-
-- Add `swapIngredient` server fn in a new `src/lib/ingredient-swap.functions.ts`:
-  - Input: `{ recipeTitle, cuisine, ingredient, pantry: string[], dietary: string[] }`.
-  - Calls the LLM for 1–2 substitution suggestions tailored to the user's pantry, plus a one-line note on how it changes the dish.
-  - Returns `{ swaps: { name: string; note: string }[] }`.
-- In `ReceipeCard.tsx` (expanded view), render a small ✕/↻ button next to each item in `usedIngredients` and `missingIngredients`. Clicking opens a popover with suggested swaps and an "Apply" action that:
-  - Updates local recipe state (replaces the ingredient in the list and appends the swap note to `substitutions`).
-  - If the recipe is already saved, re-saves the updated copy via existing `saveReceipe`.
-- Loading + error states inline; no schema changes.
-
----
-
-## 4. Optional approximate nutrition
-
-Calories + macros (protein/carbs/fat) per serving, clearly labeled as approximate, and gated by a user toggle so we don't slow generation for users who don't care.
-
-- User preference: add `showNutrition` boolean to `user_preferences` is overkill — instead store as a simple `useLocalStorage("show-nutrition", false)` flag (matches the existing `use-local-storage` hook). No DB migration.
-- Extend `inputSchema` + prompt with `includeNutrition`. When true, prompt asks for:
-  ```
-  "nutrition": { "servings": 2, "perServing": { "calories": 420, "proteinG": 18, "carbsG": 52, "fatG": 14 } }
-  ```
-  Mark all numbers as estimates in the system prompt.
-- Add `nutrition` (optional) to `Receipe` type + `responseSchema`.
-- Render in expanded `ReceipeCard.tsx` as a small "Approx. per serving" strip (only when present). Include a tiny "estimates only" disclaimer.
-- Add a toggle in the filters area: "Show nutrition (approx.)".
-
----
-
-## Files touched
-
-```
-src/lib/receipes.functions.ts          # difficulty, kidFriendly, nutrition in schema + prompt
-src/lib/ingredient-swap.functions.ts   # NEW server fn for swaps
-src/lib/saved-receipes.functions.ts    # widen receipeSchema (add optional difficulty + nutrition)
-src/components/fridge/ReceipeCard.tsx  # render difficulty badge, nutrition strip, per-ingredient swap UI
-src/components/fridge/IngredientInput.tsx  # (or index.tsx) kid-friendly + nutrition toggles
-src/routes/index.tsx                   # state for kidFriendly + showNutrition, pass to generate
+```text
+1. Hero          → AI Personal Chef (fridge input, big and alone)
+2. Live ticker   → social proof (kept)
+3. How it works  → 3 steps, reinforces the AI promise
+4. Cuisines      → "stuck? pick a country" (framed as input to the AI)
+5. Community     → "what other fridges cooked tonight" (social proof)
+6. Premium       → "want a chef's take? unlock one for $X" (monetization)
+7. Testimonials  → kept
+8. Chef CTA      → SINGLE small strip near footer (not a full hero)
+9. Footer
 ```
 
-No database migrations. No new env vars. Uses existing Lovable AI Gateway.
+Remove the standalone `ChefSellBanner` mid-page; merge into the single footer-adjacent `ChefCTA` strip.
 
----
+## Copy changes (concrete)
+
+- **Hero H1:** "Your AI personal chef." **Sub:** "Tell us what's in your fridge. Get recipes from any cuisine in the world — in 30 seconds."
+- **CountryTiles heading:** ~~"Cook cuisines worldwide"~~ → "Not sure what to cook? Pick a country."
+- **CommunityStrip heading:** ~~"Community recipes"~~ → "Tonight's fridges, turned into dinner."
+- **PremiumRecipesStrip heading:** ~~"Premium chef marketplace"~~ → "Want a chef's version? Unlock a single recipe."
+- **ChefCTA (footer strip):** "Are you a chef? Sell your recipes on FridgeCuisine →"
+
+Each H2 ends with a verb or link that points back to the AI chef OR the buy-a-recipe upgrade — never a separate brand.
+
+## Monetization clarity (since paying customer = home cooks, one-off purchases)
+
+Make the upgrade path obvious and singular: free AI recipes → unlock one premium chef recipe for a flat price. The Premium section should preview locked recipes inline (image + chef name + "$X — unlock") rather than feel like a separate marketplace tab. No subscription messaging anywhere on the homepage.
+
+## Files to edit
+
+- `src/routes/index.tsx` — reorder sections, remove duplicate `ChefSellBanner`, swap headings.
+- `src/components/landing/CountryTiles.tsx` — heading + sub copy.
+- `src/components/landing/CommunityStrip.tsx` — heading + sub copy.
+- `src/components/landing/PremiumRecipesStrip.tsx` — heading + sub copy + ensure "unlock for $X" CTA on each card.
+- `src/components/landing/ChefCTA.tsx` — slim to one-line strip.
+- Delete usage of `ChefSellBanner` from homepage (keep the component file in case it's used elsewhere).
 
 ## Out of scope
 
-- Recipe images (item 1 from earlier list) — skipped per your selection.
-- Storing nutrition preference server-side (local-only is enough for v1).
-- Editing nutrition values manually.
+- No new routes, no new DB tables, no auth changes.
+- No pricing logic changes (assumes premium recipe purchase flow already exists).
+- No redesign of the hero visuals — copy + section order + heading reframes only.
+- Logo/brand untouched.
+
+## Success check
+
+After the change, a first-time visitor reading only the H1 + first 3 section headings should be able to answer: *"It's an AI that turns my fridge into recipes, with optional chef recipes I can buy."* If they still can't, we iterate on copy — not on adding more sections.

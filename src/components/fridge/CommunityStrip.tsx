@@ -33,10 +33,10 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
       <div className="flex items-end justify-between gap-3 mb-4">
         <div>
           <p className="font-black uppercase tracking-widest text-[10px] opacity-60">
-            From the community
+            Social proof
           </p>
           <h2 className="font-display text-2xl md:text-4xl tracking-tight">
-            What people are cooking
+            Tonight's fridges, turned into dinner.
           </h2>
         </div>
         <Link
