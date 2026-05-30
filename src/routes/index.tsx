@@ -1126,11 +1126,11 @@ function Index() {
 
         <PremiumRecipesStrip />
 
-        <section className="max-w-6xl mx-auto mt-16 md:mt-20">
+        <section className="max-w-6xl mx-auto mt-20 md:mt-28 px-4 md:px-0">
           <ChefCTA />
         </section>
 
-        <section className="mt-16 md:mt-20">
+        <section className="mt-20 md:mt-28">
           <div className="-mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-20 bg-[var(--surface-cream)] rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden">
             <div
               aria-hidden
