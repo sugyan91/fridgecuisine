@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -28,6 +28,7 @@ import {
   type SavedReceipeRow,
 } from "@/lib/saved-receipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
+import { POPULAR_COMBOS } from "@/data/popular-combos";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
@@ -1223,15 +1224,6 @@ function LoadingSkeleton() {
   );
 }
 
-const POPULAR_COMBOS: { label: string; emoji: string; ingredients: string[] }[] = [
-  { label: "Pasta night", emoji: "🍝", ingredients: ["pasta", "tomato", "garlic", "basil", "olive oil"] },
-  { label: "Chicken & rice", emoji: "🍗", ingredients: ["chicken", "rice", "onion", "garlic", "soy sauce"] },
-  { label: "Stir-fry basics", emoji: "🥢", ingredients: ["egg", "rice", "soy sauce", "ginger", "scallion"] },
-  { label: "Taco Tuesday", emoji: "🌮", ingredients: ["ground beef", "tortilla", "tomato", "onion", "lime"] },
-  { label: "Veggie bowl", emoji: "🥗", ingredients: ["quinoa", "chickpea", "spinach", "lemon", "feta"] },
-  { label: "Cozy curry", emoji: "🍛", ingredients: ["chicken", "coconut milk", "curry paste", "onion", "rice"] },
-];
-
 function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
   const tints = [
     "bg-amber-50 text-amber-600",
@@ -1241,6 +1233,27 @@ function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
     "bg-fuchsia-50 text-fuchsia-600",
     "bg-orange-50 text-orange-600",
   ];
+  // Rotate the 6 visible tiles every ~10 hours from the 500+ combo pool.
+  // Deterministic per time bucket → all visitors see the same set within a window.
+  const ROTATION_HOURS = 10;
+  const visible = useMemo(() => {
+    const bucket = Math.floor(Date.now() / (ROTATION_HOURS * 3600 * 1000));
+    // mulberry32 seeded PRNG
+    let s = (bucket * 2654435761) >>> 0;
+    const rand = () => {
+      s |= 0; s = (s + 0x6D2B79F5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const pool = POPULAR_COMBOS.slice();
+    // Fisher–Yates partial shuffle for first 6
+    for (let i = 0; i < 6 && i < pool.length; i++) {
+      const j = i + Math.floor(rand() * (pool.length - i));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, 6);
+  }, []);
   return (
     <div className="p-1">
       <div className="mb-6">
@@ -1262,7 +1275,7 @@ function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:gap-4">
-        {POPULAR_COMBOS.map((c, i) => {
+        {visible.map((c, i) => {
           const tint = tints[i % tints.length];
           return (
             <button

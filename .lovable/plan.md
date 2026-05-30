@@ -1,40 +1,54 @@
 ## Goal
-Make fridgecuisine.com feel like a polished food publication (think NYT Cooking / Bon Appétit) instead of a playful consumer app. No section is removed; only visual treatment changes.
+Rotate the "Popular pantry combos" tiles every ~10 hours, drawing from a pool of **500+ combos** so visitors keep seeing fresh, globally diverse ideas.
 
-## Design tokens (locked, applied via `src/styles.css`)
-- Background: `#FDFCFB` (warm paper), surface `#FFFFFF`, muted `#F5F3EE`
-- Ink: `#1A1A1A`, secondary text `#78716C` (stone-500)
-- Accent: terracotta `#BC4749` (replaces hot pink `#FF…`)
-- Hairlines: `#E7E5E4` (stone-200)
-- Headings: **Playfair Display** (600/700 + italic 400)
-- Body / UI: **Inter** (300–600)
-- Radius: 12–16px for inputs/buttons; 24px for hero image cards
-- Shadows: soft, low (`0 8px 24px rgba(0,0,0,.06)`); no glow
+## Approach
+Pure client-side, deterministic time-bucketed selection. All visitors see the same 6 tiles within a rotation window, then the set changes together at the next bucket boundary. No backend.
 
-## Section-by-section changes
-1. **Nav** — White bar, hairline border, monogram `fc.` mark + serif wordmark, dark pill "Sign up".
-2. **Hero** — Tiny uppercase eyebrow "FRIDGE TO DINNER" in terracotta; serif headline with italic "head" in accent; input becomes white rounded-xl with hairline border; CTA terracotta; replace emoji meta row with a single dot-separated meta line + a subtle "Sarah just cooked Thai Basil Chicken" status pill (green dot, pulses).
-3. **Chefs banner** — Keep dark image card; switch heading to Playfair with italic second line; CTA becomes white-on-black pill.
-4. **Cuisine picker** — Move onto a `#F5F3EE` band; replace flag emojis with small color dots; country buttons are white with hairline borders, uppercase label; primary CTA black, not pink.
-5. **Trending grid** — 2-col image cards with square thumbnails, serif title beneath, tiny uppercase country tag (no emoji flags, no dark blank tiles).
-6. **3-step strip** — Replace 🥬👨‍🍳🍽️ with large italic serif numerals `01 02 03` in stone-200; uppercase labels.
-7. **Pantry builder** — "Snap your fridge" becomes a dashed-border ghost button with an outline camera icon; ingredient chips become uppercase tag pills; selected chip/diet uses terracotta outline + tint instead of solid pink.
-8. **Chef's picks combos** — White cards with hairline borders, small circular icon chip, uppercase title, italic muted ingredient line.
-9. **Monetize block** — Same composition; headline switches to Playfair with italic "culinary flair"; primary CTA black, secondary "Browse chefs" outline.
-10. **Testimonials** — Dark `#1A1A1A` band, terracotta eyebrow, large Playfair italic blockquote, monogram avatar circle.
-11. **Footer** — Dark, serif wordmark, uppercase column headings with wide letter-spacing, hairline divider, ★ rating pill.
+## Changes
 
-## Implementation
-- Update tokens in `src/styles.css` (add `--accent` terracotta, swap `--primary` usage where the hot pink lives, register Playfair Display + Inter via `<link>` in `__root.tsx` head or `styles.css` `@import`).
-- Touch only presentation files under `src/components/landing/*` and `src/components/fridge/*`; no business-logic or server-fn changes.
-- Replace inline emoji bullets in `HowItWorksStrip`, `PantryCombos`, cuisine list, and hero meta row with the typographic/iconographic equivalents above.
-- Swap bright-pink utility classes for `bg-accent` / `text-accent` semantic tokens — no hex literals in components.
-- Keep all routes, copy meaning, save/share buttons, and the dish-helper flow intact.
+### 1. New file: `src/data/popular-combos.ts`
+Export a typed array of **500+ combos**, each `{ label, emoji, ingredients: string[] }`. Curated by cuisine families for global breadth — examples:
+
+- **Italian** (~40): Pasta night, Carbonara, Cacio e pepe, Pesto pasta, Risotto, Margherita, Lasagna, Gnocchi, Caprese, Minestrone…
+- **Mexican / Latin** (~40): Taco Tuesday, Quesadilla, Fajitas, Enchiladas, Chilaquiles, Pozole, Arepas, Ceviche…
+- **East Asian** (~60): Stir-fry, Fried rice, Ramen, Pho, Pad Thai, Bibimbap, Sushi bowl, Mapo tofu, Dumplings, Kung pao…
+- **South Asian** (~40): Cozy curry, Tandoori, Butter chicken, Dal, Biryani, Chana masala, Samosa filling…
+- **Middle East / Mediterranean** (~40): Shakshuka, Mezze board, Hummus bowl, Falafel wrap, Tabbouleh, Kofta…
+- **French / European** (~30): Ratatouille, Croque monsieur, Coq au vin, Galette, Bouillabaisse…
+- **American comfort** (~40): Mac & cheese, Burger night, BBQ pulled pork, Chili, Meatloaf, Grilled cheese…
+- **Breakfast / brunch** (~30): Breakfast hash, Pancake stack, Avocado toast, Omelette, Granola bowl…
+- **Healthy bowls / salads** (~40): Buddha bowl, Quinoa bowl, Poke bowl, Greek salad, Cobb…
+- **Soups / stews** (~30): Lentil soup, Tom yum, French onion, Borscht, Gumbo…
+- **Vegan / vegetarian** (~40): Veggie chili, Mushroom risotto, Cauliflower steak, Tofu scramble…
+- **Sandwiches / wraps** (~30): Banh mi, Reuben, Caprese panini, Wrap…
+- **Desserts** (~30): Chocolate mousse, Tiramisu, Crumble, Pancakes…
+- **African / Caribbean / Brazilian** (~30): Jollof, Tagine, Jerk chicken, Feijoada…
+
+Each entry has emoji + 5 representative pantry ingredients. The file is data-only and tree-shake-friendly.
+
+To keep this manageable I will generate the list programmatically during the edit (drawing on standard global recipes), then hand-check for duplicates and obviously broken entries before committing.
+
+### 2. Edit `src/routes/index.tsx`
+- Remove the inline `POPULAR_COMBOS` constant.
+- Import the new list from `@/data/popular-combos`.
+- Inside `PopularCombos`, add (memoized):
+  ```ts
+  const ROTATION_HOURS = 10; // within 8–12h band
+  const bucket = Math.floor(Date.now() / (ROTATION_HOURS * 3600 * 1000));
+  const visible = useMemo(() => seededPick(ALL_COMBOS, 6, bucket), [bucket]);
+  ```
+  where `seededPick` uses a tiny mulberry32 PRNG seeded by the bucket — deterministic, no deps.
+- Render `visible` in the existing grid; tile markup/styling untouched.
+
+## Why this shape
+- **Deterministic per window** → same 6 tiles for every visitor in a ~10h window, no flicker on re-mount.
+- **500+ pool** → with 6 shown per window, the rotation effectively never repeats for months.
+- **Zero backend** → no DB, cron, or server function.
+- **Easy to tune** → change `ROTATION_HOURS` (8–12) or extend the data file freely.
 
 ## Out of scope
-- New sections, copy rewrites, new images, new features, dark-mode toggle.
-
-```text
-nav ─ hero ─ chefs banner ─ cuisine picker ─ trending grid ─ steps 01/02/03
-   ─ pantry builder ─ chef's picks ─ monetize ─ testimonials ─ footer
-```
+- Per-user personalization or A/B
+- Server-side rotation
+- Transition animation between buckets
+- Visual restyle of the tiles
+- Localization of combo labels
