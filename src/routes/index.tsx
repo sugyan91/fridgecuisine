@@ -12,6 +12,7 @@ import { CommunityStrip } from "@/components/fridge/CommunityStrip";
 import { CountryTiles } from "@/components/landing/CountryTiles";
 import { TrendingDishes } from "@/components/landing/TrendingDishes";
 import { HowItWorks } from "@/components/landing/HowItWorks";
+import { HowItWorksStrip } from "@/components/landing/HowItWorksStrip";
 import { ChefCTA } from "@/components/landing/ChefCTA";
 import { PremiumRecipesStrip } from "@/components/landing/PremiumRecipesStrip";
 import { Testimonials } from "@/components/landing/Testimonials";
