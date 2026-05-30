@@ -1223,6 +1223,57 @@ function LoadingSkeleton() {
   );
 }
 
+const POPULAR_COMBOS: { label: string; emoji: string; ingredients: string[] }[] = [
+  { label: "Pasta night", emoji: "🍝", ingredients: ["pasta", "tomato", "garlic", "basil", "olive oil"] },
+  { label: "Chicken & rice", emoji: "🍗", ingredients: ["chicken", "rice", "onion", "garlic", "soy sauce"] },
+  { label: "Stir-fry basics", emoji: "🥢", ingredients: ["egg", "rice", "soy sauce", "ginger", "scallion"] },
+  { label: "Taco Tuesday", emoji: "🌮", ingredients: ["ground beef", "tortilla", "tomato", "onion", "lime"] },
+  { label: "Veggie bowl", emoji: "🥗", ingredients: ["quinoa", "chickpea", "spinach", "lemon", "feta"] },
+  { label: "Cozy curry", emoji: "🍛", ingredients: ["chicken", "coconut milk", "curry paste", "onion", "rice"] },
+];
+
+function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
+  return (
+    <div className="bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)]">
+      <div className="flex items-center gap-3 mb-2">
+        <span className="h-px w-8 bg-accent" />
+        <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
+          Quick start
+        </p>
+      </div>
+      <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-1">
+        Popular pantry combos
+      </h3>
+      <p className="text-sm text-muted-foreground mb-5">
+        Tap one to drop the ingredients in your pantry and hit generate.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {POPULAR_COMBOS.map((c) => (
+          <button
+            key={c.label}
+            type="button"
+            onClick={() => onPick(c.ingredients)}
+            className="group text-left bg-secondary/60 hover:bg-secondary border border-border rounded-2xl p-4 transition-all hover:shadow-[var(--shadow-soft)] hover:-translate-y-0.5"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <span aria-hidden className="text-xl">{c.emoji}</span>
+              <span className="font-display text-base font-semibold tracking-tight">
+                {c.label}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {c.ingredients.join(" · ")}
+            </p>
+            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+              Use these <span aria-hidden>→</span>
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const TICKER_ITEMS = [
   "🥑 avocado", "🍅 tomato", "🧄 garlic", "🍋 lemon", "🌶️ chili",
   "🥬 spinach", "🧅 onion", "🥕 carrot", "🍄 mushroom", "🌿 basil",
