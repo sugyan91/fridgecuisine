@@ -45,9 +45,13 @@ type Props = {
   pantryLoading?: boolean;
   isAuthenticated: boolean;
   counterSlot?: ReactNode;
+  kidFriendly?: boolean;
+  onKidFriendly?: (next: boolean) => void;
+  showNutrition?: boolean;
+  onShowNutrition?: (next: boolean) => void;
 };
 
-export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGenerate, pantryLoading, isAuthenticated, counterSlot }: Props) {
+export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGenerate, pantryLoading, isAuthenticated, counterSlot, kidFriendly, onKidFriendly, showNutrition, onShowNutrition }: Props) {
   const [customDietary, setCustomDietary] = useState<string[]>([]);
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
   const [newDietary, setNewDietary] = useState("");
@@ -197,6 +201,39 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
         <p className="font-bold text-xs uppercase tracking-wider mb-2 opacity-60">
           Surprise me
         </p>
+        {(onKidFriendly || onShowNutrition) && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {onKidFriendly && (
+              <button
+                type="button"
+                onClick={() => onKidFriendly(!kidFriendly)}
+                aria-pressed={!!kidFriendly}
+                className={`flex items-center gap-1.5 border-2 border-border py-1.5 px-3 rounded-full font-black text-[11px] uppercase transition-all ${
+                  kidFriendly
+                    ? "bg-turmeric shadow-[2px_2px_0px_0px_var(--border)]"
+                    : "bg-white hover:bg-turmeric/10"
+                }`}
+              >
+                <span aria-hidden>🧒</span> Kid-friendly
+              </button>
+            )}
+            {onShowNutrition && (
+              <button
+                type="button"
+                onClick={() => onShowNutrition(!showNutrition)}
+                aria-pressed={!!showNutrition}
+                className={`flex items-center gap-1.5 border-2 border-border py-1.5 px-3 rounded-full font-black text-[11px] uppercase transition-all ${
+                  showNutrition
+                    ? "bg-cardamom text-white shadow-[2px_2px_0px_0px_var(--border)]"
+                    : "bg-white hover:bg-cardamom/10"
+                }`}
+                title="Approximate calories & macros per serving"
+              >
+                <span aria-hidden>🔥</span> Nutrition (approx)
+              </button>
+            )}
+          </div>
+        )}
         <button
           type="button"
           onClick={() => onPantryGenerate?.()}
