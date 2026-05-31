@@ -5,6 +5,10 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import {
+  getTurnstileSiteKey,
+  verifyTurnstileToken,
+} from "@/lib/turnstile.functions";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -13,6 +17,7 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/login")({
   validateSearch: searchSchema,
+  loader: () => getTurnstileSiteKey(),
   component: LoginPage,
 });
 
@@ -21,6 +26,7 @@ type Mode = "signin" | "signup";
 function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
+  const { siteKey } = Route.useLoaderData();
   const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
   const [email, setEmail] = useState("");           // signup only
   const [identifier, setIdentifier] = useState(""); // signin: email or username
