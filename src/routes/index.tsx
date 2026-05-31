@@ -518,7 +518,7 @@ function Index() {
                 <h1 className="font-display tracking-tight text-foreground leading-none text-lg sm:text-lg md:text-xl text-left lowercase truncate font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
-                <p className="text-[10px] sm:text-xs text-foreground/60 leading-tight mt-0.5 font-bold overflow-hidden max-w-[55vw] sm:max-w-none">
+                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight mt-1 uppercase tracking-[0.18em] font-medium overflow-hidden max-w-[55vw] sm:max-w-none tagline-mask sm:[mask-image:none] sm:[-webkit-mask-image:none]">
                   <span
                     className="tagline-sweep sm:!animate-none sm:!transform-none"
                     onTouchStart={(e) => e.currentTarget.classList.add("tagline-paused")}
