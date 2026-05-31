@@ -209,7 +209,7 @@ function AccountPage() {
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Resume subscription"}
               </Button>
             )}
-            {subscription?.stripe_customer_id !== undefined || isPremium ? (
+            {subscription ? (
               <Button variant="ghost" onClick={openPortal} disabled={busy}>
                 <CreditCard className="mr-2 h-4 w-4" />
                 Manage billing

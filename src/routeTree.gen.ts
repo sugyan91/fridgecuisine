@@ -31,6 +31,7 @@ import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/s
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
@@ -150,6 +151,11 @@ const AuthenticatedCookbookRoute = AuthenticatedCookbookRouteImport.update({
   path: '/cookbook',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
@@ -311,6 +320,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
+    | '/account'
     | '/cookbook'
     | '/my-recipes'
     | '/pricing'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
+    | '/account'
     | '/cookbook'
     | '/my-recipes'
     | '/pricing'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
+    | '/_authenticated/account'
     | '/_authenticated/cookbook'
     | '/_authenticated/my-recipes'
     | '/_authenticated/pricing'
@@ -584,6 +596,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCookbookRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -651,6 +670,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedCookbookRoute: typeof AuthenticatedCookbookRoute
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
@@ -659,6 +679,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedCookbookRoute: AuthenticatedCookbookRoute,
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
