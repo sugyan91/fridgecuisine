@@ -500,21 +500,23 @@ function Index() {
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               className="flex items-center gap-2 sm:gap-2.5 min-w-0 mr-1 sm:mr-2 shrink"
             >
-              <img
-                src={logoImg}
-                alt="Fridge Cuisine"
-                width={36}
-                height={36}
-                fetchPriority="high"
-                decoding="async"
-                className="h-7 sm:h-8 md:h-9 w-auto rounded-lg bg-background shrink-0"
-              />
+              <span className="relative inline-block shrink-0">
+                <img
+                  src={logoImg}
+                  alt="Fridge Cuisine"
+                  width={36}
+                  height={36}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="h-7 sm:h-8 md:h-9 w-auto rounded-lg bg-background"
+                />
+                <span className="absolute -top-1 -right-2 rounded-full bg-red-500 text-white text-[8px] sm:text-[9px] font-bold tracking-wider uppercase px-1.5 py-[1px] leading-none shadow-sm ring-1 ring-red-600/40">
+                  Beta
+                </span>
+              </span>
                 <div className="min-w-0 flex-1">
                 <h1 className="font-display tracking-tight text-foreground leading-none text-lg sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
-                  <span className="hidden sm:inline-block ml-1.5 align-middle rounded-full border border-red-500 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase text-red-500">
-                    Beta
-                  </span>
                 </h1>
                 <p className="hidden sm:block text-[10px] sm:text-xs text-foreground/60 leading-tight mt-0.5 font-bold">
                   Your own AI powered personal chef
