@@ -185,6 +185,35 @@ function LoginPage() {
     );
     setLoading(true);
     try {
+      // Cloudflare Turnstile gate — runs before any Supabase auth call.
+      if (siteKey) {
+        if (!captchaToken) {
+          const msg =
+            captchaStatus === "expired"
+              ? "Your security check expired. Please verify again before continuing."
+              : captchaStatus === "error"
+                ? "We couldn't load the security check. Please try again."
+                : "Please complete the security check before continuing.";
+          setFormError({ message: msg });
+          setStatusMessage("Security check required.");
+          setLoading(false);
+          return;
+        }
+        const verify = await verifyTurnstileToken({
+          data: { token: captchaToken },
+        });
+        if (!verify.success) {
+          setFormError({
+            message:
+              verify.error ??
+              "We couldn't confirm you're human. Please try again.",
+          });
+          setStatusMessage("Security check failed.");
+          resetCaptcha();
+          setLoading(false);
+          return;
+        }
+      }
       if (mode === "signup") {
         const cleanEmail = email.trim().toLowerCase();
         const cleanUsername = username.trim().toLowerCase();
