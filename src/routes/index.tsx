@@ -512,7 +512,7 @@ function Index() {
                 <div className="min-w-0 flex-1">
                 <h1 className="font-display tracking-tight text-foreground leading-none text-lg sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
-                  <span className="ml-1.5 align-middle inline-block rounded-full border border-border px-1.5 py-[1px] text-[9px] font-semibold tracking-wider uppercase text-muted-foreground normal-case">
+                  <span className="ml-1.5 align-middle inline-block rounded-full border border-red-500 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase text-red-500">
                     Beta
                   </span>
                 </h1>
