@@ -74,14 +74,14 @@
   --font-sans: "Inter", "Hind", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --font-serif: "Playfair Display", "Fraunces", Georgia, serif;
-  --shadow-soft: 0 8px 24px rgb(0 0 0 / 0.06);
-  --shadow-card: 0 18px 44px -16px rgb(0 0 0 / 0.14);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.05);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 20px 48px -20px rgb(0 0 0 / 0.12);
 }
 
 :root {
   --radius: 1rem;
-  /* Editorial food-magazine — terracotta accent, near-black ink, warm paper surfaces */
-  --background: oklch(0.990 0.004 75);          /* #FDFCFB warm paper */
+  /* Editorial food-magazine — refined ink + muted gold accent, warm paper surfaces */
+  --background: oklch(0.992 0.003 75);          /* crisper warm paper */
   --foreground: oklch(0.205 0 0);               /* #1A1A1A ink */
   --card: oklch(1 0 0);                         /* pure white */
   --card-foreground: oklch(0.205 0 0);
@@ -89,30 +89,30 @@
   --popover-foreground: oklch(0.205 0 0);
   --primary: oklch(0.205 0 0);                  /* black primary CTAs */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.96 0.008 75);            /* warm stone */
+  --secondary: oklch(0.965 0.006 75);           /* warm stone */
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.96 0.008 75);                /* #F5F3EE band */
-  --muted-foreground: oklch(0.55 0.012 60);     /* stone-500 #78716C */
-  --accent: oklch(0.555 0.155 25);              /* #BC4749 terracotta */
-  --accent-foreground: oklch(1 0 0);
+  --muted: oklch(0.965 0.006 75);               /* warm band */
+  --muted-foreground: oklch(0.50 0.010 60);     /* refined stone */
+  --accent: oklch(0.70 0.105 75);               /* muted warm gold */
+  --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.91 0.004 60);               /* #E7E5E4 hairline */
-  --input: oklch(0.91 0.004 60);
-  --ring: oklch(0.555 0.155 25 / 0.30);         /* terracotta focus ring */
-  /* Brand-legacy tokens remapped to editorial palette */
-  --turmeric: oklch(0.555 0.155 25);            /* terracotta */
-  --paprika: oklch(0.555 0.155 25);             /* terracotta */
+  --border: oklch(0.92 0.003 60);               /* refined hairline */
+  --input: oklch(0.92 0.003 60);
+  --ring: oklch(0.70 0.105 75 / 0.35);          /* gold focus ring */
+  /* Brand-legacy tokens remapped to refined editorial palette */
+  --turmeric: oklch(0.70 0.105 75);             /* muted warm gold */
+  --paprika: oklch(0.205 0 0);                  /* ink (replaces terracotta) */
   --cardamom: oklch(0.205 0 0);                 /* ink */
-  --saffron: oklch(0.96 0.008 75);              /* warm stone */
-  --sage: oklch(0.55 0.012 60);
-  --sage-soft: oklch(0.96 0.008 75);
+  --saffron: oklch(0.965 0.006 75);             /* warm stone */
+  --sage: oklch(0.50 0.010 60);
+  --sage-soft: oklch(0.965 0.006 75);
   --cream: oklch(0.990 0.004 75);
   --ink: oklch(0.205 0 0);
   /* Section surface bands */
-  --surface-cream: oklch(0.96 0.012 75);        /* warm cream band */
+  --surface-cream: oklch(0.965 0.008 75);       /* warm cream band */
   --surface-dark: oklch(0.205 0 0);             /* near-black band */
-  --accent-gold: oklch(0.74 0.10 70);           /* muted warm gold */
+  --accent-gold: oklch(0.70 0.105 75);          /* muted warm gold */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
