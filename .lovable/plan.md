@@ -1,41 +1,29 @@
-Add a contact form that routes messages to the right inbox based on the user's reason.
+## What's happening
 
-**New page: `/contact`** (`src/routes/contact.tsx`)
-- Form fields: Name, Email, Reason (dropdown: Billing, Support, Feedback), Message
-- Branded with FridgeCuisine's terracotta/editorial style matching the rest of the site
-- Header + footer included
-- Client-side validation with zod (length limits, email format, required fields)
-- On submit: POST to `/api/public/contact`
-- Shows success toast + confirmation message; resets form
-- Includes the two emails as fallback contact info at the top
+The contact form's CAPTCHA is failing at load time with Cloudflare error **400020**, which Cloudflare uses for **"Invalid sitekey"**. The UI then correctly shows the "Something went wrong loading the security check" message we added — so the frontend logic is working as designed. The root cause is on the Turnstile configuration side, not in our code.
 
-**Inbox routing**
-- Billing → `main@fridgecuisine.com`
-- Support → `support@fridgecuisine.com`
-- Feedback → `main@fridgecuisine.com`
+Both secrets are already set:
+- `TURNSTILE_SITE_KEY` ✓
+- `TURNSTILE_SECRET_KEY` ✓
 
-**New public API route** (`src/routes/api/public/contact.ts`)
-- Accepts POST with `{ name, email, reason, message }`
-- Re-validates with zod server-side (defense in depth, length caps to prevent abuse)
-- Picks the right destination inbox from the reason
-- Sends TWO emails via existing email infrastructure:
-  1. **Staff notification** to the routed inbox (with reply-to set to the user's email so support can reply directly)
-  2. **User confirmation** ("Thanks, we got your message") to the submitter
-- Returns `{ ok: true }` on success
-- Uses idempotency keys derived from a generated submission id
+So the value exists, but Cloudflare is rejecting it for this page. The two realistic causes:
 
-**New email templates** (`src/lib/email-templates/`)
-- `contact-notification.tsx` — internal-facing template for staff (shows reason, name, email, message)
-- `contact-confirmation.tsx` — user-facing thank-you with branded shell
-- Both registered in `registry.ts`
+1. **Hostname not allowed on the Turnstile widget.** A Turnstile sitekey is bound to a list of hostnames in the Cloudflare dashboard. You're previewing on `id-preview--b3c5ce0d-...lovable.app` (and the published site is `fridgecuisine.lovable.app` / `fridgecuisine.com`). If those hostnames aren't in the widget's allow-list, Cloudflare returns 400020.
+2. **Wrong key pasted.** e.g. the secret key was pasted into `TURNSTILE_SITE_KEY`, or a typo / extra whitespace. Site keys start with `0x4AAAAAAA...`.
 
-**Navigation**
-- Replace the existing "Support" mailto link in header desktop nav with a `<Link to="/contact">Contact</Link>` (cleaner UX than a mailto)
-- Replace the mobile "Contact Support" mailto with the same Contact link
-- Footer's Contact column keeps both raw emails (no change) so users who prefer their own mail client still have them
+## Plan
 
-**Files**
-- New: `src/routes/contact.tsx`, `src/routes/api/public/contact.ts`, `src/lib/email-templates/contact-notification.tsx`, `src/lib/email-templates/contact-confirmation.tsx`
-- Edited: `src/routes/index.tsx` (nav link), `src/lib/email-templates/registry.ts` (register two templates)
+1. Open the Cloudflare Turnstile dashboard → your widget → **Settings** and add these hostnames to the allow-list:
+   - `fridgecuisine.com`
+   - `www.fridgecuisine.com`
+   - `fridgecuisine.lovable.app`
+   - `lovable.app` (covers all `*.lovable.app` preview/sandbox subdomains)
+   - `localhost` (optional, for local dev)
+2. Confirm the **Site Key** value (starts with `0x4AAAAAAA…`) and the **Secret Key** value (starts with `0x4AAAAAAA…` too but is the "secret" one) are not swapped. If they were swapped, update `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` accordingly.
+3. Reload the contact page — the widget should render without 400020.
 
-No database tables or migrations needed — the existing email queue infrastructure handles delivery, retries, and rate limits.
+If after step 1+2 it still fails, I'll add a small server-side log of the verification response (`error-codes` from siteverify) so we can pinpoint the exact reason, and I can also offer a "test mode" sitekey (`1x00000000000000000000AA`) to confirm the integration end-to-end independent of your real key.
+
+## No code changes proposed yet
+
+The code is behaving correctly given a bad/blocked sitekey. I'd rather fix the config first than start patching code. Let me know once you've updated the hostnames (or if you'd like me to switch to a Turnstile test key temporarily to prove the wiring).
