@@ -128,6 +128,43 @@ function ContactPage() {
 
   const activeReason = REASONS.find((r) => r.value === reason)!
 
+  const retryCaptcha = () => {
+    // @ts-expect-error global injected by Turnstile script
+    const ts = window.turnstile
+    if (ts && widgetIdRef.current) {
+      try {
+        ts.reset(widgetIdRef.current)
+      } catch {
+        // Fallback: remove and re-render if reset fails
+        try {
+          ts.remove(widgetIdRef.current)
+        } catch { /* noop */ }
+        widgetIdRef.current = null
+        if (widgetContainerRef.current) {
+          widgetIdRef.current = ts.render(widgetContainerRef.current, {
+            sitekey: siteKey,
+            callback: (token: string) => {
+              setCaptchaToken(token)
+              setCaptchaStatus('ready')
+            },
+            'expired-callback': () => {
+              setCaptchaToken('')
+              setCaptchaStatus('expired')
+            },
+            'error-callback': () => {
+              setCaptchaToken('')
+              setCaptchaStatus('error')
+            },
+            theme: 'auto',
+          })
+        }
+      }
+    }
+    setCaptchaStatus('ready')
+    setCaptchaToken('')
+  }
+
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const elapsed = Date.now() - mountTimeRef.current
