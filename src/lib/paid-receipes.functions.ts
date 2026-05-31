@@ -2,9 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type ReceipeStep = { text: string; minutes?: number };
+export type RecipeStep = { text: string; minutes?: number };
 
-export type PaidReceipeListItem = {
+export type PaidRecipeListItem = {
   id: string;
   chef_user_id: string;
   title: string;
@@ -18,10 +18,10 @@ export type PaidReceipeListItem = {
   author_avatar_url?: string | null;
 };
 
-export type PaidReceipeFull = PaidReceipeListItem & {
+export type PaidRecipeFull = PaidRecipeListItem & {
   description: string | null;
   ingredients: string[];
-  steps: ReceipeStep[];
+  steps: RecipeStep[];
   is_published: boolean;
 };
 
@@ -30,7 +30,7 @@ const stepSchema = z.object({
   minutes: z.number().int().min(0).max(600).optional(),
 });
 
-const receipeInput = z.object({
+const recipeInput = z.object({
   id: z.string().uuid().optional(),
   title: z.string().trim().min(1).max(160),
   local_name: z.string().trim().max(160).optional().nullable(),
@@ -45,7 +45,7 @@ const receipeInput = z.object({
   is_published: z.boolean().default(true),
 });
 
-export const listMyPaidReceipes = createServerFn({ method: "GET" })
+export const listMyPaidRecipes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
@@ -55,12 +55,12 @@ export const listMyPaidReceipes = createServerFn({ method: "GET" })
       .eq("chef_user_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { rows: (data ?? []) as Array<PaidReceipeListItem & { is_published: boolean; created_at: string }> };
+    return { rows: (data ?? []) as Array<PaidRecipeListItem & { is_published: boolean; created_at: string }> };
   });
 
-export const upsertPaidReceipe = createServerFn({ method: "POST" })
+export const upsertPaidRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => receipeInput.parse(input))
+  .inputValidator((input) => recipeInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const row = {
@@ -97,7 +97,7 @@ export const upsertPaidReceipe = createServerFn({ method: "POST" })
     return { id: (inserted as { id: string }).id };
   });
 
-export const deletePaidReceipe = createServerFn({ method: "POST" })
+export const deletePaidRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
@@ -112,7 +112,7 @@ export const deletePaidReceipe = createServerFn({ method: "POST" })
   });
 
 /** Public marketplace listing — only safe columns. */
-export const listPublicPaidReceipes = createServerFn({ method: "GET" })
+export const listPublicPaidRecipes = createServerFn({ method: "GET" })
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
@@ -122,7 +122,7 @@ export const listPublicPaidReceipes = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(120);
     if (error) throw new Error(error.message);
-    const rows = (data ?? []) as PaidReceipeListItem[];
+    const rows = (data ?? []) as PaidRecipeListItem[];
     const chefIds = Array.from(new Set(rows.map((r) => r.chef_user_id)));
     if (chefIds.length > 0) {
       const { data: profiles } = await supabaseAdmin
@@ -146,9 +146,9 @@ export const listPublicPaidReceipes = createServerFn({ method: "GET" })
 
 /**
  * Returns the limited public payload (no ingredients/steps) for anyone, and
- * the full receipe if the signed-in caller owns or has purchased it.
+ * the full recipe if the signed-in caller owns or has purchased it.
  */
-export const getPaidReceipeDetail = createServerFn({ method: "GET" })
+export const getPaidRecipeDetail = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -159,9 +159,9 @@ export const getPaidReceipeDetail = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!pub || !pub.is_published) {
-      return { receipe: null, unlocked: false } as const;
+      return { recipe: null, unlocked: false } as const;
     }
-    const receipe: PaidReceipeListItem & { description: string | null } = {
+    const recipe: PaidRecipeListItem & { description: string | null } = {
       id: pub.id,
       chef_user_id: pub.chef_user_id,
       title: pub.title,
@@ -178,13 +178,13 @@ export const getPaidReceipeDetail = createServerFn({ method: "GET" })
       .select("display_name, username, avatar_url")
       .eq("user_id", pub.chef_user_id)
       .maybeSingle();
-    receipe.author_name = (prof?.display_name || prof?.username) ?? null;
-    receipe.author_avatar_url = prof?.avatar_url ?? null;
-    return { receipe, unlocked: false } as const;
+    recipe.author_name = (prof?.display_name || prof?.username) ?? null;
+    recipe.author_avatar_url = prof?.avatar_url ?? null;
+    return { recipe, unlocked: false } as const;
   });
 
 /** Auth variant — returns full ingredients/steps if owner or purchaser. */
-export const getPaidReceipeFull = createServerFn({ method: "GET" })
+export const getPaidRecipeFull = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
@@ -196,7 +196,7 @@ export const getPaidReceipeFull = createServerFn({ method: "GET" })
       .select("chef_user_id, is_published")
       .eq("id", data.id)
       .maybeSingle();
-    if (!ownerRow) return { unlocked: false, receipe: null } as const;
+    if (!ownerRow) return { unlocked: false, recipe: null } as const;
 
     const isOwner = ownerRow.chef_user_id === userId;
     let purchased = false;
@@ -209,7 +209,7 @@ export const getPaidReceipeFull = createServerFn({ method: "GET" })
     }
 
     if (!(isOwner || purchased)) {
-      return { unlocked: false, receipe: null } as const;
+      return { unlocked: false, recipe: null } as const;
     }
     const { data: full, error } = await supabaseAdmin
       .from("paid_recipes")
@@ -217,7 +217,7 @@ export const getPaidReceipeFull = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .single();
     if (error) throw new Error(error.message);
-    const receipe: PaidReceipeFull = {
+    const recipe: PaidRecipeFull = {
       id: full.id,
       chef_user_id: full.chef_user_id,
       title: full.title,
@@ -229,8 +229,8 @@ export const getPaidReceipeFull = createServerFn({ method: "GET" })
       price_cents: full.price_cents,
       description: full.description,
       ingredients: (full.ingredients ?? []) as string[],
-      steps: (full.steps ?? []) as ReceipeStep[],
+      steps: (full.steps ?? []) as RecipeStep[],
       is_published: full.is_published,
     };
-    return { unlocked: true as const, receipe };
+    return { unlocked: true as const, recipe };
   });

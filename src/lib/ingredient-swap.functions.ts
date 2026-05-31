@@ -34,12 +34,12 @@ export const swapIngredient = createServerFn({ method: "POST" })
     const dietary = data.dietary.length ? data.dietary.join(", ") : "none";
     const pantry = data.pantry.length ? data.pantry.join(", ") : "(none listed)";
 
-    const systemPrompt = `You are an expert home cook helping a user swap an ingredient they don't have in a specific receipe.
+    const systemPrompt = `You are an expert home cook helping a user swap an ingredient they don't have in a specific recipe.
 Return 1-2 realistic substitutions (max 3). Prefer items from the user's pantry when sensible. Each swap must respect the dietary constraints STRICTLY.
 For each swap, "name" is the replacement ingredient (with quantity hint if helpful, e.g. "Greek yogurt (3 tbsp)"). "note" is a single short sentence explaining how it changes the dish or any technique tweak.
 Return ONLY JSON: { "swaps": [{ "name": "...", "note": "..." }] } — no prose.`;
 
-    const userPrompt = `Receipe: ${data.recipeTitle}${data.cuisine ? ` (${data.cuisine} cuisine)` : ""}
+    const userPrompt = `Recipe: ${data.recipeTitle}${data.cuisine ? ` (${data.cuisine} cuisine)` : ""}
 Ingredient to swap: ${data.ingredient}
 User's pantry: ${pantry}
 Dietary constraints (must respect): ${dietary}`;

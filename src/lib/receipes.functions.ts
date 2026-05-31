@@ -21,7 +21,7 @@ const inputSchema = z.object({
     .transform((v) => (v && SUPPORTED_LANGUAGE_NAMES.includes(v) ? v : "English")),
 });
 
-export type Receipe = {
+export type Recipe = {
   title: string;
   blurb: string;
   cookTimeMinutes: number;
@@ -47,8 +47,8 @@ export type Receipe = {
   };
 };
 
-export type GenerateReceipesResult =
-  | { ok: true; receipes: Receipe[] }
+export type GenerateRecipesResult =
+  | { ok: true; recipes: Recipe[] }
   | {
       ok: false;
       error: string;
@@ -56,7 +56,7 @@ export type GenerateReceipesResult =
     };
 
 const responseSchema = z.object({
-  receipes: z
+  recipes: z
     .array(
       z.object({
         title: z.string(),
@@ -92,15 +92,15 @@ const responseSchema = z.object({
     .max(10),
 });
 
-export const generateReceipes = createServerFn({ method: "POST" })
+export const generateRecipes = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data }): Promise<GenerateReceipesResult> => {
+  .handler(async ({ data }): Promise<GenerateRecipesResult> => {
     const hasIngredients = data.ingredients.length > 0;
     const cuisineGuidance =
       data.cuisine === "Any / Surprise Me"
         ? hasIngredients
-          ? "Pick cuisines that best match the ingredients provided — be creative and global. Mix up regions so the 10 receipes span different parts of the world."
-          : "Surprise the user with 10 iconic, beloved receipes from ALL OVER THE WORLD. Span different continents and cuisines (e.g. Asian, European, African, Latin American, Middle Eastern) — no two receipes from the same country."
+          ? "Pick cuisines that best match the ingredients provided — be creative and global. Mix up regions so the 10 recipes span different parts of the world."
+          : "Surprise the user with 10 iconic, beloved recipes from ALL OVER THE WORLD. Span different continents and cuisines (e.g. Asian, European, African, Latin American, Middle Eastern) — no two recipes from the same country."
         : `Use authentic techniques and flavor profiles for ${data.cuisine} cuisine.`;
 
     const dietary = data.dietary.length
@@ -109,30 +109,30 @@ export const generateReceipes = createServerFn({ method: "POST" })
 
     const ingredientRule = hasIngredients
       ? `Use as many of the user's ingredients as possible.\n- It's OK to require 1-3 missing pantry staples (oil, salt, common spices) - list them in missingIngredients.`
-      : `The user has not listed any pantry ingredients. Generate 10 classic, iconic, beloved receipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
+      : `The user has not listed any pantry ingredients. Generate 10 classic, iconic, beloved recipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
 
     const kidFriendlyRule = data.kidFriendly
-      ? `\n- KID-FRIENDLY MODE: All receipes MUST be kid-approved. Prefer mild flavors, no chili heat, no strong funk (blue cheese, anchovy, fish sauce, strong fermented items), nothing raw (no tartare, no runny eggs unless cooked through), and avoid bitter greens. Hide vegetables in sauces/blends where possible. Favor familiar shapes (meatballs, pasta, pancakes, finger foods). Set "kidFriendly": true on every receipe.`
+      ? `\n- KID-FRIENDLY MODE: All recipes MUST be kid-approved. Prefer mild flavors, no chili heat, no strong funk (blue cheese, anchovy, fish sauce, strong fermented items), nothing raw (no tartare, no runny eggs unless cooked through), and avoid bitter greens. Hide vegetables in sauces/blends where possible. Favor familiar shapes (meatballs, pasta, pancakes, finger foods). Set "kidFriendly": true on every recipe.`
       : "";
 
     const nutritionRule = data.includeNutrition
       ? `\n- NUTRITION: Include a "nutrition" object with "servings" (integer) and "perServing" with integer "calories", "proteinG", "carbsG", "fatG". These are APPROXIMATE estimates — do your best, do not pretend precision.`
       : "";
 
-    const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious receipes${hasIngredients ? " the user can cook with mostly the ingredients they have on hand" : " for the selected cuisine"}. ${cuisineGuidance}
+    const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious recipes${hasIngredients ? " the user can cook with mostly the ingredients they have on hand" : " for the selected cuisine"}. ${cuisineGuidance}
 Rules:
 - ${ingredientRule}
 - Steps must be concrete and ordered (4-8 short steps).
 - cookTimeMinutes must be realistic (5-90) — active cooking time only.
 - ALSO provide: prepTimeMinutes (chopping/measuring/marinating), totalTimeMinutes (prep + cook), and stepTimings — an array of integer minutes per step, SAME LENGTH as steps. If a step is instant, use 1.
 - Set "difficulty" to "easy" (≤25 min total, ≤5 simple steps, basic technique), "medium" (most weeknight cooking), or "hard" (advanced technique, multi-component, or >45 min total).${kidFriendlyRule}${nutritionRule}
-- Honor dietary constraints STRICTLY: ${dietary}. Every single receipe MUST comply with ALL listed dietary tags. Treat each tag as a hard allergy/diet constraint — if a tag names an ingredient or food family (e.g. "Peanut allergy", "No shellfish", "No mushrooms", "Lactose intolerant"), exclude that ingredient AND its derivatives/cross-contaminants entirely, and mention a safe swap in "substitutions". If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any receipe that would violate a tag — do not include it.
-- If "Quick Meal" is selected, all receipes must be <= 20 minutes.
-- For every receipe, set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy". Include any user-selected dietary tags that apply, plus any other tags that are obviously true for the dish. Max 6 tags. Use [] if none apply.
+- Honor dietary constraints STRICTLY: ${dietary}. Every single recipe MUST comply with ALL listed dietary tags. Treat each tag as a hard allergy/diet constraint — if a tag names an ingredient or food family (e.g. "Peanut allergy", "No shellfish", "No mushrooms", "Lactose intolerant"), exclude that ingredient AND its derivatives/cross-contaminants entirely, and mention a safe swap in "substitutions". If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any recipe that would violate a tag — do not include it.
+- If "Quick Meal" is selected, all recipes must be <= 20 minutes.
+- For every recipe, set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy". Include any user-selected dietary tags that apply, plus any other tags that are obviously true for the dish. Max 6 tags. Use [] if none apply.
 - Return ONLY valid JSON matching the schema. No prose.${languageInstruction(data.language)}`;
 
     const excludeBlock = data.exclude.length
-      ? `\n\nDo NOT repeat or closely resemble these receipes already shown:\n- ${data.exclude.join("\n- ")}`
+      ? `\n\nDo NOT repeat or closely resemble these recipes already shown:\n- ${data.exclude.join("\n- ")}`
       : "";
 
     const userPrompt = `Ingredients on hand: ${hasIngredients ? data.ingredients.join(", ") : "(none — user has not specified any)"}
@@ -141,7 +141,7 @@ Dietary: ${dietary}${excludeBlock}
 
 Return JSON shaped exactly like:
 {
-  "receipes": [
+  "recipes": [
     {
       "title": "string",
       "blurb": "one-sentence description",
@@ -174,9 +174,9 @@ Return JSON shaped exactly like:
         };
       }
 
-      return { ok: true, receipes: result.data.receipes };
+      return { ok: true, recipes: result.data.recipes };
     } catch (err) {
-      console.error("generateReceipes failed", err);
+      console.error("generateRecipes failed", err);
       return { ok: false, error: "Something went wrong. Try again.", code: "server" };
     }
   });

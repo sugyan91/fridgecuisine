@@ -4,10 +4,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Lock, MapPin, Clock } from "lucide-react";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import {
-  getPaidReceipeDetail,
-  getPaidReceipeFull,
-  type PaidReceipeFull,
-} from "@/lib/paid-receipes.functions";
+  getPaidRecipeDetail,
+  getPaidRecipeFull,
+  type PaidRecipeFull,
+} from "@/lib/paid-recipes.functions";
 import { createRecipePurchaseCheckout } from "@/lib/payments.functions";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { fakeRating, Stars } from "@/lib/fake-ratings";
@@ -17,22 +17,22 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/shop/$receipeId")({
+export const Route = createFileRoute("/shop/$recipeId")({
   head: () => ({
-    meta: [{ title: "Receipe — FridgeCuisine" }],
+    meta: [{ title: "Recipe — FridgeCuisine" }],
   }),
-  component: ReceipeDetail,
+  component: RecipeDetail,
 });
 
-function ReceipeDetail() {
-  const { receipeId } = Route.useParams();
-  const fetchPublic = useServerFn(getPaidReceipeDetail);
-  const fetchFull = useServerFn(getPaidReceipeFull);
+function RecipeDetail() {
+  const { recipeId } = Route.useParams();
+  const fetchPublic = useServerFn(getPaidRecipeDetail);
+  const fetchFull = useServerFn(getPaidRecipeFull);
   const startCheckout = useServerFn(createRecipePurchaseCheckout);
   const isMobile = useIsMobile();
 
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<Partial<PaidReceipeFull> | null>(null);
+  const [data, setData] = useState<Partial<PaidRecipeFull> | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -46,20 +46,20 @@ function ReceipeDetail() {
       setAuthed(isAuthed);
       try {
         if (isAuthed) {
-          const res = await fetchFull({ data: { id: receipeId } });
+          const res = await fetchFull({ data: { id: recipeId } });
           if (cancelled) return;
-          if (res.receipe) {
-            setData(res.receipe);
+          if (res.recipe) {
+            setData(res.recipe);
             setUnlocked(res.unlocked);
           } else {
-            const pub = await fetchPublic({ data: { id: receipeId } });
+            const pub = await fetchPublic({ data: { id: recipeId } });
             if (cancelled) return;
-            setData(pub.receipe);
+            setData(pub.recipe);
           }
         } else {
-          const pub = await fetchPublic({ data: { id: receipeId } });
+          const pub = await fetchPublic({ data: { id: recipeId } });
           if (cancelled) return;
-          setData(pub.receipe);
+          setData(pub.recipe);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -68,7 +68,7 @@ function ReceipeDetail() {
     return () => {
       cancelled = true;
     };
-  }, [receipeId, fetchFull, fetchPublic]);
+  }, [recipeId, fetchFull, fetchPublic]);
 
   if (loading) {
     return (
@@ -82,7 +82,7 @@ function ReceipeDetail() {
     return (
       <main className="min-h-screen grid place-items-center bg-background text-center px-4">
         <div>
-          <p className="font-display text-2xl uppercase">Receipe not found</p>
+          <p className="font-display text-2xl uppercase">Recipe not found</p>
           <Link to="/shop" className="text-sm text-paprika underline">
             Back to shop
           </Link>
@@ -92,10 +92,10 @@ function ReceipeDetail() {
   }
 
   const fetchClientSecret = async (): Promise<string> => {
-    const returnUrl = `${window.location.origin}/checkout/return?type=recipe&recipe_id=${receipeId}&session_id={CHECKOUT_SESSION_ID}`;
+    const returnUrl = `${window.location.origin}/checkout/return?type=recipe&recipe_id=${recipeId}&session_id={CHECKOUT_SESSION_ID}`;
     const res = await startCheckout({
       data: {
-        recipeId: receipeId,
+        recipeId: recipeId,
         returnUrl,
         environment: getStripeEnvironment(),
       },
@@ -139,7 +139,7 @@ function ReceipeDetail() {
           <p className="text-lg text-muted-foreground italic">{data.local_name}</p>
         )}
         <AuthorAndRating
-          id={receipeId}
+          id={recipeId}
           name={data.author_name ?? null}
           avatar={data.author_avatar_url ?? null}
         />
@@ -151,13 +151,13 @@ function ReceipeDetail() {
         {data.description && <p className="mt-4 text-sm">{data.description}</p>}
 
         {unlocked ? (
-          <UnlockedView receipe={data as PaidReceipeFull} />
+          <UnlockedView recipe={data as PaidRecipeFull} />
         ) : (
           <LockedView
             priceCents={data.price_cents ?? 0}
             authed={!!authed}
             onBuy={() => setCheckoutOpen(true)}
-            receipeId={receipeId}
+            recipeId={recipeId}
           />
         )}
       </div>
@@ -190,14 +190,14 @@ function ReceipeDetail() {
   );
 }
 
-function UnlockedView({ receipe }: { receipe: PaidReceipeFull }) {
+function UnlockedView({ recipe }: { recipe: PaidRecipeFull }) {
   return (
     <div className="mt-6 space-y-6">
-      {receipe.ingredients?.length > 0 && (
+      {recipe.ingredients?.length > 0 && (
         <section>
           <h2 className="font-display text-xl uppercase mb-2">Ingredients</h2>
           <ul className="list-disc pl-5 space-y-1 text-sm">
-            {receipe.ingredients.map((ing, i) => (
+            {recipe.ingredients.map((ing, i) => (
               <li key={i}>{ing}</li>
             ))}
           </ul>
@@ -206,7 +206,7 @@ function UnlockedView({ receipe }: { receipe: PaidReceipeFull }) {
       <section>
         <h2 className="font-display text-xl uppercase mb-2">Steps</h2>
         <ol className="space-y-3">
-          {receipe.steps.map((s, i) => (
+          {recipe.steps.map((s, i) => (
             <li key={i} className="bg-white border-2 border-border rounded-2xl p-3 flex gap-3">
               <span className="size-7 rounded-full bg-foreground text-background grid place-items-center text-xs font-black shrink-0">
                 {i + 1}
@@ -272,19 +272,19 @@ function LockedView({
   priceCents,
   authed,
   onBuy,
-  receipeId,
+  recipeId,
 }: {
   priceCents: number;
   authed: boolean;
   onBuy: () => void;
-  receipeId: string;
+  recipeId: string;
 }) {
   return (
     <div className="mt-6 bg-turmeric/15 border-4 border-dashed border-border rounded-3xl p-6 text-center">
       <div className="size-12 rounded-2xl bg-foreground text-background border-2 border-border grid place-items-center mx-auto mb-3">
         <Lock className="size-5" />
       </div>
-      <p className="font-display text-xl uppercase">Unlock the full receipe</p>
+      <p className="font-display text-xl uppercase">Unlock the full recipe</p>
       <p className="text-sm text-muted-foreground mt-1">
         Ingredients and step-by-step method are available after purchase.
       </p>
@@ -300,7 +300,7 @@ function LockedView({
       ) : (
         <Link
           to="/login"
-          search={{ redirect: `/shop/${receipeId}` }}
+          search={{ redirect: `/shop/${recipeId}` }}
           className="mt-4 inline-block bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
         >
           Sign in or sign up to buy

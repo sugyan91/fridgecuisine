@@ -14,12 +14,12 @@ export function LimitReachedModal({ open, onClose, isSignedIn, countdown }: Prop
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl md:text-3xl tracking-tight">
-            You've cooked through your 5 free receipes today 🔥
+            You've cooked through your 5 free recipes today 🔥
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground pt-1">
             {isSignedIn
               ? "Go unlimited and never hit the limit again — or wait for the daily reset."
-              : "Sign up free to get more receipes, save them across devices, and unlock the community cookbook."}
+              : "Sign up free to get more recipes, save them across devices, and unlock the community cookbook."}
           </DialogDescription>
         </DialogHeader>
 

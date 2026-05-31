@@ -18,15 +18,15 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
-import { Route as ShopReceipeIdRouteImport } from './routes/shop.$receipeId'
+import { Route as ShopRecipeIdRouteImport } from './routes/shop.$recipeId'
 import { Route as SharedSlugRouteImport } from './routes/shared.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
-import { Route as CommunityReceipeIdRouteImport } from './routes/community.$receipeId'
+import { Route as CommunityRecipeIdRouteImport } from './routes/community.$recipeId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
-import { Route as AuthenticatedMyReceipesRouteImport } from './routes/_authenticated/my-receipes'
+import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
@@ -82,9 +82,9 @@ const CommunityIndexRoute = CommunityIndexRouteImport.update({
   path: '/community/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShopReceipeIdRoute = ShopReceipeIdRouteImport.update({
-  id: '/shop/$receipeId',
-  path: '/shop/$receipeId',
+const ShopRecipeIdRoute = ShopRecipeIdRouteImport.update({
+  id: '/shop/$recipeId',
+  path: '/shop/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SharedSlugRoute = SharedSlugRouteImport.update({
@@ -97,9 +97,9 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CommunityReceipeIdRoute = CommunityReceipeIdRouteImport.update({
-  id: '/community/$receipeId',
-  path: '/community/$receipeId',
+const CommunityRecipeIdRoute = CommunityRecipeIdRouteImport.update({
+  id: '/community/$recipeId',
+  path: '/community/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
@@ -122,9 +122,9 @@ const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedMyReceipesRoute = AuthenticatedMyReceipesRouteImport.update({
-  id: '/my-receipes',
-  path: '/my-receipes',
+const AuthenticatedMyRecipesRoute = AuthenticatedMyRecipesRouteImport.update({
+  id: '/my-recipes',
+  path: '/my-recipes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedCookbookRoute = AuthenticatedCookbookRouteImport.update({
@@ -191,15 +191,15 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
-  '/my-receipes': typeof AuthenticatedMyReceipesRoute
+  '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
-  '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/shared/$slug': typeof SharedSlugRoute
-  '/shop/$receipeId': typeof ShopReceipeIdRoute
+  '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
@@ -220,15 +220,15 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
-  '/my-receipes': typeof AuthenticatedMyReceipesRoute
+  '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
-  '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/shared/$slug': typeof SharedSlugRoute
-  '/shop/$receipeId': typeof ShopReceipeIdRoute
+  '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community': typeof CommunityIndexRoute
   '/shop': typeof ShopIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
@@ -251,15 +251,15 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
-  '/_authenticated/my-receipes': typeof AuthenticatedMyReceipesRoute
+  '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
-  '/community/$receipeId': typeof CommunityReceipeIdRoute
+  '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/shared/$slug': typeof SharedSlugRoute
-  '/shop/$receipeId': typeof ShopReceipeIdRoute
+  '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
@@ -282,15 +282,15 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sitemap.xml'
     | '/cookbook'
-    | '/my-receipes'
+    | '/my-recipes'
     | '/pricing'
     | '/sell'
     | '/checkout/cancel'
     | '/checkout/return'
-    | '/community/$receipeId'
+    | '/community/$recipeId'
     | '/email/unsubscribe'
     | '/shared/$slug'
-    | '/shop/$receipeId'
+    | '/shop/$recipeId'
     | '/community/'
     | '/shop/'
     | '/community/new'
@@ -311,15 +311,15 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sitemap.xml'
     | '/cookbook'
-    | '/my-receipes'
+    | '/my-recipes'
     | '/pricing'
     | '/sell'
     | '/checkout/cancel'
     | '/checkout/return'
-    | '/community/$receipeId'
+    | '/community/$recipeId'
     | '/email/unsubscribe'
     | '/shared/$slug'
-    | '/shop/$receipeId'
+    | '/shop/$recipeId'
     | '/community'
     | '/shop'
     | '/community/new'
@@ -341,15 +341,15 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sitemap.xml'
     | '/_authenticated/cookbook'
-    | '/_authenticated/my-receipes'
+    | '/_authenticated/my-recipes'
     | '/_authenticated/pricing'
     | '/_authenticated/sell'
     | '/checkout/cancel'
     | '/checkout/return'
-    | '/community/$receipeId'
+    | '/community/$recipeId'
     | '/email/unsubscribe'
     | '/shared/$slug'
-    | '/shop/$receipeId'
+    | '/shop/$recipeId'
     | '/community/'
     | '/shop/'
     | '/_authenticated/community/new'
@@ -373,10 +373,10 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
-  CommunityReceipeIdRoute: typeof CommunityReceipeIdRoute
+  CommunityRecipeIdRoute: typeof CommunityRecipeIdRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   SharedSlugRoute: typeof SharedSlugRoute
-  ShopReceipeIdRoute: typeof ShopReceipeIdRoute
+  ShopRecipeIdRoute: typeof ShopRecipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
@@ -454,11 +454,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/shop/$receipeId': {
-      id: '/shop/$receipeId'
-      path: '/shop/$receipeId'
-      fullPath: '/shop/$receipeId'
-      preLoaderRoute: typeof ShopReceipeIdRouteImport
+    '/shop/$recipeId': {
+      id: '/shop/$recipeId'
+      path: '/shop/$recipeId'
+      fullPath: '/shop/$recipeId'
+      preLoaderRoute: typeof ShopRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shared/$slug': {
@@ -475,11 +475,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/community/$receipeId': {
-      id: '/community/$receipeId'
-      path: '/community/$receipeId'
-      fullPath: '/community/$receipeId'
-      preLoaderRoute: typeof CommunityReceipeIdRouteImport
+    '/community/$recipeId': {
+      id: '/community/$recipeId'
+      path: '/community/$recipeId'
+      fullPath: '/community/$recipeId'
+      preLoaderRoute: typeof CommunityRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/return': {
@@ -510,11 +510,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPricingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/my-receipes': {
-      id: '/_authenticated/my-receipes'
-      path: '/my-receipes'
-      fullPath: '/my-receipes'
-      preLoaderRoute: typeof AuthenticatedMyReceipesRouteImport
+    '/_authenticated/my-recipes': {
+      id: '/_authenticated/my-recipes'
+      path: '/my-recipes'
+      fullPath: '/my-recipes'
+      preLoaderRoute: typeof AuthenticatedMyRecipesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cookbook': {
@@ -592,7 +592,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedCookbookRoute: typeof AuthenticatedCookbookRoute
-  AuthenticatedMyReceipesRoute: typeof AuthenticatedMyReceipesRoute
+  AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
@@ -600,7 +600,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCookbookRoute: AuthenticatedCookbookRoute,
-  AuthenticatedMyReceipesRoute: AuthenticatedMyReceipesRoute,
+  AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
@@ -620,10 +620,10 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
-  CommunityReceipeIdRoute: CommunityReceipeIdRoute,
+  CommunityRecipeIdRoute: CommunityRecipeIdRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   SharedSlugRoute: SharedSlugRoute,
-  ShopReceipeIdRoute: ShopReceipeIdRoute,
+  ShopRecipeIdRoute: ShopRecipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,

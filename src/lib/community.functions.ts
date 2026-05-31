@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const receipeInput = z.object({
+const recipeInput = z.object({
   title: z.string().trim().min(2).max(120),
   description: z.string().trim().max(800).optional().default(""),
   history: z.string().trim().max(4000).optional().default(""),
@@ -17,7 +17,7 @@ const receipeInput = z.object({
   is_published: z.boolean().default(true),
 });
 
-export const listCommunityReceipes = createServerFn({ method: "GET" })
+export const listCommunityRecipes = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({
       search: z.string().trim().max(80).optional(),
@@ -37,7 +37,7 @@ export const listCommunityReceipes = createServerFn({ method: "GET" })
     if (data.cuisine) q = q.eq("cuisine", data.cuisine);
     if (data.city) q = q.ilike("city", `%${data.city}%`);
     const { data: rows, error } = await q;
-    if (error) return { receipes: [], error: error.message };
+    if (error) return { recipes: [], error: error.message };
 
     const userIds = [...new Set((rows ?? []).map((r) => r.user_id))];
     const ids = (rows ?? []).map((r) => r.id);
@@ -79,7 +79,7 @@ export const listCommunityReceipes = createServerFn({ method: "GET" })
     });
 
     return {
-      receipes: (rows ?? []).map((r) => ({
+      recipes: (rows ?? []).map((r) => ({
         ...r,
         author_name: nameMap.get(r.user_id) ?? "Anonymous",
         up_count: upCount.get(r.id) ?? 0,
@@ -88,23 +88,23 @@ export const listCommunityReceipes = createServerFn({ method: "GET" })
     };
   });
 
-export const getCommunityReceipe = createServerFn({ method: "GET" })
+export const getCommunityRecipe = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
-    const { data: receipe, error } = await supabaseAdmin
+    const { data: recipe, error } = await supabaseAdmin
       .from("community_recipes")
       .select("*")
       .eq("id", data.id)
       .eq("is_published", true)
       .maybeSingle();
-    if (error || !receipe) return { receipe: null, author_name: null, up_count: 0 };
+    if (error || !recipe) return { recipe: null, author_name: null, up_count: 0 };
     const [{ data: profile }, { data: votes }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("display_name").eq("user_id", receipe.user_id).maybeSingle(),
-      supabaseAdmin.from("community_recipe_likes").select("vote_type").eq("recipe_id", receipe.id),
+      supabaseAdmin.from("profiles").select("display_name").eq("user_id", recipe.user_id).maybeSingle(),
+      supabaseAdmin.from("community_recipe_likes").select("vote_type").eq("recipe_id", recipe.id),
     ]);
     let author_name = profile?.display_name ?? null;
     if (!author_name) {
-      const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(receipe.user_id);
+      const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(recipe.user_id);
       const u = userRes?.user;
       author_name =
         (u?.user_metadata?.display_name as string | undefined) ||
@@ -114,23 +114,23 @@ export const getCommunityReceipe = createServerFn({ method: "GET" })
       if (author_name) {
         await supabaseAdmin
           .from("profiles")
-          .upsert({ user_id: receipe.user_id, display_name: author_name }, { onConflict: "user_id" });
+          .upsert({ user_id: recipe.user_id, display_name: author_name }, { onConflict: "user_id" });
       }
     }
     const up_count = (votes ?? []).filter((v) => v.vote_type === "up").length;
     return {
-      receipe,
+      recipe,
       author_name: author_name ?? "Anonymous",
       up_count,
     };
   });
 
-export const createCommunityReceipe = createServerFn({ method: "POST" })
+export const createCommunityRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => receipeInput.parse(input))
+  .inputValidator((input) => recipeInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    // Ensure profile has a display_name so the receipe isn't shown as "Anonymous".
+    // Ensure profile has a display_name so the recipe isn't shown as "Anonymous".
     const { data: prof } = await supabase
       .from("profiles")
       .select("display_name")
@@ -159,9 +159,9 @@ export const createCommunityReceipe = createServerFn({ method: "POST" })
     return { id: row.id };
   });
 
-export const updateCommunityReceipe = createServerFn({ method: "POST" })
+export const updateCommunityRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => receipeInput.extend({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input) => recipeInput.extend({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
     const { error } = await context.supabase
@@ -172,7 +172,7 @@ export const updateCommunityReceipe = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const deleteCommunityReceipe = createServerFn({ method: "POST" })
+export const deleteCommunityRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
@@ -181,7 +181,7 @@ export const deleteCommunityReceipe = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const listMyReceipes = createServerFn({ method: "GET" })
+export const listMyRecipes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
@@ -189,7 +189,7 @@ export const listMyReceipes = createServerFn({ method: "GET" })
       .select("id, title, city, cuisine, is_published, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { receipes: data ?? [] };
+    return { recipes: data ?? [] };
   });
 
 export const getMyVote = createServerFn({ method: "POST" })
@@ -206,7 +206,7 @@ export const getMyVote = createServerFn({ method: "POST" })
     return { vote: (row?.vote_type as "up" | undefined) ?? null };
   });
 
-export const setReceipeVote = createServerFn({ method: "POST" })
+export const setRecipeVote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
@@ -246,7 +246,7 @@ export const setReceipeVote = createServerFn({ method: "POST" })
     return { vote: data.vote };
   });
 
-export const listReceipeComments = createServerFn({ method: "GET" })
+export const listRecipeComments = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ recipe_id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { data: rows, error } = await supabaseAdmin
@@ -272,7 +272,7 @@ export const listReceipeComments = createServerFn({ method: "GET" })
     };
   });
 
-export const addReceipeComment = createServerFn({ method: "POST" })
+export const addRecipeComment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
@@ -287,14 +287,14 @@ export const addReceipeComment = createServerFn({ method: "POST" })
     if (!userRes?.user?.email_confirmed_at) {
       throw new Error("Please verify your email before commenting.");
     }
-    // Check receipe exists, is published, comments enabled.
+    // Check recipe exists, is published, comments enabled.
     const { data: r } = await supabaseAdmin
       .from("community_recipes")
       .select("comments_enabled, is_published")
       .eq("id", data.recipe_id)
       .maybeSingle();
-    if (!r || !r.is_published) throw new Error("Receipe not found.");
-    if (!r.comments_enabled) throw new Error("Comments are turned off for this receipe.");
+    if (!r || !r.is_published) throw new Error("Recipe not found.");
+    if (!r.comments_enabled) throw new Error("Comments are turned off for this recipe.");
 
     const { data: row, error } = await supabase
       .from("community_recipe_comments")
@@ -320,7 +320,7 @@ export const addReceipeComment = createServerFn({ method: "POST" })
     };
   });
 
-export const deleteReceipeComment = createServerFn({ method: "POST" })
+export const deleteRecipeComment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
@@ -332,7 +332,7 @@ export const deleteReceipeComment = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const setReceipeCommentsEnabled = createServerFn({ method: "POST" })
+export const setRecipeCommentsEnabled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({

@@ -22,10 +22,10 @@ import {
 } from "@/lib/marketplace.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import {
-  listMyPaidReceipes,
-  upsertPaidReceipe,
-  deletePaidReceipe,
-} from "@/lib/paid-receipes.functions";
+  listMyPaidRecipes,
+  upsertPaidRecipe,
+  deletePaidRecipe,
+} from "@/lib/paid-recipes.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/sell")({
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/_authenticated/sell")({
       {
         name: "description",
         content:
-          "Sell your receipes worldwide. Set your own price and reach home cooks everywhere.",
+          "Sell your recipes worldwide. Set your own price and reach home cooks everywhere.",
       },
     ],
   }),
@@ -137,7 +137,7 @@ function SellPage() {
               <div className="bg-paprika text-white size-12 rounded-2xl border-2 border-border grid place-items-center shadow-[3px_3px_0px_0px_var(--border)]">
                 <ChefHat className="size-7" strokeWidth={2.5} />
               </div>
-              <h1 className="font-display text-xl md:text-4xl uppercase">Sell your receipes</h1>
+              <h1 className="font-display text-xl md:text-4xl uppercase">Sell your recipes</h1>
             </div>
             <p className="text-muted-foreground max-w-xl">
             Share your signature dishes with home cooks worldwide. You set the price and
@@ -259,9 +259,9 @@ function SellPage() {
                 )}
               </Card>
 
-              {/* Step 3 — List receipes (coming soon) */}
-              <Card step={3} title="List your first receipe" complete={false}>
-                <ReceipesManager />
+              {/* Step 3 — List recipes (coming soon) */}
+              <Card step={3} title="List your first recipe" complete={false}>
+                <RecipesManager />
               </Card>
             </div>
           )}
@@ -299,7 +299,7 @@ function Card({
   );
 }
 
-type ReceipeRow = {
+type RecipeRow = {
   id: string;
   title: string;
   local_name: string | null;
@@ -326,12 +326,12 @@ const emptyDraft = () => ({
   is_published: true,
 });
 
-function ReceipesManager() {
-  const fetchList = useServerFn(listMyPaidReceipes);
-  const save = useServerFn(upsertPaidReceipe);
-  const remove = useServerFn(deletePaidReceipe);
+function RecipesManager() {
+  const fetchList = useServerFn(listMyPaidRecipes);
+  const save = useServerFn(upsertPaidRecipe);
+  const remove = useServerFn(deletePaidRecipe);
 
-  const [rows, setRows] = useState<ReceipeRow[]>([]);
+  const [rows, setRows] = useState<RecipeRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(emptyDraft());
@@ -341,7 +341,7 @@ function ReceipesManager() {
   const reload = () => {
     setLoading(true);
     fetchList()
-      .then((res) => setRows(res.rows as ReceipeRow[]))
+      .then((res) => setRows(res.rows as RecipeRow[]))
       .catch((err) => toast.error(err instanceof Error ? err.message : "Couldn't load"))
       .finally(() => setLoading(false));
   };
@@ -406,7 +406,7 @@ function ReceipesManager() {
           is_published: draft.is_published,
         },
       });
-      toast.success("Receipe saved");
+      toast.success("Recipe saved");
       setDraft(emptyDraft());
       setEditing(false);
       reload();
@@ -418,7 +418,7 @@ function ReceipesManager() {
   };
 
   const onDelete = async (id: string) => {
-    if (!confirm("Delete this receipe?")) return;
+    if (!confirm("Delete this recipe?")) return;
     try {
       await remove({ data: { id } });
       reload();
@@ -441,7 +441,7 @@ function ReceipesManager() {
           </div>
         ) : rows.length === 0 ? (
           <div className="bg-turmeric/10 border-2 border-dashed border-border/60 rounded-2xl p-4 text-sm text-muted-foreground mb-3">
-            No receipes yet. Add your first one below.
+            No recipes yet. Add your first one below.
           </div>
         ) : (
           <ul className="space-y-2 mb-3">
@@ -488,7 +488,7 @@ function ReceipesManager() {
           }}
           className="bg-paprika text-white border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5 inline-flex items-center gap-2"
         >
-          <Plus className="size-4" /> Add a receipe
+          <Plus className="size-4" /> Add a recipe
         </button>
       </div>
     );
@@ -705,7 +705,7 @@ function ReceipesManager() {
           disabled={submitting || uploading}
           className="bg-paprika text-white border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5 disabled:opacity-60"
         >
-          {submitting ? "Publishing…" : "Publish receipe"}
+          {submitting ? "Publishing…" : "Publish recipe"}
         </button>
       </div>
     </div>

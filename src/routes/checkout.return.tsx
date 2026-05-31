@@ -95,7 +95,7 @@ function CheckoutReturn() {
                 </p>
                 <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
                   <Button asChild>
-                    <Link to="/shop/$receipeId" params={{ receipeId: recipeId! }}>
+                    <Link to="/shop/$recipeId" params={{ recipeId: recipeId! }}>
                       Cook now
                     </Link>
                   </Button>
@@ -108,7 +108,7 @@ function CheckoutReturn() {
               <>
                 <h1 className="mt-6 text-3xl font-black">You're Premium! 🎉</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Unlimited AI receipes are unlocked. Time to cook.
+                  Unlimited AI recipes are unlocked. Time to cook.
                 </p>
                 <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
                   <Button asChild>
@@ -135,7 +135,7 @@ function CheckoutReturn() {
             )}
             <Button asChild className="mt-6">
               {isRecipe && recipeId ? (
-                <Link to="/shop/$receipeId" params={{ receipeId: recipeId }}>
+                <Link to="/shop/$recipeId" params={{ recipeId: recipeId }}>
                   Back to recipe
                 </Link>
               ) : (

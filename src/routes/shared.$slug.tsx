@@ -1,12 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { getSharedReceipe } from "@/lib/shared-receipes.functions";
+import { getSharedRecipe } from "@/lib/shared-recipes.functions";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 const sharedQueryOptions = (slug: string) =>
   queryOptions({
-    queryKey: ["shared-receipe", slug],
-    queryFn: () => getSharedReceipe({ data: { slug } }),
+    queryKey: ["shared-recipe", slug],
+    queryFn: () => getSharedRecipe({ data: { slug } }),
   });
 
 export const Route = createFileRoute("/shared/$slug")({
@@ -21,11 +21,11 @@ export const Route = createFileRoute("/shared/$slug")({
     const row = loaderData?.row;
     const title = row
       ? `${row.title} — FridgeCuisine`
-      : "Shared receipe — FridgeCuisine";
+      : "Shared recipe — FridgeCuisine";
     const description = row
       ? (row.recipe.blurb?.slice(0, 155) ||
-          `A ${row.cuisine ?? ""} receipe shared from FridgeCuisine.`.trim())
-      : "A receipe shared from FridgeCuisine.";
+          `A ${row.cuisine ?? ""} recipe shared from FridgeCuisine.`.trim())
+      : "A recipe shared from FridgeCuisine.";
     return {
       meta: [
         { title },
@@ -39,12 +39,12 @@ export const Route = createFileRoute("/shared/$slug")({
       ],
     };
   },
-  component: SharedReceipePage,
+  component: SharedRecipePage,
   errorComponent: ({ error }) => (
     <div className="min-h-screen grid place-items-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="font-display text-2xl font-semibold mb-2">
-          Couldn't load this receipe
+          Couldn't load this recipe
         </h1>
         <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
         <Link
@@ -60,7 +60,7 @@ export const Route = createFileRoute("/shared/$slug")({
     <div className="min-h-screen grid place-items-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="font-display text-3xl font-semibold mb-2">
-          Receipe not found
+          Recipe not found
         </h1>
         <p className="text-sm text-muted-foreground mb-6">
           This share link may have been removed or mistyped.
@@ -76,7 +76,7 @@ export const Route = createFileRoute("/shared/$slug")({
   ),
 });
 
-function SharedReceipePage() {
+function SharedRecipePage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(sharedQueryOptions(slug));
   const row = data.row!;
@@ -110,7 +110,7 @@ function SharedReceipePage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pb-16">
         <article className="bg-card border border-border rounded-[2rem] p-6 md:p-10 shadow-[var(--shadow-soft)]">
           <p className="font-display text-[10px] font-semibold uppercase tracking-[0.3em] text-accent mb-3">
-            Shared Receipe
+            Shared Recipe
           </p>
           <h1 className="font-display text-3xl md:text-5xl font-semibold tracking-tight leading-tight mb-3">
             {r.title}
@@ -221,7 +221,7 @@ function SharedReceipePage() {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground mb-3">
-            Want a receipe tailored to what's in your fridge?
+            Want a recipe tailored to what's in your fridge?
           </p>
           <Link
             to="/"

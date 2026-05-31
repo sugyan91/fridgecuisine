@@ -16,7 +16,7 @@ const inputSchema = z.object({
 const responseSchema = z.object({
   dishName: z.string(),
   ingredients: z.array(z.string()).min(1).max(40),
-  receipe: z.object({
+  recipe: z.object({
     cookTimeMinutes: z.number(),
     prepTimeMinutes: z.number().optional(),
     totalTimeMinutes: z.number().optional(),
@@ -34,7 +34,7 @@ export type DishHelperResult =
 export const getDishHelper = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data }): Promise<DishHelperResult> => {
-    const systemPrompt = `You are an expert global chef. Given a dish name (any cuisine, any style), return its ingredients AND a clean home-cook receipe.
+    const systemPrompt = `You are an expert global chef. Given a dish name (any cuisine, any style), return its ingredients AND a clean home-cook recipe.
 Rules:
 - Use authentic ingredients and techniques for the dish's cuisine.
 - Ingredients list should be specific (with quantities for a typical serving) and complete.
@@ -48,7 +48,7 @@ Return JSON shaped exactly like:
 {
   "dishName": "string",
   "ingredients": ["2 cups all-purpose flour", "1 tsp salt", "..."],
-  "receipe": {
+  "recipe": {
     "cookTimeMinutes": 45,
     "prepTimeMinutes": 15,
     "totalTimeMinutes": 60,
