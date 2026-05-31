@@ -389,7 +389,23 @@ function ContactPage() {
               />
 
               {siteKey ? (
-                <div ref={widgetContainerRef} className="flex justify-center" />
+                <div className="space-y-2">
+                  <div
+                    ref={widgetContainerRef}
+                    className="flex justify-center"
+                  />
+                  {captchaStatus === 'expired' && (
+                    <p className="text-center text-sm text-amber-600 dark:text-amber-400">
+                      This check expired. Click the widget to verify again.
+                    </p>
+                  )}
+                  {captchaStatus === 'error' && (
+                    <p className="text-center text-sm text-destructive">
+                      Something went wrong loading the security check.
+                      Please refresh the page.
+                    </p>
+                  )}
+                </div>
               ) : null}
 
               <div className="flex items-center justify-between gap-4 pt-2">
