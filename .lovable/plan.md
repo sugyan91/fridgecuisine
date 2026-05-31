@@ -1,18 +1,22 @@
-Add your two email addresses (support@fridgecuisine.com and main@fridgecuisine.com) to the site in a clean, professional way:
+Add clear purpose labels next to each email so users know which one to use.
 
-**Header nav**
-- Desktop: Add a "Support" link with a small envelope icon in the top navigation bar, between "Shop" and the auth buttons. Clicking it opens the user's email client pre-addressed to support@fridgecuisine.com.
-- Mobile: Add the same "Support" link inside the hamburger dropdown menu.
+**Footer** (`src/components/landing/SiteFooter.tsx`)
+Replace the current plain email row with a small two-column "Contact" block:
 
-**Site footer**
-- Add a centered horizontal row of contact emails just above the copyright bar.
-- Each email sits next to a Mail icon and is a clickable mailto link:
-  - main@fridgecuisine.com
-  - support@fridgecuisine.com
-- Subtle hover effect (text brightens on hover) matching the dark footer aesthetic.
+```
+CONTACT
+General inquiries     Help & support
+main@fridgecuisine    support@fridgecuisine
+.com                  .com
+```
 
-**Files to edit:**
-- `src/routes/index.tsx` — add Mail icon import, Support nav link in desktop + mobile menus
-- `src/components/landing/SiteFooter.tsx` — add Mail icon import, email contact row above copyright
+- Small uppercase "CONTACT" eyebrow heading (matches existing "Cook" / "For chefs" column style)
+- Each email gets a tiny label above it: "General inquiries" for main@, "Help & support" for support@
+- Mail icon + clickable mailto link below each label
+- Stacks vertically on mobile, sits side-by-side on desktop
 
-**No new pages or routes created.**
+**Header nav** (`src/routes/index.tsx`)
+- Keep the single "Support" link (envelope icon) — it's already self-explanatory and points to support@. No change needed there since "Support" is the obvious label.
+- Mobile menu entry stays as "Contact Support".
+
+This way users see at a glance: support@ = help, main@ = general/business inquiries.
