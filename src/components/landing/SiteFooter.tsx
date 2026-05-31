@@ -4,10 +4,10 @@ import logoImg from "@/assets/fridge-cuisine-logo.png";
 
 export function SiteFooter() {
   return (
-    <footer className="bg-[var(--surface-dark)] text-white/85 mt-16">
-      <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 md:gap-6">
-          <div className="col-span-2 md:col-span-2 space-y-4">
+    <footer className="bg-[var(--surface-dark)] text-white/85 mt-16 overflow-x-clip">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,0.72fr)_minmax(0,0.84fr)_minmax(17.5rem,1.35fr)] gap-x-6 gap-y-10">
+          <div className="sm:col-span-2 lg:col-span-1 min-w-0 space-y-4">
             <div className="flex items-center gap-2.5">
               <img
                 src={logoImg}
@@ -30,7 +30,7 @@ export function SiteFooter() {
             </div>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               Cook
             </p>
@@ -42,7 +42,7 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               For chefs
             </p>
@@ -61,7 +61,7 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          <div className="col-span-2 md:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-1 min-w-0">
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               Contact
             </p>
@@ -70,22 +70,22 @@ export function SiteFooter() {
                 Use the contact form →
               </Link>
             </p>
-            <ul className="space-y-4 text-sm">
-              <li>
+            <ul className="space-y-4 text-[13px] sm:text-sm">
+              <li className="min-w-0">
                 <p className="text-[11px] text-white/50 mb-1">General inquiries</p>
                 <a
                   href="mailto:main@fridgecuisine.com"
-                  className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors whitespace-nowrap"
+                  className="inline-flex max-w-full items-center gap-1.5 text-white/85 hover:text-white transition-colors whitespace-nowrap"
                 >
                   <Mail size={13} className="shrink-0" />
                   main@fridgecuisine.com
                 </a>
               </li>
-              <li>
+              <li className="min-w-0">
                 <p className="text-[11px] text-white/50 mb-1">Help &amp; support</p>
                 <a
                   href="mailto:support@fridgecuisine.com"
-                  className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors whitespace-nowrap"
+                  className="inline-flex max-w-full items-center gap-1.5 text-white/85 hover:text-white transition-colors whitespace-nowrap"
                 >
                   <Mail size={13} className="shrink-0" />
                   support@fridgecuisine.com
