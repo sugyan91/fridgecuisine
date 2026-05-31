@@ -90,9 +90,18 @@ function ContactPage() {
       if (!ts || !widgetContainerRef.current || widgetIdRef.current) return
       widgetIdRef.current = ts.render(widgetContainerRef.current, {
         sitekey: siteKey,
-        callback: (token: string) => setCaptchaToken(token),
-        'expired-callback': () => setCaptchaToken(''),
-        'error-callback': () => setCaptchaToken(''),
+        callback: (token: string) => {
+          setCaptchaToken(token)
+          setCaptchaStatus('ready')
+        },
+        'expired-callback': () => {
+          setCaptchaToken('')
+          setCaptchaStatus('expired')
+        },
+        'error-callback': () => {
+          setCaptchaToken('')
+          setCaptchaStatus('error')
+        },
         theme: 'auto',
       })
     }
