@@ -70,11 +70,17 @@ function ContactPage() {
   const [website, setWebsite] = useState('') // honeypot
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
+  const mountTimeRef = useRef(Date.now())
 
   const activeReason = REASONS.find((r) => r.value === reason)!
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const elapsed = Date.now() - mountTimeRef.current
+    if (elapsed < 3000) {
+      toast.error('Please take a moment to fill out the form before sending.')
+      return
+    }
     const parsed = Schema.safeParse({ name, email, reason, message })
     if (!parsed.success) {
       const first = parsed.error.issues[0]
@@ -86,7 +92,7 @@ function ContactPage() {
       const res = await fetch('/api/public/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...parsed.data, website }),
+        body: JSON.stringify({ ...parsed.data, website, timestamp: mountTimeRef.current }),
       })
       if (!res.ok) {
         toast.error("Couldn't send your message. Please try again.")
