@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Mail, Send, Loader2 } from 'lucide-react'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { SiteFooter } from '@/components/landing/SiteFooter'
+import { getTurnstileSiteKey } from '@/lib/turnstile.functions'
 import logoImg from '@/assets/fridge-cuisine-logo.png'
 
 const REASONS = [
@@ -44,6 +45,7 @@ const Schema = z.object({
 })
 
 export const Route = createFileRoute('/contact')({
+  loader: () => getTurnstileSiteKey(),
   head: () => ({
     meta: [
       { title: 'Contact — FridgeCuisine' },
@@ -63,6 +65,7 @@ export const Route = createFileRoute('/contact')({
 })
 
 function ContactPage() {
+  const { siteKey } = Route.useLoaderData()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [reason, setReason] = useState<Reason>('support')
@@ -70,7 +73,46 @@ function ContactPage() {
   const [website, setWebsite] = useState('') // honeypot
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
   const mountTimeRef = useRef(Date.now())
+  const widgetContainerRef = useRef<HTMLDivElement>(null)
+  const widgetIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!siteKey) return
+    const SCRIPT_ID = 'cf-turnstile-script'
+    const renderWidget = () => {
+      // @ts-expect-error global injected by Turnstile script
+      const ts = window.turnstile
+      if (!ts || !widgetContainerRef.current || widgetIdRef.current) return
+      widgetIdRef.current = ts.render(widgetContainerRef.current, {
+        sitekey: siteKey,
+        callback: (token: string) => setCaptchaToken(token),
+        'expired-callback': () => setCaptchaToken(''),
+        'error-callback': () => setCaptchaToken(''),
+        theme: 'auto',
+      })
+    }
+    if (document.getElementById(SCRIPT_ID)) {
+      renderWidget()
+    } else {
+      const s = document.createElement('script')
+      s.id = SCRIPT_ID
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
+      s.async = true
+      s.defer = true
+      s.onload = renderWidget
+      document.head.appendChild(s)
+    }
+    return () => {
+      // @ts-expect-error global injected by Turnstile script
+      const ts = window.turnstile
+      if (ts && widgetIdRef.current) {
+        try { ts.remove(widgetIdRef.current) } catch { /* noop */ }
+        widgetIdRef.current = null
+      }
+    }
+  }, [siteKey, done])
 
   const activeReason = REASONS.find((r) => r.value === reason)!
 
@@ -87,15 +129,29 @@ function ContactPage() {
       toast.error(first?.message ?? 'Please check your entries.')
       return
     }
+    if (siteKey && !captchaToken) {
+      toast.error('Please complete the CAPTCHA challenge.')
+      return
+    }
     setSubmitting(true)
     try {
       const res = await fetch('/api/public/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...parsed.data, website, timestamp: mountTimeRef.current }),
+        body: JSON.stringify({
+          ...parsed.data,
+          website,
+          timestamp: mountTimeRef.current,
+          captchaToken,
+        }),
       })
       if (!res.ok) {
         toast.error("Couldn't send your message. Please try again.")
+        // Reset CAPTCHA so user can retry
+        // @ts-expect-error global injected by Turnstile script
+        const ts = window.turnstile
+        if (ts && widgetIdRef.current) ts.reset(widgetIdRef.current)
+        setCaptchaToken('')
         return
       }
       setDone(true)
@@ -103,6 +159,7 @@ function ContactPage() {
       setName('')
       setEmail('')
       setMessage('')
+      setCaptchaToken('')
     } catch {
       toast.error("Couldn't reach the kitchen. Please try again.")
     } finally {
@@ -301,6 +358,10 @@ function ContactPage() {
                 aria-hidden="true"
                 className="absolute -left-[9999px] h-0 w-0 opacity-0"
               />
+
+              {siteKey ? (
+                <div ref={widgetContainerRef} className="flex justify-center" />
+              ) : null}
 
               <div className="flex items-center justify-between gap-4 pt-2">
                 <p className="text-xs text-muted-foreground">
