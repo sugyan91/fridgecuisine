@@ -74,6 +74,9 @@ function ContactPage() {
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaStatus, setCaptchaStatus] = useState<
+    'ready' | 'expired' | 'error'
+  >('ready')
   const mountTimeRef = useRef(Date.now())
   const widgetContainerRef = useRef<HTMLDivElement>(null)
   const widgetIdRef = useRef<string | null>(null)
@@ -87,9 +90,18 @@ function ContactPage() {
       if (!ts || !widgetContainerRef.current || widgetIdRef.current) return
       widgetIdRef.current = ts.render(widgetContainerRef.current, {
         sitekey: siteKey,
-        callback: (token: string) => setCaptchaToken(token),
-        'expired-callback': () => setCaptchaToken(''),
-        'error-callback': () => setCaptchaToken(''),
+        callback: (token: string) => {
+          setCaptchaToken(token)
+          setCaptchaStatus('ready')
+        },
+        'expired-callback': () => {
+          setCaptchaToken('')
+          setCaptchaStatus('expired')
+        },
+        'error-callback': () => {
+          setCaptchaToken('')
+          setCaptchaStatus('error')
+        },
         theme: 'auto',
       })
     }
@@ -130,7 +142,17 @@ function ContactPage() {
       return
     }
     if (siteKey && !captchaToken) {
-      toast.error('Please complete the CAPTCHA challenge.')
+      if (captchaStatus === 'expired') {
+        toast.error(
+          'Your security check expired. Please verify again before sending.',
+        )
+      } else if (captchaStatus === 'error') {
+        toast.error(
+          "We couldn't load the security check. Please refresh the page and try again.",
+        )
+      } else {
+        toast.error('Please complete the security check before sending.')
+      }
       return
     }
     setSubmitting(true)
@@ -146,12 +168,18 @@ function ContactPage() {
         }),
       })
       if (!res.ok) {
-        toast.error("Couldn't send your message. Please try again.")
+        const data = (await res.json().catch(() => ({}))) as {
+          error?: string
+        }
+        const friendly =
+          data.error ?? "Couldn't send your message. Please try again."
+        toast.error(friendly)
         // Reset CAPTCHA so user can retry
         // @ts-expect-error global injected by Turnstile script
         const ts = window.turnstile
         if (ts && widgetIdRef.current) ts.reset(widgetIdRef.current)
         setCaptchaToken('')
+        setCaptchaStatus('ready')
         return
       }
       setDone(true)
@@ -160,6 +188,7 @@ function ContactPage() {
       setEmail('')
       setMessage('')
       setCaptchaToken('')
+      setCaptchaStatus('ready')
     } catch {
       toast.error("Couldn't reach the kitchen. Please try again.")
     } finally {
@@ -360,7 +389,23 @@ function ContactPage() {
               />
 
               {siteKey ? (
-                <div ref={widgetContainerRef} className="flex justify-center" />
+                <div className="space-y-2">
+                  <div
+                    ref={widgetContainerRef}
+                    className="flex justify-center"
+                  />
+                  {captchaStatus === 'expired' && (
+                    <p className="text-center text-sm text-amber-600 dark:text-amber-400">
+                      This check expired. Click the widget to verify again.
+                    </p>
+                  )}
+                  {captchaStatus === 'error' && (
+                    <p className="text-center text-sm text-destructive">
+                      Something went wrong loading the security check.
+                      Please refresh the page.
+                    </p>
+                  )}
+                </div>
               ) : null}
 
               <div className="flex items-center justify-between gap-4 pt-2">

@@ -76,7 +76,7 @@ export const Route = createFileRoute('/api/public/contact')({
         if (turnstileSecret) {
           if (!parsed.data.captchaToken) {
             return Response.json(
-              { error: 'CAPTCHA verification required.' },
+              { error: 'Please complete the security check before sending.' },
               { status: 400 },
             )
           }
@@ -96,13 +96,13 @@ export const Route = createFileRoute('/api/public/contact')({
             const verifyJson = (await verifyRes.json()) as { success: boolean }
             if (!verifyJson.success) {
               return Response.json(
-                { error: 'CAPTCHA verification failed. Please try again.' },
+                { error: "We couldn't confirm you're human. Please try the security check again." },
                 { status: 400 },
               )
             }
           } catch {
             return Response.json(
-              { error: 'Could not verify CAPTCHA. Please try again.' },
+              { error: "We're having trouble verifying the security check. Please try again in a moment." },
               { status: 500 },
             )
           }
