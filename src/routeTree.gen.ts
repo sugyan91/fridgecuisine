@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ChefsRouteImport } from './routes/chefs'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -63,6 +64,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chefs': typeof ChefsRoute
   '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chefs': typeof ChefsRoute
   '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -263,6 +271,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/chefs': typeof ChefsRoute
   '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chefs'
     | '/contact'
+    | '/cookies'
     | '/login'
     | '/privacy'
     | '/reset-password'
@@ -327,6 +337,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chefs'
     | '/contact'
+    | '/cookies'
     | '/login'
     | '/privacy'
     | '/reset-password'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/chefs'
     | '/contact'
+    | '/cookies'
     | '/login'
     | '/privacy'
     | '/reset-password'
@@ -392,6 +404,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ChefsRoute: typeof ChefsRoute
   ContactRoute: typeof ContactRoute
+  CookiesRoute: typeof CookiesRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -450,6 +463,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -655,6 +675,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ChefsRoute: ChefsRoute,
   ContactRoute: ContactRoute,
+  CookiesRoute: CookiesRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -680,3 +701,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
