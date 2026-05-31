@@ -65,6 +65,11 @@ export function SiteFooter() {
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               Contact
             </p>
+            <p className="mb-4 text-sm">
+              <Link to="/contact" className="text-white/85 hover:text-white underline-offset-4 hover:underline">
+                Use the contact form →
+              </Link>
+            </p>
             <ul className="space-y-4 text-sm">
               <li>
                 <p className="text-[11px] text-white/50 mb-1">General inquiries</p>

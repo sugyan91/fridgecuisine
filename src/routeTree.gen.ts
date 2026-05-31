@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ChefsRouteImport } from './routes/chefs'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -28,6 +29,7 @@ import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMyReceipesRouteImport } from './routes/_authenticated/my-receipes'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -49,6 +51,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChefsRoute = ChefsRouteImport.update({
@@ -130,6 +137,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
+  id: '/api/public/contact',
+  path: '/api/public/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCommunityNewRoute =
   AuthenticatedCommunityNewRouteImport.update({
     id: '/community/new',
@@ -174,6 +186,7 @@ const ApiPublicPaymentsWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chefs': typeof ChefsRoute
+  '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -190,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -201,6 +215,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chefs': typeof ChefsRoute
+  '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -217,6 +232,7 @@ export interface FileRoutesByTo {
   '/community': typeof CommunityIndexRoute
   '/shop': typeof ShopIndexRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -230,6 +246,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/chefs': typeof ChefsRoute
+  '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -246,6 +263,7 @@ export interface FileRoutesById {
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -259,6 +277,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/chefs'
+    | '/contact'
     | '/login'
     | '/reset-password'
     | '/sitemap.xml'
@@ -275,6 +294,7 @@ export interface FileRouteTypes {
     | '/community/'
     | '/shop/'
     | '/community/new'
+    | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -286,6 +306,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/chefs'
+    | '/contact'
     | '/login'
     | '/reset-password'
     | '/sitemap.xml'
@@ -302,6 +323,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/shop'
     | '/community/new'
+    | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -314,6 +336,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/chefs'
+    | '/contact'
     | '/login'
     | '/reset-password'
     | '/sitemap.xml'
@@ -330,6 +353,7 @@ export interface FileRouteTypes {
     | '/community/'
     | '/shop/'
     | '/_authenticated/community/new'
+    | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -343,6 +367,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ChefsRoute: typeof ChefsRoute
+  ContactRoute: typeof ContactRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -354,6 +379,7 @@ export interface RootRouteChildren {
   ShopReceipeIdRoute: typeof ShopReceipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
+  ApiPublicContactRoute: typeof ApiPublicContactRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -384,6 +410,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chefs': {
@@ -498,6 +531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/contact': {
+      id: '/api/public/contact'
+      path: '/api/public/contact'
+      fullPath: '/api/public/contact'
+      preLoaderRoute: typeof ApiPublicContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/community/new': {
       id: '/_authenticated/community/new'
       path: '/community/new'
@@ -574,6 +614,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ChefsRoute: ChefsRoute,
+  ContactRoute: ContactRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -585,6 +626,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopReceipeIdRoute: ShopReceipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
+  ApiPublicContactRoute: ApiPublicContactRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,

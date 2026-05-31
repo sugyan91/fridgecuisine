@@ -534,13 +534,13 @@ function Index() {
               >
                 Shop
               </Link>
-              <a
-                href="mailto:support@fridgecuisine.com"
+              <Link
+                to="/contact"
                 className="hidden lg:inline-flex items-center gap-1.5 text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
               >
                 <Mail size={14} />
-                Support
-              </a>
+                Contact
+              </Link>
               {email ? (
                 <>
                   <Link
@@ -648,14 +648,14 @@ function Index() {
                 >
                   Community
                 </Link>
-                <a
-                  href="mailto:support@fridgecuisine.com"
+                <Link
+                  to="/contact"
                   onClick={() => setMobileMenuOpen(false)}
                   className="py-3 text-sm font-medium text-foreground/90 hover:text-foreground border-b border-border inline-flex items-center gap-2"
                 >
                   <Mail size={14} />
-                  Contact Support
-                </a>
+                  Contact us
+                </Link>
                 {email ? (
                   <>
                     <button
