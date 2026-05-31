@@ -17,7 +17,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/shop/$recipeId")({
+export const Route = createFileRoute("/shop/$receipeId")({
   head: () => ({
     meta: [{ title: "Recipe — FridgeCuisine" }],
   }),
