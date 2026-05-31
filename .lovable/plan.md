@@ -1,12 +1,9 @@
-## Problem
-In the footer Contact section, the email addresses `main@fridgecuisine.com` and `support@fridgecuisine.com` wrap onto 2 lines on laptop and iPad. On mobile they display on a single line.
+Update the footer layout in `src/components/landing/SiteFooter.tsx` so the contact column has enough space on iPad and laptop widths.
 
-## Root Cause
-Both email `<a>` tags in `SiteFooter.tsx` use the Tailwind class `break-all`, which forces text to break at any character. On the md+ 5-column grid layout the Contact column is only 1 column wide, so `break-all` causes wrapping.
+Plan:
+1. Change the desktop footer grid from 5 columns to 6 columns.
+2. Keep the brand area at 2 columns, keep Cook and For chefs at 1 column each, and make Contact span 2 columns.
+3. Keep each email on one line with `whitespace-nowrap`.
+4. Slightly reduce the desktop grid gap if needed so the columns shift left and the full `.com` remains visible without horizontal overflow.
 
-## Fix
-Remove `break-all` from the className of both email links in `src/components/landing/SiteFooter.tsx`:
-- Line 78: `break-all` → remove
-- Line 88: `break-all` → remove
-
-The emails will then naturally stay on a single line since they fit within the container width at all breakpoints.
+This keeps the existing footer design and icons, but gives Contact a wider dedicated area so both email addresses fit cleanly.
