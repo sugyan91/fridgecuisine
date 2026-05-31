@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { callChatJSON } from "./hf-client.server";
 import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
 
 const inputSchema = z.object({
   ingredients: z
@@ -93,8 +95,12 @@ const responseSchema = z.object({
 });
 
 export const generateRecipes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data }): Promise<GenerateRecipesResult> => {
+  .handler(async ({ data, context }): Promise<GenerateRecipesResult> => {
+    const { supabase, userId } = context;
+    const quota = await checkAiQuota(supabase, userId);
+    if (!quota.ok) return { ok: false, error: quota.error, code: quota.code };
     const hasIngredients = data.ingredients.length > 0;
     const cuisineGuidance =
       data.cuisine === "Any / Surprise Me"
@@ -174,6 +180,7 @@ Return JSON shaped exactly like:
         };
       }
 
+      await recordAiGeneration(supabase, userId);
       return { ok: true, recipes: result.data.recipes };
     } catch (err) {
       console.error("generateRecipes failed", err);

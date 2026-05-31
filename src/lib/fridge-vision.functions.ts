@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { callVisionJSON } from "./hf-client.server";
 import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
 
 const inputSchema = z.object({
   imageDataUrl: z
@@ -26,8 +28,12 @@ export type FridgeVisionResult =
   | { ok: false; error: string };
 
 export const detectFridgeIngredients = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data }): Promise<FridgeVisionResult> => {
+  .handler(async ({ data, context }): Promise<FridgeVisionResult> => {
+    const { supabase, userId } = context;
+    const quota = await checkAiQuota(supabase, userId);
+    if (!quota.ok) return { ok: false, error: quota.error };
     const systemPrompt = `You identify edible food ingredients visible in a photo of a fridge, pantry, or kitchen counter.
 Rules:
 - List only items that could be cooked with (vegetables, fruit, dairy, meat, eggs, condiments, herbs, packaged goods).
@@ -54,6 +60,7 @@ Rules:
         seen.add(key);
         cleaned.push(v);
       }
+      await recordAiGeneration(supabase, userId);
       return { ok: true, ingredients: cleaned };
     } catch (err) {
       console.error("detectFridgeIngredients failed", err);

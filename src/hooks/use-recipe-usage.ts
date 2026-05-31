@@ -96,10 +96,9 @@ export function useRecipeUsage(userId: string | undefined) {
       setUsed(next);
       return;
     }
-    const { error } = await supabase
-      .from("recipe_generations")
-      .insert({ user_id: userId });
-    if (error) console.error("log generation failed", error);
+    // Authenticated users: the server function records the generation
+    // server-side (enforced via quota check). We only need to refresh
+    // the local counter so the UI updates.
     refresh();
   }, [userId, refresh]);
 

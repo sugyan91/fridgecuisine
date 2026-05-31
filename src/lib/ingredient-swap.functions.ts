@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { callChatJSON } from "./hf-client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
 
 const inputSchema = z.object({
   recipeTitle: z.string().trim().min(1).max(200),
@@ -29,8 +31,12 @@ const responseSchema = z.object({
 });
 
 export const swapIngredient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data }): Promise<SwapIngredientResult> => {
+  .handler(async ({ data, context }): Promise<SwapIngredientResult> => {
+    const { supabase, userId } = context;
+    const quota = await checkAiQuota(supabase, userId);
+    if (!quota.ok) return { ok: false, error: quota.error };
     const dietary = data.dietary.length ? data.dietary.join(", ") : "none";
     const pantry = data.pantry.length ? data.pantry.join(", ") : "(none listed)";
 
@@ -51,6 +57,7 @@ Dietary constraints (must respect): ${dietary}`;
       if (!parsed.success) {
         return { ok: false, error: "Couldn't read AI response. Try again." };
       }
+      await recordAiGeneration(supabase, userId);
       return { ok: true, swaps: parsed.data.swaps };
     } catch (err) {
       console.error("swapIngredient failed", err);

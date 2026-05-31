@@ -116,6 +116,34 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           )
         }
 
+        // Authorization: if the template does NOT define a fixed recipient,
+        // users may only send to their own verified email address. This
+        // prevents authenticated callers from abusing the app's verified
+        // sender domain to deliver branded messages (spam/phishing) to
+        // arbitrary third parties. Templates with a hardcoded `to` (e.g.
+        // owner notifications) bypass this check because the recipient is
+        // not user-controlled.
+        if (!template.to) {
+          const callerEmail = user.email?.toLowerCase() ?? ''
+          if (
+            !callerEmail ||
+            effectiveRecipient.toLowerCase() !== callerEmail
+          ) {
+            console.warn('Rejected cross-account email send attempt', {
+              templateName,
+              caller_redacted: redactEmail(user.email),
+              recipient_redacted: redactEmail(effectiveRecipient),
+            })
+            return Response.json(
+              {
+                error:
+                  'You may only send this template to your own account email address.',
+              },
+              { status: 403 }
+            )
+          }
+        }
+
         // 2. Check suppression list (fail-closed: if we can't verify, don't send)
         const { data: suppressed, error: suppressionError } = await supabase
           .from('suppressed_emails')
