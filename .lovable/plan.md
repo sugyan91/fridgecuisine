@@ -1,47 +1,41 @@
-## Goal
+## What I found
 
-Protect the email/password sign-up AND sign-in flows on `/login` with Cloudflare Turnstile, using the same server-side verification pattern already used by the contact form. No new secrets, no Edge Function.
+The app is already wired to use the Turnstile keys from Lovable secrets:
 
-## Why not a Supabase Edge Function
+- `TURNSTILE_SITE_KEY` is read on the server and passed to the login/signup page.
+- `TURNSTILE_SECRET_KEY` is used only server-side to verify the token.
+- The secret is not exposed in frontend code.
 
-This project is on the TanStack Start template — server logic lives in `createServerFn` / server routes that already have access to `process.env.TURNSTILE_SECRET_KEY`. The contact form already uses this pattern. Adding an Edge Function would create a second deployment, second log surface, and second CORS contract for no benefit. Same security guarantee: the secret never reaches the browser.
+The browser error is still `Cloudflare Turnstile 110200`, which means Cloudflare is rejecting the hostname where the widget is running.
 
-## Changes
+## What to do next
 
-### 1. New server function — `src/lib/turnstile.functions.ts`
-Already exposes `getTurnstileSiteKey`. Add a sibling:
+1. In Cloudflare Turnstile, open the exact widget connected to your current `TURNSTILE_SITE_KEY`.
+2. Go to **Settings → Hostname Management**.
+3. Add these exact hostnames, without `https://` and without trailing slashes:
 
-- `verifyTurnstileToken({ token })` — `createServerFn({ method: "POST" })`. Posts the token + caller IP (from `cf-connecting-ip` / `x-forwarded-for`) to `https://challenges.cloudflare.com/turnstile/v0/siteverify` with `process.env.TURNSTILE_SECRET_KEY`. Returns `{ success: true }` or `{ success: false, error }`. Never throws raw provider errors at the UI.
+```text
+id-preview--b3c5ce0d-6d80-40f9-b9de-03db88e2da8c.lovable.app
+b3c5ce0d-6d80-40f9-b9de-03db88e2da8c.lovableproject.com
+fridgecuisine.lovable.app
+fridgecuisine.com
+www.fridgecuisine.com
+localhost
+```
 
-If `TURNSTILE_SITE_KEY` is empty, `getTurnstileSiteKey` returns `''` and the UI skips the widget (degrades gracefully in dev).
+4. Save the widget settings.
+5. Wait 2–5 minutes for Cloudflare to propagate the hostname change.
+6. Reload `/login?mode=signup` in the preview.
 
-### 2. `/login` route — `src/routes/login.tsx`
+## Important check
 
-- `loader: () => getTurnstileSiteKey()` (same pattern as `/contact`).
-- Render the Turnstile widget on BOTH the sign-in form and the sign-up form, inside the existing card, just above the submit button.
-- Track `captchaToken`, `captchaStatus` (`'ready' | 'expired' | 'error'`) — same shape as contact.
-- Show the friendly "Try verification again" affordance on expired/error (reuse the same UX).
-- In `onSubmit`, BEFORE calling `supabase.auth.signUp` / `signInWithPassword`:
-  1. If `siteKey` present and no `captchaToken` → inline error, stop.
-  2. Call `verifyTurnstileToken({ data: { token: captchaToken } })`. If it returns `success: false`, show inline error and reset the widget. Stop.
-  3. Only on success, proceed with the existing Supabase auth call.
-- Reset the widget after a failed Supabase auth call so the user can retry without a stale token.
-- Do NOT touch the Google/Apple OAuth buttons — those go through the Lovable broker and don't need Turnstile.
-- Do NOT touch the forgot-password sub-flow in this pass (keep scope tight; can be added later).
+Make sure you updated the hostname list for the **same Turnstile widget whose Site Key is stored in `TURNSTILE_SITE_KEY`**. If you have multiple Turnstile widgets in Cloudflare, it is very easy to update one widget while the app is using another.
 
-### 3. No DB/schema/secret changes
-`TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` are already configured. No migration.
+## If it still fails
 
-## Verification
+The fastest fix is to create a fresh Cloudflare Turnstile widget, add all hostnames above during creation, then update these Lovable secrets:
 
-1. Open `/login`, toggle to Sign up. Widget renders. Submitting without solving → inline error.
-2. Solve widget → sign-up succeeds (email confirmation flow unchanged).
-3. Toggle to Sign in. Widget renders. Submitting with a tampered/empty token → inline error from `verifyTurnstileToken`.
-4. Solve widget → sign-in succeeds. Bad password → widget resets so user can retry.
-5. Confirm in DevTools that the secret key is NOT in the client bundle (search the page source for `TURNSTILE_SECRET_KEY` — should only appear as the env var name in the server-fn payload metadata, never as a value).
+- `TURNSTILE_SITE_KEY` with the new Site Key
+- `TURNSTILE_SECRET_KEY` with the new Secret Key
 
-## Out of scope
-
-- `SaveSignupModal` and forgot-password (not selected).
-- Adding Turnstile to OAuth (Google/Apple) buttons — not applicable.
-- Any Edge Function or new secret.
+After updating those two secrets, reload the preview.
