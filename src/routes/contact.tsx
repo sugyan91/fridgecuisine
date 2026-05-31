@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Mail, Send, Loader2 } from 'lucide-react'
+import { Mail, Send, Loader2, RefreshCw } from 'lucide-react'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
@@ -127,6 +127,43 @@ function ContactPage() {
   }, [siteKey, done])
 
   const activeReason = REASONS.find((r) => r.value === reason)!
+
+  const retryCaptcha = () => {
+    // @ts-expect-error global injected by Turnstile script
+    const ts = window.turnstile
+    if (ts && widgetIdRef.current) {
+      try {
+        ts.reset(widgetIdRef.current)
+      } catch {
+        // Fallback: remove and re-render if reset fails
+        try {
+          ts.remove(widgetIdRef.current)
+        } catch { /* noop */ }
+        widgetIdRef.current = null
+        if (widgetContainerRef.current) {
+          widgetIdRef.current = ts.render(widgetContainerRef.current, {
+            sitekey: siteKey,
+            callback: (token: string) => {
+              setCaptchaToken(token)
+              setCaptchaStatus('ready')
+            },
+            'expired-callback': () => {
+              setCaptchaToken('')
+              setCaptchaStatus('expired')
+            },
+            'error-callback': () => {
+              setCaptchaToken('')
+              setCaptchaStatus('error')
+            },
+            theme: 'auto',
+          })
+        }
+      }
+    }
+    setCaptchaStatus('ready')
+    setCaptchaToken('')
+  }
+
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -395,15 +432,34 @@ function ContactPage() {
                     className="flex justify-center"
                   />
                   {captchaStatus === 'expired' && (
-                    <p className="text-center text-sm text-amber-600 dark:text-amber-400">
-                      This check expired. Click the widget to verify again.
-                    </p>
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-center text-sm text-amber-600 dark:text-amber-400">
+                        This check expired. Please verify again.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={retryCaptcha}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <RefreshCw size={14} />
+                        Try verification again
+                      </button>
+                    </div>
                   )}
                   {captchaStatus === 'error' && (
-                    <p className="text-center text-sm text-destructive">
-                      Something went wrong loading the security check.
-                      Please refresh the page.
-                    </p>
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-center text-sm text-destructive">
+                        Something went wrong loading the security check.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={retryCaptcha}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <RefreshCw size={14} />
+                        Try verification again
+                      </button>
+                    </div>
                   )}
                 </div>
               ) : null}
