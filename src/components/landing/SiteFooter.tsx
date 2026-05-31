@@ -75,7 +75,7 @@ export function SiteFooter() {
                 <p className="text-[11px] text-white/50 mb-1">General inquiries</p>
                 <a
                   href="mailto:main@fridgecuisine.com"
-                  className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors break-all"
+                  className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors whitespace-nowrap"
                 >
                   <Mail size={13} className="shrink-0" />
                   main@fridgecuisine.com
@@ -85,7 +85,7 @@ export function SiteFooter() {
                 <p className="text-[11px] text-white/50 mb-1">Help &amp; support</p>
                 <a
                   href="mailto:support@fridgecuisine.com"
-                  className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors break-all"
+                  className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors whitespace-nowrap"
                 >
                   <Mail size={13} className="shrink-0" />
                   support@fridgecuisine.com
