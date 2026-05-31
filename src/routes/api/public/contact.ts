@@ -54,6 +54,21 @@ export const Route = createFileRoute('/api/public/contact')({
             { status: 400 },
           )
         }
+        // Minimum time-to-submit check (3 seconds)
+        const elapsed = Date.now() - parsed.data.timestamp
+        if (elapsed < 3000) {
+          return Response.json(
+            { error: 'Submission too fast. Please wait a moment before sending.' },
+            { status: 400 },
+          )
+        }
+        if (elapsed > 3600000) {
+          return Response.json(
+            { error: 'Session expired. Please refresh the page and try again.' },
+            { status: 400 },
+          )
+        }
+
         // Honeypot tripped — pretend success.
         if (parsed.data.website) {
           return Response.json({ ok: true })
