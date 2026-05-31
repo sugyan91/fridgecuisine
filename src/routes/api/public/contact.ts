@@ -96,7 +96,7 @@ export const Route = createFileRoute('/api/public/contact')({
             const verifyJson = (await verifyRes.json()) as { success: boolean }
             if (!verifyJson.success) {
               return Response.json(
-                { error: 'CAPTCHA verification failed. Please try again.' },
+                { error: "We couldn't confirm you're human. Please try the security check again." },
                 { status: 400 },
               )
             }
