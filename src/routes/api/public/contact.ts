@@ -102,7 +102,7 @@ export const Route = createFileRoute('/api/public/contact')({
             }
           } catch {
             return Response.json(
-              { error: 'Could not verify CAPTCHA. Please try again.' },
+              { error: "We're having trouble verifying the security check. Please try again in a moment." },
               { status: 500 },
             )
           }
