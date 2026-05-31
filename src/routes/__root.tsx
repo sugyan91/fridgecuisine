@@ -215,7 +215,10 @@ function RootComponent() {
       router.invalidate();
       queryClient.invalidateQueries();
     });
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      try { unsub(); } catch {}
+    };
   }, [router, queryClient]);
 
   return (
