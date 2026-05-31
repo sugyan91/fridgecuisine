@@ -35,10 +35,26 @@ export function SiteFooter() {
               Cook
             </p>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="hover:text-white">Recipes</Link></li>
-              <li><Link to="/community" className="hover:text-white">Community</Link></li>
-              <li><Link to="/cookbook" className="hover:text-white">Cookbook</Link></li>
-              <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
+              <li>
+                <Link to="/" className="hover:text-white">
+                  Recipes
+                </Link>
+              </li>
+              <li>
+                <Link to="/community" className="hover:text-white">
+                  Community
+                </Link>
+              </li>
+              <li>
+                <Link to="/cookbook" className="hover:text-white">
+                  Cookbook
+                </Link>
+              </li>
+              <li>
+                <Link to="/pricing" className="hover:text-white">
+                  Pricing
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -47,14 +63,18 @@ export function SiteFooter() {
               For chefs
             </p>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/sell" className="hover:text-white">Sell recipes</Link></li>
-              <li><Link to="/chefs" className="hover:text-white">Browse chefs</Link></li>
               <li>
-                <Link
-                  to="/login"
-                  search={{ mode: "signup" }}
-                  className="hover:text-white"
-                >
+                <Link to="/sell" className="hover:text-white">
+                  Sell recipes
+                </Link>
+              </li>
+              <li>
+                <Link to="/chefs" className="hover:text-white">
+                  Browse chefs
+                </Link>
+              </li>
+              <li>
+                <Link to="/login" search={{ mode: "signup" }} className="hover:text-white">
                   Sign up free
                 </Link>
               </li>
@@ -66,7 +86,10 @@ export function SiteFooter() {
               Contact
             </p>
             <p className="mb-4 text-sm">
-              <Link to="/contact" className="text-white/85 hover:text-white underline-offset-4 hover:underline">
+              <Link
+                to="/contact"
+                className="text-white/85 hover:text-white underline-offset-4 hover:underline"
+              >
                 Use the contact form →
               </Link>
             </p>
@@ -97,7 +120,8 @@ export function SiteFooter() {
 
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-white/55">
           <p>
-            <span className="font-semibold text-white/85">$5.99/mo</span> · Premium · unlimited recipes
+            <span className="font-semibold text-white/85">$5.99/mo</span> · Premium · unlimited
+            recipes
           </p>
           <p>© {new Date().getFullYear()} Fridge Cuisine. Made with garlic and butter.</p>
         </div>
