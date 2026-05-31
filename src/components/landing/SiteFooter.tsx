@@ -6,7 +6,7 @@ export function SiteFooter() {
   return (
     <footer className="bg-[var(--surface-dark)] text-white/85 mt-16">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-10">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 md:gap-6">
           <div className="col-span-2 md:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <img
@@ -61,7 +61,7 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2 md:col-span-2">
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               Contact
             </p>
