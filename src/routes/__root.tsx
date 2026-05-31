@@ -15,6 +15,9 @@ import { saveRecipe as saveRecipeFn } from "@/lib/saved-recipes.functions";
 import { sendWelcomeEmail } from "@/lib/email/welcome.functions";
 import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
 import { LanguageProvider } from "@/lib/language";
+import { ConsentProvider } from "@/lib/consent";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { initAnalytics, trackPageview } from "@/lib/analytics";
 
 const PENDING_SAVE_KEY = "fc-pending-save";
 
@@ -166,6 +169,14 @@ function RootComponent() {
     // Make flag emojis render on Windows/Chromium desktop.
     try { polyfillCountryFlagEmojis(); } catch {}
 
+    // Boot consent-aware analytics. Will only actually load the analytics
+    // script if the user has granted analytics consent (and a GA id is set).
+    initAnalytics();
+    try { trackPageview(window.location.pathname + window.location.search); } catch {}
+    const unsub = router.subscribe("onResolved", () => {
+      try { trackPageview(window.location.pathname + window.location.search); } catch {}
+    });
+
     // Remember-me enforcement: if the user signed in without "Remember me",
     // we set a sessionStorage marker. When the browser is closed the marker
     // is gone, so on the next load we sign them out.
@@ -210,7 +221,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <Outlet />
+        <ConsentProvider>
+          <Outlet />
+          <CookieConsentBanner />
+        </ConsentProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );
