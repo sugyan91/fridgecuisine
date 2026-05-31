@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { type StripeEnv, createStripeClient } from "@/lib/stripe.server";
+import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
@@ -99,6 +99,81 @@ export const createPortalSession = createServerFn({ method: "POST" })
       ...(data.returnUrl && { return_url: data.returnUrl }),
     });
     return portal.url;
+  });
+
+/**
+ * Cancel the current user's active subscription at the end of the current
+ * billing period. The user retains access until `current_period_end`.
+ */
+export const cancelSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ environment: z.enum(["sandbox", "live"]) }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ canceled_at: string | null } | { error: string }> => {
+    const { supabase, userId } = context;
+    const { data: sub, error: subError } = await supabase
+      .from("subscriptions")
+      .select("stripe_subscription_id, status, cancel_at_period_end")
+      .eq("user_id", userId)
+      .eq("environment", data.environment)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (subError || !sub?.stripe_subscription_id) {
+      return { error: "No active subscription found" };
+    }
+    if (sub.status === "canceled") {
+      return { error: "Subscription is already canceled" };
+    }
+    try {
+      const stripe = createStripeClient(data.environment);
+      const updated = await stripe.subscriptions.update(sub.stripe_subscription_id, {
+        cancel_at_period_end: true,
+      });
+      const periodEnd = (updated as { current_period_end?: number | null }).current_period_end;
+      return {
+        canceled_at: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      };
+    } catch (error) {
+      return { error: getStripeErrorMessage(error) };
+    }
+  });
+
+/**
+ * Undo a pending cancellation: re-enable auto-renewal on a subscription
+ * that was set to `cancel_at_period_end: true` but hasn't ended yet.
+ */
+export const reactivateSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ environment: z.enum(["sandbox", "live"]) }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    const { supabase, userId } = context;
+    const { data: sub, error: subError } = await supabase
+      .from("subscriptions")
+      .select("stripe_subscription_id, status")
+      .eq("user_id", userId)
+      .eq("environment", data.environment)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (subError || !sub?.stripe_subscription_id) {
+      return { error: "No subscription found" };
+    }
+    if (sub.status === "canceled") {
+      return { error: "Subscription has already ended" };
+    }
+    try {
+      const stripe = createStripeClient(data.environment);
+      await stripe.subscriptions.update(sub.stripe_subscription_id, {
+        cancel_at_period_end: false,
+      });
+      return { ok: true };
+    } catch (error) {
+      return { error: getStripeErrorMessage(error) };
+    }
   });
 
 /**
