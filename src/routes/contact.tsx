@@ -142,7 +142,17 @@ function ContactPage() {
       return
     }
     if (siteKey && !captchaToken) {
-      toast.error('Please complete the CAPTCHA challenge.')
+      if (captchaStatus === 'expired') {
+        toast.error(
+          'Your security check expired. Please verify again before sending.',
+        )
+      } else if (captchaStatus === 'error') {
+        toast.error(
+          "We couldn't load the security check. Please refresh the page and try again.",
+        )
+      } else {
+        toast.error('Please complete the security check before sending.')
+      }
       return
     }
     setSubmitting(true)
@@ -158,12 +168,18 @@ function ContactPage() {
         }),
       })
       if (!res.ok) {
-        toast.error("Couldn't send your message. Please try again.")
+        const data = (await res.json().catch(() => ({}))) as {
+          error?: string
+        }
+        const friendly =
+          data.error ?? "Couldn't send your message. Please try again."
+        toast.error(friendly)
         // Reset CAPTCHA so user can retry
         // @ts-expect-error global injected by Turnstile script
         const ts = window.turnstile
         if (ts && widgetIdRef.current) ts.reset(widgetIdRef.current)
         setCaptchaToken('')
+        setCaptchaStatus('ready')
         return
       }
       setDone(true)
@@ -172,6 +188,7 @@ function ContactPage() {
       setEmail('')
       setMessage('')
       setCaptchaToken('')
+      setCaptchaStatus('ready')
     } catch {
       toast.error("Couldn't reach the kitchen. Please try again.")
     } finally {
