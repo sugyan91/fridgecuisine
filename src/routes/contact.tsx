@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Mail, Send, Loader2 } from 'lucide-react'
+import { Mail, Send, Loader2, RefreshCw } from 'lucide-react'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
