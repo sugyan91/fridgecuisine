@@ -696,6 +696,28 @@ function LoginPage() {
               </label>
             )}
 
+            {siteKey && (
+              <div>
+                <div ref={widgetContainerRef} className="flex justify-center" />
+                {(captchaStatus === "expired" || captchaStatus === "error") && (
+                  <div className="mt-2 text-center">
+                    <p className="text-[11px] font-bold text-red-600">
+                      {captchaStatus === "expired"
+                        ? "Security check expired."
+                        : "Something went wrong loading the security check."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={resetCaptcha}
+                      className="mt-1 text-[11px] font-black uppercase underline text-foreground/80 hover:text-foreground"
+                    >
+                      Try verification again
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <button
               ref={submitBtnRef}
               type="submit"
