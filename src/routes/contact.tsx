@@ -16,10 +16,31 @@ const REASONS = [
 type Reason = (typeof REASONS)[number]['value']
 
 const Schema = z.object({
-  name: z.string().trim().min(1, 'Please add your name').max(100),
-  email: z.string().trim().email('Please use a valid email').max(255),
+  name: z
+    .string()
+    .trim()
+    .min(2, 'Please enter your full name')
+    .max(100, 'Name must be under 100 characters')
+    .regex(
+      /^[a-zA-Z\s'-]{2,100}$/,
+      'Name can only contain letters, spaces, hyphens, and apostrophes',
+    ),
+  email: z
+    .string()
+    .trim()
+    .min(5, 'Email is required')
+    .max(255, 'Email must be under 255 characters')
+    .email('Please use a valid email'),
   reason: z.enum(['support', 'billing', 'feedback']),
-  message: z.string().trim().min(5, 'A bit more detail, please').max(4000),
+  message: z
+    .string()
+    .trim()
+    .min(20, 'Please write at least 20 characters')
+    .max(4000, 'Message must be under 4000 characters')
+    .regex(
+      /^(?![\s\S]*<script|javascript:|on\w+=|data:text\/html)[\s\S]*$/i,
+      'Message contains blocked content',
+    ),
 })
 
 export const Route = createFileRoute('/contact')({
