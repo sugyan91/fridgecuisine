@@ -205,10 +205,6 @@ function ContactPage() {
                     )
                   })}
                 </div>
-                <p className="mt-3 text-xs text-muted-foreground inline-flex items-center gap-1.5">
-                  <Mail size={12} />
-                  <span className="font-medium text-foreground">{activeReason.inbox}</span>
-                </p>
               </fieldset>
 
               <div className="grid sm:grid-cols-2 gap-4">
