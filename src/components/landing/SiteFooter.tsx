@@ -41,6 +41,7 @@ export function SiteFooter() {
               <li><Link to="/community" className="hover:text-white">Community</Link></li>
               <li><Link to="/cookbook" className="hover:text-white">Cookbook</Link></li>
               <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
+              <li><Link to="/account" className="hover:text-white">Account</Link></li>
               <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
               <li><Link to="/terms" className="hover:text-white">Terms</Link></li>
               <li><Link to="/cookies" className="hover:text-white">Cookies</Link></li>
