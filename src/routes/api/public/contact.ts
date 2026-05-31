@@ -76,7 +76,7 @@ export const Route = createFileRoute('/api/public/contact')({
         if (turnstileSecret) {
           if (!parsed.data.captchaToken) {
             return Response.json(
-              { error: 'CAPTCHA verification required.' },
+              { error: 'Please complete the security check before sending.' },
               { status: 400 },
             )
           }
