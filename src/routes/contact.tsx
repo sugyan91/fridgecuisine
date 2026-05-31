@@ -184,7 +184,10 @@ function ContactPage() {
               <div className="mt-6 flex justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setDone(false)}
+                  onClick={() => {
+                    setDone(false)
+                    mountTimeRef.current = Date.now()
+                  }}
                   className="px-4 py-2 rounded-full text-sm font-medium border border-border hover:bg-secondary transition-colors"
                 >
                   Send another
