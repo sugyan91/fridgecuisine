@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ChefsRouteImport } from './routes/chefs'
@@ -46,6 +47,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/chefs': typeof ChefsRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/chefs': typeof ChefsRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/chefs': typeof ChefsRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/chefs'
     | '/contact'
     | '/login'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/cookbook'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/chefs'
     | '/contact'
     | '/login'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/cookbook'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/chefs'
     | '/contact'
     | '/login'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/_authenticated/cookbook'
@@ -369,6 +381,7 @@ export interface RootRouteChildren {
   ChefsRoute: typeof ChefsRoute
   ContactRoute: typeof ContactRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
@@ -403,6 +416,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -616,6 +636,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChefsRoute: ChefsRoute,
   ContactRoute: ContactRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
