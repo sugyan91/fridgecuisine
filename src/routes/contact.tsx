@@ -74,6 +74,9 @@ function ContactPage() {
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaStatus, setCaptchaStatus] = useState<
+    'ready' | 'expired' | 'error'
+  >('ready')
   const mountTimeRef = useRef(Date.now())
   const widgetContainerRef = useRef<HTMLDivElement>(null)
   const widgetIdRef = useRef<string | null>(null)
