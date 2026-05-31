@@ -207,7 +207,7 @@ function ContactPage() {
                 </div>
                 <p className="mt-3 text-xs text-muted-foreground inline-flex items-center gap-1.5">
                   <Mail size={12} />
-                  Routes to <span className="font-medium text-foreground">{activeReason.inbox}</span>
+                  <span className="font-medium text-foreground">{activeReason.inbox}</span>
                 </p>
               </fieldset>
 
