@@ -432,15 +432,34 @@ function ContactPage() {
                     className="flex justify-center"
                   />
                   {captchaStatus === 'expired' && (
-                    <p className="text-center text-sm text-amber-600 dark:text-amber-400">
-                      This check expired. Click the widget to verify again.
-                    </p>
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-center text-sm text-amber-600 dark:text-amber-400">
+                        This check expired. Please verify again.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={retryCaptcha}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <RefreshCw size={14} />
+                        Try verification again
+                      </button>
+                    </div>
                   )}
                   {captchaStatus === 'error' && (
-                    <p className="text-center text-sm text-destructive">
-                      Something went wrong loading the security check.
-                      Please refresh the page.
-                    </p>
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-center text-sm text-destructive">
+                        Something went wrong loading the security check.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={retryCaptcha}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <RefreshCw size={14} />
+                        Try verification again
+                      </button>
+                    </div>
                   )}
                 </div>
               ) : null}
