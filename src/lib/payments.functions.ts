@@ -1,7 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
+import { type StripeEnv, createStripeClient } from "@/lib/stripe.server";
+
+function stripeErrorMessage(error: unknown): string {
+  if (error && typeof error === "object") {
+    const e = error as { message?: string; raw?: { message?: string } };
+    return e.raw?.message ?? e.message ?? "Stripe request failed";
+  }
+  return "Stripe request failed";
+}
 
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
@@ -136,7 +144,7 @@ export const cancelSubscription = createServerFn({ method: "POST" })
         canceled_at: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       };
     } catch (error) {
-      return { error: getStripeErrorMessage(error) };
+      return { error: stripeErrorMessage(error) };
     }
   });
 
@@ -172,7 +180,7 @@ export const reactivateSubscription = createServerFn({ method: "POST" })
       });
       return { ok: true };
     } catch (error) {
-      return { error: getStripeErrorMessage(error) };
+      return { error: stripeErrorMessage(error) };
     }
   });
 
