@@ -1,29 +1,47 @@
-## What's happening
+## Goal
 
-The contact form's CAPTCHA is failing at load time with Cloudflare error **400020**, which Cloudflare uses for **"Invalid sitekey"**. The UI then correctly shows the "Something went wrong loading the security check" message we added — so the frontend logic is working as designed. The root cause is on the Turnstile configuration side, not in our code.
+Protect the email/password sign-up AND sign-in flows on `/login` with Cloudflare Turnstile, using the same server-side verification pattern already used by the contact form. No new secrets, no Edge Function.
 
-Both secrets are already set:
-- `TURNSTILE_SITE_KEY` ✓
-- `TURNSTILE_SECRET_KEY` ✓
+## Why not a Supabase Edge Function
 
-So the value exists, but Cloudflare is rejecting it for this page. The two realistic causes:
+This project is on the TanStack Start template — server logic lives in `createServerFn` / server routes that already have access to `process.env.TURNSTILE_SECRET_KEY`. The contact form already uses this pattern. Adding an Edge Function would create a second deployment, second log surface, and second CORS contract for no benefit. Same security guarantee: the secret never reaches the browser.
 
-1. **Hostname not allowed on the Turnstile widget.** A Turnstile sitekey is bound to a list of hostnames in the Cloudflare dashboard. You're previewing on `id-preview--b3c5ce0d-...lovable.app` (and the published site is `fridgecuisine.lovable.app` / `fridgecuisine.com`). If those hostnames aren't in the widget's allow-list, Cloudflare returns 400020.
-2. **Wrong key pasted.** e.g. the secret key was pasted into `TURNSTILE_SITE_KEY`, or a typo / extra whitespace. Site keys start with `0x4AAAAAAA...`.
+## Changes
 
-## Plan
+### 1. New server function — `src/lib/turnstile.functions.ts`
+Already exposes `getTurnstileSiteKey`. Add a sibling:
 
-1. Open the Cloudflare Turnstile dashboard → your widget → **Settings** and add these hostnames to the allow-list:
-   - `fridgecuisine.com`
-   - `www.fridgecuisine.com`
-   - `fridgecuisine.lovable.app`
-   - `lovable.app` (covers all `*.lovable.app` preview/sandbox subdomains)
-   - `localhost` (optional, for local dev)
-2. Confirm the **Site Key** value (starts with `0x4AAAAAAA…`) and the **Secret Key** value (starts with `0x4AAAAAAA…` too but is the "secret" one) are not swapped. If they were swapped, update `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` accordingly.
-3. Reload the contact page — the widget should render without 400020.
+- `verifyTurnstileToken({ token })` — `createServerFn({ method: "POST" })`. Posts the token + caller IP (from `cf-connecting-ip` / `x-forwarded-for`) to `https://challenges.cloudflare.com/turnstile/v0/siteverify` with `process.env.TURNSTILE_SECRET_KEY`. Returns `{ success: true }` or `{ success: false, error }`. Never throws raw provider errors at the UI.
 
-If after step 1+2 it still fails, I'll add a small server-side log of the verification response (`error-codes` from siteverify) so we can pinpoint the exact reason, and I can also offer a "test mode" sitekey (`1x00000000000000000000AA`) to confirm the integration end-to-end independent of your real key.
+If `TURNSTILE_SITE_KEY` is empty, `getTurnstileSiteKey` returns `''` and the UI skips the widget (degrades gracefully in dev).
 
-## No code changes proposed yet
+### 2. `/login` route — `src/routes/login.tsx`
 
-The code is behaving correctly given a bad/blocked sitekey. I'd rather fix the config first than start patching code. Let me know once you've updated the hostnames (or if you'd like me to switch to a Turnstile test key temporarily to prove the wiring).
+- `loader: () => getTurnstileSiteKey()` (same pattern as `/contact`).
+- Render the Turnstile widget on BOTH the sign-in form and the sign-up form, inside the existing card, just above the submit button.
+- Track `captchaToken`, `captchaStatus` (`'ready' | 'expired' | 'error'`) — same shape as contact.
+- Show the friendly "Try verification again" affordance on expired/error (reuse the same UX).
+- In `onSubmit`, BEFORE calling `supabase.auth.signUp` / `signInWithPassword`:
+  1. If `siteKey` present and no `captchaToken` → inline error, stop.
+  2. Call `verifyTurnstileToken({ data: { token: captchaToken } })`. If it returns `success: false`, show inline error and reset the widget. Stop.
+  3. Only on success, proceed with the existing Supabase auth call.
+- Reset the widget after a failed Supabase auth call so the user can retry without a stale token.
+- Do NOT touch the Google/Apple OAuth buttons — those go through the Lovable broker and don't need Turnstile.
+- Do NOT touch the forgot-password sub-flow in this pass (keep scope tight; can be added later).
+
+### 3. No DB/schema/secret changes
+`TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` are already configured. No migration.
+
+## Verification
+
+1. Open `/login`, toggle to Sign up. Widget renders. Submitting without solving → inline error.
+2. Solve widget → sign-up succeeds (email confirmation flow unchanged).
+3. Toggle to Sign in. Widget renders. Submitting with a tampered/empty token → inline error from `verifyTurnstileToken`.
+4. Solve widget → sign-in succeeds. Bad password → widget resets so user can retry.
+5. Confirm in DevTools that the secret key is NOT in the client bundle (search the page source for `TURNSTILE_SECRET_KEY` — should only appear as the env var name in the server-fn payload metadata, never as a value).
+
+## Out of scope
+
+- `SaveSignupModal` and forgot-password (not selected).
+- Adding Turnstile to OAuth (Google/Apple) buttons — not applicable.
+- Any Edge Function or new secret.
