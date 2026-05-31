@@ -268,7 +268,7 @@ function ContactPage() {
                 </span>
                 <textarea
                   required
-                  minLength={5}
+                  minLength={20}
                   maxLength={4000}
                   rows={6}
                   value={message}

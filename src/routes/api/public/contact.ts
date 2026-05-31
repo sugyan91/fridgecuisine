@@ -5,10 +5,26 @@ import { sendTransactionalEmailServer } from '@/lib/email/send.server'
 const ReasonSchema = z.enum(['billing', 'support', 'feedback'])
 
 const ContactSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(100),
-  email: z.string().trim().email('Invalid email').max(255),
+  name: z
+    .string()
+    .trim()
+    .min(2, 'Name is required')
+    .max(100)
+    .regex(
+      /^[a-zA-Z\s'-]{2,100}$/,
+      'Name contains invalid characters',
+    ),
+  email: z.string().trim().min(5).max(255).email('Invalid email'),
   reason: ReasonSchema,
-  message: z.string().trim().min(5, 'Message too short').max(4000),
+  message: z
+    .string()
+    .trim()
+    .min(20, 'Message too short')
+    .max(4000)
+    .regex(
+      /^(?![\s\S]*<script|javascript:|on\w+=|data:text\/html)[\s\S]*$/i,
+      'Message contains blocked content',
+    ),
   // honeypot — must be empty
   website: z.string().max(0).optional(),
 })
