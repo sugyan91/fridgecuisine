@@ -301,6 +301,7 @@ function LoginPage() {
               : "Email or password is incorrect.",
           });
           setStatusMessage("Sign in failed.");
+          resetCaptcha();
           setLoading(false);
           return;
         }
@@ -323,6 +324,7 @@ function LoginPage() {
     } catch (err: any) {
       setFormError({ message: err?.message || "Something went wrong" });
       setStatusMessage("Request failed.");
+      resetCaptcha();
     } finally {
       setLoading(false);
       // Small cooldown so rapid double-clicks after a fast response are also
