@@ -3,19 +3,19 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, MapPin, Lock } from "lucide-react";
 import {
-  listPublicPaidReceipes,
-  type PaidReceipeListItem,
-} from "@/lib/paid-receipes.functions";
+  listPublicPaidRecipes,
+  type PaidRecipeListItem,
+} from "@/lib/paid-recipes.functions";
 import { fakeRating, Stars } from "@/lib/fake-ratings";
 
 export const Route = createFileRoute("/shop/")({
   head: () => ({
     meta: [
-      { title: "Shop chef receipes — FridgeCuisine" },
+      { title: "Shop chef recipes — FridgeCuisine" },
       {
         name: "description",
         content:
-          "Buy signature receipes from home cooks around the world. Pay once, unlock the full method.",
+          "Buy signature recipes from home cooks around the world. Pay once, unlock the full method.",
       },
     ],
   }),
@@ -23,8 +23,8 @@ export const Route = createFileRoute("/shop/")({
 });
 
 function ShopPage() {
-  const fetchList = useServerFn(listPublicPaidReceipes);
-  const [rows, setRows] = useState<PaidReceipeListItem[]>([]);
+  const fetchList = useServerFn(listPublicPaidRecipes);
+  const [rows, setRows] = useState<PaidRecipeListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ function ShopPage() {
           ← Back home
         </Link>
         <h1 className="font-display text-3xl md:text-5xl uppercase mt-3 mb-2">
-          Chef receipes
+          Chef recipes
         </h1>
         <p className="text-muted-foreground mb-6 max-w-xl">
           Browse signature dishes from real cooks. Preview is free — pay the chef to
@@ -55,7 +55,7 @@ function ShopPage() {
             <Loader2 className="size-8 animate-spin opacity-50" />
           </div>
         ) : rows.length === 0 ? (
-          <p className="text-muted-foreground">No receipes yet — check back soon.</p>
+          <p className="text-muted-foreground">No recipes yet — check back soon.</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {rows.map((r) => {
@@ -65,8 +65,8 @@ function ShopPage() {
               return (
               <Link
                 key={r.id}
-                to="/shop/$receipeId"
-                params={{ receipeId: r.id }}
+                to="/shop/$recipeId"
+                params={{ recipeId: r.id }}
                 className="bg-white border-4 border-border rounded-3xl overflow-hidden shadow-[4px_4px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
               >
                 <div className="aspect-square bg-muted relative">

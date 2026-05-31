@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { IngredientInput } from "@/components/fridge/IngredientInput";
 import { FilterPanel } from "@/components/fridge/FilterPanel";
-import { ReceipeCard } from "@/components/fridge/ReceipeCard";
+import { RecipeCard } from "@/components/fridge/RecipeCard";
 import { ShareButton } from "@/components/fridge/ShareButton";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
@@ -19,28 +19,28 @@ import { LiveActivityTicker } from "@/components/landing/LiveActivityTicker";
 import { PremiumRecipesStrip } from "@/components/landing/PremiumRecipesStrip";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { SiteFooter } from "@/components/landing/SiteFooter";
-import { generateReceipes, type Receipe } from "@/lib/receipes.functions";
+import { generateRecipes, type Recipe } from "@/lib/recipes.functions";
 import {
-  listSavedReceipes,
-  saveReceipe as saveReceipeFn,
-  unsaveReceipe as unsaveReceipeFn,
+  listSavedRecipes,
+  saveRecipe as saveRecipeFn,
+  unsaveRecipe as unsaveRecipeFn,
   setCookedStatus,
-  type SavedReceipeRow,
-} from "@/lib/saved-receipes.functions";
+  type SavedRecipeRow,
+} from "@/lib/saved-recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
 import { POPULAR_COMBOS as ALL_POPULAR_COMBOS } from "@/data/popular-combos";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
-import { ReceipeCounter } from "@/components/ReceipeCounter";
+import { RecipeCounter } from "@/components/RecipeCounter";
 import { FreeTierBanner } from "@/components/FreeTierBanner";
 import { LimitReachedModal } from "@/components/LimitReachedModal";
 import { SaveSignupModal } from "@/components/SaveSignupModal";
-import { useReceipeUsage } from "@/hooks/use-receipe-usage";
+import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { AdminPanel } from "@/components/admin/AdminPanel";
-import { ReceipeTimers } from "@/components/fridge/ReceipeTimers";
+import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
 import foodPasta from "@/assets/food-pasta.jpg";
@@ -104,13 +104,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step receipes from any global cuisine.",
+          "Type a dish or your fridge ingredients and FridgeCuisine's AI returns ingredients and step-by-step recipes from any global cuisine.",
       },
       { property: "og:title", content: "FridgeCuisine — Global AI Kitchen" },
       {
         property: "og:description",
         content:
-          "Free AI kitchen helper. Get ingredients and receipes for any dish, or cook from what you already have.",
+          "Free AI kitchen helper. Get ingredients and recipes for any dish, or cook from what you already have.",
       },
     ],
   }),
@@ -122,19 +122,19 @@ function Index() {
   const [dietary, setDietary] = useState<string[]>([]);
   const [cuisine, setCuisine] = useState("Any / Surprise Me");
   const [pantryMode, setPantryMode] = useState(false);
-  const [receipes, setReceipes] = useState<Receipe[] | null>(null);
+  const [recipes, setRecipes] = useState<Recipe[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [saved, setSaved] = useState<SavedReceipeRow[]>([]);
+  const [saved, setSaved] = useState<SavedRecipeRow[]>([]);
   const [kidFriendly, setKidFriendly] = useState(false);
   const [showNutrition, setShowNutrition] = useState(false);
 
-  const generate = useServerFn(generateReceipes);
+  const generate = useServerFn(generateRecipes);
   const fetchDish = useServerFn(getDishHelper);
-  const listSaved = useServerFn(listSavedReceipes);
-  const saveReceipeRpc = useServerFn(saveReceipeFn);
-  const unsaveReceipeRpc = useServerFn(unsaveReceipeFn);
+  const listSaved = useServerFn(listSavedRecipes);
+  const saveRecipeRpc = useServerFn(saveRecipeFn);
+  const unsaveRecipeRpc = useServerFn(unsaveRecipeFn);
   const setCookedRpc = useServerFn(setCookedStatus);
   const { language } = useLanguage();
 
@@ -143,19 +143,19 @@ function Index() {
   const [dishResult, setDishResult] = useState<
     Extract<DishHelperResult, { ok: true }>["data"] | null
   >(null);
-  const [showReceipe, setShowReceipe] = useState(false);
+  const [showRecipe, setShowRecipe] = useState(false);
 
   const dishPrompts = [
     "Staring at a half-empty fridge? Tell me what's inside — I'll turn it into dinner.",
     "Got eggs, rice, and no plan? List your ingredients and I'll build the meal.",
-    "Don't let leftovers go to waste. Name what you have and I'll craft a receipe.",
+    "Don't let leftovers go to waste. Name what you have and I'll craft a recipe.",
     "Three random ingredients and zero inspiration? I'll turn them into something delicious.",
     "Your fridge is full of possibilities. Show me what you've got and I'll plan dinner.",
     "Tonight's dinner is hiding in your kitchen. List your ingredients and I'll find it.",
     "No time to shop? Work with what's already in your fridge. I'll do the rest.",
     "Turn whatever's in your fridge into a real dinner — just name the ingredients.",
     "That wilting veg in the crisper? I'll turn it into the star of the show.",
-    "Open your fridge, tell me what you see, and I'll hand you a complete receipe.",
+    "Open your fridge, tell me what you see, and I'll hand you a complete recipe.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
   const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
@@ -185,14 +185,14 @@ function Index() {
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium } = useSubscription(userId);
-  const { logGeneration, atLimit: usageAtLimit, countdown } = useReceipeUsage(userId);
+  const { logGeneration, atLimit: usageAtLimit, countdown } = useRecipeUsage(userId);
   const isAdmin = useIsAdmin(userId);
   const [adminOpen, setAdminOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
-  const [saveModal, setSaveModal] = useState<{ open: boolean; receipe: Receipe | null }>({
+  const [saveModal, setSaveModal] = useState<{ open: boolean; recipe: Recipe | null }>({
     open: false,
-    receipe: null,
+    recipe: null,
   });
   const limitBlocked = !isPremium && usageAtLimit;
   const limitToast = () => {
@@ -266,7 +266,7 @@ function Index() {
     }
     setDishLoading(true);
     setDishResult(null);
-    setShowReceipe(false);
+    setShowRecipe(false);
     try {
       const res = await fetchDish({ data: { dish: q, language: language.name } });
       if (!res.ok) toast.error(res.error);
@@ -290,7 +290,7 @@ function Index() {
     setDishQuery(name);
     setDishLoading(true);
     setDishResult(null);
-    setShowReceipe(false);
+    setShowRecipe(false);
     try {
       const res = await fetchDish({ data: { dish: name, language: language.name } });
       if (!res.ok) toast.error(res.error);
@@ -323,7 +323,7 @@ function Index() {
     setPantryMode(false);
     cancelGenerationRef.current = false;
     setLoading(true);
-    setReceipes(null);
+    setRecipes(null);
     // Scroll the results area into view right away so feedback is visible
     requestAnimationFrame(() => {
       cuisineResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -336,7 +336,7 @@ function Index() {
       if (!res.ok) {
         toast.error(res.error);
       } else {
-        setReceipes(res.receipes);
+        setRecipes(res.recipes);
         logGeneration();
       }
     } catch (err) {
@@ -357,7 +357,7 @@ function Index() {
     setCuisine("Any / Surprise Me");
     cancelGenerationRef.current = false;
     setLoading(true);
-    setReceipes(null);
+    setRecipes(null);
     try {
       const res = await generate({
         data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
@@ -365,7 +365,7 @@ function Index() {
       if (cancelGenerationRef.current) return;
       if (!res.ok) toast.error(res.error);
       else {
-        setReceipes(res.receipes);
+        setRecipes(res.recipes);
         logGeneration();
       }
     } catch (err) {
@@ -378,7 +378,7 @@ function Index() {
   };
 
   const onLoadMore = async () => {
-    if (!receipes) return;
+    if (!recipes) return;
     if (limitBlocked) {
       limitToast();
       return;
@@ -391,7 +391,7 @@ function Index() {
           ingredients,
           dietary,
           cuisine,
-          exclude: receipes.map((r) => r.title),
+          exclude: recipes.map((r) => r.title),
           kidFriendly,
           includeNutrition: showNutrition,
           language: language.name,
@@ -401,12 +401,12 @@ function Index() {
       if (!res.ok) {
         toast.error(res.error);
       } else {
-        const existing = new Set(receipes.map((r) => r.title.toLowerCase()));
-        const fresh = res.receipes.filter((r) => !existing.has(r.title.toLowerCase()));
+        const existing = new Set(recipes.map((r) => r.title.toLowerCase()));
+        const fresh = res.recipes.filter((r) => !existing.has(r.title.toLowerCase()));
         if (fresh.length === 0) {
-          toast("No new receipes — try changing cuisine or dietary filters.");
+          toast("No new recipes — try changing cuisine or dietary filters.");
         } else {
-          setReceipes([...receipes, ...fresh]);
+          setRecipes([...recipes, ...fresh]);
           logGeneration();
         }
       }
@@ -420,28 +420,28 @@ function Index() {
   };
 
   const isSaved = (title: string) => saved.some((s) => s.title === title);
-  const toggleSave = async (receipe: Receipe) => {
+  const toggleSave = async (recipe: Recipe) => {
     if (!email) {
-      setSaveModal({ open: true, receipe });
+      setSaveModal({ open: true, recipe });
       return;
     }
     try {
-      if (isSaved(receipe.title)) {
-        await unsaveReceipeRpc({ data: { title: receipe.title } });
-        setSaved((prev) => prev.filter((s) => s.title !== receipe.title));
+      if (isSaved(recipe.title)) {
+        await unsaveRecipeRpc({ data: { title: recipe.title } });
+        setSaved((prev) => prev.filter((s) => s.title !== recipe.title));
         toast("Removed from saved");
       } else {
-        const res = await saveReceipeRpc({ data: { receipe: receipe } });
-        setSaved((prev) => [res.row, ...prev.filter((s) => s.title !== receipe.title)]);
+        const res = await saveRecipeRpc({ data: { recipe: recipe } });
+        setSaved((prev) => [res.row, ...prev.filter((s) => s.title !== recipe.title)]);
         toast.success("Saved!");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Couldn't update saved receipes.");
+      toast.error("Couldn't update saved recipes.");
     }
   };
 
-  const onToggleCooked = async (row: SavedReceipeRow) => {
+  const onToggleCooked = async (row: SavedRecipeRow) => {
     const nextCooked = !row.cooked_at;
     try {
       const res = await setCookedRpc({ data: { id: row.id, cooked: nextCooked } });
@@ -465,8 +465,8 @@ function Index() {
       />
       <SaveSignupModal
         open={saveModal.open}
-        receipe={saveModal.receipe}
-        onClose={() => setSaveModal({ open: false, receipe: null })}
+        recipe={saveModal.recipe}
+        onClose={() => setSaveModal({ open: false, recipe: null })}
       />
       <SavedDrawer
         open={drawerOpen}
@@ -474,7 +474,7 @@ function Index() {
         saved={saved}
         onUnsave={async (title) => {
           try {
-            await unsaveReceipeRpc({ data: { title } });
+            await unsaveRecipeRpc({ data: { title } });
             setSaved((prev) => prev.filter((s) => s.title !== title));
           } catch {
             toast.error("Couldn't remove.");
@@ -544,10 +544,10 @@ function Index() {
               {email ? (
                 <>
                   <Link
-                    to="/my-receipes"
+                    to="/my-recipes"
                     className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 hidden lg:inline rounded-full hover:bg-secondary transition-colors"
                   >
-                    My Receipes
+                    My Recipes
                   </Link>
                   <Link
                     to="/cookbook"
@@ -669,11 +669,11 @@ function Index() {
                       Saved ({saved.length})
                     </button>
                     <Link
-                      to="/my-receipes"
+                      to="/my-recipes"
                       onClick={() => setMobileMenuOpen(false)}
                       className="py-3 text-sm font-medium text-foreground/90 hover:text-foreground border-b border-border"
                     >
-                      My Receipes
+                      My Recipes
                     </Link>
                     <Link
                       to="/cookbook"
@@ -811,7 +811,7 @@ function Index() {
                 </button>
               </form>
               <div className="mt-3 flex justify-center">
-                <ReceipeCounter userId={userId} isPremium={isPremium} />
+                <RecipeCounter userId={userId} isPremium={isPremium} />
               </div>
               <LiveActivityTicker />
               <IngredientTicker />
@@ -826,27 +826,27 @@ function Index() {
                   <ShareButton
                     isAuthenticated={!!email}
                     variant="pill"
-                    receipe={{
+                    recipe={{
                       title: dishResult.dishName,
                       cuisine: cuisine !== "Any / Surprise Me" ? cuisine : undefined,
                       usedIngredients: dishResult.ingredients,
                       missingIngredients: [],
-                      steps: showReceipe ? dishResult.receipe.steps : [],
-                      stepTimings: showReceipe
-                        ? dishResult.receipe.stepTimings ?? undefined
+                      steps: showRecipe ? dishResult.recipe.steps : [],
+                      stepTimings: showRecipe
+                        ? dishResult.recipe.stepTimings ?? undefined
                         : undefined,
-                      tips: showReceipe ? dishResult.receipe.tips : undefined,
-                      prepTimeMinutes: showReceipe
-                        ? dishResult.receipe.prepTimeMinutes ?? undefined
+                      tips: showRecipe ? dishResult.recipe.tips : undefined,
+                      prepTimeMinutes: showRecipe
+                        ? dishResult.recipe.prepTimeMinutes ?? undefined
                         : undefined,
-                      cookTimeMinutes: showReceipe
-                        ? dishResult.receipe.cookTimeMinutes
+                      cookTimeMinutes: showRecipe
+                        ? dishResult.recipe.cookTimeMinutes
                         : undefined,
-                      totalTimeMinutes: showReceipe
-                        ? dishResult.receipe.totalTimeMinutes ?? undefined
+                      totalTimeMinutes: showRecipe
+                        ? dishResult.recipe.totalTimeMinutes ?? undefined
                         : undefined,
-                      serves: showReceipe
-                        ? dishResult.receipe.serves ?? undefined
+                      serves: showRecipe
+                        ? dishResult.recipe.serves ?? undefined
                         : undefined,
                     }}
                   />
@@ -865,15 +865,15 @@ function Index() {
                     ))}
                   </ul>
 
-                  {!showReceipe ? (
+                  {!showRecipe ? (
                   <div className="bg-secondary border border-border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <p className="font-medium text-sm text-white">
-                        Do you want the receipe as well?
+                        Do you want the recipe as well?
                       </p>
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => setShowReceipe(true)}
+                          onClick={() => setShowRecipe(true)}
                           className="bg-primary text-primary-foreground px-5 py-2 rounded-full font-display font-semibold text-sm hover:brightness-110 transition-all"
                         >
                           Yes
@@ -894,32 +894,32 @@ function Index() {
                   <div className="bg-secondary/60 border border-border rounded-2xl p-5">
                       <div className="flex items-center gap-3 mb-3">
                         <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
-                          Receipe
+                          Recipe
                         </p>
                         <div className="flex flex-wrap gap-1.5 text-[11px] font-medium">
-                          {dishResult.receipe.prepTimeMinutes != null && (
-                            <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Prep {dishResult.receipe.prepTimeMinutes}m</span>
+                          {dishResult.recipe.prepTimeMinutes != null && (
+                            <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Prep {dishResult.recipe.prepTimeMinutes}m</span>
                           )}
-                          <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Cook {dishResult.receipe.cookTimeMinutes}m</span>
-                          {dishResult.receipe.totalTimeMinutes != null && (
-                            <span className="bg-primary text-primary-foreground rounded-full px-2.5 py-0.5">Total {dishResult.receipe.totalTimeMinutes}m</span>
+                          <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Cook {dishResult.recipe.cookTimeMinutes}m</span>
+                          {dishResult.recipe.totalTimeMinutes != null && (
+                            <span className="bg-primary text-primary-foreground rounded-full px-2.5 py-0.5">Total {dishResult.recipe.totalTimeMinutes}m</span>
                           )}
-                          {dishResult.receipe.serves && (
-                            <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Serves {dishResult.receipe.serves}</span>
+                          {dishResult.recipe.serves && (
+                            <span className="bg-card border border-border rounded-full px-2.5 py-0.5">Serves {dishResult.recipe.serves}</span>
                           )}
                         </div>
                       </div>
                       <div className="mb-4">
-                        <ReceipeTimers
+                        <RecipeTimers
                           totalMinutes={
-                            dishResult.receipe.totalTimeMinutes ??
-                            dishResult.receipe.cookTimeMinutes
+                            dishResult.recipe.totalTimeMinutes ??
+                            dishResult.recipe.cookTimeMinutes
                           }
                         />
                       </div>
                       <ol className="space-y-2.5">
-                        {dishResult.receipe.steps.map((s, i) => {
-                          const t = dishResult.receipe.stepTimings?.[i];
+                        {dishResult.recipe.steps.map((s, i) => {
+                          const t = dishResult.recipe.stepTimings?.[i];
                           return (
                             <li key={i} className="flex gap-3 items-start text-sm leading-relaxed">
                               <span className="shrink-0 size-6 rounded-full bg-primary/10 text-primary border border-primary/20 font-display font-semibold text-[11px] grid place-items-center mt-0.5">
@@ -937,11 +937,11 @@ function Index() {
                           );
                         })}
                       </ol>
-                      {dishResult.receipe.tips.length > 0 && (
+                      {dishResult.recipe.tips.length > 0 && (
                         <div className="mt-4 pt-3 border-t border-border">
                           <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mb-1.5">Tips</p>
                           <ul className="space-y-1">
-                            {dishResult.receipe.tips.map((t, i) => (
+                            {dishResult.recipe.tips.map((t, i) => (
                               <li key={i} className="text-xs text-muted-foreground">• {t}</li>
                             ))}
                           </ul>
@@ -982,8 +982,8 @@ function Index() {
               >
                 {loading && !pantryMode
                   ? cuisine && cuisine !== "Any / Surprise Me"
-                    ? `Travelling to ${cuisineToCountry(cuisine)} for a surprise receipe…`
-                    : "Travelling the globe to find your perfect receipe…"
+                    ? `Travelling to ${cuisineToCountry(cuisine)} for a surprise recipe…`
+                    : "Travelling the globe to find your perfect recipe…"
                   : "Show me the cuisine"}
               </button>
               {loading && !pantryMode && (
@@ -996,19 +996,19 @@ function Index() {
                 </button>
               )}
               <div className="mt-3 flex justify-center">
-                <ReceipeCounter userId={userId} isPremium={isPremium} />
+                <RecipeCounter userId={userId} isPremium={isPremium} />
               </div>
             </div>
 
             {/* Inline results for the cuisine flow — sits right under the button */}
-            {!pantryMode && (loading || (receipes && receipes.length > 0)) && (
+            {!pantryMode && (loading || (recipes && recipes.length > 0)) && (
             <div ref={cuisineResultsRef} className="mt-10 space-y-5 scroll-mt-32">
-              {(loading || (receipes && receipes.length > 0)) && (
+              {(loading || (recipes && recipes.length > 0)) && (
                 <div className="flex items-baseline justify-between">
                   <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
-                    {loading ? "Cooking up 10 receipes…" : `${receipes!.length} receipes found`}
+                    {loading ? "Cooking up 10 recipes…" : `${recipes!.length} recipes found`}
                   </h3>
-                  {receipes && (
+                  {recipes && (
                     <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
                       AI · {cuisine.split(" /")[0]}
                     </span>
@@ -1018,10 +1018,10 @@ function Index() {
 
               {loading && <LoadingSkeleton />}
 
-              {!loading && receipes && receipes.map((r, i) => (
-                <ReceipeCard
+              {!loading && recipes && recipes.map((r, i) => (
+                <RecipeCard
                   key={`cuisine-${r.title}-${i}`}
-                  receipe={r}
+                  recipe={r}
                   index={i}
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
@@ -1030,21 +1030,21 @@ function Index() {
                   isAuthenticated={!!email}
                   pantry={ingredients}
                   onRecipeUpdate={(next) =>
-                    setReceipes((prev) =>
+                    setRecipes((prev) =>
                       prev ? prev.map((p, idx) => (idx === i ? next : p)) : prev,
                     )
                   }
                 />
               ))}
 
-              {!loading && receipes && receipes.length > 0 && (
+              {!loading && recipes && recipes.length > 0 && (
                 <button
                   type="button"
                   onClick={onLoadMore}
                   disabled={loadingMore}
                   className="w-full bg-card border border-border text-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-all disabled:opacity-60"
                 >
-                  {loadingMore ? "Cooking up more…" : "Show more receipes"}
+                  {loadingMore ? "Cooking up more…" : "Show more recipes"}
                 </button>
               )}
             </div>
@@ -1055,7 +1055,7 @@ function Index() {
             <SectionHeader
               eyebrow="Trending right now"
               title="Hungry for inspiration?"
-              subtitle="Tap any dish and we'll spin up the full receipe instantly."
+              subtitle="Tap any dish and we'll spin up the full recipe instantly."
             />
             <TrendingDishes onPick={runDishByName} />
           </section>
@@ -1091,7 +1091,7 @@ function Index() {
                 onPantryGenerate={onPantryGenerate}
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
-                counterSlot={<ReceipeCounter userId={userId} isPremium={isPremium} />}
+                counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} />}
                 kidFriendly={kidFriendly}
                 onKidFriendly={setKidFriendly}
                 showNutrition={showNutrition}
@@ -1101,7 +1101,7 @@ function Index() {
           </section>
 
           <section className="lg:col-span-7 space-y-5">
-            {!pantryMode && (!receipes || receipes.length === 0) && !loading && (
+            {!pantryMode && (!recipes || recipes.length === 0) && !loading && (
               <PopularCombos
                 onPick={(combo) => {
                   setIngredients(combo);
@@ -1111,12 +1111,12 @@ function Index() {
                 }}
               />
             )}
-            {pantryMode && (loading || (receipes && receipes.length > 0)) && (
+            {pantryMode && (loading || (recipes && recipes.length > 0)) && (
               <div className="flex items-baseline justify-between">
                 <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
-                  {loading ? "Searching…" : `${receipes!.length} receipes found`}
+                  {loading ? "Searching…" : `${recipes!.length} recipes found`}
                 </h3>
-                {receipes && (
+                {recipes && (
                   <span className="text-xs font-medium bg-card border border-border rounded-full px-3 py-1">
                     {pantryMode
                       ? dietary.length > 0
@@ -1131,11 +1131,11 @@ function Index() {
             {pantryMode && loading && <LoadingSkeleton />}
 
             {pantryMode && !loading &&
-              receipes &&
-              receipes.map((r, i) => (
-                <ReceipeCard
+              recipes &&
+              recipes.map((r, i) => (
+                <RecipeCard
                   key={`${r.title}-${i}`}
-                  receipe={r}
+                  recipe={r}
                   index={i}
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
@@ -1144,21 +1144,21 @@ function Index() {
                   isAuthenticated={!!email}
                   pantry={ingredients}
                   onRecipeUpdate={(next) =>
-                    setReceipes((prev) =>
+                    setRecipes((prev) =>
                       prev ? prev.map((p, idx) => (idx === i ? next : p)) : prev,
                     )
                   }
                 />
               ))}
 
-            {pantryMode && !loading && receipes && receipes.length > 0 && (
+            {pantryMode && !loading && recipes && recipes.length > 0 && (
               <button
                 type="button"
                 onClick={onLoadMore}
                 disabled={loadingMore}
                 className="w-full bg-card border border-border text-foreground py-4 rounded-2xl font-display font-semibold text-sm hover:bg-secondary transition-all disabled:opacity-60"
               >
-                {loadingMore ? "Cooking up more…" : "Show more receipes"}
+                {loadingMore ? "Cooking up more…" : "Show more recipes"}
               </button>
             )}
           </section>
@@ -1192,7 +1192,7 @@ function Index() {
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            aria-label="Open saved receipes"
+            aria-label="Open saved recipes"
             className="md:hidden fixed bottom-6 right-6 size-16 bg-turmeric border-4 border-border rounded-full shadow-[4px_4px_0px_0px_var(--border)] grid place-items-center z-40"
           >
             <span className="font-black text-xl">{saved.length}</span>

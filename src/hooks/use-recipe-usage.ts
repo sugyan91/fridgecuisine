@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getReceipeUsage, FREE_DAILY_LIMIT } from "@/lib/usage.functions";
+import { getRecipeUsage, FREE_DAILY_LIMIT } from "@/lib/usage.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export { FREE_DAILY_LIMIT };
@@ -44,8 +44,8 @@ function writeAnonUsage(count: number) {
   } catch {}
 }
 
-export function useReceipeUsage(userId: string | undefined) {
-  const fetchUsage = useServerFn(getReceipeUsage);
+export function useRecipeUsage(userId: string | undefined) {
+  const fetchUsage = useServerFn(getRecipeUsage);
   const [used, setUsed] = useState<number | null>(null);
   const [resetMs, setResetMs] = useState<number>(() => nextMidnightLocalMs());
   const [, setTick] = useState(0);

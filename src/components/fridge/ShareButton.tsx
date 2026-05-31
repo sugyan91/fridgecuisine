@@ -2,16 +2,16 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Share2 } from "lucide-react";
-import { createSharedReceipe, type SharedReceipeData } from "@/lib/shared-receipes.functions";
+import { createSharedRecipe, type SharedRecipeData } from "@/lib/shared-recipes.functions";
 
 type Props = {
-  receipe: SharedReceipeData;
+  recipe: SharedRecipeData;
   isAuthenticated: boolean;
   variant?: "icon" | "full" | "pill";
   className?: string;
 };
 
-function buildSnippet(r: SharedReceipeData): string {
+function buildSnippet(r: SharedRecipeData): string {
   const lines: string[] = [];
   lines.push(`🍳 ${r.title}`);
   if (r.cuisine) lines.push(`Cuisine: ${r.cuisine}`);
@@ -33,23 +33,23 @@ function buildSnippet(r: SharedReceipeData): string {
 }
 
 export function ShareButton({
-  receipe,
+  recipe,
   isAuthenticated,
   variant = "icon",
   className = "",
 }: Props) {
-  const createShared = useServerFn(createSharedReceipe);
+  const createShared = useServerFn(createSharedRecipe);
   const [busy, setBusy] = useState(false);
 
   const onClick = async () => {
     if (busy) return;
     setBusy(true);
-    const snippet = buildSnippet(receipe);
+    const snippet = buildSnippet(recipe);
     try {
       let url: string | undefined;
       if (isAuthenticated) {
         try {
-          const { slug } = await createShared({ data: { receipe } });
+          const { slug } = await createShared({ data: { recipe } });
           url = `${window.location.origin}/shared/${slug}`;
         } catch (err) {
           console.error("create share link failed", err);
@@ -62,7 +62,7 @@ export function ShareButton({
       if (typeof navigator !== "undefined" && (navigator as Navigator).share) {
         try {
           await (navigator as Navigator).share({
-            title: receipe.title,
+            title: recipe.title,
             text: snippet,
             url,
           });
@@ -95,7 +95,7 @@ export function ShareButton({
         type="button"
         onClick={onClick}
         disabled={busy}
-        aria-label="Share receipe"
+        aria-label="Share recipe"
         className={`size-10 border-2 border-border rounded-full grid place-items-center bg-white hover:bg-turmeric/20 transition-colors disabled:opacity-60 ${className}`}
       >
         <Share2 size={16} />
@@ -125,7 +125,7 @@ export function ShareButton({
       className={`w-full bg-white text-cardamom py-3 rounded-xl font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all disabled:opacity-60 inline-flex items-center justify-center gap-2 ${className}`}
     >
       <Share2 size={16} />
-      {busy ? "Sharing…" : "Share Receipe"}
+      {busy ? "Sharing…" : "Share Recipe"}
     </button>
   );
 }

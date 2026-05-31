@@ -3,25 +3,25 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import type { Receipe } from "@/lib/receipes.functions";
+import type { Recipe } from "@/lib/recipes.functions";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  receipe: Receipe | null;
+  recipe: Recipe | null;
 };
 
 const PENDING_KEY = "fc-pending-save";
 
-export function SaveSignupModal({ open, onClose, receipe }: Props) {
+export function SaveSignupModal({ open, onClose, recipe }: Props) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
   const stashPending = () => {
-    if (!receipe) return;
+    if (!recipe) return;
     try {
-      localStorage.setItem(PENDING_KEY, JSON.stringify(receipe));
+      localStorage.setItem(PENDING_KEY, JSON.stringify(recipe));
     } catch {}
   };
 
@@ -75,10 +75,10 @@ export function SaveSignupModal({ open, onClose, receipe }: Props) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-xl md:text-2xl tracking-tight">
-            Save <span className="text-accent">{receipe?.title ?? "this receipe"}</span>
+            Save <span className="text-accent">{recipe?.title ?? "this recipe"}</span>
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground pt-1">
-            Drop your email — we'll send a one-click sign-in link and save this receipe to your cookbook automatically.
+            Drop your email — we'll send a one-click sign-in link and save this recipe to your cookbook automatically.
           </DialogDescription>
         </DialogHeader>
 
@@ -87,7 +87,7 @@ export function SaveSignupModal({ open, onClose, receipe }: Props) {
             <p className="font-semibold mb-1">Check your inbox 📬</p>
             <p className="text-muted-foreground">
               We sent a sign-in link to <span className="font-medium text-foreground">{email}</span>.
-              Click it and your receipe will be waiting in your cookbook.
+              Click it and your recipe will be waiting in your cookbook.
             </p>
           </div>
         ) : (

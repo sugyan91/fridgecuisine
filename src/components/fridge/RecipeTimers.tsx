@@ -6,7 +6,7 @@ type Props = {
   variant?: "light" | "dark";
 };
 
-export function ReceipeTimers({ totalMinutes, variant = "light" }: Props) {
+export function RecipeTimers({ totalMinutes, variant = "light" }: Props) {
   const { secondsLeft, isRunning, isFinished, start, pause, reset, skip } =
     useCountdown(Math.max(1, Math.round(totalMinutes * 60)));
 
@@ -25,7 +25,7 @@ export function ReceipeTimers({ totalMinutes, variant = "light" }: Props) {
     >
       <div className="flex items-baseline gap-2">
         <span className="font-black text-[10px] uppercase tracking-widest opacity-70">
-          Receipe Timer
+          Recipe Timer
         </span>
         <span
           className={`font-mono font-black text-2xl tabular-nums ${
@@ -41,7 +41,7 @@ export function ReceipeTimers({ totalMinutes, variant = "light" }: Props) {
             type="button"
             onClick={start}
             className={`size-8 rounded-full grid place-items-center font-black ${btn}`}
-            aria-label="Start receipe timer"
+            aria-label="Start recipe timer"
           >
             <Play className="size-3.5" fill="currentColor" />
           </button>
@@ -51,7 +51,7 @@ export function ReceipeTimers({ totalMinutes, variant = "light" }: Props) {
             type="button"
             onClick={pause}
             className={`size-8 rounded-full grid place-items-center ${btn}`}
-            aria-label="Pause receipe timer"
+            aria-label="Pause recipe timer"
           >
             <Pause className="size-3.5" fill="currentColor" />
           </button>
@@ -61,7 +61,7 @@ export function ReceipeTimers({ totalMinutes, variant = "light" }: Props) {
             type="button"
             onClick={skip}
             className={`size-8 rounded-full grid place-items-center ${btn}`}
-            aria-label="Skip receipe timer"
+            aria-label="Skip recipe timer"
           >
             <SkipForward className="size-3.5" fill="currentColor" />
           </button>
@@ -70,7 +70,7 @@ export function ReceipeTimers({ totalMinutes, variant = "light" }: Props) {
           type="button"
           onClick={reset}
           className={`size-8 rounded-full grid place-items-center ${btn}`}
-          aria-label="Reset receipe timer"
+          aria-label="Reset recipe timer"
         >
           <RotateCcw className="size-3.5" />
         </button>

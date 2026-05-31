@@ -11,7 +11,7 @@ export const Route = createFileRoute("/chefs")({
       {
         name: "description",
         content:
-          "Browse home chefs from around the world selling their signature receipes on FridgeCuisine.",
+          "Browse home chefs from around the world selling their signature recipes on FridgeCuisine.",
       },
     ],
   }),
@@ -57,7 +57,7 @@ function ChefsPage() {
                 Chefs from around the world
               </h1>
               <p className="text-muted-foreground mt-2 max-w-xl">
-                Buy receipes directly from the cooks who created them.
+                Buy recipes directly from the cooks who created them.
               </p>
             </div>
             <Link
@@ -80,7 +80,7 @@ function ChefsPage() {
               No chefs onboarded yet
             </p>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
-              Be the first to share your receipes with the world.
+              Be the first to share your recipes with the world.
             </p>
             <Link
               to="/sell"
@@ -116,7 +116,7 @@ function ChefsPage() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-4 min-h-[4rem]">
-                  {c.bio || "Receipes coming soon."}
+                  {c.bio || "Recipes coming soon."}
                 </p>
               </div>
             ))}

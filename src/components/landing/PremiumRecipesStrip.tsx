@@ -3,13 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { MapPin, Lock } from "lucide-react";
 import {
-  listPublicPaidReceipes,
-  type PaidReceipeListItem,
-} from "@/lib/paid-receipes.functions";
+  listPublicPaidRecipes,
+  type PaidRecipeListItem,
+} from "@/lib/paid-recipes.functions";
 
 export function PremiumRecipesStrip() {
-  const fetchList = useServerFn(listPublicPaidReceipes);
-  const [rows, setRows] = useState<PaidReceipeListItem[]>([]);
+  const fetchList = useServerFn(listPublicPaidRecipes);
+  const [rows, setRows] = useState<PaidRecipeListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,8 +55,8 @@ export function PremiumRecipesStrip() {
             return (
               <Link
                 key={row.id}
-                to="/shop/$receipeId"
-                params={{ receipeId: row.id }}
+                to="/shop/$recipeId"
+                params={{ recipeId: row.id }}
                 className="shrink-0 w-44 md:w-52 snap-start bg-white border-4 border-border rounded-3xl overflow-hidden shadow-[4px_4px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
               >
                 <div className="aspect-square bg-muted relative">

@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sendTransactionalEmailServer } from "@/lib/email/send.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export type SavedReceipeData = {
+export type SavedRecipeData = {
   title: string;
   blurb?: string;
   cookTimeMinutes?: number;
@@ -30,17 +30,17 @@ export type SavedReceipeData = {
   };
 };
 
-export type SavedReceipeRow = {
+export type SavedRecipeRow = {
   id: string;
   title: string;
   cuisine: string | null;
   cook_time_minutes: number | null;
-  receipe: SavedReceipeData;
+  recipe: SavedRecipeData;
   saved_at: string;
   cooked_at: string | null;
 };
 
-const receipeSchema = z.object({
+const recipeSchema = z.object({
   title: z.string().trim().min(1).max(200),
   blurb: z.string().max(2000).optional().default(""),
   cookTimeMinutes: z.number().int().min(0).max(1000).optional(),
@@ -70,25 +70,25 @@ const receipeSchema = z.object({
     .optional(),
 }).passthrough();
 
-export const listSavedReceipes = createServerFn({ method: "GET" })
+export const listSavedRecipes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ rows: SavedReceipeRow[] }> => {
+  .handler(async ({ context }): Promise<{ rows: SavedRecipeRow[] }> => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("saved_recipes")
-      .select("id, title, cuisine, cook_time_minutes, receipe:recipe, saved_at, cooked_at")
+      .select("id, title, cuisine, cook_time_minutes, recipe:recipe, saved_at, cooked_at")
       .eq("user_id", userId)
       .order("saved_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return { rows: (data ?? []) as unknown as SavedReceipeRow[] };
+    return { rows: (data ?? []) as unknown as SavedRecipeRow[] };
   });
 
-export const saveReceipe = createServerFn({ method: "POST" })
+export const saveRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ receipe: receipeSchema }).parse(input))
-  .handler(async ({ data, context }): Promise<{ row: SavedReceipeRow }> => {
+  .inputValidator((input) => z.object({ recipe: recipeSchema }).parse(input))
+  .handler(async ({ data, context }): Promise<{ row: SavedRecipeRow }> => {
     const { supabase, userId } = context;
-    const r = data.receipe;
+    const r = data.recipe;
     const { data: row, error } = await supabase
       .from("saved_recipes")
       .upsert(
@@ -104,7 +104,7 @@ export const saveReceipe = createServerFn({ method: "POST" })
       .select("id, title, cuisine, cook_time_minutes, recipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    const typed = row as unknown as SavedReceipeRow;
+    const typed = row as unknown as SavedRecipeRow;
     // Fire-and-forget save confirmation email (idempotent per user+recipe).
     (async () => {
       try {
@@ -128,7 +128,7 @@ export const saveReceipe = createServerFn({ method: "POST" })
     return { row: typed };
   });
 
-export const unsaveReceipe = createServerFn({ method: "POST" })
+export const unsaveRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({ title: z.string().min(1).max(200) }).parse(input),
@@ -159,8 +159,8 @@ export const setCookedStatus = createServerFn({ method: "POST" })
       .update({ cooked_at: data.cooked ? new Date().toISOString() : null })
       .eq("user_id", userId)
       .eq("id", data.id)
-      .select("id, title, cuisine, cook_time_minutes, receipe:recipe, saved_at, cooked_at")
+      .select("id, title, cuisine, cook_time_minutes, recipe:recipe, saved_at, cooked_at")
       .single();
     if (error) throw new Error(error.message);
-    return { row: row as unknown as SavedReceipeRow };
+    return { row: row as unknown as SavedRecipeRow };
   });

@@ -3,32 +3,32 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  getCommunityReceipe,
+  getCommunityRecipe,
   getMyVote,
-  setReceipeVote,
-  listReceipeComments,
-  addReceipeComment,
-  deleteReceipeComment,
-  setReceipeCommentsEnabled,
-  deleteCommunityReceipe,
+  setRecipeVote,
+  listRecipeComments,
+  addRecipeComment,
+  deleteRecipeComment,
+  setRecipeCommentsEnabled,
+  deleteCommunityRecipe,
 } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
-export const Route = createFileRoute("/community/$receipeId")({
-  component: ReceipePage,
+export const Route = createFileRoute("/community/$recipeId")({
+  component: RecipePage,
 });
 
-function ReceipePage() {
-  const { receipeId } = Route.useParams();
-  const get = useServerFn(getCommunityReceipe);
+function RecipePage() {
+  const { recipeId } = Route.useParams();
+  const get = useServerFn(getCommunityRecipe);
   const fetchVote = useServerFn(getMyVote);
-  const submitVote = useServerFn(setReceipeVote);
-  const fetchComments = useServerFn(listReceipeComments);
-  const postComment = useServerFn(addReceipeComment);
-  const removeComment = useServerFn(deleteReceipeComment);
-  const toggleComments = useServerFn(setReceipeCommentsEnabled);
-  const removeReceipe = useServerFn(deleteCommunityReceipe);
+  const submitVote = useServerFn(setRecipeVote);
+  const fetchComments = useServerFn(listRecipeComments);
+  const postComment = useServerFn(addRecipeComment);
+  const removeComment = useServerFn(deleteRecipeComment);
+  const toggleComments = useServerFn(setRecipeCommentsEnabled);
+  const removeRecipe = useServerFn(deleteCommunityRecipe);
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
   const [data, setData] = useState<any>(null);
@@ -46,11 +46,11 @@ function ReceipePage() {
   const [postingComment, setPostingComment] = useState(false);
 
   useEffect(() => {
-    get({ data: { id: receipeId } }).then((r) => {
+    get({ data: { id: recipeId } }).then((r) => {
       setData(r);
       setLoading(false);
     });
-    fetchComments({ data: { recipe_id: receipeId } })
+    fetchComments({ data: { recipe_id: recipeId } })
       .then((r) => setComments(r.comments))
       .catch(() => {});
     supabase.auth.getSession().then(({ data: s }) => {
@@ -61,12 +61,12 @@ function ReceipePage() {
       setUserEmail(u?.email ?? null);
       setEmailVerified(!!u?.email_confirmed_at);
       if (isAuthed) {
-        fetchVote({ data: { recipe_id: receipeId } })
+        fetchVote({ data: { recipe_id: recipeId } })
           .then((v) => setMyVote(v.vote))
           .catch(() => {});
       }
     });
-  }, [get, fetchVote, fetchComments, receipeId]);
+  }, [get, fetchVote, fetchComments, recipeId]);
 
   const vote = async (next: "up") => {
     if (!authed) {
@@ -84,18 +84,18 @@ function ReceipePage() {
       return { ...d, up_count: up };
     });
     try {
-      await submitVote({ data: { recipe_id: receipeId, vote: target } });
+      await submitVote({ data: { recipe_id: recipeId, vote: target } });
     } catch {
       toast.error("Couldn't save vote");
     }
   };
 
   if (loading) return <p className="p-8 text-center">Loading…</p>;
-  if (!data?.receipe) return <p className="p-8 text-center">Receipe not found.</p>;
+  if (!data?.recipe) return <p className="p-8 text-center">Recipe not found.</p>;
 
-  const r = data.receipe;
+  const r = data.recipe;
   const isOwner = !!userId && userId === r.user_id;
-  const canManageReceipe = isOwner || isAdmin;
+  const canManageRecipe = isOwner || isAdmin;
   const commentsEnabled = r.comments_enabled !== false;
 
   const submitComment = async () => {
@@ -103,7 +103,7 @@ function ReceipePage() {
     if (body.length < 1) return;
     setPostingComment(true);
     try {
-      const res = await postComment({ data: { recipe_id: receipeId, body } });
+      const res = await postComment({ data: { recipe_id: recipeId, body } });
       setComments((c) => [...c, res.comment]);
       setCommentDraft("");
     } catch (err: any) {
@@ -126,9 +126,9 @@ function ReceipePage() {
 
   const onToggleComments = async (next: boolean) => {
     const prev = data;
-    setData({ ...data, receipe: { ...r, comments_enabled: next } });
+    setData({ ...data, recipe: { ...r, comments_enabled: next } });
     try {
-      await toggleComments({ data: { recipe_id: receipeId, enabled: next } });
+      await toggleComments({ data: { recipe_id: recipeId, enabled: next } });
       toast.success(next ? "Comments turned on" : "Comments turned off");
     } catch {
       toast.error("Couldn't update");
@@ -136,15 +136,15 @@ function ReceipePage() {
     }
   };
 
-  const onDeleteReceipe = async () => {
+  const onDeleteRecipe = async () => {
     if (!confirm(`Delete "${r.title}"? This cannot be undone.`)) return;
     setDeleting(true);
     try {
-      await removeReceipe({ data: { id: receipeId } });
-      toast.success("Receipe deleted");
+      await removeRecipe({ data: { id: recipeId } });
+      toast.success("Recipe deleted");
       navigate({ to: "/community" });
     } catch {
-      toast.error("Couldn't delete receipe");
+      toast.error("Couldn't delete recipe");
       setDeleting(false);
     }
   };
@@ -175,15 +175,15 @@ function ReceipePage() {
             {[r.city, r.country, r.cuisine].filter(Boolean).join(" · ")} · by {data.author_name}
           </p>
           {r.description && <p className="mb-5 text-base">{r.description}</p>}
-          {canManageReceipe && (
+          {canManageRecipe && (
             <div className="mb-5 flex justify-end">
               <button
                 type="button"
-                onClick={onDeleteReceipe}
+                onClick={onDeleteRecipe}
                 disabled={deleting}
                 className="bg-paprika text-white border-2 border-border rounded-full px-3 py-1.5 text-[11px] font-black uppercase shadow-[2px_2px_0px_0px_var(--border)] disabled:opacity-60"
               >
-                {deleting ? "Deleting…" : "Delete receipe"}
+                {deleting ? "Deleting…" : "Delete recipe"}
               </button>
             </div>
           )}

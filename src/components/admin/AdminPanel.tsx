@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   adminListUsers,
-  adminListCommunityReceipes,
+  adminListCommunityRecipes,
   adminListComments,
   adminGetUserSummary,
   adminResetUsage,
@@ -11,11 +11,11 @@ import {
   adminDeleteUser,
   adminGrantPremium,
   adminRevokePremium,
-  adminDeleteCommunityReceipe,
+  adminDeleteCommunityRecipe,
   adminDeleteComment,
 } from "@/lib/admin.functions";
 
-type Tab = "users" | "receipes" | "comments";
+type Tab = "users" | "recipes" | "comments";
 
 type UserRow = {
   id: string;
@@ -27,7 +27,7 @@ type UserRow = {
   isPremium: boolean;
 };
 
-type ReceipeRow = {
+type RecipeRow = {
   id: string;
   user_id: string;
   title: string;
@@ -75,7 +75,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         </div>
 
         <div className="flex gap-1 bg-muted/40 border-2 border-border rounded-full p-1 mb-5">
-          {(["users", "receipes", "comments"] as const).map((t) => (
+          {(["users", "recipes", "comments"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -89,7 +89,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         </div>
 
         {tab === "users" && <UsersTab />}
-        {tab === "receipes" && <ReceipesTab />}
+        {tab === "recipes" && <RecipesTab />}
         {tab === "comments" && <CommentsTab />}
       </div>
     </div>
@@ -352,13 +352,13 @@ function UsersTab() {
 
 /* ----------------- RECEIPES ----------------- */
 
-function ReceipesTab() {
-  const list = useServerFn(adminListCommunityReceipes);
-  const del = useServerFn(adminDeleteCommunityReceipe);
+function RecipesTab() {
+  const list = useServerFn(adminListCommunityRecipes);
+  const del = useServerFn(adminDeleteCommunityRecipe);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [published, setPublished] = useState<"all" | "published" | "unpublished">("all");
-  const [rows, setRows] = useState<ReceipeRow[]>([]);
+  const [rows, setRows] = useState<RecipeRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -369,10 +369,10 @@ function ReceipesTab() {
       const r = await list({
         data: { page, pageSize: PAGE_SIZE, search: search || undefined, published },
       });
-      setRows(r.receipes);
+      setRows(r.recipes);
       setTotal(r.total);
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to load receipes");
+      toast.error(e?.message ?? "Failed to load recipes");
     } finally {
       setLoading(false);
     }
@@ -391,12 +391,12 @@ function ReceipesTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, published]);
 
-  const onDelete = async (r: ReceipeRow) => {
-    if (!confirm(`Delete receipe "${r.title}"? This also removes its comments and likes.`)) return;
+  const onDelete = async (r: RecipeRow) => {
+    if (!confirm(`Delete recipe "${r.title}"? This also removes its comments and likes.`)) return;
     setBusy(r.id);
     try {
       await del({ data: { recipe_id: r.id } });
-      toast.success("Receipe deleted");
+      toast.success("Recipe deleted");
       await load();
     } catch (e: any) {
       toast.error(e?.message ?? "Delete failed");
@@ -433,7 +433,7 @@ function ReceipesTab() {
         </div>
         {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}
         {!loading && rows.length === 0 && (
-          <div className="px-3 py-4 text-xs opacity-60">No receipes found.</div>
+          <div className="px-3 py-4 text-xs opacity-60">No recipes found.</div>
         )}
         {rows.map((r) => (
           <div
@@ -535,7 +535,7 @@ function CommentsTab() {
       <SearchBar
         value={search}
         onChange={setSearch}
-        placeholder="Search body, author, receipe title…"
+        placeholder="Search body, author, recipe title…"
       />
       <div className="border-2 border-border rounded-2xl overflow-hidden">
         {loading && <div className="px-3 py-4 text-xs opacity-60">Loading…</div>}

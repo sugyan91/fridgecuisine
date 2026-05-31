@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import type { Receipe } from "@/lib/receipes.functions";
-import { ReceipeTimers } from "./ReceipeTimers";
+import type { Recipe } from "@/lib/recipes.functions";
+import { RecipeTimers } from "./RecipeTimers";
 import { StepTimer } from "./StepTimer";
 import { ShareButton } from "./ShareButton";
 import { swapIngredient, type IngredientSwap } from "@/lib/ingredient-swap.functions";
-import { generateReceipeImage } from "@/lib/receipe-image.functions";
+import { generateRecipeImage } from "@/lib/recipe-image.functions";
 
 type Props = {
-  receipe: Receipe;
+  recipe: Recipe;
   index: number;
   saved: boolean;
   onToggleSave: () => void;
@@ -16,11 +16,11 @@ type Props = {
   showMissing?: boolean;
   isAuthenticated?: boolean;
   pantry?: string[];
-  onRecipeUpdate?: (next: Receipe) => void;
+  onRecipeUpdate?: (next: Recipe) => void;
 };
 
-export function ReceipeCard({
-  receipe,
+export function RecipeCard({
+  recipe,
   index,
   saved,
   onToggleSave,
@@ -36,7 +36,7 @@ export function ReceipeCard({
   const [swapResults, setSwapResults] = useState<IngredientSwap[] | null>(null);
   const [swapError, setSwapError] = useState<string | null>(null);
   const runSwap = useServerFn(swapIngredient);
-  const runImage = useServerFn(generateReceipeImage);
+  const runImage = useServerFn(generateRecipeImage);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(true);
 
@@ -44,7 +44,7 @@ export function ReceipeCard({
     let cancelled = false;
     setImageLoading(true);
     setImageUrl(null);
-    runImage({ data: { dishName: receipe.title, cuisine: receipe.cuisine } })
+    runImage({ data: { dishName: recipe.title, cuisine: recipe.cuisine } })
       .then((res) => {
         if (cancelled) return;
         if (res.ok) setImageUrl(res.dataUrl);
@@ -56,18 +56,18 @@ export function ReceipeCard({
     return () => {
       cancelled = true;
     };
-  }, [receipe.title, receipe.cuisine, runImage]);
+  }, [recipe.title, recipe.cuisine, runImage]);
 
-  const allIngredients = [...receipe.usedIngredients, ...receipe.missingIngredients];
-  const dietary = receipe.dietary ?? [];
-  const timings = receipe.stepTimings ?? [];
-  const prep = receipe.prepTimeMinutes;
-  const total = receipe.totalTimeMinutes;
-  const difficulty = receipe.difficulty;
-  const nutrition = receipe.nutrition?.perServing;
-  const servings = receipe.nutrition?.servings;
+  const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
+  const dietary = recipe.dietary ?? [];
+  const timings = recipe.stepTimings ?? [];
+  const prep = recipe.prepTimeMinutes;
+  const total = recipe.totalTimeMinutes;
+  const difficulty = recipe.difficulty;
+  const nutrition = recipe.nutrition?.perServing;
+  const servings = recipe.nutrition?.servings;
 
-  const difficultyStyles: Record<NonNullable<Receipe["difficulty"]>, string> = {
+  const difficultyStyles: Record<NonNullable<Recipe["difficulty"]>, string> = {
     easy: "bg-turmeric",
     medium: "bg-saffron text-white",
     hard: "bg-paprika text-white",
@@ -81,11 +81,11 @@ export function ReceipeCard({
     try {
       const res = await runSwap({
         data: {
-          recipeTitle: receipe.title,
-          cuisine: receipe.cuisine,
+          recipeTitle: recipe.title,
+          cuisine: recipe.cuisine,
           ingredient: name,
           pantry,
-          dietary: dietaryProp ?? receipe.dietary ?? [],
+          dietary: dietaryProp ?? recipe.dietary ?? [],
         },
       });
       if (res.ok) setSwapResults(res.swaps);
@@ -105,12 +105,12 @@ export function ReceipeCard({
     const original = swapOpen.name;
     const replaceIn = (arr: string[]) =>
       arr.map((i) => (i === original ? swap.name : i));
-    const next: Receipe = {
-      ...receipe,
-      usedIngredients: replaceIn(receipe.usedIngredients),
-      missingIngredients: replaceIn(receipe.missingIngredients),
+    const next: Recipe = {
+      ...recipe,
+      usedIngredients: replaceIn(recipe.usedIngredients),
+      missingIngredients: replaceIn(recipe.missingIngredients),
       substitutions: [
-        ...(receipe.substitutions ?? []),
+        ...(recipe.substitutions ?? []),
         `${original} → ${swap.name}. ${swap.note}`,
       ],
     };
@@ -145,7 +145,7 @@ export function ReceipeCard({
             {imageUrl ? (
               <img
                 src={imageUrl}
-                alt={receipe.title}
+                alt={recipe.title}
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
@@ -159,7 +159,7 @@ export function ReceipeCard({
         <div className="flex justify-between items-start mb-6 gap-4">
           <div>
             <h4 className="font-display text-3xl md:text-4xl uppercase tracking-tight leading-none">
-              {receipe.title}
+              {recipe.title}
             </h4>
             <div className="flex flex-wrap gap-3 mt-3 font-mono text-[10px] font-bold uppercase">
               {prep != null && (
@@ -170,7 +170,7 @@ export function ReceipeCard({
               )}
               <span className="flex items-center gap-1">
                 <span className="size-2 rounded-full bg-turmeric" />
-                Cook {receipe.cookTimeMinutes}m
+                Cook {recipe.cookTimeMinutes}m
               </span>
               {total != null && (
                 <span className="flex items-center gap-1">
@@ -180,7 +180,7 @@ export function ReceipeCard({
               )}
               <span className="flex items-center gap-1">
                 <span className="size-2 rounded-full bg-saffron" />
-                {receipe.cuisine}
+                {recipe.cuisine}
               </span>
               {difficulty && (
                 <span
@@ -189,7 +189,7 @@ export function ReceipeCard({
                   {difficulty}
                 </span>
               )}
-              {receipe.kidFriendly && (
+              {recipe.kidFriendly && (
                 <span className="bg-white text-cardamom border-2 border-border rounded-full px-2 py-0.5 uppercase">
                   🧒 Kid-friendly
                 </span>
@@ -214,14 +214,14 @@ export function ReceipeCard({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Collapse receipe"
+            aria-label="Collapse recipe"
             className="size-10 bg-white text-foreground rounded-full font-black text-xl flex-shrink-0"
           >
             −
           </button>
         </div>
 
-        <p className="text-sm mb-6 opacity-90">{receipe.blurb}</p>
+        <p className="text-sm mb-6 opacity-90">{recipe.blurb}</p>
 
         {nutrition && (
           <div className="mb-5 bg-white/10 border border-white/20 rounded-2xl p-3">
@@ -250,8 +250,8 @@ export function ReceipeCard({
         )}
 
         <div className="mb-5">
-          <ReceipeTimers
-            totalMinutes={total ?? receipe.cookTimeMinutes}
+          <RecipeTimers
+            totalMinutes={total ?? recipe.cookTimeMinutes}
             variant="dark"
           />
         </div>
@@ -262,7 +262,7 @@ export function ReceipeCard({
               The Method
             </h5>
             <ol className="text-sm space-y-2.5 font-medium">
-              {receipe.steps.map((s, i) => (
+              {recipe.steps.map((s, i) => (
                 <li key={i} className="flex gap-3 items-start">
                   <span className="shrink-0 size-6 rounded-full bg-turmeric text-foreground font-black text-[11px] grid place-items-center mt-0.5">
                     {i + 1}
@@ -287,22 +287,22 @@ export function ReceipeCard({
                   Ingredients
                 </h5>
                 <ul className="text-sm space-y-1.5 font-medium">
-                  {receipe.usedIngredients.map((m, i) =>
+                  {recipe.usedIngredients.map((m, i) =>
                     renderIngredient(m, "used", `u-${i}-${m}`),
                   )}
-                  {receipe.missingIngredients.map((m, i) =>
+                  {recipe.missingIngredients.map((m, i) =>
                     renderIngredient(m, "missing", `m-${i}-${m}`),
                   )}
                 </ul>
               </div>
             )}
-            {showMissing && receipe.missingIngredients.length > 0 && (
+            {showMissing && recipe.missingIngredients.length > 0 && (
               <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
                 <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
                   Missing
                 </h5>
                 <ul className="text-sm space-y-1.5 font-medium">
-                  {receipe.missingIngredients.map((m, i) =>
+                  {recipe.missingIngredients.map((m, i) =>
                     renderIngredient(m, "missing", `mm-${i}-${m}`),
                   )}
                 </ul>
@@ -354,13 +354,13 @@ export function ReceipeCard({
                 )}
               </div>
             )}
-            {receipe.substitutions.length > 0 && (
+            {recipe.substitutions.length > 0 && (
               <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
                 <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
                   Substitutions
                 </h5>
                 <ul className="text-sm space-y-1.5 font-medium">
-                  {receipe.substitutions.map((s, i) => (
+                  {recipe.substitutions.map((s, i) => (
                     <li key={i} className="flex items-center gap-2">
                       <span className="size-1.5 bg-saffron rounded-full" />
                       {s}
@@ -374,10 +374,10 @@ export function ReceipeCard({
               onClick={onToggleSave}
               className="w-full bg-white text-cardamom py-3 rounded-xl font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
             >
-              {saved ? "★ Saved" : "♡ Save Receipe"}
+              {saved ? "★ Saved" : "♡ Save Recipe"}
             </button>
             <ShareButton
-              receipe={receipe}
+              recipe={recipe}
               isAuthenticated={isAuthenticated}
               variant="full"
             />
@@ -397,7 +397,7 @@ export function ReceipeCard({
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt={receipe.title}
+              alt={recipe.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
             />
@@ -411,12 +411,12 @@ export function ReceipeCard({
       <div className="p-5 flex-1">
         <div className="flex justify-between items-start mb-2 gap-3">
           <h4 className="font-black text-xl md:text-2xl leading-tight">
-            {receipe.title}
+            {recipe.title}
           </h4>
           {showMissing ? (
-            receipe.missingIngredients.length > 0 ? (
+            recipe.missingIngredients.length > 0 ? (
             <div className="bg-paprika text-white text-[10px] font-black px-2 py-1 rounded-sm rotate-3 flex-shrink-0">
-              MISSING {receipe.missingIngredients.length}
+              MISSING {recipe.missingIngredients.length}
             </div>
           ) : (
             <div className="bg-cardamom text-white text-[10px] font-black px-2 py-1 rounded-sm -rotate-2 flex-shrink-0">
@@ -428,11 +428,11 @@ export function ReceipeCard({
         <div className="flex flex-wrap gap-3 font-mono text-[10px] font-bold mb-3 uppercase">
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-turmeric" />
-            {total != null ? `${total} min total` : `${receipe.cookTimeMinutes} min`}
+            {total != null ? `${total} min total` : `${recipe.cookTimeMinutes} min`}
           </span>
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-cardamom" />
-            {receipe.cuisine}
+            {recipe.cuisine}
           </span>
           {difficulty && (
             <span
@@ -441,7 +441,7 @@ export function ReceipeCard({
               {difficulty}
             </span>
           )}
-          {receipe.kidFriendly && (
+          {recipe.kidFriendly && (
             <span className="bg-turmeric border-2 border-border rounded-full px-2 py-0.5 uppercase">
               🧒 Kid-friendly
             </span>
@@ -462,25 +462,25 @@ export function ReceipeCard({
             ))}
           </div>
         )}
-        <p className="text-sm text-pretty mb-4 font-medium">{receipe.blurb}</p>
+        <p className="text-sm text-pretty mb-4 font-medium">{recipe.blurb}</p>
         <div className="flex justify-between items-center">
           <button
             type="button"
             onClick={() => setOpen(true)}
             className="font-black text-sm uppercase underline decoration-4 decoration-turmeric underline-offset-4 hover:decoration-paprika"
           >
-            View Receipe
+            View Recipe
           </button>
           <div className="flex items-center gap-2">
             <ShareButton
-              receipe={receipe}
+              recipe={recipe}
               isAuthenticated={isAuthenticated}
               variant="icon"
             />
             <button
               type="button"
               onClick={onToggleSave}
-              aria-label={saved ? "Unsave receipe" : "Save receipe"}
+              aria-label={saved ? "Unsave recipe" : "Save recipe"}
               className={`size-10 border-2 border-border rounded-full grid place-items-center transition-colors ${
                 saved ? "bg-paprika text-white" : "bg-white hover:bg-paprika/10"
               }`}

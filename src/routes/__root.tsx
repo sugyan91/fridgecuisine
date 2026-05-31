@@ -11,7 +11,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
-import { saveReceipe as saveReceipeFn } from "@/lib/saved-receipes.functions";
+import { saveRecipe as saveRecipeFn } from "@/lib/saved-recipes.functions";
 import { sendWelcomeEmail } from "@/lib/email/welcome.functions";
 import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
 import { LanguageProvider } from "@/lib/language";
@@ -28,8 +28,8 @@ async function drainPendingSave() {
   }
   if (!raw) return;
   try {
-    const receipe = JSON.parse(raw);
-    await saveReceipeFn({ data: { receipe } });
+    const recipe = JSON.parse(raw);
+    await saveRecipeFn({ data: { recipe } });
   } catch (e) {
     console.error("Failed to drain pending save", e);
   } finally {
@@ -105,7 +105,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Type the ingredients in your fridge and get AI-generated receipes with steps, cook time, and substitutions. Any cuisine, any diet.",
+          "Type the ingredients in your fridge and get AI-generated recipes with steps, cook time, and substitutions. Any cuisine, any diet.",
       },
       { name: "author", content: "Fridge Chef" },
       { name: "google-site-verification", content: "VLZZMynlIIESF6ygQoSSBH10dZntp_KolorFqbOrcRo" },
@@ -113,7 +113,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Turn random ingredients into real meals. AI receipes with steps, substitutions, and cook time.",
+          "Turn random ingredients into real meals. AI recipes with steps, substitutions, and cook time.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -189,7 +189,7 @@ function RootComponent() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
-        // Fire-and-forget: drain any receipe the user tried to save before signup
+        // Fire-and-forget: drain any recipe the user tried to save before signup
         drainPendingSave();
         // Fire-and-forget welcome email (server-side idempotent — at most one per user).
         try {

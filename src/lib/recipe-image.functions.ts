@@ -7,13 +7,13 @@ const inputSchema = z.object({
   cuisine: z.string().trim().max(80).optional(),
 });
 
-export type ReceipeImageResult =
+export type RecipeImageResult =
   | { ok: true; dataUrl: string; provider: "huggingface" | "lovable" }
   | { ok: false; error: string };
 
-export const generateReceipeImage = createServerFn({ method: "POST" })
+export const generateRecipeImage = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data }): Promise<ReceipeImageResult> => {
+  .handler(async ({ data }): Promise<RecipeImageResult> => {
     const cuisinePart = data.cuisine ? `, ${data.cuisine} cuisine` : "";
     const prompt = `Professional overhead food photography of ${data.dishName}${cuisinePart}. Natural lighting, shallow depth of field, rustic wooden table, garnished and plated beautifully, appetizing, high detail, vibrant colors, magazine quality.`;
     return callImageGen(prompt);

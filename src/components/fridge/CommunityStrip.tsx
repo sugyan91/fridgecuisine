@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { listCommunityReceipes } from "@/lib/community.functions";
+import { listCommunityRecipes } from "@/lib/community.functions";
 
-type Receipe = {
+type Recipe = {
   id: string;
   title: string;
   description: string | null;
@@ -16,17 +16,17 @@ type Receipe = {
 };
 
 export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }) {
-  const fetchReceipes = useServerFn(listCommunityReceipes);
-  const [receipes, setReceipes] = useState<Receipe[] | null>(null);
+  const fetchRecipes = useServerFn(listCommunityRecipes);
+  const [recipes, setRecipes] = useState<Recipe[] | null>(null);
 
   useEffect(() => {
-    fetchReceipes({ data: { limit: 6 } })
-      .then((res) => setReceipes((res.receipes as Receipe[]) ?? []))
-      .catch(() => setReceipes([]));
-  }, [fetchReceipes]);
+    fetchRecipes({ data: { limit: 6 } })
+      .then((res) => setRecipes((res.recipes as Recipe[]) ?? []))
+      .catch(() => setRecipes([]));
+  }, [fetchRecipes]);
 
   // Don't render anything until data loads — avoids the empty-frame gap.
-  if (!receipes || receipes.length === 0) return null;
+  if (!recipes || recipes.length === 0) return null;
 
   return (
     <section className="max-w-6xl mx-auto mt-10 md:mt-14">
@@ -48,13 +48,13 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {receipes.map((r) => {
+        {recipes.map((r) => {
           const place = [r.city, r.country].filter(Boolean).join(", ");
           return (
             <Link
               key={r.id}
-              to="/community/$receipeId"
-              params={{ receipeId: r.id }}
+              to="/community/$recipeId"
+              params={{ recipeId: r.id }}
               className="group block bg-white border-2 border-border rounded-2xl overflow-hidden shadow-[3px_3px_0px_0px_var(--border)] hover:shadow-[5px_5px_0px_0px_var(--border)] hover:translate-y-[-2px] transition-all"
             >
               {r.image_url ? (
@@ -72,7 +72,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
                   {r.title}
                 </h3>
                 <p className="mt-1 text-[11px] font-bold uppercase tracking-wide opacity-60 truncate">
-                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community receipe"}
+                  {[r.cuisine, place].filter(Boolean).join(" · ") || "Community recipe"}
                 </p>
                 <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
                   <span className="opacity-70 truncate">by {r.author_name}</span>
@@ -89,7 +89,7 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
           <Link to="/login" className="underline font-black text-paprika text-base">
             Sign in
           </Link>{" "}
-          to share receipe
+          to share recipe
         </p>
       )}
     </section>

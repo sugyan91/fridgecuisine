@@ -292,7 +292,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
     return { users, total: list.total ?? users.length };
   });
 
-export const adminListCommunityReceipes = createServerFn({ method: "POST" })
+export const adminListCommunityRecipes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) =>
     z
@@ -315,7 +315,7 @@ export const adminListCommunityReceipes = createServerFn({ method: "POST" })
     else if (data.published === "unpublished") query = query.eq("is_published", false);
     if (data.search) {
       const q = safeLike(data.search);
-      // Also match receipes whose author's username/display name matches.
+      // Also match recipes whose author's username/display name matches.
       const { data: matchProfiles } = await supabaseAdmin
         .from("profiles")
         .select("user_id")
@@ -334,7 +334,7 @@ export const adminListCommunityReceipes = createServerFn({ method: "POST" })
       .in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
     const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
     return {
-      receipes: (rows ?? []).map((r) => ({
+      recipes: (rows ?? []).map((r) => ({
         ...r,
         author_username: pMap.get(r.user_id)?.username ?? null,
         author_display_name: pMap.get(r.user_id)?.display_name ?? null,
@@ -343,7 +343,7 @@ export const adminListCommunityReceipes = createServerFn({ method: "POST" })
     };
   });
 
-export const adminDeleteCommunityReceipe = createServerFn({ method: "POST" })
+export const adminDeleteCommunityRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) => z.object({ recipe_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
@@ -369,7 +369,7 @@ export const adminListComments = createServerFn({ method: "POST" })
       .range(from, to);
     if (data.search) {
       const q = safeLike(data.search);
-      const [{ data: matchProfiles }, { data: matchReceipes }] = await Promise.all([
+      const [{ data: matchProfiles }, { data: matchRecipes }] = await Promise.all([
         supabaseAdmin
           .from("profiles")
           .select("user_id")
@@ -382,7 +382,7 @@ export const adminListComments = createServerFn({ method: "POST" })
           .limit(500),
       ]);
       const uList = (matchProfiles ?? []).map((p) => p.user_id);
-      const rList = (matchReceipes ?? []).map((r) => r.id);
+      const rList = (matchRecipes ?? []).map((r) => r.id);
       const uIn = uList.length ? uList.join(",") : SENTINEL_UUID;
       const rIn = rList.length ? rList.join(",") : SENTINEL_UUID;
       query = query.or(`body.ilike.%${q}%,user_id.in.(${uIn}),recipe_id.in.(${rIn})`);
@@ -391,7 +391,7 @@ export const adminListComments = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const uids = (rows ?? []).map((r) => r.user_id);
     const rids = (rows ?? []).map((r) => r.recipe_id);
-    const [{ data: profiles }, { data: receipes }] = await Promise.all([
+    const [{ data: profiles }, { data: recipes }] = await Promise.all([
       supabaseAdmin
         .from("profiles")
         .select("user_id, username")
@@ -402,7 +402,7 @@ export const adminListComments = createServerFn({ method: "POST" })
         .in("id", rids.length ? rids : ["00000000-0000-0000-0000-000000000000"]),
     ]);
     const pMap = new Map((profiles ?? []).map((p) => [p.user_id, p.username]));
-    const rMap = new Map((receipes ?? []).map((r) => [r.id, r.title]));
+    const rMap = new Map((recipes ?? []).map((r) => [r.id, r.title]));
     return {
       comments: (rows ?? []).map((c) => ({
         ...c,

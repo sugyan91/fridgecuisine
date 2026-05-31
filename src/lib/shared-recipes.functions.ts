@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export type SharedReceipeData = {
+export type SharedRecipeData = {
   title: string;
   blurb?: string;
   cookTimeMinutes?: number;
@@ -20,7 +20,7 @@ export type SharedReceipeData = {
   serves?: string;
 };
 
-const receipeSchema = z.object({
+const recipeSchema = z.object({
   title: z.string().trim().min(1).max(200),
   blurb: z.string().max(2000).optional().default(""),
   cookTimeMinutes: z.number().int().min(0).max(1000).optional(),
@@ -37,11 +37,11 @@ const receipeSchema = z.object({
   serves: z.string().max(40).optional(),
 });
 
-export type SharedReceipeRow = {
+export type SharedRecipeRow = {
   slug: string;
   title: string;
   cuisine: string | null;
-  recipe: SharedReceipeData;
+  recipe: SharedRecipeData;
   view_count: number;
   created_at: string;
 };
@@ -55,16 +55,16 @@ function makeSlug(len = 8): string {
   return s;
 }
 
-export const createSharedReceipe = createServerFn({ method: "POST" })
+export const createSharedRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({ receipe: receipeSchema.passthrough() }).parse(input) as {
-      receipe: SharedReceipeData;
+    z.object({ recipe: recipeSchema.passthrough() }).parse(input) as {
+      recipe: SharedRecipeData;
     },
   )
   .handler(async ({ data, context }): Promise<{ slug: string }> => {
     const { supabase, userId } = context;
-    const r = data.receipe;
+    const r = data.recipe;
 
     // Try a few slugs in case of collision (very unlikely with 32^8 space).
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -85,9 +85,9 @@ export const createSharedReceipe = createServerFn({ method: "POST" })
     throw new Error("Couldn't generate a unique share link, please try again.");
   });
 
-type GetSharedResult = { row: SharedReceipeRow | null };
+type GetSharedResult = { row: SharedRecipeRow | null };
 
-export const getSharedReceipe = createServerFn({ method: "GET" })
+export const getSharedRecipe = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({ slug: z.string().min(4).max(32).regex(/^[a-z0-9]+$/) }).parse(input),
   )
@@ -107,5 +107,5 @@ export const getSharedReceipe = createServerFn({ method: "GET" })
       .eq("slug", data.slug)
       .then(() => undefined, () => undefined);
 
-    return { row: row as unknown as SharedReceipeRow };
+    return { row: row as unknown as SharedRecipeRow };
   });
