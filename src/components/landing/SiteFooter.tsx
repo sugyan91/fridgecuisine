@@ -40,6 +40,7 @@ export function SiteFooter() {
               <li><Link to="/cookbook" className="hover:text-white">Cookbook</Link></li>
               <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
               <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
+              <li><Link to="/terms" className="hover:text-white">Terms</Link></li>
             </ul>
           </div>
 
