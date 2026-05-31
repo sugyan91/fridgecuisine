@@ -27,6 +27,8 @@ const ContactSchema = z.object({
     ),
   // honeypot — must be empty
   website: z.string().max(0).optional(),
+  // page-load timestamp — must be at least 3 seconds old and not stale
+  timestamp: z.number().int().min(1),
 })
 
 const INBOX_BY_REASON: Record<z.infer<typeof ReasonSchema>, string> = {
@@ -52,6 +54,21 @@ export const Route = createFileRoute('/api/public/contact')({
             { status: 400 },
           )
         }
+        // Minimum time-to-submit check (3 seconds)
+        const elapsed = Date.now() - parsed.data.timestamp
+        if (elapsed < 3000) {
+          return Response.json(
+            { error: 'Submission too fast. Please wait a moment before sending.' },
+            { status: 400 },
+          )
+        }
+        if (elapsed > 3600000) {
+          return Response.json(
+            { error: 'Session expired. Please refresh the page and try again.' },
+            { status: 400 },
+          )
+        }
+
         // Honeypot tripped — pretend success.
         if (parsed.data.website) {
           return Response.json({ ok: true })
