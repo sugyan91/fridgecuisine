@@ -308,6 +308,11 @@ button:not(:disabled),
   animation: tagline-sweep 6s ease-in-out infinite;
 }
 
+.tagline-sweep:hover,
+.tagline-sweep.tagline-paused {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tagline-sweep { animation: none !important; }
 }
