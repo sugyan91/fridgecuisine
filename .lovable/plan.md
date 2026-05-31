@@ -1,25 +1,34 @@
-## Footer Cleanup
+## Goal
 
-### Problem
-The "Cook" column mixes product navigation with legal/compliance links, and the "For chefs" column has a generic "Sign up free" that isn't chef-specific. This makes the footer feel disorganized and the columns lose their purpose.
+Make the mobile header tagline "Your own AI powered personal chef" feel professional and editorial instead of restless. The current 6s sweep is too fast and visually noisy.
 
-### Changes (1 file)
+## Changes
 
-**File:** `src/components/landing/SiteFooter.tsx`
+**1. `src/styles.css` — refine the `tagline-sweep` animation**
+- Slow the cycle from `6s` to `22s` (long pauses at rest, brief drift in the middle).
+- Soften the keyframes so the text rests for the majority of the cycle and only drifts gently mid-cycle.
+- Add an edge fade mask so the text enters/exits the visible window smoothly (no hard clip).
 
-1. **Cook column** — keep product nav only:
-   - Keep: Recipes, Community, Cookbook, Pricing, Account
-   - Remove: Privacy, Terms, Cookies, Manage cookies
+```css
+@keyframes tagline-sweep {
+  0%, 18% { transform: translateX(0); }
+  45%, 55% { transform: translateX(calc(-1 * var(--tagline-shift, 38%))); }
+  82%, 100% { transform: translateX(0); }
+}
+.tagline-sweep {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+  animation: tagline-sweep 22s ease-in-out infinite;
+}
+```
 
-2. **For chefs column** — keep chef-specific links only:
-   - Keep: Sell recipes, Browse chefs
-   - Remove: Sign up free
+**2. `src/routes/index.tsx` — refine tagline typography & add edge mask**
+- Wrap the animated `<span>` in a container with a horizontal `mask-image` linear-gradient so the text fades softly at both edges instead of clipping abruptly.
+- Bump styling on the tagline: `uppercase tracking-[0.18em]` and a slightly muted color, removing the bold weight for a refined editorial look (bold + small + animated reads amateurish).
 
-3. **Bottom bar** — add a legal links row next to the copyright:
-   - Privacy
-   - Terms
-   - Cookies
-   - Manage cookies (conditional, same as current consent check)
+## Notes
 
-### Result
-Clean 3-column footer where each column has a clear theme, with legal links separated into the bottom bar.
+- Desktop (sm+) continues to disable the animation via existing `sm:!animate-none sm:!transform-none`.
+- `prefers-reduced-motion` already disables it — kept as-is.
+- No JS or layout changes; purely CSS + a wrapper class on the existing tagline node.
