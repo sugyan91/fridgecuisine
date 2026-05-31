@@ -1,22 +1,30 @@
-## Goal
+Plan: Add a Privacy Policy page at /privacy
 
-Users currently see the raw billing error "AI credits exhausted. Add credits in Settings → Workspace → Usage." surfaced via `toast.error(res.error)` in the recipe/fridge/dish flows. Replace it with a friendly, brand-appropriate message that doesn't expose Lovable billing internals.
+## What we're building
+A privacy policy page at `fridgecuisine.com/privacy`, required for App Store submission and user trust. It will follow the existing page design pattern (sticky header + content + footer).
 
-## Changes
+## Files to create / modify
 
-**`src/lib/hf-client.server.ts`** (2 occurrences, lines 129 and 184)
+1. **Create `src/routes/privacy.tsx`**
+   - TanStack route at `/privacy`
+   - SEO meta: title, description, og:title, og:description
+   - Sticky header with logo + "Back home" link (same pattern as `/contact`)
+   - Content sections covering:
+     - What data we collect (ingredients, recipes, account info, usage analytics)
+     - How we use it (AI recipe generation, personalization, improving the service)
+     - Data storage & security (Lovable Cloud/Supabase, encryption at rest)
+     - Third parties (AI model providers for recipe generation)
+     - Cookies & tracking (essential + analytics)
+     - User rights (access, delete account, export data)
+     - Children's privacy (not for under 13)
+     - Contact for privacy concerns
+   - `SiteFooter` at bottom
+   - Styled with the existing design system (max-w-3xl, prose-like spacing, semantic headings)
 
-Replace the 402 error string with something neutral like:
+2. **Edit `src/components/landing/SiteFooter.tsx`**
+   - Add a "Privacy" link in the footer (under "Cook" or in a new "Legal" column)
 
-> "Our kitchen is taking a quick break — please try again later."
-
-Keep `code: "credits"` so internal handling/logging is unchanged; only the human-readable `error` text changes. This automatically fixes every call site because they all forward `res.error` into `toast.error(...)` (index.tsx lines 272, 296, 337, 366, 402).
-
-## Out of scope
-
-- No changes to AI quota logic, server-fn auth, or the actual billing remediation (that still needs to happen in Lovable workspace settings — but the user won't see it).
-- Rate-limit (429) message stays as-is unless you also want it softened.
-
-## Optional follow-up (ask before doing)
-
-Also log the real reason to console server-side so you can still diagnose when it happens, and/or add an admin-only banner.
+## Design notes
+- Match the `/contact` page layout: clean, readable, generous whitespace
+- Use existing CSS variables and Tailwind classes
+- No new dependencies needed
