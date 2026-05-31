@@ -42,20 +42,6 @@ export function SiteFooter() {
               <li><Link to="/cookbook" className="hover:text-white">Cookbook</Link></li>
               <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
               <li><Link to="/account" className="hover:text-white">Account</Link></li>
-              <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
-              <li><Link to="/terms" className="hover:text-white">Terms</Link></li>
-              <li><Link to="/cookies" className="hover:text-white">Cookies</Link></li>
-              {consent && (
-                <li>
-                  <button
-                    type="button"
-                    onClick={consent.reopen}
-                    className="text-left hover:text-white"
-                  >
-                    Manage cookies
-                  </button>
-                </li>
-              )}
             </ul>
           </div>
 
@@ -66,15 +52,6 @@ export function SiteFooter() {
             <ul className="space-y-2 text-sm">
               <li><Link to="/sell" className="hover:text-white">Sell recipes</Link></li>
               <li><Link to="/chefs" className="hover:text-white">Browse chefs</Link></li>
-              <li>
-                <Link
-                  to="/login"
-                  search={{ mode: "signup" }}
-                  className="hover:text-white"
-                >
-                  Sign up free
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -112,11 +89,27 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-white/55">
-          <p>
-            <span className="font-semibold text-white/85">$5.99/mo</span> · Premium · unlimited recipes
-          </p>
-          <p>© {new Date().getFullYear()} Fridge Cuisine. Made with garlic and butter.</p>
+        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col gap-4 text-xs text-white/55">
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <Link to="/privacy" className="hover:text-white">Privacy</Link>
+            <Link to="/terms" className="hover:text-white">Terms</Link>
+            <Link to="/cookies" className="hover:text-white">Cookies</Link>
+            {consent && (
+              <button
+                type="button"
+                onClick={consent.reopen}
+                className="hover:text-white"
+              >
+                Manage cookies
+              </button>
+            )}
+          </nav>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <p>
+              <span className="font-semibold text-white/85">$5.99/mo</span> · Premium · unlimited recipes
+            </p>
+            <p>© {new Date().getFullYear()} Fridge Cuisine. Made with garlic and butter.</p>
+          </div>
         </div>
       </div>
     </footer>
