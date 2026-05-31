@@ -27,6 +27,8 @@ const ContactSchema = z.object({
     ),
   // honeypot — must be empty
   website: z.string().max(0).optional(),
+  // page-load timestamp — must be at least 3 seconds old and not stale
+  timestamp: z.number().int().min(1),
 })
 
 const INBOX_BY_REASON: Record<z.infer<typeof ReasonSchema>, string> = {
