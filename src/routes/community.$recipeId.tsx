@@ -15,7 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
-export const Route = createFileRoute("/community/$receipeId")({
+export const Route = createFileRoute("/community/$recipeId")({
   component: RecipePage,
 });
 
