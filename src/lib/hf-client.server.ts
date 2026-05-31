@@ -126,7 +126,10 @@ export async function callChatJSON(
   try {
     const r = await callOpenAICompat(LOVABLE_URL, lovableKey, LOVABLE_MODEL, messages, true);
     if (r.status === 429) return { ok: false, code: "rate_limit", error: "Too many requests — try again in a moment." };
-    if (r.status === 402) return { ok: false, code: "credits", error: "AI credits exhausted. Add credits in Settings → Workspace → Usage." };
+    if (r.status === 402) {
+      console.error("[lovable] 402 credits exhausted");
+      return { ok: false, code: "credits", error: "Our kitchen is taking a quick break — please try again later." };
+    }
     if (r.status !== 200) {
       console.error("[lovable]", r.status, r.raw.slice(0, 300));
       return { ok: false, code: "server", error: `AI service error (${r.status}).` };
@@ -181,7 +184,10 @@ export async function callVisionJSON(
     });
     const raw = await res.text();
     if (res.status === 429) return { ok: false, code: "rate_limit", error: "Too many requests — try again in a moment." };
-    if (res.status === 402) return { ok: false, code: "credits", error: "AI credits exhausted. Add credits in Settings → Workspace → Usage." };
+    if (res.status === 402) {
+      console.error("[lovable vision] 402 credits exhausted");
+      return { ok: false, code: "credits", error: "Our kitchen is taking a quick break — please try again later." };
+    }
     if (!res.ok) {
       console.error("[lovable vision]", res.status, raw.slice(0, 300));
       return { ok: false, code: "server", error: `AI vision error (${res.status}).` };
