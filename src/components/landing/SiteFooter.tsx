@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
 import logoImg from "@/assets/fridge-cuisine-logo.png";
+import { useConsent } from "@/lib/consent";
 
 export function SiteFooter() {
+  const consent = useConsentSafe();
   return (
     <footer className="bg-[var(--surface-dark)] text-white/85 mt-16">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 md:py-16">
@@ -42,6 +44,17 @@ export function SiteFooter() {
               <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
               <li><Link to="/terms" className="hover:text-white">Terms</Link></li>
               <li><Link to="/cookies" className="hover:text-white">Cookies</Link></li>
+              {consent && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={consent.reopen}
+                    className="text-left hover:text-white"
+                  >
+                    Manage cookies
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -107,4 +120,14 @@ export function SiteFooter() {
       </div>
     </footer>
   );
+}
+
+// Safe wrapper so the footer still renders if used outside ConsentProvider
+// (e.g. in isolated stories / SSR partial trees).
+function useConsentSafe() {
+  try {
+    return useConsent();
+  } catch {
+    return null;
+  }
 }
