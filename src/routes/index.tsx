@@ -515,10 +515,10 @@ function Index() {
                 </span>
               </span>
                 <div className="min-w-0 flex-1">
-                <h1 className="font-display tracking-tight text-foreground leading-none text-lg sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
+                <h1 className="font-display tracking-tight text-foreground leading-none text-lg sm:text-lg md:text-xl text-left lowercase truncate font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </h1>
-                <p className="hidden sm:block text-[10px] sm:text-xs text-foreground/60 leading-tight mt-0.5 font-bold">
+                <p className="block text-[9px] sm:text-xs text-foreground/60 leading-tight mt-0.5 font-bold truncate">
                   Your own AI powered personal chef
                 </p>
               </div>
@@ -613,12 +613,12 @@ function Index() {
             </nav>
 
             {/* Mobile nav */}
-            <div className="flex md:hidden items-center gap-2 shrink-0">
+            <div className="flex md:hidden items-center gap-1.5 shrink-0">
               <LanguagePicker variant="icon" />
               {email ? (
                 <Link
                   to="/community/new"
-                  className="text-xs font-medium px-3 py-1.5 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                  className="text-xs font-medium px-2.5 py-1.5 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                 >
                   + Share
                 </Link>
@@ -626,7 +626,7 @@ function Index() {
                 <Link
                   to="/login"
                   search={{ mode: "signup" }}
-                  className="text-xs font-medium px-3 py-1.5 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                  className="text-xs font-medium px-2.5 py-1.5 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                 >
                   Sign up
                 </Link>
