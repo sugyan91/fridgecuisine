@@ -29,6 +29,8 @@ const ContactSchema = z.object({
   website: z.string().max(0).optional(),
   // page-load timestamp — must be at least 3 seconds old and not stale
   timestamp: z.number().int().min(1),
+  // Cloudflare Turnstile token
+  captchaToken: z.string().min(1).max(2048).optional(),
 })
 
 const INBOX_BY_REASON: Record<z.infer<typeof ReasonSchema>, string> = {
@@ -67,6 +69,43 @@ export const Route = createFileRoute('/api/public/contact')({
             { error: 'Session expired. Please refresh the page and try again.' },
             { status: 400 },
           )
+        }
+
+        // Verify Cloudflare Turnstile CAPTCHA
+        const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
+        if (turnstileSecret) {
+          if (!parsed.data.captchaToken) {
+            return Response.json(
+              { error: 'CAPTCHA verification required.' },
+              { status: 400 },
+            )
+          }
+          const ip =
+            request.headers.get('cf-connecting-ip') ??
+            request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+            ''
+          const form = new URLSearchParams()
+          form.append('secret', turnstileSecret)
+          form.append('response', parsed.data.captchaToken)
+          if (ip) form.append('remoteip', ip)
+          try {
+            const verifyRes = await fetch(
+              'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+              { method: 'POST', body: form },
+            )
+            const verifyJson = (await verifyRes.json()) as { success: boolean }
+            if (!verifyJson.success) {
+              return Response.json(
+                { error: 'CAPTCHA verification failed. Please try again.' },
+                { status: 400 },
+              )
+            }
+          } catch {
+            return Response.json(
+              { error: 'Could not verify CAPTCHA. Please try again.' },
+              { status: 500 },
+            )
+          }
         }
 
         // Honeypot tripped — pretend success.
