@@ -65,6 +65,71 @@ function LoginPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState<string | null>(null);
   const [formError, setFormError] = useState<{ message: string; action?: { label: string; onClick: () => void } } | null>(null);
+  // Cloudflare Turnstile
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaStatus, setCaptchaStatus] = useState<
+    "ready" | "expired" | "error"
+  >("ready");
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  const resetCaptcha = () => {
+    // @ts-expect-error global injected by Turnstile script
+    const ts = window.turnstile;
+    if (ts && widgetIdRef.current) {
+      try { ts.reset(widgetIdRef.current); } catch { /* noop */ }
+    }
+    setCaptchaToken("");
+    setCaptchaStatus("ready");
+  };
+
+  // Load Turnstile script + render widget (re-renders when forgot/signupSent
+  // panels close and the auth form returns to the DOM, or when toggling mode).
+  useEffect(() => {
+    if (!siteKey) return;
+    if (forgotOpen || signupSent) return;
+    const SCRIPT_ID = "cf-turnstile-script";
+    const renderWidget = () => {
+      // @ts-expect-error global injected by Turnstile script
+      const ts = window.turnstile;
+      if (!ts || !widgetContainerRef.current || widgetIdRef.current) return;
+      widgetIdRef.current = ts.render(widgetContainerRef.current, {
+        sitekey: siteKey,
+        callback: (token: string) => {
+          setCaptchaToken(token);
+          setCaptchaStatus("ready");
+        },
+        "expired-callback": () => {
+          setCaptchaToken("");
+          setCaptchaStatus("expired");
+        },
+        "error-callback": () => {
+          setCaptchaToken("");
+          setCaptchaStatus("error");
+        },
+        theme: "auto",
+      });
+    };
+    if (document.getElementById(SCRIPT_ID)) {
+      renderWidget();
+    } else {
+      const s = document.createElement("script");
+      s.id = SCRIPT_ID;
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      s.async = true;
+      s.defer = true;
+      s.onload = renderWidget;
+      document.head.appendChild(s);
+    }
+    return () => {
+      // @ts-expect-error global injected by Turnstile script
+      const ts = window.turnstile;
+      if (ts && widgetIdRef.current) {
+        try { ts.remove(widgetIdRef.current); } catch { /* noop */ }
+        widgetIdRef.current = null;
+      }
+    };
+  }, [siteKey, forgotOpen, signupSent, mode]);
 
   const redirectTo = search.redirect || "/";
 
