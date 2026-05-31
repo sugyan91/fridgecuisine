@@ -6,7 +6,7 @@ export function SiteFooter() {
   return (
     <footer className="bg-[var(--surface-dark)] text-white/85 mt-16">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-10">
           <div className="col-span-2 md:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <img
@@ -60,32 +60,41 @@ export function SiteFooter() {
               </li>
             </ul>
           </div>
+
+          <div className="col-span-2 md:col-span-1">
+            <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
+              Contact
+            </p>
+            <ul className="space-y-4 text-sm">
+              <li>
+                <p className="text-[11px] text-white/50 mb-1">General inquiries</p>
+                <a
+                  href="mailto:main@fridgecuisine.com"
+                  className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors break-all"
+                >
+                  <Mail size={13} className="shrink-0" />
+                  main@fridgecuisine.com
+                </a>
+              </li>
+              <li>
+                <p className="text-[11px] text-white/50 mb-1">Help &amp; support</p>
+                <a
+                  href="mailto:support@fridgecuisine.com"
+                  className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors break-all"
+                >
+                  <Mail size={13} className="shrink-0" />
+                  support@fridgecuisine.com
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col items-center gap-4 text-xs text-white/55">
-          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
-            <a
-              href="mailto:main@fridgecuisine.com"
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-            >
-              <Mail size={14} />
-              main@fridgecuisine.com
-            </a>
-            <span className="hidden sm:inline text-white/25">·</span>
-            <a
-              href="mailto:support@fridgecuisine.com"
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-            >
-              <Mail size={14} />
-              support@fridgecuisine.com
-            </a>
-          </div>
-          <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-white/55">
           <p>
             <span className="font-semibold text-white/85">$5.99/mo</span> · Premium · unlimited recipes
           </p>
           <p>© {new Date().getFullYear()} Fridge Cuisine. Made with garlic and butter.</p>
-          </div>
         </div>
       </div>
     </footer>
