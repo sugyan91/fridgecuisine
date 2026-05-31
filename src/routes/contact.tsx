@@ -1,0 +1,308 @@
+import { useState } from 'react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { Mail, Send, Loader2 } from 'lucide-react'
+import { z } from 'zod'
+import { toast } from 'sonner'
+import { Toaster } from '@/components/ui/sonner'
+import { SiteFooter } from '@/components/landing/SiteFooter'
+import logoImg from '@/assets/fridge-cuisine-logo.png'
+
+const REASONS = [
+  { value: 'support', label: 'Help & support', inbox: 'support@fridgecuisine.com', blurb: "Bugs, account issues, can't log in, recipes broken." },
+  { value: 'billing', label: 'Billing', inbox: 'main@fridgecuisine.com', blurb: 'Subscription, payments, refunds, invoices.' },
+  { value: 'feedback', label: 'Feedback or ideas', inbox: 'main@fridgecuisine.com', blurb: 'Suggestions, partnerships, press, anything else.' },
+] as const
+
+type Reason = (typeof REASONS)[number]['value']
+
+const Schema = z.object({
+  name: z.string().trim().min(1, 'Please add your name').max(100),
+  email: z.string().trim().email('Please use a valid email').max(255),
+  reason: z.enum(['support', 'billing', 'feedback']),
+  message: z.string().trim().min(5, 'A bit more detail, please').max(4000),
+})
+
+export const Route = createFileRoute('/contact')({
+  head: () => ({
+    meta: [
+      { title: 'Contact — FridgeCuisine' },
+      {
+        name: 'description',
+        content:
+          "Reach the FridgeCuisine team for billing, support, or feedback. Real humans, fast replies.",
+      },
+      { property: 'og:title', content: 'Contact FridgeCuisine' },
+      {
+        property: 'og:description',
+        content: 'Pick a topic and we route your message to the right person.',
+      },
+    ],
+  }),
+  component: ContactPage,
+})
+
+function ContactPage() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [reason, setReason] = useState<Reason>('support')
+  const [message, setMessage] = useState('')
+  const [website, setWebsite] = useState('') // honeypot
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(false)
+
+  const activeReason = REASONS.find((r) => r.value === reason)!
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const parsed = Schema.safeParse({ name, email, reason, message })
+    if (!parsed.success) {
+      const first = parsed.error.issues[0]
+      toast.error(first?.message ?? 'Please check your entries.')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/public/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...parsed.data, website }),
+      })
+      if (!res.ok) {
+        toast.error("Couldn't send your message. Please try again.")
+        return
+      }
+      setDone(true)
+      toast.success('Message sent! Check your inbox for confirmation.')
+      setName('')
+      setEmail('')
+      setMessage('')
+    } catch {
+      toast.error("Couldn't reach the kitchen. Please try again.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <>
+      <Toaster />
+      <main className="min-h-screen bg-background text-foreground">
+        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border">
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-4 md:px-8 py-4">
+            <Link to="/" className="flex items-center gap-2.5 min-w-0">
+              <img
+                src={logoImg}
+                alt="Fridge Cuisine"
+                className="h-8 md:h-9 w-auto rounded-lg bg-background"
+              />
+              <div className="min-w-0">
+                <h1 className="font-display tracking-tight text-foreground leading-none text-lg md:text-xl lowercase whitespace-nowrap font-semibold">
+                  fridge cuisine<span className="text-primary">.</span>
+                </h1>
+                <p className="hidden sm:block text-[10px] sm:text-xs text-foreground/60 leading-tight mt-0.5 font-bold">
+                  Your own AI powered personal chef
+                </p>
+              </div>
+            </Link>
+            <Link
+              to="/"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
+            >
+              ← Back home
+            </Link>
+          </div>
+        </header>
+
+        <section className="max-w-3xl mx-auto px-4 md:px-8 pt-12 md:pt-16 pb-8">
+          <p className="font-display text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-3">
+            Contact
+          </p>
+          <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight text-foreground">
+            Talk to a real human.
+          </h2>
+          <p className="mt-4 text-base md:text-lg text-muted-foreground max-w-2xl">
+            Pick a topic and we'll route your note to the right inbox. We reply
+            within one business day — usually much sooner.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <a
+              href="mailto:support@fridgecuisine.com"
+              className="inline-flex items-center gap-2 hover:text-foreground transition-colors"
+            >
+              <Mail size={14} /> support@fridgecuisine.com
+            </a>
+            <a
+              href="mailto:main@fridgecuisine.com"
+              className="inline-flex items-center gap-2 hover:text-foreground transition-colors"
+            >
+              <Mail size={14} /> main@fridgecuisine.com
+            </a>
+          </div>
+        </section>
+
+        <section className="max-w-3xl mx-auto px-4 md:px-8 pb-16">
+          {done ? (
+            <div className="rounded-2xl border border-border bg-card p-8 md:p-10 text-center">
+              <div className="mx-auto inline-flex items-center justify-center h-14 w-14 rounded-full bg-primary/10 text-primary mb-4">
+                <Send size={24} />
+              </div>
+              <h3 className="font-display text-2xl font-semibold text-foreground">
+                Message sent
+              </h3>
+              <p className="mt-2 text-muted-foreground">
+                We've routed your note and emailed you a confirmation. Reply to
+                that email any time to add more context.
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDone(false)}
+                  className="px-4 py-2 rounded-full text-sm font-medium border border-border hover:bg-secondary transition-colors"
+                >
+                  Send another
+                </button>
+                <Link
+                  to="/"
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:brightness-110 transition-all"
+                >
+                  Back to cooking
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <form
+              onSubmit={onSubmit}
+              className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-6"
+            >
+              {/* Reason picker */}
+              <fieldset>
+                <legend className="text-sm font-semibold text-foreground mb-3">
+                  What's this about?
+                </legend>
+                <div className="grid sm:grid-cols-3 gap-2">
+                  {REASONS.map((r) => {
+                    const active = reason === r.value
+                    return (
+                      <button
+                        type="button"
+                        key={r.value}
+                        onClick={() => setReason(r.value)}
+                        className={`text-left rounded-xl border px-4 py-3 transition-all ${
+                          active
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                            : 'border-border hover:border-foreground/30 hover:bg-secondary/50'
+                        }`}
+                        aria-pressed={active}
+                      >
+                        <div className="text-sm font-semibold text-foreground">
+                          {r.label}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1 leading-snug">
+                          {r.blurb}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground inline-flex items-center gap-1.5">
+                  <Mail size={12} />
+                  Routes to <span className="font-medium text-foreground">{activeReason.inbox}</span>
+                </p>
+              </fieldset>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-sm font-semibold text-foreground">
+                    Your name
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    maxLength={100}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                    placeholder="Jane Cook"
+                    autoComplete="name"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-foreground">
+                    Your email
+                  </span>
+                  <input
+                    type="email"
+                    required
+                    maxLength={255}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                    placeholder="jane@example.com"
+                    autoComplete="email"
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <span className="text-sm font-semibold text-foreground">
+                  Message
+                </span>
+                <textarea
+                  required
+                  minLength={5}
+                  maxLength={4000}
+                  rows={6}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-y"
+                  placeholder="Tell us what's going on — the more detail the better."
+                />
+                <span className="mt-1 block text-xs text-muted-foreground text-right">
+                  {message.length} / 4000
+                </span>
+              </label>
+
+              {/* Honeypot — hidden from real users */}
+              <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                aria-hidden="true"
+                className="absolute -left-[9999px] h-0 w-0 opacity-0"
+              />
+
+              <div className="flex items-center justify-between gap-4 pt-2">
+                <p className="text-xs text-muted-foreground">
+                  By sending you agree to be emailed back at the address above.
+                </p>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    <>
+                      <Send size={16} />
+                      Send message
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+        </section>
+
+        <SiteFooter />
+      </main>
+    </>
+  )
+}
