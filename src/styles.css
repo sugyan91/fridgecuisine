@@ -294,3 +294,20 @@ button:not(:disabled),
     animation: none !important;
   }
 }
+
+@keyframes tagline-sweep {
+  0%, 10% { transform: translateX(0); }
+  45%, 55% { transform: translateX(calc(-1 * var(--tagline-shift, 40%))); }
+  90%, 100% { transform: translateX(0); }
+}
+
+.tagline-sweep {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+  animation: tagline-sweep 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tagline-sweep { animation: none !important; }
+}
