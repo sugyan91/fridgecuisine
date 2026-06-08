@@ -218,7 +218,6 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
               </button>
             )}
             {/* Nutrition is now always generated; toggle removed. */}
-            {onShowNutrition && showNutrition === false && null}
           </div>
         )}
         <button
