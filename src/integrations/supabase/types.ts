@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_alert_state: {
+        Row: {
+          id: boolean
+          last_alert_sent_at: string | null
+          last_event_count: number
+          last_window_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          last_alert_sent_at?: string | null
+          last_event_count?: number
+          last_window_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          last_alert_sent_at?: string | null
+          last_event_count?: number
+          last_window_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       abuse_events: {
         Row: {
           created_at: string
