@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /login
+Disallow: /reset-password
+Disallow: /checkout/
+Disallow: /email/
+Disallow: /api/
+Disallow: /lovable/
 
 Sitemap: https://fridgecuisine.com/sitemap.xml

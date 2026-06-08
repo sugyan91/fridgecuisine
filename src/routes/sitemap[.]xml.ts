@@ -20,7 +20,10 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/chefs", changefreq: "weekly", priority: "0.8" },
           { path: "/shop", changefreq: "daily", priority: "0.9" },
           { path: "/community", changefreq: "daily", priority: "0.8" },
-          { path: "/login", changefreq: "monthly", priority: "0.3" },
+          { path: "/contact", changefreq: "monthly", priority: "0.4" },
+          { path: "/terms", changefreq: "monthly", priority: "0.3" },
+          { path: "/privacy", changefreq: "monthly", priority: "0.3" },
+          { path: "/cookies", changefreq: "monthly", priority: "0.3" },
         ];
 
         try {
@@ -49,6 +52,20 @@ export const Route = createFileRoute("/sitemap.xml")({
               lastmod: r.updated_at ? new Date(r.updated_at).toISOString() : undefined,
               changefreq: "weekly",
               priority: "0.6",
+            });
+          }
+        } catch {}
+
+        try {
+          const { data: shared } = await supabaseAdmin
+            .from("shared_recipes")
+            .select("slug, created_at");
+          for (const r of shared ?? []) {
+            entries.push({
+              path: `/shared/${r.slug}`,
+              lastmod: r.created_at ? new Date(r.created_at).toISOString() : undefined,
+              changefreq: "weekly",
+              priority: "0.5",
             });
           }
         } catch {}
