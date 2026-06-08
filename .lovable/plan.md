@@ -1,92 +1,54 @@
+## Why you see 0/1
 
-# Tighten AI Usage & Prevent Abuse
+The anonymous quota is hard-coded as a **lifetime** limit of **1** recipe per cookie fingerprint, not 2/day. Two places set it:
 
-Lower limits, move enforcement server-side, add rate limiting, and cap "Unlimited" with fair use.
+- `src/lib/anon-tracking.server.ts` — `ANON_LIFETIME_LIMIT = 1`, never resets
+- `src/hooks/use-recipe-usage.ts` — mirrors the lifetime semantics, midnight reset disabled
 
-## New tier limits
+The error string also already says "Sign up free for 2 recipes every day" — the message and the actual cap have drifted apart.
 
-| Tier | Daily AI generations | Notes |
-|---|---|---|
-| Anonymous | **1 lifetime** | Server-tracked by IP + signed cookie |
-| Free (signed in) | **2 / day** | Down from 3 |
-| Basic ($5.99) | 10 / day | Unchanged |
-| Unlimited ($19.99) | **50 / day** (fair-use cap) | Marketing says "unlimited"; hidden soft cap |
+## What to change
 
-Rate limit (all tiers): **1 AI request / 3 seconds** per user/IP.
+### 1. Make the anonymous limit daily and equal to 2
+- Rename `ANON_LIFETIME_LIMIT` → `ANON_DAILY_LIMIT = 2`.
+- Count only generations whose `last_seen_at` falls in the current UTC day.
 
-## What gets built
+### 2. Track the daily counter explicitly
+Add two columns to `public.anonymous_ai_usage` and a migration:
+- `day_count int not null default 0`
+- `day_date date not null default current_date`
 
-### 1. Server-side anonymous tracking (new)
-New table `anonymous_ai_usage`:
-- `id uuid pk`
-- `fingerprint text unique` (sha256 of IP + signed cookie id)
-- `count int default 0`
-- `first_seen_at`, `last_seen_at timestamptz`
+Logic in `checkAnonQuota` / `recordAnonGeneration`:
+- If `day_date < current_date`, reset `day_count = 0` and bump `day_date = current_date` before checking/incrementing.
+- Block when `day_count >= 2`.
+- Keep the existing lifetime `count`, `quota_hit_count`, `ip_change_count`, `rapid_request_count` for abuse analytics — the dashboard already uses them.
 
-Service-role only (no client grants). Migration includes RLS enabled, no policies, plus grants to `service_role` only.
+### 3. Strict IP-based enforcement (defense-in-depth)
+Today the fingerprint is `sha256(ip + cookieId + secret)`, so clearing cookies issues a new fingerprint and resets the daily counter. To make the cap "strictly tagged by IP", also store a row keyed only by `ip_hash` and take the **max** of the per-fingerprint and per-IP daily counts when deciding to block.
 
-A `getOrCreateAnonId` helper sets an httpOnly signed cookie (`fc_anon`) on first visit. Server fns combine `request.headers['x-forwarded-for']` + cookie → fingerprint.
+Concretely:
+- Add a new table `public.anonymous_ai_usage_by_ip (ip_hash text pk, day_count int, day_date date, last_seen_at timestamptz)` with the same service-role/admin policies and grants as `anonymous_ai_usage`.
+- On every check/record, read+write both rows. The user is blocked when either daily count is >= 2.
+- Anonymizer/Tor users sharing an IP can still share a quota — that is the intent of "strict per-IP".
 
-### 2. Update `src/lib/ai-quota.server.ts`
-- `TIER_LIMITS = { anon: 1, free: 2, basic: 10, unlimited: 50 }` — note: `anon` is **lifetime**, others are per-day
-- `RATE_LIMIT_SECONDS = 3`
-- `resolveTier(userId)` unchanged
-- `requireAiQuota` middleware extended:
-  - If no user → check anon table by fingerprint (lifetime count)
-  - If user → check `recipe_generations` count for today
-  - Check last generation timestamp; if < 3s ago → throw `RATE_LIMITED`
-  - On success, insert/increment usage row
+### 4. UI / hook updates
+- `useRecipeUsage`: drop `ANON_LIFETIME_LIMIT`; for `tier === "anon"` use a daily limit of 2, set `lifetime = false`, re-enable the midnight refresh that's currently commented out.
+- Rate-limit error copy: "You've used your 2 free recipes for today. Sign up free to keep cooking, or come back tomorrow."
+- Any "lifetime" wording on the anonymous quota chip becomes "today, resets at midnight".
 
-Returns typed error envelope:
-```ts
-{ error: 'QUOTA_EXCEEDED' | 'RATE_LIMITED' | 'SIGN_IN_REQUIRED',
-  tier, limit, used, retryAfter?, suggestedPlan }
-```
+### 5. Keep
+- Existing abuse signals (`anon_rapid_request`, `anon_ip_change`, `anon_quota_hit`) still fire — including a `quota_hit_count` bump when the daily wall is reached.
+- The signed httpOnly cookie + IP fingerprint stays as the primary key; the per-IP row is purely an additional ceiling.
 
-### 3. Update `src/lib/usage.functions.ts`
-`getRecipeUsage` returns shape `{ used, limit, tier, lifetime: boolean, remaining }`. For anon: queries `anonymous_ai_usage`; for users: queries `recipe_generations` for today.
+## Files affected
 
-### 4. Update `src/hooks/use-recipe-usage.ts`
-- Expose `lifetime` flag so UI can say "1 free taste — sign in for more" vs "2/day"
-- Expose `rateLimitedUntil` from last error
+- `supabase/migrations/<new>.sql` — add `day_count`/`day_date` to `anonymous_ai_usage`, create `anonymous_ai_usage_by_ip` with grants + RLS + admin/service-role policies.
+- `src/lib/anon-tracking.server.ts` — daily limit constant, dual-key check/record, new return shape.
+- `src/lib/usage.functions.ts` — return `{ used, limit: 2, tier: "anon", lifetime: false }`.
+- `src/hooks/use-recipe-usage.ts` — drop lifetime branch, re-enable midnight refresh.
+- One or two call sites that show "lifetime" copy for anonymous users (rate-limit toast in recipe generation flow).
 
-### 5. UI copy updates (no design changes)
-- `FreeTierBanner.tsx`: anon → "1 free recipe to try — sign in for 2/day"; free → "2 recipes/day"
-- `RecipeCounter.tsx`: same limits + countdown
-- `LimitReachedModal.tsx`: new variants:
-  - anon → "Sign in for 2 free recipes/day"
-  - free → "Upgrade to Basic for 10/day"
-  - basic → "Go Unlimited for 50/day"
-  - unlimited → "Daily fair-use limit reached (50). Resets at midnight."
-  - rate-limited → "Slow down — try again in {n}s"
-- `pricing.tsx`: change Free card from "3/day" to "2/day", Unlimited card adds small note "*Fair use: up to 50 recipes/day"
-- `usage.tsx`: show lifetime vs daily, show fair-use cap for Unlimited
-- `account.tsx`: same wording
+## Out of scope
 
-### 6. SiteFooter / marketing copy
-Update any "3 free recipes/day" mention to "2 free recipes/day".
-
-## Files to touch
-
-- **Migration** (new): `create_anonymous_ai_usage_table.sql`
-- `src/lib/ai-quota.server.ts` — tier limits, rate limit, anon fingerprint
-- `src/lib/usage.functions.ts` — return new shape
-- `src/lib/anon-tracking.server.ts` (new) — cookie + fingerprint helpers
-- `src/hooks/use-recipe-usage.ts`
-- `src/components/FreeTierBanner.tsx`
-- `src/components/RecipeCounter.tsx`
-- `src/components/LimitReachedModal.tsx`
-- `src/components/landing/SiteFooter.tsx`
-- `src/routes/_authenticated/pricing.tsx`
-- `src/routes/_authenticated/usage.tsx`
-- `src/routes/_authenticated/account.tsx`
-- `src/routes/index.tsx`
-
-## Not in this plan (mentioned but skipped)
-- Email verification gate, disposable-email blocking, per-operation credit weights — happy to do as a follow-up if abuse persists.
-
-## Technical notes
-- Anon fingerprint = `sha256(ip + cookieId + DAILY_SALT)`. IP-only would punish shared NATs; cookie-only is bypassable; combining both raises the cost of abuse significantly without affecting normal users.
-- Rate limit check uses last row in `recipe_generations` (already indexed by user_id) — no new table.
-- "Unlimited 50/day" hidden cap: marketing card stays "Unlimited recipes" with an asterisk + small "Fair use applies" line, matching industry norm (ChatGPT, Cursor, etc.).
-- All limits read from a single `TIER_LIMITS` constant so future tweaks are one-line.
+- Free signed-in tier stays at 2/day (unchanged).
+- No changes to paid tiers, payments, or auth.

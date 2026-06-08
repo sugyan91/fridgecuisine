@@ -120,22 +120,48 @@ export function resolveAnonFingerprint(): string {
   return resolveAnonContext().fingerprint;
 }
 
-export const ANON_LIFETIME_LIMIT = 1;
+/** Daily cap for anonymous (not signed-in) generations, per fingerprint AND per IP. */
+export const ANON_DAILY_LIMIT = 2;
+/** Back-compat alias kept so older imports keep building; semantics are now daily. */
+export const ANON_LIFETIME_LIMIT = ANON_DAILY_LIMIT;
+
+function todayDate(): string {
+  // ISO YYYY-MM-DD in UTC. Matches Postgres `current_date` semantics.
+  return new Date().toISOString().slice(0, 10);
+}
 
 export type AnonUsage = { used: number; limit: number; fingerprint: string };
 
 export async function getAnonUsage(): Promise<AnonUsage> {
-  const { fingerprint } = resolveAnonContext();
+  const { fingerprint, ipHash } = resolveAnonContext();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
-    .from("anonymous_ai_usage")
-    .select("count")
-    .eq("fingerprint", fingerprint)
-    .maybeSingle();
+  const today = todayDate();
+  const [{ data: fpRow }, { data: ipRow }] = await Promise.all([
+    supabaseAdmin
+      .from("anonymous_ai_usage")
+      .select("day_count, day_date")
+      .eq("fingerprint", fingerprint)
+      .maybeSingle(),
+    ipHash
+      ? supabaseAdmin
+          .from("anonymous_ai_usage_by_ip")
+          .select("day_count, day_date")
+          .eq("ip_hash", ipHash)
+          .maybeSingle()
+      : Promise.resolve({ data: null } as { data: null }),
+  ]);
+  const fpUsed =
+    fpRow && (fpRow.day_date as string) === today
+      ? ((fpRow.day_count as number | undefined) ?? 0)
+      : 0;
+  const ipUsed =
+    ipRow && (ipRow.day_date as string) === today
+      ? ((ipRow.day_count as number | undefined) ?? 0)
+      : 0;
   return {
     fingerprint,
-    used: (data?.count as number | undefined) ?? 0,
-    limit: ANON_LIFETIME_LIMIT,
+    used: Math.max(fpUsed, ipUsed),
+    limit: ANON_DAILY_LIMIT,
   };
 }
 
@@ -146,14 +172,32 @@ export type AnonQuotaResult =
 export async function checkAnonQuota(): Promise<AnonQuotaResult> {
   const ctx = resolveAnonContext();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: row } = await supabaseAdmin
-    .from("anonymous_ai_usage")
-    .select("count, last_ip_hash, last_seen_at")
-    .eq("fingerprint", ctx.fingerprint)
-    .maybeSingle();
+  const today = todayDate();
+  const [{ data: row }, { data: ipRow }] = await Promise.all([
+    supabaseAdmin
+      .from("anonymous_ai_usage")
+      .select("count, day_count, day_date, last_ip_hash, last_seen_at")
+      .eq("fingerprint", ctx.fingerprint)
+      .maybeSingle(),
+    ctx.ipHash
+      ? supabaseAdmin
+          .from("anonymous_ai_usage_by_ip")
+          .select("day_count, day_date")
+          .eq("ip_hash", ctx.ipHash)
+          .maybeSingle()
+      : Promise.resolve({ data: null } as { data: null }),
+  ]);
 
-  const used = (row?.count as number | undefined) ?? 0;
-  const limit = ANON_LIFETIME_LIMIT;
+  const fpUsedToday =
+    row && (row.day_date as string) === today
+      ? ((row.day_count as number | undefined) ?? 0)
+      : 0;
+  const ipUsedToday =
+    ipRow && (ipRow.day_date as string) === today
+      ? ((ipRow.day_count as number | undefined) ?? 0)
+      : 0;
+  const used = Math.max(fpUsedToday, ipUsedToday);
+  const limit = ANON_DAILY_LIMIT;
 
   // Signal: same fingerprint but the rolling IP hash has flipped. Because the
   // fingerprint itself includes the IP, this only fires when our stored
@@ -200,7 +244,7 @@ export async function checkAnonQuota(): Promise<AnonQuotaResult> {
     return {
       ok: false,
       code: "rate_limit",
-      error: "Sign up free for 2 recipes every day.",
+      error: "You've used your 2 free recipes for today. Sign up free to keep cooking, or come back tomorrow.",
       used,
       limit,
       requiresSignIn: true,
@@ -217,12 +261,18 @@ export async function recordAnonGeneration(fingerprint: string): Promise<void> {
   const ctx = (() => {
     try { return resolveAnonContext(); } catch { return null; }
   })();
+  const today = todayDate();
   const { data: existing } = await supabaseAdmin
     .from("anonymous_ai_usage")
-    .select("count, last_ip_hash, ip_change_count, rapid_request_count, last_seen_at")
+    .select("count, day_count, day_date, last_ip_hash, ip_change_count, rapid_request_count, last_seen_at")
     .eq("fingerprint", fingerprint)
     .maybeSingle();
   const nextCount = ((existing?.count as number | undefined) ?? 0) + 1;
+  const prevDay = (existing?.day_date as string | undefined) ?? null;
+  const prevDayCount = prevDay === today
+    ? ((existing?.day_count as number | undefined) ?? 0)
+    : 0;
+  const nextDayCount = prevDayCount + 1;
   const prevIpHash = (existing?.last_ip_hash as string | null) ?? null;
   const currentIpHash = ctx?.ipHash ?? prevIpHash;
   const ipChanged = !!prevIpHash && !!currentIpHash && prevIpHash !== currentIpHash;
@@ -235,6 +285,8 @@ export async function recordAnonGeneration(fingerprint: string): Promise<void> {
       {
         fingerprint,
         count: nextCount,
+        day_count: nextDayCount,
+        day_date: today,
         last_seen_at: new Date().toISOString(),
         last_ip_hash: currentIpHash,
         last_user_agent: ctx?.userAgent ?? null,
@@ -246,4 +298,30 @@ export async function recordAnonGeneration(fingerprint: string): Promise<void> {
       { onConflict: "fingerprint" },
     );
   if (error) console.error("recordAnonGeneration failed", error);
+
+  // Also bump the per-IP daily counter so cookie clearing can't reset the cap.
+  if (currentIpHash) {
+    const { data: ipExisting } = await supabaseAdmin
+      .from("anonymous_ai_usage_by_ip")
+      .select("day_count, day_date, total_count")
+      .eq("ip_hash", currentIpHash)
+      .maybeSingle();
+    const ipPrevDay = (ipExisting?.day_date as string | undefined) ?? null;
+    const ipPrevDayCount = ipPrevDay === today
+      ? ((ipExisting?.day_count as number | undefined) ?? 0)
+      : 0;
+    const { error: ipErr } = await supabaseAdmin
+      .from("anonymous_ai_usage_by_ip")
+      .upsert(
+        {
+          ip_hash: currentIpHash,
+          day_count: ipPrevDayCount + 1,
+          day_date: today,
+          last_seen_at: new Date().toISOString(),
+          total_count: ((ipExisting?.total_count as number | undefined) ?? 0) + 1,
+        },
+        { onConflict: "ip_hash" },
+      );
+    if (ipErr) console.error("recordAnonGeneration by_ip failed", ipErr);
+  }
 }

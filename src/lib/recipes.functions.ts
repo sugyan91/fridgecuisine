@@ -108,7 +108,7 @@ export const generateRecipes = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data }): Promise<GenerateRecipesResult> => {
     // Support both signed-in users (full quota path) and anonymous callers
-    // (1-recipe lifetime "taste", server-tracked by fingerprint).
+    // (2 recipes/day, server-tracked by fingerprint AND per-IP).
     const auth = await tryGetSupabaseUser();
     let anonFingerprint: string | null = null;
     if (auth) {

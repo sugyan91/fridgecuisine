@@ -77,6 +77,8 @@ export type Database = {
       anonymous_ai_usage: {
         Row: {
           count: number
+          day_count: number
+          day_date: string
           fingerprint: string
           first_seen_at: string
           ip_change_count: number
@@ -88,6 +90,8 @@ export type Database = {
         }
         Insert: {
           count?: number
+          day_count?: number
+          day_date?: string
           fingerprint: string
           first_seen_at?: string
           ip_change_count?: number
@@ -99,6 +103,8 @@ export type Database = {
         }
         Update: {
           count?: number
+          day_count?: number
+          day_date?: string
           fingerprint?: string
           first_seen_at?: string
           ip_change_count?: number
@@ -107,6 +113,30 @@ export type Database = {
           last_user_agent?: string | null
           quota_hit_count?: number
           rapid_request_count?: number
+        }
+        Relationships: []
+      }
+      anonymous_ai_usage_by_ip: {
+        Row: {
+          day_count: number
+          day_date: string
+          ip_hash: string
+          last_seen_at: string
+          total_count: number
+        }
+        Insert: {
+          day_count?: number
+          day_date?: string
+          ip_hash: string
+          last_seen_at?: string
+          total_count?: number
+        }
+        Update: {
+          day_count?: number
+          day_date?: string
+          ip_hash?: string
+          last_seen_at?: string
+          total_count?: number
         }
         Relationships: []
       }

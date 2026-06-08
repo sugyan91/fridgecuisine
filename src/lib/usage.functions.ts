@@ -20,16 +20,16 @@ export const getRecipeUsage = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<RecipeUsage> => {
     const { tryGetSupabaseUser } = await import("./optional-auth.server");
     const { TIER_LIMITS, resolveTier } = await import("./ai-quota.server");
-    const { getAnonUsage, ANON_LIFETIME_LIMIT } = await import("./anon-tracking.server");
+    const { getAnonUsage, ANON_DAILY_LIMIT } = await import("./anon-tracking.server");
     const auth = await tryGetSupabaseUser();
     if (!auth) {
-      // Anonymous — return server-tracked lifetime usage.
+      // Anonymous — return server-tracked daily usage (2/day, per fingerprint AND per IP).
       try {
         const { used } = await getAnonUsage();
-        return { used, limit: ANON_LIFETIME_LIMIT, tier: "anon", lifetime: true };
+        return { used, limit: ANON_DAILY_LIMIT, tier: "anon", lifetime: false };
       } catch (err) {
         console.error("getAnonUsage failed", err);
-        return { used: 0, limit: ANON_LIFETIME_LIMIT, tier: "anon", lifetime: true };
+        return { used: 0, limit: ANON_DAILY_LIMIT, tier: "anon", lifetime: false };
       }
     }
     const { supabase, userId } = auth;
