@@ -224,9 +224,12 @@ export function RecipeCard({
         className="bg-cardamom text-white border-4 border-border rounded-[32px] p-6 md:p-8 shadow-[8px_8px_0px_0px_var(--border)] animate-pop"
         style={{ animationDelay: `${index * 80}ms` }}
       >
-        <div className="mb-6 -mx-2 md:-mx-4 rounded-2xl overflow-hidden border-2 border-white/20 bg-white/5 aspect-[16/9]">
+        <div className="relative mb-6 -mx-2 md:-mx-4 rounded-2xl overflow-hidden border-2 border-white/20 bg-white/5 aspect-[16/9]">
           {imageBroken || (!imageLoading && !imageUrl) ? (
-            <FallbackImage />
+            <>
+              <FallbackImage />
+              {!isAuthenticated && <SignInPhotoCta />}
+            </>
           ) : imageUrl ? (
             <img
               src={imageUrl}
