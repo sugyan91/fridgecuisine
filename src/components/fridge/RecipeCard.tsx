@@ -127,7 +127,20 @@ export function RecipeCard({
     return () => {
       cancelled = true;
     };
-  }, [recipe.title, recipe.cuisine, recipe.blurb, recipe.usedIngredients, recipe.missingIngredients, runImage]);
+  }, [recipe.title, recipe.cuisine, recipe.blurb, recipe.usedIngredients, recipe.missingIngredients, runImage, isAuthenticated]);
+
+  const SignInPhotoCta = ({ tone = "light" }: { tone?: "light" | "dark" }) => (
+    <div className="absolute inset-0 grid place-items-center bg-black/35 backdrop-blur-[1px]">
+      <Link
+        to="/auth"
+        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-border font-black uppercase tracking-widest text-[11px] shadow-[4px_4px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-transform ${
+          tone === "dark" ? "bg-white text-foreground" : "bg-turmeric text-foreground"
+        }`}
+      >
+        🔒 Sign in to see the real photo
+      </Link>
+    </div>
+  );
 
   const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
   const dietary = recipe.dietary ?? [];
