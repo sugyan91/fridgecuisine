@@ -24,9 +24,23 @@ const responseSchema = z.object({
     prepTimeMinutes: z.number().optional(),
     totalTimeMinutes: z.number().optional(),
     serves: z.string().optional().default(""),
+    servings: z.number().int().min(1).max(12).optional(),
     steps: z.array(z.string()).min(1).max(20),
     stepTimings: z.array(z.number()).optional(),
     tips: z.array(z.string()).default([]),
+    nutrition: z
+      .object({
+        servings: z.number().int().min(1).max(12),
+        perServing: z.object({
+          calories: z.number().int().nonnegative(),
+          proteinG: z.number().int().nonnegative(),
+          carbsG: z.number().int().nonnegative(),
+          fatG: z.number().int().nonnegative(),
+          sugarG: z.number().int().nonnegative(),
+          fiberG: z.number().int().nonnegative(),
+        }),
+      })
+      .optional(),
   }),
 });
 
@@ -53,6 +67,8 @@ Rules:
 - Ingredients list should be specific (with quantities for a typical serving) and complete.
 - Steps should be concrete, ordered, 4-12 short steps.
 - ALSO provide: prepTimeMinutes (chopping/measuring), totalTimeMinutes (prep + cook), and stepTimings — an array of integer minutes per step, SAME LENGTH as steps. Use 1 if a step is near-instant.
+- SERVINGS: Always include an integer "servings" (1-12) indicating how many people the recipe feeds. "nutrition.servings" MUST equal this value.
+- NUTRITION (REQUIRED): Include a "nutrition" object with "servings" (integer matching the recipe's servings) and "perServing" with integer "calories", "proteinG", "carbsG", "fatG", "sugarG", "fiberG". These are APPROXIMATE estimates — do your best, do not pretend precision, but never omit them.
 - Return ONLY valid JSON matching the schema. No prose.${languageInstruction(data.language)}`;
 
     const userPrompt = `Dish: ${data.dish}
@@ -66,9 +82,21 @@ Return JSON shaped exactly like:
     "prepTimeMinutes": 15,
     "totalTimeMinutes": 60,
     "serves": "4",
+    "servings": 4,
     "steps": ["step 1", "step 2"],
     "stepTimings": [5, 10],
-    "tips": ["optional tip"]
+    "tips": ["optional tip"],
+    "nutrition": {
+      "servings": 4,
+      "perServing": {
+        "calories": 520,
+        "proteinG": 28,
+        "carbsG": 60,
+        "fatG": 18,
+        "sugarG": 6,
+        "fiberG": 4
+      }
+    }
   }
 }`;
 
