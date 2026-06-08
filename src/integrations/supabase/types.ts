@@ -14,24 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          fingerprint: string | null
+          id: string
+          ip_hash: string | null
+          metadata: Json
+          severity: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          fingerprint?: string | null
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          fingerprint?: string | null
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       anonymous_ai_usage: {
         Row: {
           count: number
           fingerprint: string
           first_seen_at: string
+          ip_change_count: number
+          last_ip_hash: string | null
           last_seen_at: string
+          last_user_agent: string | null
+          quota_hit_count: number
+          rapid_request_count: number
         }
         Insert: {
           count?: number
           fingerprint: string
           first_seen_at?: string
+          ip_change_count?: number
+          last_ip_hash?: string | null
           last_seen_at?: string
+          last_user_agent?: string | null
+          quota_hit_count?: number
+          rapid_request_count?: number
         }
         Update: {
           count?: number
           fingerprint?: string
           first_seen_at?: string
+          ip_change_count?: number
+          last_ip_hash?: string | null
           last_seen_at?: string
+          last_user_agent?: string | null
+          quota_hit_count?: number
+          rapid_request_count?: number
         }
         Relationships: []
       }
