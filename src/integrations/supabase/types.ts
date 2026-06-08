@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      anonymous_ai_usage: {
+        Row: {
+          count: number
+          fingerprint: string
+          first_seen_at: string
+          last_seen_at: string
+        }
+        Insert: {
+          count?: number
+          fingerprint: string
+          first_seen_at?: string
+          last_seen_at?: string
+        }
+        Update: {
+          count?: number
+          fingerprint?: string
+          first_seen_at?: string
+          last_seen_at?: string
+        }
+        Relationships: []
+      }
       chef_profiles: {
         Row: {
           avatar_url: string | null
