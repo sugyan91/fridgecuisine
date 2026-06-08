@@ -2,8 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { callChatJSON } from "./hf-client.server";
 import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
+import { tryGetSupabaseUser } from "./optional-auth.server";
+import { checkAnonQuota, recordAnonGeneration } from "./anon-tracking.server";
 
 const inputSchema = z.object({
   ingredients: z
@@ -59,6 +60,7 @@ export type GenerateRecipesResult =
       ok: false;
       error: string;
       code?: "rate_limit" | "credits" | "validation" | "server";
+      requiresSignIn?: true;
     };
 
 const responseSchema = z.object({
@@ -102,12 +104,22 @@ const responseSchema = z.object({
 });
 
 export const generateRecipes = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data, context }): Promise<GenerateRecipesResult> => {
-    const { supabase, userId } = context;
-    const quota = await checkAiQuota(supabase, userId);
-    if (!quota.ok) return { ok: false, error: quota.error, code: quota.code };
+  .handler(async ({ data }): Promise<GenerateRecipesResult> => {
+    // Support both signed-in users (full quota path) and anonymous callers
+    // (1-recipe lifetime "taste", server-tracked by fingerprint).
+    const auth = await tryGetSupabaseUser();
+    let anonFingerprint: string | null = null;
+    if (auth) {
+      const quota = await checkAiQuota(auth.supabase, auth.userId);
+      if (!quota.ok) return { ok: false, error: quota.error, code: quota.code };
+    } else {
+      const anon = await checkAnonQuota();
+      if (!anon.ok) {
+        return { ok: false, error: anon.error, code: anon.code, requiresSignIn: true };
+      }
+      anonFingerprint = anon.fingerprint;
+    }
     const hasIngredients = data.ingredients.length > 0;
     const cuisineGuidance =
       data.cuisine === "Any / Surprise Me"
@@ -188,7 +200,8 @@ Return JSON shaped exactly like:
         };
       }
 
-      await recordAiGeneration(supabase, userId);
+      if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+      else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
       return { ok: true, recipes: result.data.recipes };
     } catch (err) {
       console.error("generateRecipes failed", err);
