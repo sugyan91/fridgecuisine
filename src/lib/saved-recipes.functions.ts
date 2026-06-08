@@ -26,6 +26,8 @@ export type SavedRecipeData = {
       proteinG?: number;
       carbsG?: number;
       fatG?: number;
+      sugarG?: number;
+      fiberG?: number;
     };
   };
 };
@@ -64,6 +66,8 @@ const recipeSchema = z.object({
           proteinG: z.number().int().min(0).max(500).optional(),
           carbsG: z.number().int().min(0).max(500).optional(),
           fatG: z.number().int().min(0).max(500).optional(),
+          sugarG: z.number().int().min(0).max(500).optional(),
+          fiberG: z.number().int().min(0).max(500).optional(),
         })
         .optional(),
     })
