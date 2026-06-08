@@ -43,7 +43,7 @@ export function RecipeCard({
 
   useEffect(() => {
     let cancelled = false;
-    const cacheKey = `fc:img:v2:${(recipe.cuisine ?? "").toLowerCase()}::${recipe.title.toLowerCase()}`;
+    const cacheKey = `fc:img:v3:${(recipe.cuisine ?? "").toLowerCase()}::${recipe.title.toLowerCase()}`;
     try {
       const cached = typeof window !== "undefined" ? window.localStorage.getItem(cacheKey) : null;
       if (cached) {
