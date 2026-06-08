@@ -40,12 +40,16 @@ export function FreeTierBanner({ isPremium, userId }: Props) {
       <div className="relative bg-turmeric/20 border-2 border-border rounded-2xl pl-4 pr-10 py-3 md:py-3.5 shadow-[var(--shadow-soft)] flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
           <p className="font-display text-sm md:text-base font-bold tracking-tight text-foreground leading-snug">
-            <span className="text-accent">3 free recipes</span> every day — no signup needed.
+            {userId ? (
+              <><span className="text-accent">2 free recipes</span> every day on the Free plan.</>
+            ) : (
+              <><span className="text-accent">Try 1 free recipe</span> — sign in for 2 per day.</>
+            )}
           </p>
           <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
             {userId
-              ? "Basic $5.99/mo · 10 a day. Unlimited $19.99/mo — no limits."
-              : "Sign up free to save recipes. Paid plans from $5.99/mo for 10+ recipes a day."}
+              ? "Basic $5.99/mo · 10 a day. Unlimited $19.99/mo · 50 a day (fair use)."
+              : "Sign up free for 2/day. Paid plans from $5.99/mo for 10+ recipes a day."}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
