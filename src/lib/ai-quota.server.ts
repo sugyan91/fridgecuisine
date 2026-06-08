@@ -1,9 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logAbuseEvent } from "./abuse-logging.server";
-import { getRequest } from "@tanstack/react-start/server";
 
-function getCallerSignals(): { ip: string | null; userAgent: string | null } {
+async function getCallerSignals(): Promise<{ ip: string | null; userAgent: string | null }> {
   try {
+    const { getRequest } = await import("@tanstack/react-start/server");
     const req = getRequest();
     if (!req) return { ip: null, userAgent: null };
     const h = req.headers;
@@ -112,7 +112,7 @@ export async function checkAiQuota(
     const minMs = RATE_LIMIT_SECONDS * 1000;
     if (elapsedMs < minMs) {
       const retryAfterSeconds = Math.ceil((minMs - elapsedMs) / 1000);
-      const signals = getCallerSignals();
+      const signals = await getCallerSignals();
       void logAbuseEvent({
         type: "user_rapid_request",
         userId,
@@ -149,7 +149,7 @@ export async function checkAiQuota(
   if ((count ?? 0) >= limit) {
     const suggestedPlan: "basic" | "unlimited" | undefined =
       tier === "basic" ? "unlimited" : tier === "free" ? "basic" : undefined;
-    const signals = getCallerSignals();
+    const signals = await getCallerSignals();
     void logAbuseEvent({
       type: "user_quota_hit",
       severity: tier === "unlimited" ? "warn" : "info",
