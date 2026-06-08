@@ -50,9 +50,10 @@ export async function maybeFireAbuseSpikeAlert(): Promise<void> {
     const total = recent?.length ?? 0
     if (total < ALERT_THRESHOLD) return
 
-    // 2. Atomically claim the cooldown slot — only one process sends the alert
+    // 2. Atomically claim the cooldown slot — only one process sends the alert.
+    // Cast to any: abuse_alert_state was just added and isn't in generated types yet.
     const cooldownCutoff = new Date(Date.now() - COOLDOWN_MINUTES * 60_000).toISOString()
-    const { data: claimed, error: claimErr } = await supabaseAdmin
+    const { data: claimed, error: claimErr } = await (supabaseAdmin as any)
       .from('abuse_alert_state')
       .update({
         last_alert_sent_at: new Date().toISOString(),
