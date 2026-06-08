@@ -128,9 +128,7 @@ export const generateRecipes = createServerFn({ method: "POST" })
       ? `\n- KID-FRIENDLY MODE: All recipes MUST be kid-approved. Prefer mild flavors, no chili heat, no strong funk (blue cheese, anchovy, fish sauce, strong fermented items), nothing raw (no tartare, no runny eggs unless cooked through), and avoid bitter greens. Hide vegetables in sauces/blends where possible. Favor familiar shapes (meatballs, pasta, pancakes, finger foods). Set "kidFriendly": true on every recipe.`
       : "";
 
-    const nutritionRule = data.includeNutrition
-      ? `\n- NUTRITION: Include a "nutrition" object with "servings" (integer) and "perServing" with integer "calories", "proteinG", "carbsG", "fatG". These are APPROXIMATE estimates — do your best, do not pretend precision.`
-      : "";
+    const nutritionRule = `\n- NUTRITION (REQUIRED): Include a "nutrition" object with "servings" (integer matching top-level servings) and "perServing" with integer "calories", "proteinG", "carbsG", "fatG", "sugarG", "fiberG". These are APPROXIMATE estimates — do your best, do not pretend precision, but never omit them.`;
 
     const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious recipes${hasIngredients ? " the user can cook with mostly the ingredients they have on hand" : " for the selected cuisine"}. ${cuisineGuidance}
 Rules:
