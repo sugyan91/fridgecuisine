@@ -42,6 +42,13 @@ export function downloadRecipePdf(recipe: Recipe) {
   writeLines(recipe.blurb, 11);
   y += 6;
 
+  // Servings — prominent
+  const servings = recipe.servings ?? recipe.nutrition?.servings;
+  if (servings) {
+    writeLines(`Serves ${servings}`, 13, "bold");
+    y += 2;
+  }
+
   // Meta line
   const prep = recipe.prepTimeMinutes;
   const total = recipe.totalTimeMinutes;
@@ -59,7 +66,7 @@ export function downloadRecipePdf(recipe: Recipe) {
   const n = recipe.nutrition?.perServing;
   if (n) {
     writeLines(
-      `Nutrition (per serving${recipe.nutrition?.servings ? `, ${recipe.nutrition.servings} servings` : ""})`,
+      `Nutrition (per serving${servings ? `, recipe makes ${servings})` : ")"}`,
       12,
       "bold",
     );
@@ -74,7 +81,11 @@ export function downloadRecipePdf(recipe: Recipe) {
   }
 
   // Ingredients
-  writeLines("Ingredients", 14, "bold");
+  writeLines(
+    `Ingredients${servings ? ` (for ${servings} serving${servings === 1 ? "" : "s"})` : ""}`,
+    14,
+    "bold",
+  );
   const ingredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
   for (const item of ingredients) {
     writeLines(`• ${item}`, 11);
