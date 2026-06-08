@@ -473,3 +473,215 @@ export const adminListAbuseEvents = createServerFn({ method: "POST" })
     }
     return { events: rows ?? [], counts, sinceIso };
   });
+
+// ============================================================================
+// Quota troubleshooting — view + manually adjust free quota counters.
+// Targets: signed-in users (recipe_generations), anonymous fingerprints
+// (anonymous_ai_usage), and per-IP ceilings (anonymous_ai_usage_by_ip).
+// ============================================================================
+
+import { hashIp } from "./abuse-logging.server";
+
+const todayDateUTC = () => new Date().toISOString().slice(0, 10);
+
+/** Look up quota state for a signed-in user. Counts today's generations. */
+export const adminGetUserQuota = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({
+      userId: z.string().uuid(),
+      sinceIso: z.string().datetime().optional(),
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const since = data.sinceIso ?? (() => {
+      const d = new Date();
+      d.setUTCHours(0, 0, 0, 0);
+      return d.toISOString();
+    })();
+    const [{ data: userRes }, countRes, recentRes] = await Promise.all([
+      supabaseAdmin.auth.admin.getUserById(data.userId),
+      supabaseAdmin
+        .from("recipe_generations")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", data.userId)
+        .gte("created_at", since),
+      supabaseAdmin
+        .from("recipe_generations")
+        .select("id, created_at")
+        .eq("user_id", data.userId)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+    return {
+      user: userRes?.user
+        ? { id: userRes.user.id, email: userRes.user.email ?? null }
+        : null,
+      since,
+      usedSince: countRes.count ?? 0,
+      recent: (recentRes.data ?? []) as Array<{ id: string; created_at: string }>,
+    };
+  });
+
+/**
+ * Manually adjust a user's quota by deleting recipe_generations rows in a
+ * window. `deleteCount` removes the N most-recent rows in [since, now];
+ * pass `deleteAllSince=true` to clear the whole window.
+ */
+export const adminAdjustUserQuota = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({
+      userId: z.string().uuid(),
+      sinceIso: z.string().datetime(),
+      deleteCount: z.number().int().min(0).max(1000).optional(),
+      deleteAllSince: z.boolean().optional(),
+      reason: z.string().trim().max(500).optional(),
+    }).refine((v) => v.deleteAllSince || (v.deleteCount ?? 0) > 0, {
+      message: "Specify deleteCount or deleteAllSince",
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    let deleted = 0;
+    if (data.deleteAllSince) {
+      const { error, count } = await supabaseAdmin
+        .from("recipe_generations")
+        .delete({ count: "exact" })
+        .eq("user_id", data.userId)
+        .gte("created_at", data.sinceIso);
+      if (error) throw new Error(error.message);
+      deleted = count ?? 0;
+    } else {
+      const { data: rows, error } = await supabaseAdmin
+        .from("recipe_generations")
+        .select("id")
+        .eq("user_id", data.userId)
+        .gte("created_at", data.sinceIso)
+        .order("created_at", { ascending: false })
+        .limit(data.deleteCount ?? 0);
+      if (error) throw new Error(error.message);
+      const ids = (rows ?? []).map((r) => r.id as string);
+      if (ids.length) {
+        const { error: delErr, count } = await supabaseAdmin
+          .from("recipe_generations")
+          .delete({ count: "exact" })
+          .in("id", ids);
+        if (delErr) throw new Error(delErr.message);
+        deleted = count ?? 0;
+      }
+    }
+    console.log(
+      `[ADMIN_QUOTA] user=${context.userId} adjusted user_id=${data.userId} deleted=${deleted} reason=${data.reason ?? ""}`,
+    );
+    return { deleted };
+  });
+
+const anonLookupInput = z.object({
+  fingerprint: z.string().trim().min(1).max(128).optional(),
+  ipHash: z.string().trim().min(1).max(128).optional(),
+  rawIp: z.string().trim().min(1).max(64).optional(),
+}).refine((v) => v.fingerprint || v.ipHash || v.rawIp, {
+  message: "Provide fingerprint, ipHash, or rawIp",
+});
+
+/** Look up anonymous quota rows by fingerprint and/or IP. */
+export const adminGetAnonQuota = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => anonLookupInput.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const ipHash = data.ipHash ?? (data.rawIp ? hashIp(data.rawIp) : null);
+    const [fpRes, ipRes] = await Promise.all([
+      data.fingerprint
+        ? supabaseAdmin
+            .from("anonymous_ai_usage")
+            .select("*")
+            .eq("fingerprint", data.fingerprint)
+            .maybeSingle()
+        : Promise.resolve({ data: null } as { data: null }),
+      ipHash
+        ? supabaseAdmin
+            .from("anonymous_ai_usage_by_ip")
+            .select("*")
+            .eq("ip_hash", ipHash)
+            .maybeSingle()
+        : Promise.resolve({ data: null } as { data: null }),
+    ]);
+    return {
+      today: todayDateUTC(),
+      fingerprint: data.fingerprint ?? null,
+      ipHash,
+      fingerprintRow: fpRes.data,
+      ipRow: ipRes.data,
+    };
+  });
+
+/**
+ * Manually adjust anonymous quota counters. Any provided numeric field
+ * overrides the existing value; omitted fields are left alone. Reset shortcut:
+ * pass `resetDaily=true` to set day_count=0 and day_date=today.
+ */
+export const adminAdjustAnonQuota = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({
+      fingerprint: z.string().trim().min(1).max(128).optional(),
+      ipHash: z.string().trim().min(1).max(128).optional(),
+      rawIp: z.string().trim().min(1).max(64).optional(),
+      dayCount: z.number().int().min(0).max(100000).optional(),
+      dayDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      count: z.number().int().min(0).max(1_000_000).optional(),
+      resetDaily: z.boolean().optional(),
+      reason: z.string().trim().max(500).optional(),
+    }).refine((v) => v.fingerprint || v.ipHash || v.rawIp, {
+      message: "Provide fingerprint, ipHash, or rawIp",
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const ipHash = data.ipHash ?? (data.rawIp ? hashIp(data.rawIp) : null);
+    const today = todayDateUTC();
+    const patch: Record<string, unknown> = {};
+    if (data.resetDaily) {
+      patch.day_count = 0;
+      patch.day_date = today;
+    }
+    if (data.dayCount !== undefined) patch.day_count = data.dayCount;
+    if (data.dayDate) patch.day_date = data.dayDate;
+    if (data.count !== undefined) patch.count = data.count;
+    if (Object.keys(patch).length === 0) {
+      throw new Error("Nothing to update");
+    }
+
+    let updatedFingerprint = false;
+    let updatedIp = false;
+    if (data.fingerprint) {
+      const { error } = await supabaseAdmin
+        .from("anonymous_ai_usage")
+        .update(patch as never)
+        .eq("fingerprint", data.fingerprint);
+      if (error) throw new Error(`fingerprint: ${error.message}`);
+      updatedFingerprint = true;
+    }
+    if (ipHash) {
+      // Per-IP table doesn't have `count`; map to total_count.
+      const ipPatch: Record<string, unknown> = {};
+      if ("day_count" in patch) ipPatch.day_count = patch.day_count;
+      if ("day_date" in patch) ipPatch.day_date = patch.day_date;
+      if (data.count !== undefined) ipPatch.total_count = data.count;
+      if (Object.keys(ipPatch).length > 0) {
+        const { error } = await supabaseAdmin
+          .from("anonymous_ai_usage_by_ip")
+          .update(ipPatch as never)
+          .eq("ip_hash", ipHash);
+        if (error) throw new Error(`ip: ${error.message}`);
+        updatedIp = true;
+      }
+    }
+    console.log(
+      `[ADMIN_QUOTA] user=${context.userId} adjusted anon fingerprint=${data.fingerprint ?? "-"} ipHash=${ipHash ?? "-"} patch=${JSON.stringify(patch)} reason=${data.reason ?? ""}`,
+    );
+    return { updatedFingerprint, updatedIp, ipHash, today };
+  });
