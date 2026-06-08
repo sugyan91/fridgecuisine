@@ -106,7 +106,7 @@ export function SiteFooter() {
           </nav>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <p>
-              <span className="font-semibold text-white/85">From $5.99/mo</span> · Basic 10/day · Unlimited $19.99/mo
+              <span className="font-semibold text-white/85">From $5.99/mo</span> · Free 2/day · Basic 10/day · Unlimited 50/day
             </p>
             <p>© {new Date().getFullYear()} Fridge Cuisine. Made with garlic and butter.</p>
           </div>
