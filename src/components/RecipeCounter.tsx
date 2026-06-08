@@ -10,29 +10,26 @@ type Props = {
 export function RecipeCounter({ userId, isPremium, isUnlimited }: Props) {
   const { used, limit, countdown, loaded, atLimit, tier, unlimited } =
     useRecipeUsage(userId);
-  const showUnlimited = isUnlimited || unlimited || tier === "unlimited";
+  // Unlimited tier still has a fair-use daily cap (50). Show the counter
+  // with an "Unlimited" badge instead of hiding it entirely.
+  const isUnlimitedTier = isUnlimited || tier === "unlimited";
 
-  if (userId && showUnlimited) {
-    return (
-      <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wide bg-turmeric text-foreground px-2 py-1 rounded-full border-2 border-border">
-          Unlimited · No daily limit
-        </span>
-      </div>
-    );
-  }
-
-  const tierLabel = tier === "basic" ? "Basic" : "free";
+  const tierLabel = isUnlimitedTier ? "Unlimited" : tier === "basic" ? "Basic" : "free";
   const shortLabel = loaded ? `${used}/${limit} ${tierLabel} today` : `—/${limit} ${tierLabel} today`;
   const longLabel = loaded
     ? `${used} of ${limit} ${tierLabel} recipes today`
     : `— of ${limit} ${tierLabel} recipes today`;
-  const upgradeCta = tier === "basic" ? "Go Unlimited →" : "Upgrade for more →";
-  const upgradeCtaLong = tier === "basic" ? "Go Unlimited → no daily limit" : "Upgrade → 10 or unlimited a day";
-  const tooltip =
-    tier === "basic"
-      ? "Basic plan: 10 AI recipes per day. Upgrade to Unlimited for no limit."
-      : "Free plan: 3 AI recipes per day. Upgrade for 10 or unlimited.";
+  const upgradeCta = isUnlimitedTier ? "Manage plan →" : tier === "basic" ? "Go Unlimited →" : "Upgrade for more →";
+  const upgradeCtaLong = isUnlimitedTier
+    ? "Fair use: 50/day · Manage plan →"
+    : tier === "basic"
+      ? "Go Unlimited → 50/day fair use"
+      : "Upgrade → 10/day or 50/day fair use";
+  const tooltip = isUnlimitedTier
+    ? "Unlimited plan: up to 50 AI recipes per day (fair use)."
+    : tier === "basic"
+      ? "Basic plan: 10 AI recipes per day. Upgrade to Unlimited for 50/day."
+      : "Free plan: 2 AI recipes per day. Upgrade for 10/day or 50/day.";
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
