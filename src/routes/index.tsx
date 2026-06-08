@@ -876,8 +876,6 @@ function Index() {
                       serves: showRecipe
                         ? dishResult.recipe.serves ?? undefined
                         : undefined,
-                      servings: dishResult.recipe.servings ?? undefined,
-                      nutrition: dishResult.recipe.nutrition ?? undefined,
                     }}
                   />
                 </div>
