@@ -99,7 +99,7 @@ export const updateCollection = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<{ collection: Collection }> => {
     const { supabase, userId } = context;
-    const patch: Record<string, unknown> = {};
+    const patch: { name?: string; emoji?: string | null; is_public?: boolean } = {};
     if (data.name !== undefined) patch.name = data.name;
     if (data.emoji !== undefined) patch.emoji = data.emoji;
     if (data.is_public !== undefined) patch.is_public = data.is_public;
