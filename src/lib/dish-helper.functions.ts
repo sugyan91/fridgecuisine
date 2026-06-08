@@ -2,8 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { callChatJSON } from "./hf-client.server";
 import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { tryGetSupabaseUser } from "./optional-auth.server";
 import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
+import { checkAnonQuota, recordAnonGeneration } from "./anon-tracking.server";
 
 const inputSchema = z.object({
   dish: z.string().trim().min(2).max(200),
@@ -34,12 +35,18 @@ export type DishHelperResult =
   | { ok: false; error: string };
 
 export const getDishHelper = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data, context }): Promise<DishHelperResult> => {
-    const { supabase, userId } = context;
-    const quota = await checkAiQuota(supabase, userId);
-    if (!quota.ok) return { ok: false, error: quota.error };
+  .handler(async ({ data }): Promise<DishHelperResult> => {
+    const auth = await tryGetSupabaseUser();
+    let anonFingerprint: string | null = null;
+    if (auth) {
+      const quota = await checkAiQuota(auth.supabase, auth.userId);
+      if (!quota.ok) return { ok: false, error: quota.error };
+    } else {
+      const anon = await checkAnonQuota();
+      if (!anon.ok) return { ok: false, error: anon.error };
+      anonFingerprint = anon.fingerprint;
+    }
     const systemPrompt = `You are an expert global chef. Given a dish name (any cuisine, any style), return its ingredients AND a clean home-cook recipe.
 Rules:
 - Use authentic ingredients and techniques for the dish's cuisine.
@@ -70,7 +77,8 @@ Return JSON shaped exactly like:
       if (!aiRes.ok) return { ok: false, error: aiRes.error };
       const result = responseSchema.safeParse(aiRes.json);
       if (!result.success) return { ok: false, error: "AI returned an unexpected format." };
-      await recordAiGeneration(supabase, userId);
+      if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+      else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
       return { ok: true, data: result.data };
     } catch (err) {
       console.error("getDishHelper failed", err);
