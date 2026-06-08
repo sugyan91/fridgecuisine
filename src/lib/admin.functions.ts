@@ -425,3 +425,51 @@ export const adminDeleteComment = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+const ABUSE_EVENT_TYPES = [
+  "anon_rapid_request",
+  "anon_ip_change",
+  "anon_quota_hit",
+  "user_rapid_request",
+  "user_quota_hit",
+] as const;
+
+export const adminListAbuseEvents = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        eventType: z.enum(["all", ...ABUSE_EVENT_TYPES]).default("all"),
+        sinceHours: z.number().int().min(1).max(24 * 30).default(24),
+        limit: z.number().int().min(1).max(1000).default(200),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const sinceIso = new Date(
+      Date.now() - data.sinceHours * 60 * 60 * 1000,
+    ).toISOString();
+    let query = supabaseAdmin
+      .from("abuse_events")
+      .select(
+        "id, created_at, event_type, severity, user_id, fingerprint, ip_hash, user_agent, metadata",
+      )
+      .gte("created_at", sinceIso)
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.eventType !== "all") query = query.eq("event_type", data.eventType);
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    // Aggregate counts by type for the chosen window — cheap second query.
+    const { data: typeRows } = await supabaseAdmin
+      .from("abuse_events")
+      .select("event_type")
+      .gte("created_at", sinceIso);
+    const counts: Record<string, number> = {};
+    for (const r of typeRows ?? []) {
+      const t = r.event_type as string;
+      counts[t] = (counts[t] ?? 0) + 1;
+    }
+    return { events: rows ?? [], counts, sinceIso };
+  });
