@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles, Clock, Infinity as InfinityIcon } from "lucide-react";
+import { ArrowLeft, Sparkles, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { Button } from "@/components/ui/button";
@@ -36,11 +36,12 @@ function UsagePage() {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id));
   }, []);
 
-  const { used, limit, unlimited, tier, remaining, countdown, loaded } =
+  const { used, limit, tier, remaining, countdown, loaded } =
     useRecipeUsage(userId);
 
   const resetAt = nextMidnightLocal();
-  const pct = unlimited ? 100 : Math.min(100, Math.round((used / Math.max(1, limit)) * 100));
+  const pct = Math.min(100, Math.round((used / Math.max(1, limit)) * 100));
+  const isUnlimitedTier = tier === "unlimited";
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,28 +69,19 @@ function UsagePage() {
                 {TIER_LABEL[tier] ?? "Free"} plan
               </span>
             </div>
-            {unlimited && (
+            {isUnlimitedTier && (
               <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-                <InfinityIcon className="h-3 w-3" /> Unlimited
+                Fair use · {limit}/day
               </span>
             )}
           </div>
 
           <div className="mt-6">
-            {unlimited ? (
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black text-foreground">{used}</span>
-                <span className="text-lg text-muted-foreground">recipes today</span>
-              </div>
-            ) : (
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black text-foreground">{used}</span>
-                <span className="text-lg text-muted-foreground">/ {limit} used</span>
-              </div>
-            )}
-            {!unlimited && (
-              <Progress value={pct} className="mt-4 h-2" />
-            )}
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-black text-foreground">{used}</span>
+              <span className="text-lg text-muted-foreground">/ {limit} used</span>
+            </div>
+            <Progress value={pct} className="mt-4 h-2" />
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-4">
@@ -98,7 +90,7 @@ function UsagePage() {
                 Remaining
               </div>
               <div className="mt-1 text-2xl font-black text-foreground">
-                {unlimited ? "∞" : remaining}
+                {remaining}
               </div>
             </div>
             <div className="rounded-xl bg-muted/50 p-4">
@@ -106,17 +98,15 @@ function UsagePage() {
                 <Clock className="h-3 w-3" /> Resets in
               </div>
               <div className="mt-1 text-2xl font-black text-foreground">
-                {unlimited ? "—" : countdown}
+                {countdown}
               </div>
-              {!unlimited && (
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {resetAt.toLocaleTimeString(undefined, {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}{" "}
-                  local time
-                </div>
-              )}
+              <div className="mt-1 text-xs text-muted-foreground">
+                {resetAt.toLocaleTimeString(undefined, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}{" "}
+                local time
+              </div>
             </div>
           </div>
 
@@ -125,13 +115,13 @@ function UsagePage() {
           )}
         </section>
 
-        {!unlimited && (
+        {tier !== "unlimited" && (
           <div className="mt-6 rounded-2xl border border-border bg-card p-6">
             <h2 className="text-lg font-bold text-foreground">Need more recipes?</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {tier === "basic"
-                ? "Upgrade to Unlimited for $19.99/mo and never hit a daily cap."
-                : "Upgrade to Basic ($5.99/mo for 10/day) or Unlimited ($19.99/mo)."}
+                ? "Upgrade to Unlimited for $19.99/mo and get up to 50 recipes/day."
+                : "Upgrade to Basic ($5.99/mo · 10/day) or Unlimited ($19.99/mo · 50/day)."}
             </p>
             <Button asChild className="mt-4">
               <Link to="/pricing">See plans</Link>
