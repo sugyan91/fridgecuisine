@@ -828,7 +828,7 @@ function Index() {
                 </button>
               </form>
               <div className="mt-3 flex justify-center">
-                <RecipeCounter userId={userId} isPremium={isPremium} />
+                <RecipeCounter userId={userId} isPremium={isPremium} isUnlimited={isUnlimited} />
               </div>
               <LiveActivityTicker />
               <IngredientTicker />
@@ -1013,7 +1013,7 @@ function Index() {
                 </button>
               )}
               <div className="mt-3 flex justify-center">
-                <RecipeCounter userId={userId} isPremium={isPremium} />
+                <RecipeCounter userId={userId} isPremium={isPremium} isUnlimited={isUnlimited} />
               </div>
             </div>
 
@@ -1108,7 +1108,7 @@ function Index() {
                 onPantryGenerate={onPantryGenerate}
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
-                counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} />}
+                counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} isUnlimited={isUnlimited} />}
                 kidFriendly={kidFriendly}
                 onKidFriendly={setKidFriendly}
                 showNutrition={showNutrition}
