@@ -1,4 +1,22 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logAbuseEvent } from "./abuse-logging.server";
+import { getRequest } from "@tanstack/react-start/server";
+
+function getCallerSignals(): { ip: string | null; userAgent: string | null } {
+  try {
+    const req = getRequest();
+    if (!req) return { ip: null, userAgent: null };
+    const h = req.headers;
+    const ip =
+      h.get("cf-connecting-ip") ||
+      h.get("x-real-ip") ||
+      h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      null;
+    return { ip, userAgent: h.get("user-agent") };
+  } catch {
+    return { ip: null, userAgent: null };
+  }
+}
 
 export type Tier = "free" | "basic" | "unlimited";
 
@@ -94,6 +112,14 @@ export async function checkAiQuota(
     const minMs = RATE_LIMIT_SECONDS * 1000;
     if (elapsedMs < minMs) {
       const retryAfterSeconds = Math.ceil((minMs - elapsedMs) / 1000);
+      const signals = getCallerSignals();
+      void logAbuseEvent({
+        type: "user_rapid_request",
+        userId,
+        ip: signals.ip,
+        userAgent: signals.userAgent,
+        metadata: { elapsedMs, tier, retryAfterSeconds },
+      });
       return {
         ok: false,
         error: `Slow down — try again in ${retryAfterSeconds}s.`,
@@ -123,6 +149,15 @@ export async function checkAiQuota(
   if ((count ?? 0) >= limit) {
     const suggestedPlan: "basic" | "unlimited" | undefined =
       tier === "basic" ? "unlimited" : tier === "free" ? "basic" : undefined;
+    const signals = getCallerSignals();
+    void logAbuseEvent({
+      type: "user_quota_hit",
+      severity: tier === "unlimited" ? "warn" : "info",
+      userId,
+      ip: signals.ip,
+      userAgent: signals.userAgent,
+      metadata: { tier, limit, used: count ?? 0 },
+    });
     const upgradeCopy =
       tier === "unlimited"
         ? `You've hit today's fair-use cap of ${limit} recipes. Resets at midnight.`
