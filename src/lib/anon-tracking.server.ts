@@ -6,6 +6,10 @@
 // resets the cookie ID but not the IP component, raising the cost of abuse.
 import { getRequest, setResponseHeader } from "@tanstack/react-start/server";
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "crypto";
+import { hashIp, logAbuseEvent } from "./abuse-logging.server";
+
+/** Minimum seconds between two anonymous generations from the same fingerprint. */
+const ANON_RATE_LIMIT_SECONDS = 3;
 
 const COOKIE_NAME = "fc_anon";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
@@ -54,12 +58,24 @@ function getClientIp(req: Request): string {
   return xff;
 }
 
+function getUserAgent(req: Request): string | null {
+  return req.headers.get("user-agent");
+}
+
 /**
  * Resolves a stable, hashed fingerprint for the current anonymous caller.
  * Sets the signed `fc_anon` cookie on first visit. Returns the fingerprint
  * (sha256 of ip + cookie id + secret), suitable for use as a primary key.
  */
-export function resolveAnonFingerprint(): string {
+export interface AnonContext {
+  fingerprint: string;
+  ip: string;
+  ipHash: string;
+  userAgent: string | null;
+  isNewCookie: boolean;
+}
+
+export function resolveAnonContext(): AnonContext {
   const req = getRequest();
   if (!req) throw new Error("No request context");
 
@@ -70,8 +86,10 @@ export function resolveAnonFingerprint(): string {
     const [id, sig] = raw.split(".");
     if (id && sig && verify(id, sig)) cookieId = id;
   }
+  let isNewCookie = false;
   if (!cookieId) {
     cookieId = randomBytes(16).toString("base64url");
+    isNewCookie = true;
     const signed = `${cookieId}.${sign(cookieId)}`;
     const cookie = [
       `${COOKIE_NAME}=${encodeURIComponent(signed)}`,
@@ -85,9 +103,21 @@ export function resolveAnonFingerprint(): string {
   }
 
   const ip = getClientIp(req);
-  return createHash("sha256")
+  const fingerprint = createHash("sha256")
     .update(ip + "|" + cookieId + "|" + getSecret())
     .digest("hex");
+  return {
+    fingerprint,
+    ip,
+    ipHash: hashIp(ip) ?? "",
+    userAgent: getUserAgent(req),
+    isNewCookie,
+  };
+}
+
+/** Back-compat alias. */
+export function resolveAnonFingerprint(): string {
+  return resolveAnonContext().fingerprint;
 }
 
 export const ANON_LIFETIME_LIMIT = 1;
@@ -95,7 +125,7 @@ export const ANON_LIFETIME_LIMIT = 1;
 export type AnonUsage = { used: number; limit: number; fingerprint: string };
 
 export async function getAnonUsage(): Promise<AnonUsage> {
-  const fingerprint = resolveAnonFingerprint();
+  const { fingerprint } = resolveAnonContext();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("anonymous_ai_usage")
@@ -114,8 +144,59 @@ export type AnonQuotaResult =
   | { ok: false; error: string; code: "rate_limit"; used: number; limit: number; requiresSignIn: true };
 
 export async function checkAnonQuota(): Promise<AnonQuotaResult> {
-  const { fingerprint, used, limit } = await getAnonUsage();
+  const ctx = resolveAnonContext();
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: row } = await supabaseAdmin
+    .from("anonymous_ai_usage")
+    .select("count, last_ip_hash, last_seen_at")
+    .eq("fingerprint", ctx.fingerprint)
+    .maybeSingle();
+
+  const used = (row?.count as number | undefined) ?? 0;
+  const limit = ANON_LIFETIME_LIMIT;
+
+  // Signal: same fingerprint but the rolling IP hash has flipped. Because the
+  // fingerprint itself includes the IP, this only fires when our stored
+  // last_ip_hash differs from the current one — useful for spotting cookie
+  // replay attempts across networks.
+  if (row?.last_ip_hash && row.last_ip_hash !== ctx.ipHash) {
+    void logAbuseEvent({
+      type: "anon_ip_change",
+      fingerprint: ctx.fingerprint,
+      ip: ctx.ip,
+      userAgent: ctx.userAgent,
+      metadata: { previousIpHash: row.last_ip_hash, usedSoFar: used },
+    });
+  }
+
+  // Signal: rapid-fire requests from the same fingerprint.
+  if (row?.last_seen_at) {
+    const elapsedMs = Date.now() - new Date(row.last_seen_at as string).getTime();
+    if (elapsedMs < ANON_RATE_LIMIT_SECONDS * 1000) {
+      void logAbuseEvent({
+        type: "anon_rapid_request",
+        fingerprint: ctx.fingerprint,
+        ip: ctx.ip,
+        userAgent: ctx.userAgent,
+        metadata: { elapsedMs, usedSoFar: used },
+      });
+    }
+  }
+
   if (used >= limit) {
+    void logAbuseEvent({
+      type: "anon_quota_hit",
+      fingerprint: ctx.fingerprint,
+      ip: ctx.ip,
+      userAgent: ctx.userAgent,
+      metadata: { used, limit },
+    });
+    // Also bump the counter on the row so we can surface "this fingerprint
+    // has hit the wall N times" without scanning the events table.
+    void supabaseAdmin
+      .from("anonymous_ai_usage")
+      .update({ quota_hit_count: ((row?.count as number) ?? 0) + 1 } as never)
+      .eq("fingerprint", ctx.fingerprint);
     return {
       ok: false,
       code: "rate_limit",
@@ -125,19 +206,29 @@ export async function checkAnonQuota(): Promise<AnonQuotaResult> {
       requiresSignIn: true,
     };
   }
-  return { ok: true, fingerprint, used, limit };
+  return { ok: true, fingerprint: ctx.fingerprint, used, limit };
 }
 
 /** Increment the anonymous usage counter for the given fingerprint. */
 export async function recordAnonGeneration(fingerprint: string): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  // Upsert + increment in one round trip.
+  // Refresh the latest snapshot for abuse-signal tracking on top of the
+  // counter bump.
+  const ctx = (() => {
+    try { return resolveAnonContext(); } catch { return null; }
+  })();
   const { data: existing } = await supabaseAdmin
     .from("anonymous_ai_usage")
-    .select("count")
+    .select("count, last_ip_hash, ip_change_count, rapid_request_count, last_seen_at")
     .eq("fingerprint", fingerprint)
     .maybeSingle();
   const nextCount = ((existing?.count as number | undefined) ?? 0) + 1;
+  const prevIpHash = (existing?.last_ip_hash as string | null) ?? null;
+  const currentIpHash = ctx?.ipHash ?? prevIpHash;
+  const ipChanged = !!prevIpHash && !!currentIpHash && prevIpHash !== currentIpHash;
+  const prevLastSeen = existing?.last_seen_at as string | null | undefined;
+  const wasRapid = !!prevLastSeen &&
+    Date.now() - new Date(prevLastSeen).getTime() < ANON_RATE_LIMIT_SECONDS * 1000;
   const { error } = await supabaseAdmin
     .from("anonymous_ai_usage")
     .upsert(
@@ -145,6 +236,12 @@ export async function recordAnonGeneration(fingerprint: string): Promise<void> {
         fingerprint,
         count: nextCount,
         last_seen_at: new Date().toISOString(),
+        last_ip_hash: currentIpHash,
+        last_user_agent: ctx?.userAgent ?? null,
+        ip_change_count:
+          ((existing?.ip_change_count as number | undefined) ?? 0) + (ipChanged ? 1 : 0),
+        rapid_request_count:
+          ((existing?.rapid_request_count as number | undefined) ?? 0) + (wasRapid ? 1 : 0),
       },
       { onConflict: "fingerprint" },
     );
