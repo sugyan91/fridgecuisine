@@ -62,7 +62,7 @@ export type QuotaCheck =
   | {
       ok: false;
       error: string;
-      code: "rate_limit" | "too_fast";
+      code: "rate_limit";
       tier: Tier;
       requiresUpgrade?: true;
       suggestedPlan?: "basic" | "unlimited";
@@ -97,7 +97,7 @@ export async function checkAiQuota(
       return {
         ok: false,
         error: `Slow down — try again in ${retryAfterSeconds}s.`,
-        code: "too_fast",
+        code: "rate_limit",
         tier,
         retryAfterSeconds,
       };
