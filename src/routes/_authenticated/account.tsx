@@ -198,7 +198,7 @@ function AccountPage() {
             <div className="mt-4 flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
-                Your last payment failed. Update your card to keep Premium access.
+                Your last payment failed. Update your card to keep your paid access.
               </div>
             </div>
           )}
@@ -241,7 +241,7 @@ function AccountPage() {
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel your Premium subscription?</AlertDialogTitle>
+            <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
             <AlertDialogDescription>
               {periodEnd
                 ? `You'll keep paid access until ${formatDate(periodEnd)}. After that you'll be moved to the Free plan. You can resume anytime before then.`
@@ -249,7 +249,7 @@ function AccountPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>Keep Premium</AlertDialogCancel>
+            <AlertDialogCancel disabled={busy}>Keep subscription</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
