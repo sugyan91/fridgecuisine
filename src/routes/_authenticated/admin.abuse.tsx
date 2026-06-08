@@ -184,6 +184,9 @@ function AbuseEventsPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <Link to="/admin/quota">Quota tools</Link>
+            </Button>
             <Button variant="outline" onClick={() => void load()} disabled={loading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               Refresh
