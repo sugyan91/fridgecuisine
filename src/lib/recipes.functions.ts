@@ -30,6 +30,7 @@ export type Recipe = {
   prepTimeMinutes?: number;
   totalTimeMinutes?: number;
   cuisine: string;
+  servings?: number;
   usedIngredients: string[];
   missingIngredients: string[];
   steps: string[];
