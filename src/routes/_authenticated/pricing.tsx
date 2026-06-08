@@ -110,7 +110,7 @@ function PricingPage() {
                 <span className="text-muted-foreground">/ forever</span>
               </div>
               <ul className="mt-6 space-y-2 text-sm">
-                <Feature>3 AI recipe generations / day</Feature>
+                <Feature>2 AI recipe generations / day</Feature>
                 <Feature>Save & share recipes</Feature>
                 <Feature>Browse the community</Feature>
               </ul>
@@ -172,11 +172,14 @@ function PricingPage() {
                 <span className="text-muted-foreground">/ month</span>
               </div>
               <ul className="mt-6 space-y-2 text-sm">
-                <Feature>Unlimited AI recipe generations</Feature>
+                <Feature>Unlimited AI recipes*</Feature>
                 <Feature>Priority AI responses</Feature>
                 <Feature>Cancel anytime — keep access until period ends</Feature>
                 <Feature>Everything in Basic</Feature>
               </ul>
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                *Fair use: up to 50 recipes / day per account.
+              </p>
               {loading ? (
                 <Button className="mt-6 w-full" disabled>
                   <Loader2 className="h-4 w-4 animate-spin" />

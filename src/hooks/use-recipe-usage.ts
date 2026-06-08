@@ -8,6 +8,8 @@ export { FREE_DAILY_LIMIT };
 export type UsageTier = "anon" | "free" | "basic" | "unlimited";
 
 const ANON_KEY = "fridge-anon-usage";
+/** Anonymous users get 1 generation as a teaser, then a sign-in wall. */
+const ANON_LIFETIME_LIMIT = 1;
 
 function startOfTodayLocal(): Date {
   const d = new Date();
@@ -29,8 +31,8 @@ function readAnonUsage(): number {
   try {
     const raw = localStorage.getItem(ANON_KEY);
     if (!raw) return 0;
-    const parsed = JSON.parse(raw) as { day: string; count: number };
-    if (parsed.day !== todayKey()) return 0;
+    const parsed = JSON.parse(raw) as { day?: string; count: number; lifetime?: boolean };
+    // Anonymous quota is now LIFETIME (not daily) — return stored count as-is.
     return parsed.count || 0;
   } catch {
     return 0;
@@ -41,7 +43,7 @@ function writeAnonUsage(count: number) {
   try {
     localStorage.setItem(
       ANON_KEY,
-      JSON.stringify({ day: todayKey(), count }),
+      JSON.stringify({ count, lifetime: true }),
     );
   } catch {}
 }
@@ -57,7 +59,7 @@ export function useRecipeUsage(userId: string | undefined) {
   const refresh = useCallback(async () => {
     if (!userId) {
       setUsed(readAnonUsage());
-      setServerLimit(FREE_DAILY_LIMIT);
+      setServerLimit(ANON_LIFETIME_LIMIT);
       setServerTier(null);
       return;
     }
@@ -89,7 +91,7 @@ export function useRecipeUsage(userId: string | undefined) {
       setTick((x) => x + 1);
       if (Date.now() >= resetMs) {
         setResetMs(nextMidnightLocalMs());
-        if (!userId) writeAnonUsage(0);
+        // Anon is lifetime now — do NOT reset at midnight.
         refresh();
       }
     }, 1000);
@@ -115,13 +117,16 @@ export function useRecipeUsage(userId: string | undefined) {
 
   const current = used ?? 0;
   const tier: UsageTier = !userId ? "anon" : (serverTier ?? "free");
-  const limit = serverLimit; // null = unlimited
-  const unlimited = limit === null;
+  const limit = serverLimit;
+  // No tier is truly unlimited anymore — "unlimited" has a fair-use cap.
+  const unlimited = false;
+  const lifetime = tier === "anon";
   return {
     used: current,
-    limit: limit ?? FREE_DAILY_LIMIT,
+    limit: limit ?? (tier === "anon" ? ANON_LIFETIME_LIMIT : FREE_DAILY_LIMIT),
     unlimited,
     tier,
+    lifetime,
     remaining: unlimited ? Infinity : Math.max(0, (limit ?? 0) - current),
     atLimit: !unlimited && current >= (limit ?? 0),
     countdown,

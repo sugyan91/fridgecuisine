@@ -199,7 +199,8 @@ function Index() {
     open: false,
     recipe: null,
   });
-  const limitBlocked = !isUnlimited && usageAtLimit;
+  // Unlimited has a fair-use daily cap too — apply usage limit to all tiers.
+  const limitBlocked = usageAtLimit;
   const limitToast = () => {
     setLimitModalOpen(true);
   };
