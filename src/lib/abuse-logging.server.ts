@@ -67,6 +67,17 @@ export async function logAbuseEvent(event: AbuseEventInput): Promise<void> {
   } catch (err) {
     console.error("logAbuseEvent unexpected failure", err);
   }
+
+  // Fire-and-forget spike detection for anonymous signals. Wrapped so a
+  // detection failure can never break the calling hot path.
+  if (event.type.startsWith("anon_")) {
+    try {
+      const { maybeFireAbuseSpikeAlert } = await import("./abuse-alerts.server");
+      await maybeFireAbuseSpikeAlert();
+    } catch (err) {
+      console.error("maybeFireAbuseSpikeAlert failed", err);
+    }
+  }
 }
 
 function defaultSeverity(type: AbuseEventType): AbuseSeverity {
