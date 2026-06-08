@@ -40,12 +40,12 @@ export function FreeTierBanner({ isPremium, userId }: Props) {
       <div className="relative bg-turmeric/20 border-2 border-border rounded-2xl pl-4 pr-10 py-3 md:py-3.5 shadow-[var(--shadow-soft)] flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
           <p className="font-display text-sm md:text-base font-bold tracking-tight text-foreground leading-snug">
-            <span className="text-accent">5 free recipes</span> every day — no signup needed.
+            <span className="text-accent">3 free recipes</span> every day — no signup needed.
           </p>
           <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
             {userId
-              ? "Go unlimited for $5.99/mo — cook anything, anytime."
-              : "Sign up free to save recipes, or go unlimited for $5.99/mo."}
+              ? "Basic $5.99/mo · 10 a day. Unlimited $19.99/mo — no limits."
+              : "Sign up free to save recipes. Paid plans from $5.99/mo for 10+ recipes a day."}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -62,7 +62,7 @@ export function FreeTierBanner({ isPremium, userId }: Props) {
             to="/pricing"
             className="text-[11px] md:text-xs font-display font-semibold px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
           >
-            Go unlimited →
+            See plans →
           </Link>
         </div>
         <button
