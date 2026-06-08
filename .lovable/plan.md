@@ -1,60 +1,52 @@
-# Fix: Food images don't match the dish
+# Image Accuracy Fixes for TrendingDishes
 
-## Problem
+`src/components/landing/TrendingDishes.tsx` has 134 hardcoded Unsplash photo IDs, and many are duplicated across unrelated dishes — guaranteeing wrong images regardless of whether they load. It also has no `onError` fallback (unlike `RecipeCard`), so any broken ID shows blank.
 
-Recipe cards generate images via `generateRecipeImage` using only `dishName + cuisine` in the prompt. The image model chain is:
+## Confirmed duplicate photo IDs (same image, different dishes)
 
-1. Hugging Face FLUX.1-schnell / SDXL (no real knowledge of regional dish names like "Dal Tadka", "Himalayan Momo")
-2. Lovable Gemini 2.5 flash image (fallback)
+- `1496116218417-1a781b1c416c` → Steamed Momo, Xiao Long Bao, Pierogi
+- `1547573854-74d2a71d0826` → Lamb Tagine, Borscht, Beef Stroganoff, Ajiaco, Clam Chowder
+- `1604329760661-e71dc83f8f26` → Jollof Rice, Feijoada, Chicken Adobo, Jerk Chicken
+- `1544025162-d76694265947` → Brisket, Lechon, Sunday Roast, Swedish Meatballs
+- `1599487488170-d11ec9c172f0` → Tandoori, Adana Kebab, Schnitzel, Wiener Schnitzel
+- `1565958011703-44f9829ba187` → Doro Wat, Lomo Saltado, Koshari, Bunny Chow, Cheesecake
+- `1547496502-affa22d38842` → Beef Bourguignon, Goulash, Bobotie
+- `1604544539681-3e74cc97817b` → Empanadas, Arepas
+- `1490474504059-bf2db5ab2348` → Açaí Bowl ×3
+- `1540420773420-3366772f4999` → Greek Salad, Smørrebrød, Falafel Wrap, Burrata Caprese
+- Several more in the same pattern
 
-FLUX/SDXL hallucinate generic food when given an unfamiliar dish name, so the cards show plausible-but-wrong food. That's what you're seeing.
+Plus the original issue: many IDs 404 entirely (the Pho Bo case we already fixed by switching to a local Wikimedia asset).
 
-## Fix
+## Plan
 
-Two changes, both in `src/lib/recipe-image.functions.ts` and `src/lib/hf-client.server.ts`:
+### 1. Add onError fallback to `BentoTile`
+Mirror the `RecipeCard` pattern: cuisine-emoji + dish name on a gradient background. On `<img onError>`, swap to the fallback so a tile is never blank. Use the existing `flag` emoji (already per-dish) — no new mapping needed.
 
-### 1. Switch the default image model to one that actually knows dish names
+### 2. Replace duplicate Unsplash IDs with curated, dish-specific photos
+For each duplicate group, keep one dish on the original ID and assign unique, accurate Unsplash IDs (verified to load and depict the right dish) to the others. Roughly 30 IDs to swap.
 
-Stop calling FLUX/SDXL for food. Use Lovable AI Gateway with `google/gemini-3.1-flash-image-preview` (Nano Banana 2) as the primary, with `openai/gpt-image-2` (quality: "low") as fallback. Both have strong food/world-cuisine knowledge. Drop the HF image chain for recipe images (keep the HF chat models — only image gen is the problem).
+### 3. Convert the worst offenders to local Wikimedia assets
+For internationally distinctive dishes where a wrong photo is most jarring, download Wikimedia Commons photos into `src/assets/trending/` and import locally (same approach as `pho-bo.jpg`). Target list:
+- Steamed Momo (Nepal)
+- Xiao Long Bao (China)
+- Pierogi (Poland)
+- Borscht (Ukraine)
+- Doro Wat (Ethiopia)
+- Jollof Rice (Nigeria)
+- Bunny Chow (South Africa)
+- Lomo Saltado (Peru)
+- Bibimbap (already accurate, skip)
 
-### 2. Build a much more descriptive prompt
+This guarantees those 8 cards always show a correct, licensed image.
 
-Right now the prompt is just `"Professional overhead food photography of <title>, <cuisine> cuisine"`. Expand `generateRecipeImage` to accept and use the recipe's actual signal:
+### 4. No backend / no business logic changes
+Pure presentational fix in `TrendingDishes.tsx` + new files under `src/assets/trending/`.
 
-- `dishName`, `cuisine`
-- `description` (one-line summary from the recipe)
-- top 4–6 `keyIngredients` (e.g. "yellow lentils, ghee, cumin, tomato, cilantro")
-- `presentation` hint derived from dish type ("served in a copper karahi bowl", "steamed dumplings in a bamboo basket", etc.) — pass through from the recipe when available, otherwise omit
-
-New prompt shape:
-
-```
-Professional overhead food photography of <dishName>, a <cuisine> dish.
-<description>
-Visible ingredients: <keyIngredients>.
-<presentation>
-Natural lighting, shallow depth of field, garnished and plated authentically,
-appetizing, magazine quality, photorealistic.
-```
-
-This grounds the model in what the dish actually looks like instead of relying on it to recognize a name.
-
-### 3. Pass the extra context from the call site
-
-In `src/components/fridge/RecipeCard.tsx`, update the `runImage` call to send `description`, `keyIngredients` (first few from `recipe.usedIngredients + recipe.missingIngredients`), and `cuisine`. Same for any other call sites (community/shop/saved recipe views — verify during implementation).
-
-### 4. Cache by dish identity
-
-Because the same recipe regenerates on every mount, add a simple cache key (e.g. `localStorage` keyed on `${cuisine}::${dishName}`) so once a correct image lands, it persists across navigation and we don't burn quota re-rolling and potentially getting a worse image.
+## Files touched
+- `src/components/landing/TrendingDishes.tsx` — add fallback, swap duplicate IDs, import local assets
+- `src/assets/trending/*.jpg` — ~8 new files
 
 ## Out of scope
-
-- Reverse-validating images with a vision model (expensive, adds latency).
-- Storing generated images server-side (separate infra change).
-- Replacing already-saved bad images in the DB — covered organically by the new cache when users re-open recipes.
-
-## Technical notes
-
-- `callImageGen` will get a second arg `{ preferGemini: true }` or a new sibling `callFoodImageGen` that uses the Lovable Gateway directly with the food-optimized prompt, skipping HF.
-- Gemini image body uses `messages` + `modalities: ["image","text"]` (already correct in `hf-client.server.ts`); GPT-image-2 uses `prompt` — keep the two body shapes separate per the AI gateway rules.
-- Keep `quality: "low"` on gpt-image-2 to stay cheap; Nano Banana 2 has no quality knob.
+- Server-side image generation for trending tiles (current client-side AI gen is only used in `RecipeCard`, not here)
+- Refactoring the hardcoded dish list into a CMS / DB
