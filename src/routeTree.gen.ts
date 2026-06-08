@@ -36,6 +36,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
+import { Route as AuthenticatedAdminQuotaRouteImport } from './routes/_authenticated/admin.quota'
 import { Route as AuthenticatedAdminAbuseRouteImport } from './routes/_authenticated/admin.abuse'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -179,6 +180,11 @@ const AuthenticatedCommunityNewRoute =
     path: '/community/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminQuotaRoute = AuthenticatedAdminQuotaRouteImport.update({
+  id: '/admin/quota',
+  path: '/admin/quota',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminAbuseRoute = AuthenticatedAdminAbuseRouteImport.update({
   id: '/admin/abuse',
   path: '/admin/abuse',
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/admin/abuse': typeof AuthenticatedAdminAbuseRoute
+  '/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -279,6 +286,7 @@ export interface FileRoutesByTo {
   '/community': typeof CommunityIndexRoute
   '/shop': typeof ShopIndexRoute
   '/admin/abuse': typeof AuthenticatedAdminAbuseRoute
+  '/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -316,6 +324,7 @@ export interface FileRoutesById {
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/_authenticated/admin/abuse': typeof AuthenticatedAdminAbuseRoute
+  '/_authenticated/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -353,6 +362,7 @@ export interface FileRouteTypes {
     | '/community/'
     | '/shop/'
     | '/admin/abuse'
+    | '/admin/quota'
     | '/community/new'
     | '/api/public/contact'
     | '/lovable/email/suppression'
@@ -388,6 +398,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/shop'
     | '/admin/abuse'
+    | '/admin/quota'
     | '/community/new'
     | '/api/public/contact'
     | '/lovable/email/suppression'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '/community/'
     | '/shop/'
     | '/_authenticated/admin/abuse'
+    | '/_authenticated/admin/quota'
     | '/_authenticated/community/new'
     | '/api/public/contact'
     | '/lovable/email/suppression'
@@ -655,6 +667,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCommunityNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/quota': {
+      id: '/_authenticated/admin/quota'
+      path: '/admin/quota'
+      fullPath: '/admin/quota'
+      preLoaderRoute: typeof AuthenticatedAdminQuotaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/abuse': {
       id: '/_authenticated/admin/abuse'
       path: '/admin/abuse'
@@ -715,6 +734,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
   AuthenticatedAdminAbuseRoute: typeof AuthenticatedAdminAbuseRoute
+  AuthenticatedAdminQuotaRoute: typeof AuthenticatedAdminQuotaRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
 }
 
@@ -726,6 +746,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedUsageRoute: AuthenticatedUsageRoute,
   AuthenticatedAdminAbuseRoute: AuthenticatedAdminAbuseRoute,
+  AuthenticatedAdminQuotaRoute: AuthenticatedAdminQuotaRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
 }
 
