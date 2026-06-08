@@ -5,7 +5,7 @@
 // through supabaseAdmin into public.anonymous_ai_usage. Clearing cookies
 // resets the cookie ID but not the IP component, raising the cost of abuse.
 import { getRequest, setResponseHeader } from "@tanstack/react-start/server";
-import { createHash, createHmac, randomBytes, timingSafeEqual } from "crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { hashIp, logAbuseEvent } from "./abuse-logging.server";
 
 /** Minimum seconds between two anonymous generations from the same fingerprint. */
