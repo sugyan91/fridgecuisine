@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { Link } from "@tanstack/react-router";
 import type { Recipe } from "@/lib/recipes.functions";
 import { RecipeTimers } from "./RecipeTimers";
 import { StepTimer } from "./StepTimer";
@@ -74,6 +75,13 @@ export function RecipeCard({
   useEffect(() => {
     let cancelled = false;
     setImageBroken(false);
+    if (!isAuthenticated) {
+      setImageUrl(null);
+      setImageLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
     const cacheKey = `fc:img:v3:${(recipe.cuisine ?? "").toLowerCase()}::${recipe.title.toLowerCase()}`;
     try {
       const cached = typeof window !== "undefined" ? window.localStorage.getItem(cacheKey) : null;
