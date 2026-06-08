@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getRecipeUsage, FREE_DAILY_LIMIT } from "@/lib/usage.functions";
-import { supabase } from "@/integrations/supabase/client";
 
 export { FREE_DAILY_LIMIT };
 
 export type UsageTier = "anon" | "free" | "basic" | "unlimited";
 
-const ANON_KEY = "fridge-anon-usage";
 /** Anonymous users get 1 generation as a teaser, then a sign-in wall. */
 const ANON_LIFETIME_LIMIT = 1;
 
@@ -26,62 +24,32 @@ function todayKey(): string {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
-function readAnonUsage(): number {
-  if (typeof window === "undefined") return 0;
-  try {
-    const raw = localStorage.getItem(ANON_KEY);
-    if (!raw) return 0;
-    const parsed = JSON.parse(raw) as { day?: string; count: number; lifetime?: boolean };
-    // Anonymous quota is now LIFETIME (not daily) — return stored count as-is.
-    return parsed.count || 0;
-  } catch {
-    return 0;
-  }
-}
-function writeAnonUsage(count: number) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      ANON_KEY,
-      JSON.stringify({ count, lifetime: true }),
-    );
-  } catch {}
-}
+// Anonymous usage is tracked server-side now (IP + signed cookie fingerprint).
+// No localStorage counter — it was trivially bypassable.
 
 export function useRecipeUsage(userId: string | undefined) {
   const fetchUsage = useServerFn(getRecipeUsage);
   const [used, setUsed] = useState<number | null>(null);
   const [serverLimit, setServerLimit] = useState<number | null>(FREE_DAILY_LIMIT);
-  const [serverTier, setServerTier] = useState<"free" | "basic" | "unlimited" | null>(null);
+  const [serverTier, setServerTier] = useState<UsageTier | null>(null);
   const [resetMs, setResetMs] = useState<number>(() => nextMidnightLocalMs());
   const [, setTick] = useState(0);
 
   const refresh = useCallback(async () => {
-    if (!userId) {
-      setUsed(readAnonUsage());
-      setServerLimit(ANON_LIFETIME_LIMIT);
-      setServerTier(null);
-      return;
-    }
-    const { data: sess } = await supabase.auth.getSession();
-    if (!sess.session?.access_token) {
-      return;
-    }
     try {
       const res = await fetchUsage({
         data: { sinceIso: startOfTodayLocal().toISOString() },
       });
       setUsed(res.used);
       setServerLimit(res.limit);
-      setServerTier(res.tier);
+      setServerTier(res.tier as UsageTier);
     } catch (e) {
       console.error("usage fetch failed", e);
     }
-  }, [userId, fetchUsage]);
+  }, [fetchUsage]);
 
   useEffect(() => {
     refresh();
-    if (!userId) return;
     const i = setInterval(refresh, 30_000);
     return () => clearInterval(i);
   }, [userId, refresh]);
@@ -99,14 +67,9 @@ export function useRecipeUsage(userId: string | undefined) {
   }, [resetMs, refresh, userId]);
 
   const logGeneration = useCallback(async () => {
-    if (!userId) {
-      const next = readAnonUsage() + 1;
-      writeAnonUsage(next);
-      setUsed(next);
-      return;
-    }
+    // Server already incremented; refetch to stay in sync.
     refresh();
-  }, [userId, refresh]);
+  }, [refresh]);
 
   const msLeft = Math.max(0, resetMs - Date.now());
   const h = Math.floor(msLeft / 3_600_000);
@@ -116,7 +79,7 @@ export function useRecipeUsage(userId: string | undefined) {
     h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m ${s}s` : `${s}s`;
 
   const current = used ?? 0;
-  const tier: UsageTier = !userId ? "anon" : (serverTier ?? "free");
+  const tier: UsageTier = serverTier ?? (userId ? "free" : "anon");
   const limit = serverLimit;
   // No tier is truly unlimited anymore — "unlimited" has a fair-use cap.
   const unlimited = false;
