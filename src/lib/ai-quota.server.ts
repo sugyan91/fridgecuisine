@@ -83,6 +83,7 @@ export type QuotaCheck =
 export async function checkAiQuota(
   supabase: SupabaseClient,
   userId: string,
+  signals: CallerSignals = {},
 ): Promise<QuotaCheck> {
   const tier = await resolveTier(supabase, userId);
   const limit = TIER_LIMITS[tier];
@@ -100,12 +101,11 @@ export async function checkAiQuota(
     const minMs = RATE_LIMIT_SECONDS * 1000;
     if (elapsedMs < minMs) {
       const retryAfterSeconds = Math.ceil((minMs - elapsedMs) / 1000);
-      const signals = await getCallerSignals();
       void logAbuseEvent({
         type: "user_rapid_request",
         userId,
-        ip: signals.ip,
-        userAgent: signals.userAgent,
+        ip: signals.ip ?? null,
+        userAgent: signals.userAgent ?? null,
         metadata: { elapsedMs, tier, retryAfterSeconds },
       });
       return {
@@ -137,13 +137,12 @@ export async function checkAiQuota(
   if ((count ?? 0) >= limit) {
     const suggestedPlan: "basic" | "unlimited" | undefined =
       tier === "basic" ? "unlimited" : tier === "free" ? "basic" : undefined;
-    const signals = await getCallerSignals();
     void logAbuseEvent({
       type: "user_quota_hit",
       severity: tier === "unlimited" ? "warn" : "info",
       userId,
-      ip: signals.ip,
-      userAgent: signals.userAgent,
+      ip: signals.ip ?? null,
+      userAgent: signals.userAgent ?? null,
       metadata: { tier, limit, used: count ?? 0 },
     });
     const upgradeCopy =
