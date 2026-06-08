@@ -562,6 +562,8 @@ export function RecipeCard({
             {nutrition.proteinG != null && <span>P {nutrition.proteinG}g</span>}
             {nutrition.carbsG != null && <span>C {nutrition.carbsG}g</span>}
             {nutrition.fatG != null && <span>F {nutrition.fatG}g</span>}
+            {nutrition.sugarG != null && <span>S {nutrition.sugarG}g</span>}
+            {nutrition.fiberG != null && <span>Fb {nutrition.fiberG}g</span>}
           </div>
         )}
         <div className="flex justify-between items-center">
