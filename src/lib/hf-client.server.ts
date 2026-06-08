@@ -299,7 +299,25 @@ export async function callFoodImageGen(prompt: string): Promise<ImageGenResult> 
     return { ok: false, error: "Image generation not configured." };
   }
 
-  // 1. Gemini Nano Banana 2 — uses chat-completions image shape.
+  // 1. gpt-image-2 — most faithful to detailed prompts for real-world subjects.
+  try {
+    const r = await callImageEndpoint(LOVABLE_IMAGE_URL, lovableKey, {
+      model: "openai/gpt-image-2",
+      prompt,
+      quality: "medium",
+      size: "1024x1024",
+      n: 1,
+    });
+    if (r.status === 200 && r.b64) {
+      console.log("[food-image] gpt-image-2 success");
+      return { ok: true, dataUrl: `data:image/png;base64,${r.b64}`, provider: "lovable" };
+    }
+    console.warn(`[food-image] gpt-image-2 ${r.status}, falling back. Body: ${r.raw.slice(0, 300)}`);
+  } catch (err) {
+    console.warn("[food-image] gpt-image-2 threw, falling back:", err);
+  }
+
+  // 2. Gemini Nano Banana 2 fallback — chat-completions image shape.
   try {
     const r = await callImageEndpoint(LOVABLE_IMAGE_URL, lovableKey, {
       model: "google/gemini-3.1-flash-image-preview",
@@ -307,29 +325,13 @@ export async function callFoodImageGen(prompt: string): Promise<ImageGenResult> 
       modalities: ["image", "text"],
     });
     if (r.status === 200 && r.b64) {
+      console.log("[food-image] gemini success");
       return { ok: true, dataUrl: `data:image/png;base64,${r.b64}`, provider: "lovable" };
     }
-    console.warn(`[food-image] gemini ${r.status}, falling back. Body: ${r.raw.slice(0, 200)}`);
-  } catch (err) {
-    console.warn("[food-image] gemini threw, falling back:", err);
-  }
-
-  // 2. gpt-image-2 fallback — uses OpenAI images shape.
-  try {
-    const r = await callImageEndpoint(LOVABLE_IMAGE_URL, lovableKey, {
-      model: "openai/gpt-image-2",
-      prompt,
-      quality: "low",
-      size: "1024x1024",
-      n: 1,
-    });
-    if (r.status === 200 && r.b64) {
-      return { ok: true, dataUrl: `data:image/png;base64,${r.b64}`, provider: "lovable" };
-    }
-    console.error("[food-image] gpt-image-2", r.status, r.raw.slice(0, 300));
+    console.error("[food-image] gemini", r.status, r.raw.slice(0, 300));
     return { ok: false, error: `Image generation failed (${r.status}).` };
   } catch (err) {
-    console.error("[food-image] gpt-image-2 threw:", err);
+    console.error("[food-image] gemini threw:", err);
     return { ok: false, error: "Image generation failed." };
   }
 }
