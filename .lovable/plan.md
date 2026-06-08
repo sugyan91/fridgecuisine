@@ -1,103 +1,92 @@
-## New 4-tier model
 
-| Tier | Daily AI uses | Price | At the limit |
-|---|---|---|---|
-| Anonymous | **3 / 24h** | Free | Modal → "Sign in to keep cooking" → `/auth` |
-| Signed-in free | **3 / 24h** | Free | Modal → "Upgrade for more" → pricing (Basic or Unlimited) |
-| **Basic** | **10 / 24h** | **$5.99/mo** | Modal → "Go unlimited — $19.99/mo" → Stripe checkout (`unlimited_monthly`) |
-| **Unlimited** | Unlimited | **$19.99/mo** | No gate |
+# Tighten AI Usage & Prevent Abuse
 
-## Stripe products
-- Rename the existing `premium_monthly` price ($5.99) intent → keep the **price id `premium_monthly`** but it now represents the **Basic** tier (10/day). No new SKU needed if the amount is already $5.99.
-- **Create new product + price**: `unlimited_plan` / `unlimited_monthly` at **$1999 USD / month**, `quantity_min=1`, `quantity_max=1`, tax code `txcd_10000000`.
-- Both plans go through the existing embedded checkout flow (`createCheckoutSession`, `useStripeCheckout`).
+Lower limits, move enforcement server-side, add rate limiting, and cap "Unlimited" with fair use.
 
-## Tier resolution (server)
-New helper `resolveTier(userId)` in `src/lib/ai-quota.server.ts`:
-1. No `userId` → `"anon"` (limit 3)
-2. Look up newest `subscriptions` row for env + user, `isActive` check.
-3. Map by `price_id`:
-   - `unlimited_monthly` → `"unlimited"` (no limit)
-   - `premium_monthly` → `"basic"` (limit 10)
-   - otherwise / no active sub → `"free"` (limit 3)
+## New tier limits
 
-`DAILY_LIMITS = { anon: 3, free: 3, basic: 10, unlimited: Infinity }`.
+| Tier | Daily AI generations | Notes |
+|---|---|---|
+| Anonymous | **1 lifetime** | Server-tracked by IP + signed cookie |
+| Free (signed in) | **2 / day** | Down from 3 |
+| Basic ($5.99) | 10 / day | Unchanged |
+| Unlimited ($19.99) | **50 / day** (fair-use cap) | Marketing says "unlimited"; hidden soft cap |
 
-## Middleware
-New `requireAiQuota` (replaces `requireSupabaseAuth` on the 5 AI server fns: `generateRecipes`, `fridge-vision`, `dish-helper`, `ingredient-swap`, `recipe-image`):
-- Reads session optionally (does not throw).
-- Resolves tier; counts against `user_id` for signed-in, `anon_id` (HMAC-signed `fc_anon` cookie) for anon.
-- On limit, returns typed error:
-  ```ts
-  { ok: false, code: "rate_limit", tier: "anon"|"free"|"basic",
-    requiresSignIn?: true, requiresUpgrade?: true, suggestedPlan?: "basic"|"unlimited" }
-  ```
-  - anon → `requiresSignIn`
-  - free → `requiresUpgrade`, `suggestedPlan: "basic"`
-  - basic → `requiresUpgrade`, `suggestedPlan: "unlimited"`
+Rate limit (all tiers): **1 AI request / 3 seconds** per user/IP.
 
-## DB migration (`recipe_generations`)
-- `user_id` nullable, add `anon_id text`, `ip_hash text`
-- `CHECK ((user_id IS NULL) <> (anon_id IS NULL))`
-- Indexes `(anon_id, created_at)`, `(ip_hash, created_at)`
-- Service-role insert path for anon rows; existing authenticated RLS unchanged.
+## What gets built
 
-## Anon identity
-- HMAC-signed `fc_anon` cookie (1y, HttpOnly/Secure/SameSite=Lax).
-- New secret `ANON_COOKIE_SECRET`.
-- IP soft-cap 10/24h via `ip_hash`.
+### 1. Server-side anonymous tracking (new)
+New table `anonymous_ai_usage`:
+- `id uuid pk`
+- `fingerprint text unique` (sha256 of IP + signed cookie id)
+- `count int default 0`
+- `first_seen_at`, `last_seen_at timestamptz`
 
-## Client wiring
+Service-role only (no client grants). Migration includes RLS enabled, no policies, plus grants to `service_role` only.
 
-**Pricing page (`src/routes/_authenticated/pricing.tsx`)** — rebuild as 3 cards:
-- Free — "3 recipes/day"
-- **Basic — $5.99/mo — 10 recipes/day** (CTA: Subscribe → `premium_monthly`)
-- **Unlimited — $19.99/mo — Unlimited recipes** (CTA: Subscribe → `unlimited_monthly`, marked "Most popular")
+A `getOrCreateAnonId` helper sets an httpOnly signed cookie (`fc_anon`) on first visit. Server fns combine `request.headers['x-forwarded-for']` + cookie → fingerprint.
 
-**`LimitReachedModal`** — accepts `tier` + `suggestedPlan`. Variants:
-- anon: "You've used your 3 free recipes today. Sign in to keep cooking." → `/auth`
-- free: "You've used your 3 daily recipes. Upgrade to Basic ($5.99/mo) for 10/day or Unlimited ($19.99/mo)." → pricing
-- basic: "You've used your 10 recipes today. Go Unlimited for $19.99/mo." → checkout `unlimited_monthly`
+### 2. Update `src/lib/ai-quota.server.ts`
+- `TIER_LIMITS = { anon: 1, free: 2, basic: 10, unlimited: 50 }` — note: `anon` is **lifetime**, others are per-day
+- `RATE_LIMIT_SECONDS = 3`
+- `resolveTier(userId)` unchanged
+- `requireAiQuota` middleware extended:
+  - If no user → check anon table by fingerprint (lifetime count)
+  - If user → check `recipe_generations` count for today
+  - Check last generation timestamp; if < 3s ago → throw `RATE_LIMITED`
+  - On success, insert/increment usage row
 
-**`FreeTierBanner` / `RecipeCounter`** — copy switches by tier:
-- anon / free: "X of 3 today"
-- basic: "X of 10 today"
-- unlimited: hidden
+Returns typed error envelope:
+```ts
+{ error: 'QUOTA_EXCEEDED' | 'RATE_LIMITED' | 'SIGN_IN_REQUIRED',
+  tier, limit, used, retryAfter?, suggestedPlan }
+```
 
-**`useSubscription` / `isPremium`** — add `tier: "free"|"basic"|"unlimited"` derived from `price_id`. Replace existing `isPremium` consumers that gate "any paid" with `tier !== "free"`; replace anywhere that gates "unlimited only" with `tier === "unlimited"`.
+### 3. Update `src/lib/usage.functions.ts`
+`getRecipeUsage` returns shape `{ used, limit, tier, lifetime: boolean, remaining }`. For anon: queries `anonymous_ai_usage`; for users: queries `recipe_generations` for today.
 
-**`src/routes/index.tsx`** — on `rate_limit` open modal with returned `tier`/`suggestedPlan`.
+### 4. Update `src/hooks/use-recipe-usage.ts`
+- Expose `lifetime` flag so UI can say "1 free taste — sign in for more" vs "2/day"
+- Expose `rateLimitedUntil` from last error
 
-## Copy sweep — every "5/day", "5 free", "5 today", "$5.99" reference
-Grep and update:
-- `FreeTierBanner.tsx`, `RecipeCounter.tsx`, `LimitReachedModal.tsx`, `index.tsx`
-- `pricing.tsx`, `account.tsx`
-- Marketing/landing sections, FAQ, meta descriptions if they mention quotas
-- SEO `<title>` / meta descriptions referencing free quota
+### 5. UI copy updates (no design changes)
+- `FreeTierBanner.tsx`: anon → "1 free recipe to try — sign in for 2/day"; free → "2 recipes/day"
+- `RecipeCounter.tsx`: same limits + countdown
+- `LimitReachedModal.tsx`: new variants:
+  - anon → "Sign in for 2 free recipes/day"
+  - free → "Upgrade to Basic for 10/day"
+  - basic → "Go Unlimited for 50/day"
+  - unlimited → "Daily fair-use limit reached (50). Resets at midnight."
+  - rate-limited → "Slow down — try again in {n}s"
+- `pricing.tsx`: change Free card from "3/day" to "2/day", Unlimited card adds small note "*Fair use: up to 50 recipes/day"
+- `usage.tsx`: show lifetime vs daily, show fair-use cap for Unlimited
+- `account.tsx`: same wording
 
-## Files
+### 6. SiteFooter / marketing copy
+Update any "3 free recipes/day" mention to "2 free recipes/day".
 
-**New**
-- `src/lib/anon-cookie.server.ts`
-- `src/lib/ai-quota-middleware.server.ts`
+## Files to touch
 
-**Modified**
-- `src/lib/ai-quota.server.ts` (limits map, `resolveTier`, premium bypass, anon path)
-- `src/lib/recipes.functions.ts`, `fridge-vision.functions.ts`, `dish-helper.functions.ts`, `ingredient-swap.functions.ts`, `recipe-image.functions.ts`
-- `src/lib/usage.functions.ts` (auth-optional, returns `{ used, limit, tier }`)
-- `src/hooks/use-recipe-usage.ts`, `src/hooks/useSubscription.ts`
-- `src/routes/index.tsx`, `_authenticated/pricing.tsx`, `_authenticated/account.tsx`
-- `src/components/LimitReachedModal.tsx`, `FreeTierBanner.tsx`, `RecipeCounter.tsx`
-- DB migration on `recipe_generations`
+- **Migration** (new): `create_anonymous_ai_usage_table.sql`
+- `src/lib/ai-quota.server.ts` — tier limits, rate limit, anon fingerprint
+- `src/lib/usage.functions.ts` — return new shape
+- `src/lib/anon-tracking.server.ts` (new) — cookie + fingerprint helpers
+- `src/hooks/use-recipe-usage.ts`
+- `src/components/FreeTierBanner.tsx`
+- `src/components/RecipeCounter.tsx`
+- `src/components/LimitReachedModal.tsx`
+- `src/components/landing/SiteFooter.tsx`
+- `src/routes/_authenticated/pricing.tsx`
+- `src/routes/_authenticated/usage.tsx`
+- `src/routes/_authenticated/account.tsx`
+- `src/routes/index.tsx`
 
-**Stripe**
-- Create `unlimited_plan` product + `unlimited_monthly` price ($19.99/mo)
-- Keep `premium_monthly` as Basic tier
+## Not in this plan (mentioned but skipped)
+- Email verification gate, disposable-email blocking, per-operation credit weights — happy to do as a follow-up if abuse persists.
 
-**Secret**
-- `ANON_COOKIE_SECRET`
-
-## Out of scope
-- Yearly billing, trials, coupons
-- Migrating existing `premium_monthly` subscribers (they automatically become Basic 10/day — the price they pay is unchanged)
-- Per-feature quotas (image gen vs recipe text counted the same)
+## Technical notes
+- Anon fingerprint = `sha256(ip + cookieId + DAILY_SALT)`. IP-only would punish shared NATs; cookie-only is bypassable; combining both raises the cost of abuse significantly without affecting normal users.
+- Rate limit check uses last row in `recipe_generations` (already indexed by user_id) — no new table.
+- "Unlimited 50/day" hidden cap: marketing card stays "Unlimited recipes" with an asterisk + small "Fair use applies" line, matching industry norm (ChatGPT, Cursor, etc.).
+- All limits read from a single `TIER_LIMITS` constant so future tweaks are one-line.
