@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { hashIp } from "./abuse-logging.server";
 
 async function assertAdmin(userId: string) {
   const { data, error } = await supabaseAdmin
@@ -479,8 +480,6 @@ export const adminListAbuseEvents = createServerFn({ method: "POST" })
 // Targets: signed-in users (recipe_generations), anonymous fingerprints
 // (anonymous_ai_usage), and per-IP ceilings (anonymous_ai_usage_by_ip).
 // ============================================================================
-
-import { hashIp } from "./abuse-logging.server";
 
 const todayDateUTC = () => new Date().toISOString().slice(0, 10);
 
