@@ -14,7 +14,8 @@ const inputSchema = z.object({
   cuisine: z.string().min(1).max(40),
   exclude: z.array(z.string().max(120)).max(60).default([]),
   kidFriendly: z.boolean().optional().default(false),
-  includeNutrition: z.boolean().optional().default(false),
+  // Kept for backward-compat with existing clients; nutrition is now always on.
+  includeNutrition: z.boolean().optional().default(true),
   language: z
     .string()
     .trim()
@@ -46,6 +47,8 @@ export type Recipe = {
       proteinG?: number;
       carbsG?: number;
       fatG?: number;
+      sugarG?: number;
+      fiberG?: number;
     };
   };
 };
@@ -86,6 +89,8 @@ const responseSchema = z.object({
                 proteinG: z.number().optional(),
                 carbsG: z.number().optional(),
                 fatG: z.number().optional(),
+                sugarG: z.number().optional(),
+                fiberG: z.number().optional(),
               })
               .optional(),
           })
