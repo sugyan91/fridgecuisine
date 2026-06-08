@@ -159,7 +159,7 @@ export const EmailShell = ({ preview, children }: ShellProps) => (
             <Heading as="h2" style={wordmark}>
               Fridge<span style={wordmarkAccent}>Cuisine</span>
             </Heading>
-            <Text style={tagline}>Your AI personal chef</Text>
+            <Text style={tagline}>Your AI powered personal Chef</Text>
           </Section>
           <Section style={bodySection}>{children}</Section>
           <Section style={footerSection}>

@@ -782,7 +782,7 @@ function Index() {
               <div className="flex items-center justify-center gap-3 mb-3">
                 <span className="h-px w-8 bg-accent" />
                 <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
-                  Your AI personal chef
+                  Your AI powered personal Chef
                 </p>
                 <span className="h-px w-8 bg-accent" />
               </div>

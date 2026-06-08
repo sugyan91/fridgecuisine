@@ -22,7 +22,7 @@ export const SignupEmail = ({
   <EmailShell preview="Confirm your email and start cooking with FridgeCuisine">
     <Heading as="h1" style={h1}>Welcome to the kitchen 🍳</Heading>
     <Text style={text}>
-      Thanks for joining FridgeCuisine — your AI personal chef. Tap the button
+      Thanks for joining FridgeCuisine — your AI powered personal Chef. Tap the button
       below to confirm{recipient ? ' ' : ''}
       {recipient ? <strong>{recipient}</strong> : 'your email'} and we'll get
       started on your first recipe.

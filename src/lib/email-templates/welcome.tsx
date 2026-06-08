@@ -13,7 +13,7 @@ const WelcomeEmail = ({ firstName }: WelcomeEmailProps) => (
       {firstName ? `Welcome, ${firstName} 🍳` : 'Welcome to FridgeCuisine 🍳'}
     </Heading>
     <Text style={text}>
-      You just unlocked your AI personal chef. Snap a photo of your fridge —
+      You just unlocked your AI powered personal Chef. Snap a photo of your fridge —
       or type a few ingredients — and we'll turn them into real, step-by-step
       recipes in seconds. Any cuisine, any diet, any skill level.
     </Text>
