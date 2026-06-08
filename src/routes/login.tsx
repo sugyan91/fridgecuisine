@@ -18,6 +18,24 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/login")({
   validateSearch: searchSchema,
   loader: () => getTurnstileSiteKey(),
+  head: () => ({
+    meta: [
+      { title: "Sign in or sign up — FridgeCuisine" },
+      {
+        name: "description",
+        content:
+          "Sign in to save recipes, build cookbooks, and unlock chef-made dishes on FridgeCuisine.",
+      },
+      { name: "robots", content: "noindex, follow" },
+      { property: "og:title", content: "Sign in — FridgeCuisine" },
+      {
+        property: "og:description",
+        content: "Access your saved recipes and cookbooks on FridgeCuisine.",
+      },
+      { property: "og:url", content: "https://fridgecuisine.com/login" },
+    ],
+    links: [{ rel: "canonical", href: "https://fridgecuisine.com/login" }],
+  }),
   component: LoginPage,
 });
 

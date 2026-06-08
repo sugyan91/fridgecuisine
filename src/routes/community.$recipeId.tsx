@@ -16,6 +16,62 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export const Route = createFileRoute("/community/$recipeId")({
+  loader: ({ params }) => getCommunityRecipe({ data: { id: params.recipeId } }),
+  head: ({ params, loaderData }) => {
+    const r = loaderData?.recipe as
+      | { title: string; description?: string | null; image_url?: string | null; cuisine?: string | null; ingredients?: unknown; steps?: unknown }
+      | null
+      | undefined;
+    const url = `https://fridgecuisine.com/community/${params.recipeId}`;
+    const title = r ? `${r.title} — FridgeCuisine Community` : "Community recipe — FridgeCuisine";
+    const description =
+      (r?.description?.slice(0, 155)) ||
+      (r
+        ? `A community-shared ${r.cuisine ?? ""} recipe on FridgeCuisine.`.trim()
+        : "Browse community-shared recipes from home cooks on FridgeCuisine.");
+    const image = r?.image_url ?? undefined;
+    const meta: Array<Record<string, string>> = [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "article" },
+      { property: "og:url", content: url },
+    ];
+    if (image) {
+      meta.push({ property: "og:image", content: image });
+      meta.push({ name: "twitter:image", content: image });
+    }
+    const scripts: Array<{ type: string; children: string }> = [];
+    if (r) {
+      const ingredients = Array.isArray(r.ingredients)
+        ? (r.ingredients as Array<string | { name?: string; quantity?: string }>).map((i) =>
+            typeof i === "string" ? i : [i?.quantity, i?.name].filter(Boolean).join(" "),
+          )
+        : [];
+      const steps = Array.isArray(r.steps)
+        ? (r.steps as Array<string | { text?: string; instruction?: string }>).map((s, i) => ({
+            "@type": "HowToStep",
+            position: i + 1,
+            text: typeof s === "string" ? s : s?.text ?? s?.instruction ?? "",
+          }))
+        : [];
+      scripts.push({
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Recipe",
+          name: r.title,
+          description,
+          image: image ? [image] : undefined,
+          recipeCuisine: r.cuisine ?? undefined,
+          recipeIngredient: ingredients,
+          recipeInstructions: steps,
+        }),
+      });
+    }
+    return { meta, links: [{ rel: "canonical", href: url }], scripts };
+  },
   component: RecipePage,
 });
 
