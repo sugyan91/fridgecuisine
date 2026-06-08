@@ -6,20 +6,30 @@ type Props = {
   onClose: () => void;
   isSignedIn: boolean;
   countdown: string;
+  tier?: "anon" | "free" | "basic" | "unlimited";
 };
 
-export function LimitReachedModal({ open, onClose, isSignedIn, countdown }: Props) {
+export function LimitReachedModal({ open, onClose, isSignedIn, countdown, tier }: Props) {
+  const resolvedTier = tier ?? (isSignedIn ? "free" : "anon");
+  const isBasic = resolvedTier === "basic";
+  const limitCount = isBasic ? 10 : 3;
+  const title = isBasic
+    ? "You've used your 10 recipes today 🔥"
+    : `You've cooked through your ${limitCount} free recipes today 🔥`;
+  const description = isBasic
+    ? "Upgrade to Unlimited and never hit the limit again — or wait for the daily reset."
+    : isSignedIn
+      ? "Upgrade to Basic ($5.99/mo) for 10 recipes a day, or Unlimited ($19.99/mo) for no limit."
+      : "Sign up free to save recipes — or go paid for more daily recipes.";
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl md:text-3xl tracking-tight">
-            You've cooked through your 5 free recipes today 🔥
+            {title}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground pt-1">
-            {isSignedIn
-              ? "Go unlimited and never hit the limit again — or wait for the daily reset."
-              : "Sign up free to get more recipes, save them across devices, and unlock the community cookbook."}
+            {description}
           </DialogDescription>
         </DialogHeader>
 
@@ -39,7 +49,7 @@ export function LimitReachedModal({ open, onClose, isSignedIn, countdown }: Prop
             onClick={onClose}
             className="w-full text-center px-4 py-3 rounded-full bg-primary text-primary-foreground font-display font-semibold text-sm hover:brightness-110 transition-all"
           >
-            Go unlimited — $5.99/mo
+            {isBasic ? "Go Unlimited — $19.99/mo" : "See plans — from $5.99/mo"}
           </Link>
           <p className="text-center text-xs text-muted-foreground mt-2">
             Daily limit resets in <span className="font-semibold text-foreground">{countdown}</span>
