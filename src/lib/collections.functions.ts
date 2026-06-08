@@ -205,14 +205,17 @@ export const listCollectionItems = createServerFn({ method: "POST" })
       .eq("collection_id", data.collection_id)
       .order("position", { ascending: true });
     if (error) throw new Error(error.message);
-    const items = (rows ?? []).map((r: { saved_recipe_id: string; position: number; saved_recipes: { title: string; cuisine: string | null; cook_time_minutes: number | null; recipe: SavedRecipeData } }) => ({
-      saved_recipe_id: r.saved_recipe_id,
-      position: r.position,
-      title: r.saved_recipes.title,
-      cuisine: r.saved_recipes.cuisine,
-      cook_time_minutes: r.saved_recipes.cook_time_minutes,
-      recipe: r.saved_recipes.recipe,
-    }));
+    const items: CollectionItem[] = (rows ?? []).map((r) => {
+      const sr = r.saved_recipes as unknown as { title: string; cuisine: string | null; cook_time_minutes: number | null; recipe: SavedRecipeData };
+      return {
+        saved_recipe_id: r.saved_recipe_id,
+        position: r.position,
+        title: sr.title,
+        cuisine: sr.cuisine,
+        cook_time_minutes: sr.cook_time_minutes,
+        recipe: sr.recipe,
+      };
+    });
     return { items };
   });
 
@@ -243,14 +246,17 @@ export const getPublicCollection = createServerFn({ method: "POST" })
       .select("display_name, username")
       .eq("user_id", coll.user_id)
       .maybeSingle();
-    const mapped: CollectionItem[] = (items ?? []).map((r: { saved_recipe_id: string; position: number; saved_recipes: { title: string; cuisine: string | null; cook_time_minutes: number | null; recipe: SavedRecipeData } }) => ({
-      saved_recipe_id: r.saved_recipe_id,
-      position: r.position,
-      title: r.saved_recipes.title,
-      cuisine: r.saved_recipes.cuisine,
-      cook_time_minutes: r.saved_recipes.cook_time_minutes,
-      recipe: r.saved_recipes.recipe,
-    }));
+    const mapped: CollectionItem[] = (items ?? []).map((r) => {
+      const sr = r.saved_recipes as unknown as { title: string; cuisine: string | null; cook_time_minutes: number | null; recipe: SavedRecipeData };
+      return {
+        saved_recipe_id: r.saved_recipe_id,
+        position: r.position,
+        title: sr.title,
+        cuisine: sr.cuisine,
+        cook_time_minutes: sr.cook_time_minutes,
+        recipe: sr.recipe,
+      };
+    });
     return {
       ok: true,
       collection: coll as Collection,
