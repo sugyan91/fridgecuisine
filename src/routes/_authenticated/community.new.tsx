@@ -72,7 +72,7 @@ function NewRecipe() {
       if (!user) throw new Error("Not signed in");
       const compressed = await compressImage(file);
       const ext = compressed.type.includes("webp") ? "webp" : "jpg";
-      const path = `${user.id}/${Date.now()}.${ext}`;
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage
         .from("recipe-photos")
         .upload(path, compressed, { cacheControl: "3600", upsert: false, contentType: compressed.type });

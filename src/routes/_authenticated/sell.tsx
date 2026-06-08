@@ -362,7 +362,7 @@ function RecipesManager() {
       const uid = userResp.user?.id;
       if (!uid) throw new Error("Not signed in");
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const path = `${uid}/${Date.now()}.${ext}`;
+      const path = `${uid}/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage
         .from("recipe-photos")
         .upload(path, file, { contentType: file.type, upsert: false });
