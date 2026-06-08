@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { callChatJSON } from "./hf-client.server";
 import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
@@ -111,7 +112,17 @@ export const generateRecipes = createServerFn({ method: "POST" })
     const auth = await tryGetSupabaseUser();
     let anonFingerprint: string | null = null;
     if (auth) {
-      const quota = await checkAiQuota(auth.supabase, auth.userId);
+      const req = (() => { try { return getRequest(); } catch { return null; } })();
+      const h = req?.headers;
+      const signals = {
+        ip:
+          h?.get("cf-connecting-ip") ||
+          h?.get("x-real-ip") ||
+          h?.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          null,
+        userAgent: h?.get("user-agent") ?? null,
+      };
+      const quota = await checkAiQuota(auth.supabase, auth.userId, signals);
       if (!quota.ok) return { ok: false, error: quota.error, code: quota.code };
     } else {
       const anon = await checkAnonQuota();
