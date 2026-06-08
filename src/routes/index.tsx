@@ -340,7 +340,12 @@ function Index() {
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
-        toast.error(res.error);
+        if (res.code === "rate_limit") {
+          setLimitModalOpen(true);
+        } else {
+          toast.error(res.error);
+        }
+        logGeneration();
       } else {
         setRecipes(res.recipes);
         logGeneration();
@@ -369,8 +374,11 @@ function Index() {
         data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
-      if (!res.ok) toast.error(res.error);
-      else {
+      if (!res.ok) {
+        if (res.code === "rate_limit") setLimitModalOpen(true);
+        else toast.error(res.error);
+        logGeneration();
+      } else {
         setRecipes(res.recipes);
         logGeneration();
       }
@@ -405,7 +413,9 @@ function Index() {
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
-        toast.error(res.error);
+        if (res.code === "rate_limit") setLimitModalOpen(true);
+        else toast.error(res.error);
+        logGeneration();
       } else {
         const existing = new Set(recipes.map((r) => r.title.toLowerCase()));
         const fresh = res.recipes.filter((r) => !existing.has(r.title.toLowerCase()));
