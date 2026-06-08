@@ -201,19 +201,32 @@ function BentoTile({
   className?: string;
 }) {
   const country = dish.origin.replace(/-\d+$/, "");
+  const [broken, setBroken] = useState(false);
   return (
     <button
       type="button"
       onClick={() => onPick(dish.name)}
       className={`relative group overflow-hidden rounded-2xl md:rounded-3xl bg-secondary text-left transition-all hover:shadow-[0_18px_36px_-14px_rgb(31_42_26/0.22)] aspect-[4/5] ${className ?? ""}`}
     >
-      <img
-        src={dish.img}
-        alt={dish.name}
-        loading="lazy"
-        decoding="async"
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-      />
+      {broken ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-accent/15 to-primary/30">
+          <span className="text-6xl mb-2" aria-hidden>
+            {dish.flag}
+          </span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/70">
+            {country}
+          </span>
+        </div>
+      ) : (
+        <img
+          src={dish.img}
+          alt={dish.name}
+          loading="lazy"
+          decoding="async"
+          onError={() => setBroken(true)}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+        />
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
 
       {variant === "hero" ? (
