@@ -6,8 +6,8 @@ export { FREE_DAILY_LIMIT };
 
 export type UsageTier = "anon" | "free" | "basic" | "unlimited";
 
-/** Anonymous users get 1 generation as a teaser, then a sign-in wall. */
-const ANON_LIFETIME_LIMIT = 1;
+/** Anonymous users get 2 generations per day, then a sign-in wall. */
+const ANON_DAILY_LIMIT = 2;
 
 function startOfTodayLocal(): Date {
   const d = new Date();
@@ -59,7 +59,7 @@ export function useRecipeUsage(userId: string | undefined) {
       setTick((x) => x + 1);
       if (Date.now() >= resetMs) {
         setResetMs(nextMidnightLocalMs());
-        // Anon is lifetime now — do NOT reset at midnight.
+        // Daily reset for both anon and free signed-in tiers.
         refresh();
       }
     }, 1000);
@@ -83,10 +83,10 @@ export function useRecipeUsage(userId: string | undefined) {
   const limit = serverLimit;
   // No tier is truly unlimited anymore — "unlimited" has a fair-use cap.
   const unlimited = false;
-  const lifetime = tier === "anon";
+  const lifetime = false;
   return {
     used: current,
-    limit: limit ?? (tier === "anon" ? ANON_LIFETIME_LIMIT : FREE_DAILY_LIMIT),
+    limit: limit ?? (tier === "anon" ? ANON_DAILY_LIMIT : FREE_DAILY_LIMIT),
     unlimited,
     tier,
     lifetime,
