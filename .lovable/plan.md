@@ -1,20 +1,22 @@
-## Problem
+## Goal
 
-The "Search any dish" flow (`getDishHelper`) returns a recipe without a `nutrition` block, while the main "Generate recipes" flow does. `RecipeCard` only renders calories/protein/carbs/fat/sugar/fiber when `recipe.nutrition.perServing` exists, so the dish helper card shows no macros.
+For anonymous (free) users, `RecipeCard` currently calls `generateRecipeImage` (which requires auth) and silently fails, leaving only the emoji fallback. Make this explicit: skip the call when signed out and overlay a "Sign in to see the real food photo" CTA on the fallback image, so users understand the photo exists behind sign-in.
 
-## Fix
+## Changes (single file: `src/components/fridge/RecipeCard.tsx`)
 
-Update `src/lib/dish-helper.functions.ts`:
+1. **Skip the server call when signed out.** In the `useEffect` that fetches the image, return early when `!isAuthenticated` — set `imageLoading=false`, `imageUrl=null`. No quota waste, no Unauthorized errors.
 
-1. Extend the response schema's `recipe` object with a `nutrition` field shaped like the recipes flow:
-   - `servings: number` (matches top-level servings)
-   - `perServing: { calories, proteinG, carbsG, fatG, sugarG, fiberG }` (all integers)
-2. Add a top-level integer `servings` field on the recipe (so `RecipeCard` can show per-serving context consistently).
-3. Update the system prompt and the JSON example to require nutrition and servings, mirroring the wording used in `recipes.functions.ts` (approximate, never omit).
+2. **Add a `SignInForPhotoOverlay` element** rendered on top of `FallbackImage` when `!isAuthenticated`:
+   - Small pill/button: "🔒 Sign in to see the real photo"
+   - Wrapped in `<Link to="/auth" search={{ redirect: <current path> }}>` (TanStack Router)
+   - Positioned absolutely over the image area, centered, with subtle dark scrim so it reads over the gradient fallback
 
-No UI changes needed — `RecipeCard` already renders `nutrition.perServing` automatically.
+3. **Apply at both render sites** (expanded view ~L206 and compact view ~L477): wrap the existing image container in `relative`, render `<FallbackImage />` as today, and append the overlay when `!isAuthenticated`.
+
+No changes to `recipe-image.functions.ts`, server quota, or other recipe surfaces.
 
 ## Out of scope
 
-- Quota, auth, anonymous tracking — unchanged.
-- Other recipe surfaces (community, saved, paid) — already have nutrition.
+- Letting anonymous users actually generate images (they still need to sign in).
+- Changing the fallback graphic itself.
+- Quota/anonymous tracking changes.

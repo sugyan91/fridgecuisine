@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { Link } from "@tanstack/react-router";
 import type { Recipe } from "@/lib/recipes.functions";
 import { RecipeTimers } from "./RecipeTimers";
 import { StepTimer } from "./StepTimer";
@@ -74,6 +75,13 @@ export function RecipeCard({
   useEffect(() => {
     let cancelled = false;
     setImageBroken(false);
+    if (!isAuthenticated) {
+      setImageUrl(null);
+      setImageLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
     const cacheKey = `fc:img:v3:${(recipe.cuisine ?? "").toLowerCase()}::${recipe.title.toLowerCase()}`;
     try {
       const cached = typeof window !== "undefined" ? window.localStorage.getItem(cacheKey) : null;
@@ -119,7 +127,20 @@ export function RecipeCard({
     return () => {
       cancelled = true;
     };
-  }, [recipe.title, recipe.cuisine, recipe.blurb, recipe.usedIngredients, recipe.missingIngredients, runImage]);
+  }, [recipe.title, recipe.cuisine, recipe.blurb, recipe.usedIngredients, recipe.missingIngredients, runImage, isAuthenticated]);
+
+  const SignInPhotoCta = ({ tone = "light" }: { tone?: "light" | "dark" }) => (
+    <div className="absolute inset-0 grid place-items-center bg-black/35 backdrop-blur-[1px]">
+      <Link
+        to="/auth"
+        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-border font-black uppercase tracking-widest text-[11px] shadow-[4px_4px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-transform ${
+          tone === "dark" ? "bg-white text-foreground" : "bg-turmeric text-foreground"
+        }`}
+      >
+        🔒 Sign in to see the real photo
+      </Link>
+    </div>
+  );
 
   const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
   const dietary = recipe.dietary ?? [];
@@ -203,9 +224,12 @@ export function RecipeCard({
         className="bg-cardamom text-white border-4 border-border rounded-[32px] p-6 md:p-8 shadow-[8px_8px_0px_0px_var(--border)] animate-pop"
         style={{ animationDelay: `${index * 80}ms` }}
       >
-        <div className="mb-6 -mx-2 md:-mx-4 rounded-2xl overflow-hidden border-2 border-white/20 bg-white/5 aspect-[16/9]">
+        <div className="relative mb-6 -mx-2 md:-mx-4 rounded-2xl overflow-hidden border-2 border-white/20 bg-white/5 aspect-[16/9]">
           {imageBroken || (!imageLoading && !imageUrl) ? (
-            <FallbackImage />
+            <>
+              <FallbackImage />
+              {!isAuthenticated && <SignInPhotoCta />}
+            </>
           ) : imageUrl ? (
             <img
               src={imageUrl}
@@ -474,9 +498,12 @@ export function RecipeCard({
       className="group bg-white border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="aspect-[16/9] bg-muted border-b-4 border-border overflow-hidden">
+      <div className="relative aspect-[16/9] bg-muted border-b-4 border-border overflow-hidden">
         {imageBroken || (!imageLoading && !imageUrl) ? (
-          <FallbackImage />
+          <>
+            <FallbackImage />
+            {!isAuthenticated && <SignInPhotoCta />}
+          </>
         ) : imageUrl ? (
           <img
             src={imageUrl}
