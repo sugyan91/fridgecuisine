@@ -43,12 +43,43 @@ export function RecipeCard({
 
   useEffect(() => {
     let cancelled = false;
+    const cacheKey = `fc:img:v2:${(recipe.cuisine ?? "").toLowerCase()}::${recipe.title.toLowerCase()}`;
+    try {
+      const cached = typeof window !== "undefined" ? window.localStorage.getItem(cacheKey) : null;
+      if (cached) {
+        setImageUrl(cached);
+        setImageLoading(false);
+        return () => {
+          cancelled = true;
+        };
+      }
+    } catch {
+      // ignore storage errors (quota, private mode)
+    }
     setImageLoading(true);
     setImageUrl(null);
-    runImage({ data: { dishName: recipe.title, cuisine: recipe.cuisine } })
+    const keyIngredients = [
+      ...(recipe.usedIngredients ?? []),
+      ...(recipe.missingIngredients ?? []),
+    ].slice(0, 6);
+    runImage({
+      data: {
+        dishName: recipe.title,
+        cuisine: recipe.cuisine,
+        description: recipe.blurb,
+        keyIngredients,
+      },
+    })
       .then((res) => {
         if (cancelled) return;
-        if (res.ok) setImageUrl(res.dataUrl);
+        if (res.ok) {
+          setImageUrl(res.dataUrl);
+          try {
+            window.localStorage.setItem(cacheKey, res.dataUrl);
+          } catch {
+            // ignore quota errors
+          }
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -57,7 +88,7 @@ export function RecipeCard({
     return () => {
       cancelled = true;
     };
-  }, [recipe.title, recipe.cuisine, runImage]);
+  }, [recipe.title, recipe.cuisine, recipe.blurb, recipe.usedIngredients, recipe.missingIngredients, runImage]);
 
   const allIngredients = [...recipe.usedIngredients, ...recipe.missingIngredients];
   const dietary = recipe.dietary ?? [];
