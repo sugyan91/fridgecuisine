@@ -3,10 +3,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type Tier = "free" | "basic" | "unlimited";
 
 export const TIER_LIMITS: Record<Tier, number> = {
-  free: 3,
+  free: 2,
   basic: 10,
-  unlimited: Number.POSITIVE_INFINITY,
+  // "Unlimited" is marketed as unlimited but enforces a fair-use daily cap
+  // to protect against abuse / runaway AI cost from a single account.
+  unlimited: 50,
 };
+
+/** Minimum seconds between two AI generations for the same user (all tiers). */
+export const RATE_LIMIT_SECONDS = 3;
 
 /** Back-compat export — free tier limit. */
 export const FREE_DAILY_LIMIT = TIER_LIMITS.free;
@@ -57,10 +62,11 @@ export type QuotaCheck =
   | {
       ok: false;
       error: string;
-      code: "rate_limit";
+      code: "rate_limit" | "too_fast";
       tier: Tier;
       requiresUpgrade?: true;
       suggestedPlan?: "basic" | "unlimited";
+      retryAfterSeconds?: number;
     };
 
 /**
@@ -74,8 +80,31 @@ export async function checkAiQuota(
 ): Promise<QuotaCheck> {
   const tier = await resolveTier(supabase, userId);
   const limit = TIER_LIMITS[tier];
-  if (!Number.isFinite(limit)) return { ok: true, tier };
 
+  // Rate limit: reject if last generation < RATE_LIMIT_SECONDS ago.
+  const { data: last, error: lastErr } = await supabase
+    .from("recipe_generations")
+    .select("created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!lastErr && last?.created_at) {
+    const elapsedMs = Date.now() - new Date(last.created_at as string).getTime();
+    const minMs = RATE_LIMIT_SECONDS * 1000;
+    if (elapsedMs < minMs) {
+      const retryAfterSeconds = Math.ceil((minMs - elapsedMs) / 1000);
+      return {
+        ok: false,
+        error: `Slow down — try again in ${retryAfterSeconds}s.`,
+        code: "too_fast",
+        tier,
+        retryAfterSeconds,
+      };
+    }
+  }
+
+  // Daily quota — count rows in the last 24h.
   const sinceIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { count, error } = await supabase
     .from("recipe_generations")
@@ -92,18 +121,20 @@ export async function checkAiQuota(
     };
   }
   if ((count ?? 0) >= limit) {
-    const suggestedPlan: "basic" | "unlimited" = tier === "basic" ? "unlimited" : "basic";
+    const suggestedPlan: "basic" | "unlimited" | undefined =
+      tier === "basic" ? "unlimited" : tier === "free" ? "basic" : undefined;
     const upgradeCopy =
-      tier === "basic"
-        ? `You've used your ${limit} recipes today. Upgrade to Unlimited for $19.99/mo.`
-        : `You've used your ${limit} free recipes today. Upgrade to Basic ($5.99/mo) or Unlimited ($19.99/mo).`;
+      tier === "unlimited"
+        ? `You've hit today's fair-use cap of ${limit} recipes. Resets at midnight.`
+        : tier === "basic"
+          ? `You've used your ${limit} recipes today. Upgrade to Unlimited for $19.99/mo.`
+          : `You've used your ${limit} free recipes today. Upgrade to Basic ($5.99/mo) or Unlimited ($19.99/mo).`;
     return {
       ok: false,
       error: upgradeCopy,
       code: "rate_limit",
       tier,
-      requiresUpgrade: true,
-      suggestedPlan,
+      ...(suggestedPlan ? { requiresUpgrade: true as const, suggestedPlan } : {}),
     };
   }
   return { ok: true, tier };
