@@ -60,7 +60,9 @@ export async function logAbuseEvent(event: AbuseEventInput): Promise<void> {
 
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("abuse_events").insert(payload);
+    const { error } = await supabaseAdmin
+      .from("abuse_events")
+      .insert({ ...payload, metadata: payload.metadata as never });
     if (error) console.error("logAbuseEvent insert failed", error);
   } catch (err) {
     console.error("logAbuseEvent unexpected failure", err);
