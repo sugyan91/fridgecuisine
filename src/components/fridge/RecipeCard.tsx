@@ -6,6 +6,7 @@ import { StepTimer } from "./StepTimer";
 import { ShareButton } from "./ShareButton";
 import { swapIngredient, type IngredientSwap } from "@/lib/ingredient-swap.functions";
 import { generateRecipeImage } from "@/lib/recipe-image.functions";
+import { downloadRecipePdf } from "@/lib/recipe-pdf";
 
 type Props = {
   recipe: Recipe;
@@ -375,6 +376,13 @@ export function RecipeCard({
               className="w-full bg-white text-cardamom py-3 rounded-xl font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
             >
               {saved ? "★ Saved" : "♡ Save Recipe"}
+            </button>
+            <button
+              type="button"
+              onClick={() => downloadRecipePdf(recipe)}
+              className="w-full bg-turmeric text-foreground py-3 rounded-xl font-black uppercase text-sm border-2 border-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
+            >
+              ⬇ Download PDF
             </button>
             <ShareButton
               recipe={recipe}
