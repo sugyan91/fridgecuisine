@@ -75,6 +75,8 @@ export function downloadRecipePdf(recipe: Recipe) {
     if (n.proteinG != null) parts.push(`Protein ${n.proteinG}g`);
     if (n.carbsG != null) parts.push(`Carbs ${n.carbsG}g`);
     if (n.fatG != null) parts.push(`Fat ${n.fatG}g`);
+    if (n.sugarG != null) parts.push(`Sugar ${n.sugarG}g`);
+    if (n.fiberG != null) parts.push(`Fiber ${n.fiberG}g`);
     writeLines(parts.join("   ·   "), 11);
     y += 4;
     hr();

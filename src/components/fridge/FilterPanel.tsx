@@ -217,21 +217,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
                 <span aria-hidden>🧒</span> Kid-friendly
               </button>
             )}
-            {onShowNutrition && (
-              <button
-                type="button"
-                onClick={() => onShowNutrition(!showNutrition)}
-                aria-pressed={!!showNutrition}
-                className={`flex items-center gap-1.5 border-2 border-border py-1.5 px-3 rounded-full font-black text-[11px] uppercase transition-all ${
-                  showNutrition
-                    ? "bg-cardamom text-white shadow-[2px_2px_0px_0px_var(--border)]"
-                    : "bg-white hover:bg-cardamom/10"
-                }`}
-                title="Approximate calories & macros per serving"
-              >
-                <span aria-hidden>🔥</span> Nutrition (approx)
-              </button>
-            )}
+            {/* Nutrition is now always generated; toggle removed. */}
           </div>
         )}
         <button

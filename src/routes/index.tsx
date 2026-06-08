@@ -128,7 +128,9 @@ function Index() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saved, setSaved] = useState<SavedRecipeRow[]>([]);
   const [kidFriendly, setKidFriendly] = useState(false);
-  const [showNutrition, setShowNutrition] = useState(false);
+  // Nutrition is always generated; flag retained as a constant for legacy props.
+  const showNutrition = true;
+  const setShowNutrition: (v: boolean) => void = () => {};
 
   const generate = useServerFn(generateRecipes);
   const fetchDish = useServerFn(getDishHelper);

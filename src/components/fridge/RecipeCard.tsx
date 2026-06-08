@@ -232,12 +232,14 @@ export function RecipeCard({
               </h5>
               <span className="text-[9px] uppercase tracking-wide opacity-60">Estimates only</span>
             </div>
-            <div className="grid grid-cols-4 gap-2 text-center">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
               {[
                 { label: "kcal", value: nutrition.calories },
                 { label: "Protein", value: nutrition.proteinG, suffix: "g" },
                 { label: "Carbs", value: nutrition.carbsG, suffix: "g" },
                 { label: "Fat", value: nutrition.fatG, suffix: "g" },
+                { label: "Sugar", value: nutrition.sugarG, suffix: "g" },
+                { label: "Fiber", value: nutrition.fiberG, suffix: "g" },
               ].map((m) => (
                 <div key={m.label} className="bg-white/10 rounded-xl py-2">
                   <div className="font-black text-base leading-none">
@@ -471,6 +473,15 @@ export function RecipeCard({
           </div>
         )}
         <p className="text-sm text-pretty mb-4 font-medium">{recipe.blurb}</p>
+        {nutrition && (
+          <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-black uppercase tracking-wide bg-turmeric/15 border-2 border-border rounded-full px-3 py-1.5">
+            <span className="opacity-60">Per serving:</span>
+            {nutrition.calories != null && <span>{nutrition.calories} kcal</span>}
+            {nutrition.proteinG != null && <span>P {nutrition.proteinG}g</span>}
+            {nutrition.carbsG != null && <span>C {nutrition.carbsG}g</span>}
+            {nutrition.fatG != null && <span>F {nutrition.fatG}g</span>}
+          </div>
+        )}
         <div className="flex justify-between items-center">
           <button
             type="button"

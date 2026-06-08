@@ -56,6 +56,42 @@ export type Database = {
         }
         Relationships: []
       }
+      collection_items: {
+        Row: {
+          added_at: string
+          collection_id: string
+          position: number
+          saved_recipe_id: string
+        }
+        Insert: {
+          added_at?: string
+          collection_id: string
+          position?: number
+          saved_recipe_id: string
+        }
+        Update: {
+          added_at?: string
+          collection_id?: string
+          position?: number
+          saved_recipe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_items_saved_recipe_id_fkey"
+            columns: ["saved_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "saved_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_recipe_comments: {
         Row: {
           body: string
@@ -332,6 +368,47 @@ export type Database = {
         }
         Relationships: []
       }
+      meal_plan_entries: {
+        Row: {
+          created_at: string
+          id: string
+          meal_slot: string
+          plan_date: string
+          position: number
+          saved_recipe_id: string
+          servings_override: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meal_slot: string
+          plan_date: string
+          position?: number
+          saved_recipe_id: string
+          servings_override?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meal_slot?: string
+          plan_date?: string
+          position?: number
+          saved_recipe_id?: string
+          servings_override?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_entries_saved_recipe_id_fkey"
+            columns: ["saved_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "saved_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       paid_recipes: {
         Row: {
           chef_user_id: string
@@ -428,6 +505,42 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      recipe_collections: {
+        Row: {
+          color: string | null
+          created_at: string
+          emoji: string | null
+          id: string
+          is_public: boolean
+          name: string
+          slug: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          slug?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          slug?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
