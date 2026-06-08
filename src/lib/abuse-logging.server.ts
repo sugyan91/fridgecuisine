@@ -1,7 +1,7 @@
 // Server-only logging of abuse signals (rapid requests, IP changes, quota hits).
 // Persists structured events to public.abuse_events and emits a [ABUSE] console
 // line so they show up in server logs / alerting tooling.
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 
 export type AbuseEventType =
   | "anon_rapid_request"
