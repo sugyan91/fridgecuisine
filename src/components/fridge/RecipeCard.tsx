@@ -498,9 +498,12 @@ export function RecipeCard({
       className="group bg-white border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="aspect-[16/9] bg-muted border-b-4 border-border overflow-hidden">
+      <div className="relative aspect-[16/9] bg-muted border-b-4 border-border overflow-hidden">
         {imageBroken || (!imageLoading && !imageUrl) ? (
-          <FallbackImage />
+          <>
+            <FallbackImage />
+            {!isAuthenticated && <SignInPhotoCta />}
+          </>
         ) : imageUrl ? (
           <img
             src={imageUrl}
