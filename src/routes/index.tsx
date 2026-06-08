@@ -188,8 +188,9 @@ function Index() {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
-  const { isPremium } = useSubscription(userId);
-  const { logGeneration, atLimit: usageAtLimit, countdown } = useRecipeUsage(userId);
+  const { isPremium, isUnlimited, tier: subTier } = useSubscription(userId);
+  const { logGeneration, atLimit: usageAtLimit, countdown, tier: usageTier } =
+    useRecipeUsage(userId);
   const isAdmin = useIsAdmin(userId);
   const [adminOpen, setAdminOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -198,7 +199,7 @@ function Index() {
     open: false,
     recipe: null,
   });
-  const limitBlocked = !isPremium && usageAtLimit;
+  const limitBlocked = !isUnlimited && usageAtLimit;
   const limitToast = () => {
     setLimitModalOpen(true);
   };
@@ -466,6 +467,7 @@ function Index() {
         onClose={() => setLimitModalOpen(false)}
         isSignedIn={!!userId}
         countdown={countdown}
+        tier={usageTier === "anon" ? "anon" : subTier}
       />
       <SaveSignupModal
         open={saveModal.open}
