@@ -63,5 +63,18 @@ export function useSubscription(userId: string | undefined) {
       (periodEndMs === null || periodEndMs > now)) ||
       (subscription.status === "canceled" && periodEndMs !== null && periodEndMs > now));
 
-  return { subscription, isActive, isPremium: isActive, loading };
+  let tier: "free" | "basic" | "unlimited" = "free";
+  if (isActive && subscription) {
+    if (subscription.price_id === "unlimited_monthly") tier = "unlimited";
+    else if (subscription.price_id === "premium_monthly") tier = "basic";
+  }
+
+  return {
+    subscription,
+    isActive,
+    tier,
+    isPremium: isActive,
+    isUnlimited: tier === "unlimited",
+    loading,
+  };
 }

@@ -16,11 +16,18 @@ export const Route = createFileRoute("/_authenticated/pricing")({
   component: PricingPage,
 });
 
+type PaidPlan = "basic" | "unlimited";
+const PLAN_PRICE_ID: Record<PaidPlan, string> = {
+  basic: "premium_monthly",
+  unlimited: "unlimited_monthly",
+};
+
 function PricingPage() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState<PaidPlan>("unlimited");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -29,20 +36,25 @@ function PricingPage() {
     });
   }, []);
 
-  const { isPremium, subscription, loading } = useSubscription(user?.id);
+  const { isPremium, subscription, loading, tier } = useSubscription(user?.id);
 
   const fetchClientSecret = async (): Promise<string> => {
     if (!user) throw new Error("Not signed in");
     const returnUrl = `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
     const secret = await createCheckoutSession({
       data: {
-        priceId: "premium_monthly",
+        priceId: PLAN_PRICE_ID[checkoutPlan],
         returnUrl,
         environment: getStripeEnvironment(),
       },
     });
     if (!secret) throw new Error("No client secret");
     return secret;
+  };
+
+  const openCheckout = (plan: PaidPlan) => {
+    setCheckoutPlan(plan);
+    setCheckoutOpen(true);
   };
 
   const openPortal = async () => {
@@ -67,6 +79,7 @@ function PricingPage() {
     <EmbeddedCheckoutProvider
       stripe={getStripe()}
       options={{ fetchClientSecret }}
+      key={checkoutPlan}
     >
       <EmbeddedCheckout />
     </EmbeddedCheckoutProvider>
@@ -85,10 +98,10 @@ function PricingPage() {
 
         <h1 className="text-4xl font-black tracking-tight text-foreground">Choose your plan</h1>
         <p className="mt-2 text-muted-foreground">
-          Generate recipes from whatever is in your fridge. Upgrade for unlimited.
+          Generate recipes from whatever is in your fridge. Start free, upgrade anytime.
         </p>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
             {/* Free */}
             <div className="rounded-2xl border bg-card p-6 shadow-sm">
               <h2 className="text-xl font-bold">Free</h2>
@@ -97,27 +110,24 @@ function PricingPage() {
                 <span className="text-muted-foreground">/ forever</span>
               </div>
               <ul className="mt-6 space-y-2 text-sm">
-                <Feature>5 AI recipe generations / day</Feature>
+                <Feature>3 AI recipe generations / day</Feature>
                 <Feature>Save & share recipes</Feature>
                 <Feature>Browse the community</Feature>
               </ul>
               <Button variant="outline" className="mt-6 w-full" disabled>
-                {isPremium ? "Included" : "Current plan"}
+                {tier === "free" ? "Current plan" : "Included"}
               </Button>
             </div>
 
-            {/* Premium */}
-            <div className="relative rounded-2xl border-2 border-primary bg-card p-6 shadow-md">
-              <div className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
-                MOST POPULAR
-              </div>
-              <h2 className="text-xl font-bold">Premium</h2>
+            {/* Basic */}
+            <div className="relative rounded-2xl border bg-card p-6 shadow-sm">
+              <h2 className="text-xl font-bold">Basic</h2>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-4xl font-black">$5.99</span>
                 <span className="text-muted-foreground">/ month</span>
               </div>
               <ul className="mt-6 space-y-2 text-sm">
-                <Feature>Unlimited AI recipe generations</Feature>
+                <Feature>10 AI recipe generations / day</Feature>
                 <Feature>Priority AI responses</Feature>
                 <Feature>Cancel anytime — keep access until period ends</Feature>
                 <Feature>Everything in Free</Feature>
@@ -126,10 +136,55 @@ function PricingPage() {
                 <Button className="mt-6 w-full" disabled>
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </Button>
-              ) : isPremium ? (
+              ) : tier === "basic" ? (
                 <div className="mt-6 space-y-2">
                   <div className="rounded-md bg-primary/10 px-3 py-2 text-center text-sm font-semibold text-primary">
-                    You're Premium ✓
+                    You're on Basic ✓
+                    {subscription?.cancel_at_period_end && subscription.current_period_end && (
+                      <div className="mt-1 text-xs font-normal text-muted-foreground">
+                        Access until {new Date(subscription.current_period_end).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                  <Button variant="outline" className="w-full" onClick={openPortal} disabled={busy}>
+                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Manage billing"}
+                  </Button>
+                </div>
+              ) : tier === "unlimited" ? (
+                <Button variant="outline" className="mt-6 w-full" disabled>
+                  Included in Unlimited
+                </Button>
+              ) : (
+                <Button variant="outline" className="mt-6 w-full" onClick={() => openCheckout("basic")}>
+                  Choose Basic
+                </Button>
+              )}
+            </div>
+
+            {/* Unlimited */}
+            <div className="relative rounded-2xl border-2 border-primary bg-card p-6 shadow-md">
+              <div className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                MOST POPULAR
+              </div>
+              <h2 className="text-xl font-bold">Unlimited</h2>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-4xl font-black">$19.99</span>
+                <span className="text-muted-foreground">/ month</span>
+              </div>
+              <ul className="mt-6 space-y-2 text-sm">
+                <Feature>Unlimited AI recipe generations</Feature>
+                <Feature>Priority AI responses</Feature>
+                <Feature>Cancel anytime — keep access until period ends</Feature>
+                <Feature>Everything in Basic</Feature>
+              </ul>
+              {loading ? (
+                <Button className="mt-6 w-full" disabled>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </Button>
+              ) : tier === "unlimited" ? (
+                <div className="mt-6 space-y-2">
+                  <div className="rounded-md bg-primary/10 px-3 py-2 text-center text-sm font-semibold text-primary">
+                    You're Unlimited ✓
                     {subscription?.cancel_at_period_end && subscription.current_period_end && (
                       <div className="mt-1 text-xs font-normal text-muted-foreground">
                         Access until {new Date(subscription.current_period_end).toLocaleDateString()}
@@ -141,8 +196,8 @@ function PricingPage() {
                   </Button>
                 </div>
               ) : (
-                <Button className="mt-6 w-full" onClick={() => setCheckoutOpen(true)}>
-                  Upgrade to Premium
+                <Button className="mt-6 w-full" onClick={() => openCheckout("unlimited")}>
+                  {tier === "basic" ? "Upgrade to Unlimited" : "Go Unlimited"}
                 </Button>
               )}
             </div>
