@@ -286,3 +286,50 @@ export async function callImageGen(prompt: string): Promise<ImageGenResult> {
     return { ok: false, error: "Image generation failed." };
   }
 }
+
+/**
+ * Food-optimized image generation. Skips FLUX/SDXL (which hallucinate regional
+ * dish names) and uses Lovable AI Gateway directly: Nano Banana 2 first, then
+ * gpt-image-2 (low quality) as fallback. Both have strong world-cuisine
+ * knowledge.
+ */
+export async function callFoodImageGen(prompt: string): Promise<ImageGenResult> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  if (!lovableKey) {
+    return { ok: false, error: "Image generation not configured." };
+  }
+
+  // 1. Gemini Nano Banana 2 — uses chat-completions image shape.
+  try {
+    const r = await callImageEndpoint(LOVABLE_IMAGE_URL, lovableKey, {
+      model: "google/gemini-3.1-flash-image-preview",
+      messages: [{ role: "user", content: prompt }],
+      modalities: ["image", "text"],
+    });
+    if (r.status === 200 && r.b64) {
+      return { ok: true, dataUrl: `data:image/png;base64,${r.b64}`, provider: "lovable" };
+    }
+    console.warn(`[food-image] gemini ${r.status}, falling back. Body: ${r.raw.slice(0, 200)}`);
+  } catch (err) {
+    console.warn("[food-image] gemini threw, falling back:", err);
+  }
+
+  // 2. gpt-image-2 fallback — uses OpenAI images shape.
+  try {
+    const r = await callImageEndpoint(LOVABLE_IMAGE_URL, lovableKey, {
+      model: "openai/gpt-image-2",
+      prompt,
+      quality: "low",
+      size: "1024x1024",
+      n: 1,
+    });
+    if (r.status === 200 && r.b64) {
+      return { ok: true, dataUrl: `data:image/png;base64,${r.b64}`, provider: "lovable" };
+    }
+    console.error("[food-image] gpt-image-2", r.status, r.raw.slice(0, 300));
+    return { ok: false, error: `Image generation failed (${r.status}).` };
+  } catch (err) {
+    console.error("[food-image] gpt-image-2 threw:", err);
+    return { ok: false, error: "Image generation failed." };
+  }
+}
