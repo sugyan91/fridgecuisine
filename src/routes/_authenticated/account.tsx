@@ -204,6 +204,9 @@ function AccountPage() {
           )}
 
           <div className="mt-6 flex flex-wrap gap-2">
+            <Button asChild variant="outline">
+              <Link to="/usage">Today's usage</Link>
+            </Button>
             {!isPremium && (
               <Button asChild>
                 <Link to="/pricing">See plans</Link>

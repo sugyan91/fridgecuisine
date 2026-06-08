@@ -27,6 +27,7 @@ import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe
 import { Route as CommunityRecipeIdRouteImport } from './routes/community.$recipeId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
 import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
@@ -131,6 +132,11 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
   path: '/checkout/cancel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedUsageRoute = AuthenticatedUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSellRoute = AuthenticatedSellRouteImport.update({
   id: '/sell',
   path: '/sell',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
+  '/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
+  '/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/sell': typeof AuthenticatedSellRoute
+  '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/my-recipes'
     | '/pricing'
     | '/sell'
+    | '/usage'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/my-recipes'
     | '/pricing'
     | '/sell'
+    | '/usage'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/my-recipes'
     | '/_authenticated/pricing'
     | '/_authenticated/sell'
+    | '/_authenticated/usage'
     | '/checkout/cancel'
     | '/checkout/return'
     | '/community/$recipeId'
@@ -568,6 +580,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCancelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/usage': {
+      id: '/_authenticated/usage'
+      path: '/usage'
+      fullPath: '/usage'
+      preLoaderRoute: typeof AuthenticatedUsageRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/sell': {
       id: '/_authenticated/sell'
       path: '/sell'
@@ -675,6 +694,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
+  AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
 }
 
@@ -684,6 +704,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSellRoute: AuthenticatedSellRoute,
+  AuthenticatedUsageRoute: AuthenticatedUsageRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
 }
 
