@@ -14,6 +14,7 @@ import { template as purchaseReceiptTemplate } from './purchase-receipt'
 import { template as recipeSavedTemplate } from './recipe-saved'
 import { template as contactConfirmationTemplate } from './contact-confirmation'
 import { template as contactNotificationTemplate } from './contact-notification'
+import { template as abuseSpikeAlertTemplate } from './abuse-spike-alert'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome': welcomeTemplate,
@@ -21,4 +22,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'recipe-saved': recipeSavedTemplate,
   'contact-confirmation': contactConfirmationTemplate,
   'contact-notification': contactNotificationTemplate,
+  'abuse-spike-alert': abuseSpikeAlertTemplate,
 }
