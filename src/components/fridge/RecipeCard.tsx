@@ -377,6 +377,13 @@ export function RecipeCard({
             >
               {saved ? "★ Saved" : "♡ Save Recipe"}
             </button>
+            <button
+              type="button"
+              onClick={() => downloadRecipePdf(recipe)}
+              className="w-full bg-turmeric text-foreground py-3 rounded-xl font-black uppercase text-sm border-2 border-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
+            >
+              ⬇ Download PDF
+            </button>
             <ShareButton
               recipe={recipe}
               isAuthenticated={isAuthenticated}
