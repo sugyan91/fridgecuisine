@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export { FREE_DAILY_LIMIT };
 
+export type UsageTier = "anon" | "free" | "basic" | "unlimited";
+
 const ANON_KEY = "fridge-anon-usage";
 
 function startOfTodayLocal(): Date {
@@ -47,17 +49,20 @@ function writeAnonUsage(count: number) {
 export function useRecipeUsage(userId: string | undefined) {
   const fetchUsage = useServerFn(getRecipeUsage);
   const [used, setUsed] = useState<number | null>(null);
+  const [serverLimit, setServerLimit] = useState<number | null>(FREE_DAILY_LIMIT);
+  const [serverTier, setServerTier] = useState<"free" | "basic" | "unlimited" | null>(null);
   const [resetMs, setResetMs] = useState<number>(() => nextMidnightLocalMs());
   const [, setTick] = useState(0);
 
   const refresh = useCallback(async () => {
     if (!userId) {
       setUsed(readAnonUsage());
+      setServerLimit(FREE_DAILY_LIMIT);
+      setServerTier(null);
       return;
     }
     const { data: sess } = await supabase.auth.getSession();
     if (!sess.session?.access_token) {
-      // Session not hydrated yet — skip; will retry on next tick.
       return;
     }
     try {
@@ -65,6 +70,8 @@ export function useRecipeUsage(userId: string | undefined) {
         data: { sinceIso: startOfTodayLocal().toISOString() },
       });
       setUsed(res.used);
+      setServerLimit(res.limit);
+      setServerTier(res.tier);
     } catch (e) {
       console.error("usage fetch failed", e);
     }
@@ -96,9 +103,6 @@ export function useRecipeUsage(userId: string | undefined) {
       setUsed(next);
       return;
     }
-    // Authenticated users: the server function records the generation
-    // server-side (enforced via quota check). We only need to refresh
-    // the local counter so the UI updates.
     refresh();
   }, [userId, refresh]);
 
@@ -110,11 +114,16 @@ export function useRecipeUsage(userId: string | undefined) {
     h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m ${s}s` : `${s}s`;
 
   const current = used ?? 0;
+  const tier: UsageTier = !userId ? "anon" : (serverTier ?? "free");
+  const limit = serverLimit; // null = unlimited
+  const unlimited = limit === null;
   return {
     used: current,
-    limit: FREE_DAILY_LIMIT,
-    remaining: Math.max(0, FREE_DAILY_LIMIT - current),
-    atLimit: current >= FREE_DAILY_LIMIT,
+    limit: limit ?? FREE_DAILY_LIMIT,
+    unlimited,
+    tier,
+    remaining: unlimited ? Infinity : Math.max(0, (limit ?? 0) - current),
+    atLimit: !unlimited && current >= (limit ?? 0),
     countdown,
     loaded: used !== null,
     logGeneration,
