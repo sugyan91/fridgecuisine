@@ -1,81 +1,60 @@
+# Fix: Food images don't match the dish
 
-# Make FridgeCuisine feel like a finished product
+## Problem
 
-Targeted pass for casual home cooks. Three focused features plus a quality sweep — no full redesign, no marketplace changes.
+Recipe cards generate images via `generateRecipeImage` using only `dishName + cuisine` in the prompt. The image model chain is:
 
-## 1. Nutrition front-and-centre on every recipe
+1. Hugging Face FLUX.1-schnell / SDXL (no real knowledge of regional dish names like "Dal Tadka", "Himalayan Momo")
+2. Lovable Gemini 2.5 flash image (fallback)
 
-Today nutrition is behind an opt-in toggle. We'll make it part of every generated, saved, and shared recipe.
+FLUX/SDXL hallucinate generic food when given an unfamiliar dish name, so the cards show plausible-but-wrong food. That's what you're seeing.
 
-- Always generate `nutrition` (servings + per-serving calories, protein, carbs, fat, **sugar**, **fiber**) — drop the `includeNutrition` toggle.
-- Show a compact nutrition strip on the collapsed RecipeCard (kcal · P/C/F) and the full breakdown when expanded.
-- Include sugar + fiber in the PDF export.
-- New "Daily totals" bar on the saved-recipes drawer and meal planner: sum of kcal/P/C/F/sugar/fiber for everything marked cooked today (or scheduled for a given day).
+## Fix
 
-Schema impact: extend the AI response schema and `Recipe` type with `sugarG`, `fiberG`. No DB migration — `saved_recipes.recipe` is JSONB.
+Two changes, both in `src/lib/recipe-image.functions.ts` and `src/lib/hf-client.server.ts`:
 
-## 2. Personal Recipe Collections ("My Cookbooks")
+### 1. Switch the default image model to one that actually knows dish names
 
-Not the existing chef/paid `cookbooks` table (that's for sellers). A separate lightweight, private-by-default folder system over the user's saved recipes.
+Stop calling FLUX/SDXL for food. Use Lovable AI Gateway with `google/gemini-3.1-flash-image-preview` (Nano Banana 2) as the primary, with `openai/gpt-image-2` (quality: "low") as fallback. Both have strong food/world-cuisine knowledge. Drop the HF image chain for recipe images (keep the HF chat models — only image gen is the problem).
 
-- New tables: `recipe_collections` (id, user_id, name, emoji, color, is_public, slug, created_at) and `collection_items` (collection_id, saved_recipe_id, position).
-- RLS: owner full CRUD; public collections readable by anon when `is_public = true`.
-- UI: "Collections" tab in the SavedDrawer with create/rename/delete; "Add to collection" action on every saved recipe card.
-- Public collection page at `/c/$slug` (server-rendered, OG image = first recipe's image, JSON-LD `ItemList`).
+### 2. Build a much more descriptive prompt
 
-## 3. Weekly Meal Planner
+Right now the prompt is just `"Professional overhead food photography of <title>, <cuisine> cuisine"`. Expand `generateRecipeImage` to accept and use the recipe's actual signal:
 
-A simple drag-and-drop week grid that pulls from saved recipes.
+- `dishName`, `cuisine`
+- `description` (one-line summary from the recipe)
+- top 4–6 `keyIngredients` (e.g. "yellow lentils, ghee, cumin, tomato, cilantro")
+- `presentation` hint derived from dish type ("served in a copper karahi bowl", "steamed dumplings in a bamboo basket", etc.) — pass through from the recipe when available, otherwise omit
 
-- New table: `meal_plan_entries` (id, user_id, plan_date date, meal_slot text — breakfast/lunch/dinner/snack, saved_recipe_id, servings_override int, position).
-- Page at `/_authenticated/planner`: 7-day grid (this week / next week toggle), drag a saved recipe into a slot, click to remove.
-- Auto-computed footer per day: total kcal/P/C/F/sugar/fiber (scaled by `servings_override` ÷ recipe servings).
-- "Generate shopping list" button: aggregates ingredient strings across the week, groups identical names, opens a printable view + adds a PDF export reusing the existing PDF helper.
-- Entry point: link in the top nav for signed-in users and a CTA in SavedDrawer ("Plan your week →").
+New prompt shape:
 
-## 4. Quality & polish sweep
+```
+Professional overhead food photography of <dishName>, a <cuisine> dish.
+<description>
+Visible ingredients: <keyIngredients>.
+<presentation>
+Natural lighting, shallow depth of field, garnished and plated authentically,
+appetizing, magazine quality, photorealistic.
+```
 
-The smaller things that make it feel professional.
+This grounds the model in what the dish actually looks like instead of relying on it to recognize a name.
 
-- **Empty states**: SavedDrawer, Collections, Planner, Community feed when empty — friendly copy + single CTA, not blank panels.
-- **Loading skeletons**: replace "Plating your dish…" pulse with a proper skeleton card so the layout doesn't shift while images generate (fixes CLS on the homepage results grid).
-- **LCP preload**: per-route `head().links` preload for the home hero image.
-- **Per-route SEO**: audit `/community`, `/shop`, `/chefs`, `/contact` — make sure each has unique `title`, `description`, `og:title`, `og:description`, `og:url`, and a `canonical`. Add JSON-LD `Recipe` schema to `/community/$recipeId` and `/shared/$slug` (uses nutrition, cookTime, recipeIngredient, recipeInstructions).
-- **Accessibility pass**: add visible focus rings on the custom card buttons, alt text for AI-generated recipe images, aria-labels on icon-only buttons in RecipeCard/SavedDrawer.
-- **Error pages**: branded 404 and root error boundary copy (currently default-ish).
-- **About page** at `/about`: short story, how the AI works, link to contact — boosts trust for casual visitors.
+### 3. Pass the extra context from the call site
+
+In `src/components/fridge/RecipeCard.tsx`, update the `runImage` call to send `description`, `keyIngredients` (first few from `recipe.usedIngredients + recipe.missingIngredients`), and `cuisine`. Same for any other call sites (community/shop/saved recipe views — verify during implementation).
+
+### 4. Cache by dish identity
+
+Because the same recipe regenerates on every mount, add a simple cache key (e.g. `localStorage` keyed on `${cuisine}::${dishName}`) so once a correct image lands, it persists across navigation and we don't burn quota re-rolling and potentially getting a worse image.
+
+## Out of scope
+
+- Reverse-validating images with a vision model (expensive, adds latency).
+- Storing generated images server-side (separate infra change).
+- Replacing already-saved bad images in the DB — covered organically by the new cache when users re-open recipes.
 
 ## Technical notes
 
-```text
-DB migration (single file):
-  - CREATE TABLE recipe_collections + GRANTs + RLS (owner full, anon SELECT WHERE is_public)
-  - CREATE TABLE collection_items + GRANTs + RLS (via parent collection)
-  - CREATE TABLE meal_plan_entries + GRANTs + RLS (owner only)
-  - UNIQUE (user_id, plan_date, meal_slot, position) to keep slots ordered
-
-Server fns (createServerFn + requireSupabaseAuth):
-  src/lib/collections.functions.ts  — list/create/rename/delete, add/remove items
-  src/lib/meal-plan.functions.ts    — list week, upsert slot, remove slot, shopping-list aggregate
-
-UI:
-  src/routes/_authenticated/planner.tsx
-  src/routes/c.$slug.tsx              (public collection page; SSR)
-  src/components/fridge/CollectionsPanel.tsx
-  src/components/planner/WeekGrid.tsx
-  src/components/planner/ShoppingList.tsx
-  Extend RecipeCard with nutrition strip + "Add to collection" menu
-  Extend SavedDrawer with Collections tab + Planner CTA
-
-Recipes generator:
-  - Add sugarG, fiberG to schema + prompt
-  - Remove the `includeNutrition` flag and always emit nutrition
-  - Update PDF + card UI to render the two new fields
-
-Scope guardrails:
-  - No marketplace, payments, or community changes
-  - No full rebrand or new colour system — keep existing turmeric/paprika/cardamom palette
-  - Drag-and-drop via native HTML5 DnD (no new heavy lib)
-```
-
-Out of scope for this pass: pantry tracker (would need expiry logic + UI), social features, paid-plan changes, dark mode.
+- `callImageGen` will get a second arg `{ preferGemini: true }` or a new sibling `callFoodImageGen` that uses the Lovable Gateway directly with the food-optimized prompt, skipping HF.
+- Gemini image body uses `messages` + `modalities: ["image","text"]` (already correct in `hf-client.server.ts`); GPT-image-2 uses `prompt` — keep the two body shapes separate per the AI gateway rules.
+- Keep `quality: "low"` on gpt-image-2 to stay cheap; Nano Banana 2 has no quality knob.
