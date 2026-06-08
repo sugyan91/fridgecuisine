@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { TIER_LIMITS, resolveTier, type Tier } from "./ai-quota.server";
-import { tryGetSupabaseUser } from "./optional-auth.server";
-import { getAnonUsage, ANON_LIFETIME_LIMIT } from "./anon-tracking.server";
+import type { Tier } from "./ai-quota.server";
 
-export const FREE_DAILY_LIMIT = TIER_LIMITS.free;
+// Mirrors TIER_LIMITS.free in ai-quota.server.ts. Kept inline so this
+// client-reachable module doesn't statically pull the server-only file.
+export const FREE_DAILY_LIMIT = 2;
 
 export type RecipeUsage = {
   used: number;
@@ -18,6 +18,9 @@ export const getRecipeUsage = createServerFn({ method: "POST" })
     z.object({ sinceIso: z.string().datetime() }).parse(input),
   )
   .handler(async ({ data }): Promise<RecipeUsage> => {
+    const { tryGetSupabaseUser } = await import("./optional-auth.server");
+    const { TIER_LIMITS, resolveTier } = await import("./ai-quota.server");
+    const { getAnonUsage, ANON_LIFETIME_LIMIT } = await import("./anon-tracking.server");
     const auth = await tryGetSupabaseUser();
     if (!auth) {
       // Anonymous — return server-tracked lifetime usage.
