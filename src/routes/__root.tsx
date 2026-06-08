@@ -122,9 +122,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Fridge Chef — What Can I Cook With What I Have?" },
-      { name: "description", content: "Your custom home-made chef!!" },
-      { property: "og:description", content: "Your custom home-made chef!!" },
-      { name: "twitter:description", content: "Your custom home-made chef!!" },
+      { name: "twitter:description", content: "Turn random ingredients into real meals. AI recipes with steps, substitutions, and cook time." },
+      { property: "og:site_name", content: "FridgeCuisine" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Q2fhDCrVOphfKxIevHpm4F2c6Fu1/social-images/social-1779069681377-Screenshot_2026-05-17_at_4.37.34_PM.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Q2fhDCrVOphfKxIevHpm4F2c6Fu1/social-images/social-1779069681377-Screenshot_2026-05-17_at_4.37.34_PM.webp" },
     ],
@@ -138,6 +137,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: appCss,
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "FridgeCuisine",
+          url: "https://fridgecuisine.com",
+          logo: "https://fridgecuisine.com/favicon.ico",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "FridgeCuisine",
+          url: "https://fridgecuisine.com",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://fridgecuisine.com/?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
       },
     ],
   }),

@@ -18,9 +18,56 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/shop/$recipeId")({
-  head: () => ({
-    meta: [{ title: "Recipe — FridgeCuisine" }],
-  }),
+  loader: ({ params }) => getPaidRecipeDetail({ data: { id: params.recipeId } }),
+  head: ({ params, loaderData }) => {
+    const r = loaderData?.recipe;
+    const url = `https://fridgecuisine.com/shop/${params.recipeId}`;
+    const title = r ? `${r.title} — FridgeCuisine Shop` : "Recipe — FridgeCuisine";
+    const description =
+      r?.description?.slice(0, 155) ||
+      (r
+        ? `Buy the full ${r.cuisine ?? ""} recipe for ${r.title} from a verified home chef on FridgeCuisine.`.trim()
+        : "Chef-made recipes you can unlock and cook tonight.");
+    const image = r?.cover_image_url ?? undefined;
+    const meta: Array<Record<string, string>> = [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "product" },
+      { property: "og:url", content: url },
+    ];
+    if (image) {
+      meta.push({ property: "og:image", content: image });
+      meta.push({ name: "twitter:image", content: image });
+    }
+    const scripts: Array<{ type: string; children: string }> = [];
+    if (r) {
+      scripts.push({
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: r.title,
+          description,
+          image: image ? [image] : undefined,
+          brand: { "@type": "Brand", name: r.author_name || "FridgeCuisine Chef" },
+          offers: {
+            "@type": "Offer",
+            price: ((r.price_cents ?? 0) / 100).toFixed(2),
+            priceCurrency: "USD",
+            availability: "https://schema.org/InStock",
+            url,
+          },
+        }),
+      });
+    }
+    return {
+      meta,
+      links: [{ rel: "canonical", href: url }],
+      scripts,
+    };
+  },
   component: RecipeDetail,
 });
 
