@@ -40,9 +40,11 @@ export function RecipeCard({
   const runImage = useServerFn(generateRecipeImage);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(true);
+  const [imageBroken, setImageBroken] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setImageBroken(false);
     const cacheKey = `fc:img:v3:${(recipe.cuisine ?? "").toLowerCase()}::${recipe.title.toLowerCase()}`;
     try {
       const cached = typeof window !== "undefined" ? window.localStorage.getItem(cacheKey) : null;
@@ -172,7 +174,7 @@ export function RecipeCard({
         className="bg-cardamom text-white border-4 border-border rounded-[32px] p-6 md:p-8 shadow-[8px_8px_0px_0px_var(--border)] animate-pop"
         style={{ animationDelay: `${index * 80}ms` }}
       >
-        {(imageLoading || imageUrl) && (
+        {!imageBroken && (imageLoading || imageUrl) && (
           <div className="mb-6 -mx-2 md:-mx-4 rounded-2xl overflow-hidden border-2 border-white/20 bg-white/5 aspect-[16/9]">
             {imageUrl ? (
               <img
@@ -180,6 +182,16 @@ export function RecipeCard({
                 alt={recipe.title}
                 className="w-full h-full object-cover"
                 loading="lazy"
+                onError={() => {
+                  setImageBroken(true);
+                  setImageUrl(null);
+                  try {
+                    const k = `fc:img:v3:${(recipe.cuisine ?? "").toLowerCase()}::${recipe.title.toLowerCase()}`;
+                    window.localStorage.removeItem(k);
+                  } catch {
+                    // ignore
+                  }
+                }}
               />
             ) : (
               <div className="w-full h-full grid place-items-center text-[10px] font-black uppercase tracking-widest text-white/60 animate-pulse">
@@ -433,7 +445,7 @@ export function RecipeCard({
       className="group bg-white border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] hover:shadow-[12px_12px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-all animate-pop"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      {(imageLoading || imageUrl) && (
+      {!imageBroken && (imageLoading || imageUrl) && (
         <div className="aspect-[16/9] bg-muted border-b-4 border-border overflow-hidden">
           {imageUrl ? (
             <img
@@ -441,6 +453,16 @@ export function RecipeCard({
               alt={recipe.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
+              onError={() => {
+                setImageBroken(true);
+                setImageUrl(null);
+                try {
+                  const k = `fc:img:v3:${(recipe.cuisine ?? "").toLowerCase()}::${recipe.title.toLowerCase()}`;
+                  window.localStorage.removeItem(k);
+                } catch {
+                  // ignore
+                }
+              }}
             />
           ) : (
             <div className="w-full h-full grid place-items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
