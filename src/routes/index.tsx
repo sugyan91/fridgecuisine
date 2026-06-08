@@ -975,6 +975,36 @@ function Index() {
                           </ul>
                         </div>
                       )}
+                      {dishResult.recipe.nutrition?.perServing && (
+                        <div className="mt-4 pt-3 border-t border-border">
+                          <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mb-2">
+                            Nutrition · per serving
+                            {dishResult.recipe.nutrition.servings
+                              ? ` (makes ${dishResult.recipe.nutrition.servings})`
+                              : ""}
+                          </p>
+                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+                            {[
+                              { label: "kcal", value: dishResult.recipe.nutrition.perServing.calories, suffix: "" },
+                              { label: "Protein", value: dishResult.recipe.nutrition.perServing.proteinG, suffix: "g" },
+                              { label: "Carbs", value: dishResult.recipe.nutrition.perServing.carbsG, suffix: "g" },
+                              { label: "Fat", value: dishResult.recipe.nutrition.perServing.fatG, suffix: "g" },
+                              { label: "Sugar", value: dishResult.recipe.nutrition.perServing.sugarG, suffix: "g" },
+                              { label: "Fiber", value: dishResult.recipe.nutrition.perServing.fiberG, suffix: "g" },
+                            ].map((m) => (
+                              <div key={m.label} className="bg-card border border-border rounded-xl py-2">
+                                <div className="font-display font-semibold text-sm leading-none">
+                                  {m.value}
+                                  {m.suffix}
+                                </div>
+                                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
+                                  {m.label}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
               </div>
