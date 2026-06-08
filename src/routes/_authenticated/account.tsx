@@ -54,7 +54,7 @@ function AccountPage() {
     });
   }, []);
 
-  const { subscription, isPremium, loading } = useSubscription(user?.id);
+  const { subscription, isPremium, loading, tier } = useSubscription(user?.id);
   const env = getStripeEnvironment();
 
   const periodEnd = subscription?.current_period_end ?? null;
@@ -156,12 +156,26 @@ function AccountPage() {
               </p>
               {loading ? (
                 <p className="mt-1 text-lg font-semibold text-foreground">Loading…</p>
-              ) : isPremium ? (
+              ) : tier === "unlimited" ? (
                 <>
                   <p className="mt-1 text-lg font-semibold text-foreground">
-                    Premium · $5.99/mo
+                    Unlimited · $19.99/mo
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
+                    {pendingCancel
+                      ? `Access ends on ${formatDate(periodEnd)}`
+                      : periodEnd
+                        ? `Renews on ${formatDate(periodEnd)}`
+                        : "Active"}
+                  </p>
+                </>
+              ) : tier === "basic" ? (
+                <>
+                  <p className="mt-1 text-lg font-semibold text-foreground">
+                    Basic · $5.99/mo
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    10 recipes per day ·{" "}
                     {pendingCancel
                       ? `Access ends on ${formatDate(periodEnd)}`
                       : periodEnd
@@ -173,7 +187,7 @@ function AccountPage() {
                 <>
                   <p className="mt-1 text-lg font-semibold text-foreground">Free plan</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Upgrade to Premium for unlimited recipes.
+                    3 recipes per day. Upgrade for 10 or unlimited.
                   </p>
                 </>
               )}
@@ -192,7 +206,12 @@ function AccountPage() {
           <div className="mt-6 flex flex-wrap gap-2">
             {!isPremium && (
               <Button asChild>
-                <Link to="/pricing">Upgrade to Premium</Link>
+                <Link to="/pricing">See plans</Link>
+              </Button>
+            )}
+            {tier === "basic" && (
+              <Button asChild>
+                <Link to="/pricing">Upgrade to Unlimited</Link>
               </Button>
             )}
             {isPremium && !pendingCancel && (
@@ -225,8 +244,8 @@ function AccountPage() {
             <AlertDialogTitle>Cancel your Premium subscription?</AlertDialogTitle>
             <AlertDialogDescription>
               {periodEnd
-                ? `You'll keep Premium access until ${formatDate(periodEnd)}. After that you'll be moved to the Free plan. You can resume anytime before then.`
-                : "You'll keep Premium access until the end of your current billing period."}
+                ? `You'll keep paid access until ${formatDate(periodEnd)}. After that you'll be moved to the Free plan. You can resume anytime before then.`
+                : "You'll keep paid access until the end of your current billing period."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
