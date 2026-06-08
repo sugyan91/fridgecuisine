@@ -68,6 +68,7 @@ const responseSchema = z.object({
         prepTimeMinutes: z.number().optional(),
         totalTimeMinutes: z.number().optional(),
         cuisine: z.string(),
+        servings: z.number().int().min(1).max(20).optional(),
         usedIngredients: z.array(z.string()).default([]),
         missingIngredients: z.array(z.string()).default([]),
         steps: z.array(z.string()).min(1),
