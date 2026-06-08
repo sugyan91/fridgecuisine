@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import phoBoImg from "@/assets/trending/pho-bo.jpg";
+import momoImg from "@/assets/trending/momo.jpg";
+import xiaoLongBaoImg from "@/assets/trending/xiao-long-bao.jpg";
+import pierogiImg from "@/assets/trending/pierogi.jpg";
+import borschtImg from "@/assets/trending/borscht.jpg";
+import doroWatImg from "@/assets/trending/doro-wat.jpg";
+import jollofRiceImg from "@/assets/trending/jollof-rice.jpg";
+import bunnyChowImg from "@/assets/trending/bunny-chow.jpg";
+import lomoSaltadoImg from "@/assets/trending/lomo-saltado.jpg";
 
 type Dish = { name: string; img: string; flag: string; origin: string };
 
