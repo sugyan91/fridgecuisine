@@ -38,10 +38,13 @@ export const generateRecipeImage = createServerFn({ method: "POST" })
       .slice(0, 6);
     const ingPart = ings.length > 0 ? ` Visible ingredients: ${ings.join(", ")}.` : "";
     const prompt =
-      `Professional overhead food photography of ${data.dishName}, ${cuisinePart}.` +
+      `Photorealistic food photograph of "${data.dishName}", ${cuisinePart}. ` +
+      `The image MUST depict this exact, specific dish as it is traditionally and authentically served in its country of origin — not a generic stand-in, not a similar-looking dish. ` +
       descPart +
       ingPart +
-      ` Authentic, traditional presentation true to the dish. Natural lighting, shallow depth of field, garnished and plated as it is actually served, appetizing, photorealistic, magazine quality. No text, no labels, no watermarks.`;
+      ` Render the dish with the correct color, texture, serving vessel, and accompaniments that a native cook would recognize. ` +
+      `Overhead 3/4 angle, natural soft lighting, shallow depth of field, restaurant-quality plating, sharp focus, ultra-detailed, hi-res DSLR photograph. ` +
+      `No text, no captions, no labels, no watermarks, no logos, no hands, no people.`;
     const res = await callFoodImageGen(prompt);
     if (res.ok) await recordAiGeneration(supabase, userId);
     return res;
