@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import phoBoImg from "@/assets/trending/pho-bo.jpg";
 
 type Dish = { name: string; img: string; flag: string; origin: string };
 
@@ -32,7 +33,7 @@ const DISHES: Dish[] = [
   { name: "Bibimbap", flag: "🇰🇷", origin: "Korea", img: u("1590301157890-4810ed352733") },
   { name: "Korean BBQ", flag: "🇰🇷", origin: "Korea-2", img: u("1583224964978-2257b960c3d3") },
   { name: "Kimchi Stew", flag: "🇰🇷", origin: "Korea-3", img: u("1583835746434-cf1534674b41") },
-  { name: "Pho Bo", flag: "🇻🇳", origin: "Vietnam", img: u("1582878826629-cc8e8c1f0e3a") },
+  { name: "Pho Bo", flag: "🇻🇳", origin: "Vietnam", img: phoBoImg },
   { name: "Banh Mi", flag: "🇻🇳", origin: "Vietnam-2", img: u("1590301157890-4810ed352733") },
   { name: "Spring Rolls", flag: "🇻🇳", origin: "Vietnam-3", img: u("1606502281004-f0e3a3d9d6d6") },
   { name: "Kung Pao Chicken", flag: "🇨🇳", origin: "China", img: u("1525755662778-989d0524087e") },
