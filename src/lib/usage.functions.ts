@@ -4,7 +4,7 @@ import type { Tier } from "./ai-quota.server";
 
 // Mirrors TIER_LIMITS.free in ai-quota.server.ts. Kept inline so this
 // client-reachable module doesn't statically pull the server-only file.
-export const FREE_DAILY_LIMIT = 3;
+export const FREE_DAILY_LIMIT = 2;
 
 export type RecipeUsage = {
   used: number;
