@@ -13,7 +13,8 @@ export const getRecipeUsage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const tier = await resolveTier(supabase, userId);
-    const limit = TIER_LIMITS[tier];
+    const rawLimit = TIER_LIMITS[tier];
+    const limit: number | null = Number.isFinite(rawLimit) ? rawLimit : null;
     const { count, error } = await supabase
       .from("recipe_generations")
       .select("*", { count: "exact", head: true })
