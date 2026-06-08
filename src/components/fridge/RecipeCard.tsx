@@ -6,6 +6,7 @@ import { StepTimer } from "./StepTimer";
 import { ShareButton } from "./ShareButton";
 import { swapIngredient, type IngredientSwap } from "@/lib/ingredient-swap.functions";
 import { generateRecipeImage } from "@/lib/recipe-image.functions";
+import { downloadRecipePdf } from "@/lib/recipe-pdf";
 
 type Props = {
   recipe: Recipe;
