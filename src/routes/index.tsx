@@ -112,7 +112,9 @@ export const Route = createFileRoute("/")({
         content:
           "Free AI kitchen helper. Get ingredients and recipes for any dish, or cook from what you already have.",
       },
+      { property: "og:url", content: "https://fridgecuisine.com/" },
     ],
+    links: [{ rel: "canonical", href: "https://fridgecuisine.com/" }],
   }),
   component: Index,
 });
@@ -517,9 +519,9 @@ function Index() {
                 </span>
               </span>
                 <div className="min-w-0 flex-1">
-                <h1 className="font-display tracking-tight text-foreground leading-none text-lg sm:text-lg md:text-xl text-left lowercase truncate font-semibold">
+                <span className="block font-display tracking-tight text-foreground leading-none text-lg sm:text-lg md:text-xl text-left lowercase truncate font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
-                </h1>
+                </span>
                 <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight mt-1 uppercase tracking-[0.18em] font-medium overflow-hidden max-w-[55vw] sm:max-w-none tagline-mask sm:[mask-image:none] sm:[-webkit-mask-image:none]">
                   <span
                     className="tagline-sweep sm:!animate-none sm:!transform-none"
@@ -833,9 +835,9 @@ function Index() {
               {dishResult && (
               <div className="max-w-3xl mx-auto mt-10 bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)]">
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <h3 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
+                  <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
                     {dishResult.dishName}
-                  </h3>
+                  </h2>
                   <ShareButton
                     isAuthenticated={!!email}
                     variant="pill"
