@@ -1,21 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logAbuseEvent } from "./abuse-logging.server";
 
-async function getCallerSignals(): Promise<{ ip: string | null; userAgent: string | null }> {
-  try {
-    const { getRequest } = await import("@tanstack/react-start/server");
-    const req = getRequest();
-    if (!req) return { ip: null, userAgent: null };
-    const h = req.headers;
-    const ip =
-      h.get("cf-connecting-ip") ||
-      h.get("x-real-ip") ||
-      h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      null;
-    return { ip, userAgent: h.get("user-agent") };
-  } catch {
-    return { ip: null, userAgent: null };
-  }
+export interface CallerSignals {
+  ip?: string | null;
+  userAgent?: string | null;
 }
 
 export type Tier = "free" | "basic" | "unlimited";
