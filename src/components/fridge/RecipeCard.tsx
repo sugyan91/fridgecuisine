@@ -473,6 +473,15 @@ export function RecipeCard({
           </div>
         )}
         <p className="text-sm text-pretty mb-4 font-medium">{recipe.blurb}</p>
+        {nutrition && (
+          <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-black uppercase tracking-wide bg-turmeric/15 border-2 border-border rounded-full px-3 py-1.5">
+            <span className="opacity-60">Per serving:</span>
+            {nutrition.calories != null && <span>{nutrition.calories} kcal</span>}
+            {nutrition.proteinG != null && <span>P {nutrition.proteinG}g</span>}
+            {nutrition.carbsG != null && <span>C {nutrition.carbsG}g</span>}
+            {nutrition.fatG != null && <span>F {nutrition.fatG}g</span>}
+          </div>
+        )}
         <div className="flex justify-between items-center">
           <button
             type="button"
