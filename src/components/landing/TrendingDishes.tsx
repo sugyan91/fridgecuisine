@@ -135,9 +135,7 @@ function BentoTile({
     >
       {broken ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-accent/15 to-primary/30">
-          <span className="text-6xl mb-2" aria-hidden>
-            {dish.flag}
-          </span>
+          <Flag emoji={dish.flag} className="!w-16 !h-12 mb-2 rounded-md shadow" />
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/70">
             {country}
           </span>
@@ -157,7 +155,7 @@ function BentoTile({
       {variant === "hero" ? (
         <div className="absolute bottom-8 left-8 right-8 text-white space-y-3">
           <span className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1.5 uppercase tracking-[0.15em]">
-            <span aria-hidden>{dish.flag}</span>
+            <Flag emoji={dish.flag} className="!w-4 !h-3 rounded-[2px]" />
             {country}
           </span>
           <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
@@ -170,7 +168,7 @@ function BentoTile({
       ) : variant === "wide" ? (
         <div className="absolute bottom-6 left-6 text-white">
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-1 flex items-center gap-1.5">
-            <span aria-hidden>{dish.flag}</span> {country}
+            <Flag emoji={dish.flag} className="!w-4 !h-3 rounded-[2px]" /> {country}
           </span>
           <h3 className="font-display text-xl md:text-2xl font-semibold tracking-tight">
             {dish.name}
@@ -182,7 +180,7 @@ function BentoTile({
             {dish.name}
           </h3>
           <p className="text-[10px] opacity-80 mt-0.5 flex items-center gap-1">
-            <span aria-hidden>{dish.flag}</span> {country}
+            <Flag emoji={dish.flag} className="!w-4 !h-3 rounded-[2px]" /> {country}
           </p>
         </div>
       )}
