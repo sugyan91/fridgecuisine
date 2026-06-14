@@ -241,7 +241,7 @@ function ContactPage() {
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-4 md:px-8 py-4">
             <Link to="/" className="flex items-center gap-2.5 min-w-0">
               <img
-                src={logoImg}
+                src={logoAsset.url}
                 alt="Fridge Cuisine"
                 className="h-8 md:h-9 w-auto rounded-lg bg-background"
               />

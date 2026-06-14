@@ -12,7 +12,7 @@ export function SiteFooter() {
           <div className="col-span-2 md:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <img
-                src={logoImg}
+                src={logoAsset.url}
                 alt="Fridge Cuisine"
                 className="h-9 w-auto rounded-lg bg-white/10 p-1"
               />

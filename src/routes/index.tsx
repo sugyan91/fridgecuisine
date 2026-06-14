@@ -519,7 +519,7 @@ function Index() {
             >
               <span className="relative inline-block shrink-0">
                 <img
-                  src={logoImg}
+                  src={logoAsset.url}
                   alt="Fridge Cuisine"
                   width={36}
                   height={36}
