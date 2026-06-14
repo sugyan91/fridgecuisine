@@ -16,6 +16,7 @@ import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export const Route = createFileRoute("/shop/$recipeId")({
   loader: ({ params }) => getPaidRecipeDetail({ data: { id: params.recipeId } }),
@@ -174,7 +175,7 @@ function RecipeDetail() {
         </Link>
 
         {data.cover_image_url && (
-          <img
+          <SafeImage
             src={data.cover_image_url}
             alt={data.title}
             className="w-full aspect-video object-cover rounded-3xl border-4 border-border mt-4"
@@ -290,7 +291,7 @@ function AuthorAndRating({
     <div className="mt-3 flex flex-wrap items-center gap-3">
       <div className="flex items-center gap-2">
         {avatar ? (
-          <img
+          <SafeImage
             src={avatar}
             alt=""
             className="size-8 rounded-full object-cover border-2 border-border"
