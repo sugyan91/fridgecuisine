@@ -1,6 +1,6 @@
 import { useState, useRef, type KeyboardEvent } from "react";
 import { FridgePhotoButton } from "./FridgePhotoButton";
-import { getIngredientIcon } from "@/lib/ingredient-icons";
+import { IngredientIcon } from "@/lib/ingredient-icon";
 
 const SUGGESTIONS = [
   "Rice",
@@ -134,7 +134,7 @@ export function IngredientInput({ ingredients, onChange }: Props) {
             onClick={() => remove(ing)}
             className={`${COLORS[idx % COLORS.length]} ${ROTATIONS[idx % ROTATIONS.length]} px-3 py-1.5 rounded-full border-2 border-border font-bold text-sm flex items-center gap-2 shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-transform`}
           >
-            <span aria-hidden className="text-base leading-none">{getIngredientIcon(ing)}</span>
+            <IngredientIcon name={ing} className="text-base leading-none" />
             {ing} <span aria-hidden>×</span>
           </button>
         ))}
@@ -191,7 +191,7 @@ export function IngredientInput({ ingredients, onChange }: Props) {
               onClick={() => add(s)}
               className="text-xs font-bold px-2 py-1 rounded-full border border-border/40 bg-white hover:bg-turmeric/20 transition-colors"
             >
-              <span aria-hidden className="mr-1">{getIngredientIcon(s)}</span>+ {s}
+              <IngredientIcon name={s} className="mr-1" />+ {s}
             </button>
           ))}
         </div>
