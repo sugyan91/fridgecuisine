@@ -27,6 +27,7 @@ import {
   deletePaidRecipe,
 } from "@/lib/paid-recipes.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export const Route = createFileRoute("/_authenticated/sell")({
   head: () => ({
@@ -451,7 +452,7 @@ function RecipesManager() {
                 className="flex items-center gap-3 border-2 border-border rounded-2xl p-2 bg-white"
               >
                 {r.cover_image_url ? (
-                  <img
+                  <SafeImage
                     src={r.cover_image_url}
                     alt=""
                     className="size-12 rounded-xl object-cover border-2 border-border"
@@ -547,7 +548,7 @@ function RecipesManager() {
       <Field label="Photo">
         <div className="flex items-center gap-3">
           {draft.cover_image_url ? (
-            <img
+            <SafeImage
               src={draft.cover_image_url}
               alt=""
               className="size-20 rounded-xl object-cover border-2 border-border"

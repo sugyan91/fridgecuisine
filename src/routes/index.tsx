@@ -49,6 +49,7 @@ import foodTacos from "@/assets/food-tacos.jpg";
 import foodCurry from "@/assets/food-curry.jpg";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { useLanguage } from "@/lib/language";
+import { IngredientIcon } from "@/lib/ingredient-icon";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
@@ -1377,7 +1378,7 @@ function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 text-2xl ${tint}`}
                 aria-hidden
               >
-                {c.emoji}
+                <IngredientIcon name={c.ingredients[0] ?? c.label} className="text-2xl" />
               </div>
               <h4 className="font-display text-base md:text-lg font-black uppercase tracking-tight leading-tight mb-1.5 text-foreground">
                 {c.label}
@@ -1397,10 +1398,10 @@ function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
 }
 
 const TICKER_ITEMS = [
-  "🥑 avocado", "🍅 tomato", "🧄 garlic", "🍋 lemon", "🌶️ chili",
-  "🥬 spinach", "🧅 onion", "🥕 carrot", "🍄 mushroom", "🌿 basil",
-  "🥒 cucumber", "🫑 pepper", "🥚 egg", "🧀 cheese", "🍞 bread",
-  "🍗 chicken", "🐟 fish", "🍚 rice", "🍝 pasta", "🥥 coconut",
+  "avocado", "tomato", "garlic", "lemon", "chili",
+  "spinach", "onion", "carrot", "mushroom", "basil",
+  "cucumber", "pepper", "egg", "cheese", "bread",
+  "chicken", "fish", "rice", "pasta", "coconut",
 ];
 
 function IngredientTicker() {
@@ -1413,7 +1414,7 @@ function IngredientTicker() {
             key={`${item}-${i}`}
             className="shrink-0 px-4 py-1.5 rounded-full bg-card/80 backdrop-blur border border-border text-xs md:text-sm text-foreground/80 font-medium"
           >
-            {item}
+            <IngredientIcon name={item} className="mr-1" />{item}
           </span>
         ))}
       </div>
