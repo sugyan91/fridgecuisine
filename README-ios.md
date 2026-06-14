@@ -1,39 +1,41 @@
 # Building the FridgeCuisine iOS App
 
-This project is wrapped with [Capacitor](https://capacitorjs.com) so it can be
-submitted to the Apple App Store as a native iOS app. The web code lives in
-this repo; the iOS Xcode project is generated on your Mac.
+The iOS app is a Capacitor shell that loads the live web app from
+`https://fridgecuisine.com` inside a native WebView, plus native plugins
+(camera, push, splash). This is the same pattern used by many production
+apps (Basecamp HEY, X/Twitter for years, etc.) and is accepted by Apple
+review as long as there is real native functionality — which we have
+(native camera for fridge photos).
 
 ## Prerequisites (one-time, on your Mac)
 
-1. macOS with **Xcode 15+** (free, from the Mac App Store).
-2. **Node.js 20+** and either `npm` or `bun`.
-3. **CocoaPods**: `sudo gem install cocoapods` (Xcode usually installs Ruby).
-4. An **Apple Developer Program** membership ($99/year, developer.apple.com).
-5. App bundle identifier registered in App Store Connect — must match
-   `appId` in `capacitor.config.ts` (currently `com.fridgecuisine.app`).
+1. macOS with **Xcode 15+** (free, Mac App Store).
+2. **Node.js 22+** (Capacitor 8 requires it). Use `nvm install 22 && nvm use 22`.
+3. **CocoaPods**: `sudo gem install cocoapods`.
+4. **Apple Developer Program** membership ($99/year).
+5. Bundle ID registered in App Store Connect matching `appId` in
+   `capacitor.config.ts` (currently `com.fridgecuisine.app`).
 
 ## First-time setup
 
 ```bash
 git clone <your-repo-url>
-cd <project>
-npm install            # or: bun install
-npm run build          # builds the web app into dist/
-npx cap add ios        # creates the ios/ folder with the Xcode project
-npx cap sync ios       # copies dist/ + Capacitor plugins into the iOS project
-npx cap open ios       # opens Xcode
+cd fridgecuisine
+npm install
+# dist/index.html is committed — no `npm run build` needed for iOS.
+npx cap add ios
+npx cap sync ios
+npx cap open ios
 ```
 
 In Xcode:
 
-1. Select the **App** target → **Signing & Capabilities**.
-2. Check **Automatically manage signing** and choose your Team.
-3. Add capabilities you need:
+1. **App** target → **Signing & Capabilities** → check
+   **Automatically manage signing**, pick your Team.
+2. Add capabilities:
    - **Sign in with Apple** (required by Apple if you offer Google sign-in).
    - **Push Notifications** (only if you use them).
-4. Open `ios/App/App/Info.plist` and confirm these usage strings are present
-   (Capacitor adds them when you sync, but verify):
+3. Confirm `ios/App/App/Info.plist` has:
 
 ```xml
 <key>NSCameraUsageDescription</key>
@@ -46,44 +48,68 @@ In Xcode:
 
 ## Iterating
 
-Whenever you pull new web changes from Lovable:
+Whenever the web app updates (you ship from Lovable to fridgecuisine.com),
+**the iOS app picks it up automatically** — no rebuild, no resubmission.
+That's the main benefit of the hybrid approach.
+
+Only re-sync when `capacitor.config.ts`, native plugins, or `dist/` change:
 
 ```bash
 git pull
-npm install            # only if package.json changed
-npm run build
-npx cap sync ios       # copies the new dist/ into the iOS project
+npm install
+npx cap sync ios
 ```
 
-Then in Xcode press **Run** (▶) to launch on the Simulator or a connected
-iPhone.
+Then in Xcode press **Run** (▶).
 
 ## Submitting to the App Store
 
-1. In Xcode set **Version** (e.g. `1.0.0`) and **Build** (`1`, increment for
-   each upload).
-2. Select **Any iOS Device (arm64)** as the run target.
-3. **Product → Archive**. When done, the Organizer window opens.
-4. Click **Distribute App → App Store Connect → Upload**. Xcode handles
-   signing automatically.
+1. Xcode → set **Version** (e.g. `1.0.0`) and **Build** (`1`).
+2. Run target: **Any iOS Device (arm64)**.
+3. **Product → Archive** → Organizer opens.
+4. **Distribute App → App Store Connect → Upload**.
 5. In [App Store Connect](https://appstoreconnect.apple.com), attach the
-   uploaded build to your app version, add screenshots, description, privacy
-   answers, and submit for review.
-6. Recommended: send to **TestFlight** first for internal testing before
-   public release.
+   build, add screenshots/description/privacy answers, submit for review.
+6. Recommended: ship to **TestFlight** first.
 
-## Live-reload during development (optional)
+## Apple review notes
 
-If you want the app on your phone to reload from the published web URL
-instead of bundled assets, uncomment the `server` block in
-`capacitor.config.ts`, run `npx cap sync ios`, then `npx cap run ios`.
-**Remove that block before submitting** — Apple requires the production
-build to ship the assets, not load them from a remote URL.
+- **Native value:** the app uses the native camera (`@capacitor/camera`) to
+  scan fridge ingredients — this is a genuine native feature and the
+  primary justification for the app vs. mobile Safari.
+- **Payments (IMPORTANT):** Apple requires StoreKit (IAP) for digital
+  content unlocked inside the app. If your paid recipes / Premium
+  subscription are digital content, Stripe Checkout will likely be
+  **rejected** at review. Two options:
+  1. Hide the paywall / Premium upsell on iOS for v1 submission, ship the
+     free tier only, add StoreKit IAP later.
+  2. Implement StoreKit IAP before submission.
+  Physical goods and consumed-outside-the-app services are fine via Stripe.
+- **Sign in with Apple:** required if you offer any other social sign-in
+  (Google). Add the capability in Xcode and wire it up server-side.
+
+## How it works (under the hood)
+
+`capacitor.config.ts` has a `server.url` pointing at
+`https://fridgecuisine.com`. When iOS launches the app, the WKWebView
+loads that URL directly. The bundled `dist/index.html` is a fallback
+splash that also redirects to `https://fridgecuisine.com` if the
+`server.url` config is ever removed.
+
+Because the WebView origin is `fridgecuisine.com`:
+- Cookies, Supabase auth sessions, and Stripe redirects all work normally.
+- Magic-link email callbacks open the app via universal links (configure
+  in `apple-app-site-association` on fridgecuisine.com when you're ready).
+- Native plugins (camera, push, status bar) are still bridged via the
+  Capacitor JS shim injected at WebView startup.
 
 ## Troubleshooting
 
+- *"The Capacitor CLI requires NodeJS >=22.0.0"* — `nvm install 22 && nvm use 22`.
 - *"No such module 'Capacitor'"* — run `npx cap sync ios` and reopen Xcode.
-- *Camera button does nothing on device* — check the Info.plist usage
-  strings above and confirm the user granted permission in Settings.
-- *Sign in with Apple missing* — add the capability in Xcode (Signing &
-  Capabilities → + Capability → Sign in with Apple).
+- *Camera button does nothing on device* — check Info.plist usage strings
+  above and confirm the user granted permission in iOS Settings.
+- *Blank white screen on launch* — confirm `capacitor.config.ts` still has
+  the `server.url` block; without it the app falls back to `dist/index.html`
+  which then redirects.
+- *Sign in with Apple missing* — add it in Xcode → Signing & Capabilities.
