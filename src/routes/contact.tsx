@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { SiteFooter } from '@/components/landing/SiteFooter'
 import { getTurnstileSiteKey } from '@/lib/turnstile.functions'
-import logoImg from '@/assets/fridge-cuisine-logo.png'
+import logoAsset from '@/assets/fridge-cuisine-logo.png.asset.json'
 
 const REASONS = [
   { value: 'support', label: 'Help & support', inbox: 'support@fridgecuisine.com', blurb: "Bugs, account issues, can't log in, recipes broken." },

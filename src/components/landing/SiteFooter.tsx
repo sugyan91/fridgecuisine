@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
-import logoImg from "@/assets/fridge-cuisine-logo.png";
+import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
 import { useConsent } from "@/lib/consent";
 
 export function SiteFooter() {

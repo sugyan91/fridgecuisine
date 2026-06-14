@@ -42,7 +42,7 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
-import logoImg from "@/assets/fridge-cuisine-logo.png";
+import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
 import foodPasta from "@/assets/food-pasta.jpg";
 import foodSushi from "@/assets/food-sushi.jpg";
 import foodTacos from "@/assets/food-tacos.jpg";
