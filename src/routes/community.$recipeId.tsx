@@ -14,6 +14,7 @@ import {
 } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export const Route = createFileRoute("/community/$recipeId")({
   loader: ({ params }) => getCommunityRecipe({ data: { id: params.recipeId } }),
@@ -220,7 +221,7 @@ function RecipePage() {
         </Link>
         <div className="bg-white border-4 border-border rounded-3xl p-6 md:p-8 mt-4 shadow-[8px_8px_0px_0px_var(--border)]">
           {r.image_url && (
-            <img
+            <SafeImage
               src={r.image_url}
               alt={r.title}
               className="w-full max-h-80 object-cover rounded-2xl border-2 border-border mb-5"

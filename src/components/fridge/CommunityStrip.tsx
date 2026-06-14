@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { listCommunityRecipes } from "@/lib/community.functions";
+import { SafeImage } from "@/components/ui/safe-image";
 
 type Recipe = {
   id: string;
@@ -58,9 +59,11 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
               className="group block bg-white border-2 border-border rounded-2xl overflow-hidden shadow-[3px_3px_0px_0px_var(--border)] hover:shadow-[5px_5px_0px_0px_var(--border)] hover:translate-y-[-2px] transition-all"
             >
               {r.image_url ? (
-                <div
-                  className="h-32 bg-cover bg-center border-b-2 border-border"
-                  style={{ backgroundImage: `url(${r.image_url})` }}
+                <SafeImage
+                  src={r.image_url}
+                  alt={r.title}
+                  className="h-32 w-full object-cover border-b-2 border-border"
+                  fallbackClassName="h-32 border-b-2 border-border"
                 />
               ) : (
                 <div className="h-32 bg-gradient-to-br from-turmeric/40 to-paprika/30 border-b-2 border-border flex items-center justify-center font-display text-3xl text-paprika">

@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ChefHat, Loader2 } from "lucide-react";
 import { listChefs } from "@/lib/marketplace.functions";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export const Route = createFileRoute("/chefs")({
   head: () => ({
@@ -99,7 +100,7 @@ function ChefsPage() {
                 <div className="flex items-center gap-3 mb-3">
                   <div className="size-12 rounded-full border-2 border-border bg-turmeric grid place-items-center overflow-hidden">
                     {c.avatar_url ? (
-                      <img src={c.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <SafeImage src={c.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <ChefHat className="size-6" strokeWidth={2.5} />
                     )}

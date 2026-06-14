@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { listCommunityRecipes } from "@/lib/community.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export const Route = createFileRoute("/community/")({
   head: () => ({
@@ -127,7 +128,7 @@ function CommunityPage() {
                 className="bg-white border-4 border-border rounded-2xl p-4 shadow-[4px_4px_0px_0px_var(--border)] hover:translate-y-[-2px] transition-transform"
               >
                 {r.image_url && (
-                  <img src={r.image_url} alt={r.title} className="w-full h-40 object-cover rounded-xl mb-3 border-2 border-border" />
+                  <SafeImage src={r.image_url} alt={r.title} className="w-full h-40 object-cover rounded-xl mb-3 border-2 border-border" />
                 )}
                 <h3 className="font-display text-2xl text-paprika leading-tight mb-1">{r.title}</h3>
                 <p className="text-xs font-black uppercase tracking-wide mb-1">

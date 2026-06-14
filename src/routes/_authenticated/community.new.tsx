@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { createCommunityRecipe } from "@/lib/community.functions";
 import { DEFAULT_CUISINES, DEFAULT_DIETARY } from "@/lib/taxonomy";
 import { supabase } from "@/integrations/supabase/client";
+import { SafeImage } from "@/components/ui/safe-image";
 
 async function compressImage(file: File, maxDim = 1600, quality = 0.82): Promise<Blob> {
   const bitmap = await createImageBitmap(file).catch(() => null);
@@ -173,7 +174,7 @@ function NewRecipe() {
             <div className="space-y-2">
               {form.image_url && (
                 <div className="relative">
-                  <img src={form.image_url} alt="Dish preview" className="w-full max-h-64 object-cover rounded-xl border-2 border-border" />
+                  <SafeImage src={form.image_url} alt="Dish preview" className="w-full max-h-64 object-cover rounded-xl border-2 border-border" />
                   <button
                     type="button"
                     onClick={() => setForm({ ...form, image_url: "" })}
