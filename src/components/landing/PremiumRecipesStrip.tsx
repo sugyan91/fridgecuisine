@@ -6,6 +6,7 @@ import {
   listPublicPaidRecipes,
   type PaidRecipeListItem,
 } from "@/lib/paid-recipes.functions";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export function PremiumRecipesStrip() {
   const fetchList = useServerFn(listPublicPaidRecipes);
@@ -61,7 +62,7 @@ export function PremiumRecipesStrip() {
               >
                 <div className="aspect-square bg-muted relative">
                   {row.cover_image_url ? (
-                    <img
+                    <SafeImage
                       src={row.cover_image_url}
                       alt={row.title}
                       loading="lazy"
@@ -88,7 +89,7 @@ export function PremiumRecipesStrip() {
                   )}
                   <div className="flex items-center gap-1.5 mt-1.5">
                     {row.author_avatar_url ? (
-                      <img
+                      <SafeImage
                         src={row.author_avatar_url}
                         alt=""
                         loading="lazy"

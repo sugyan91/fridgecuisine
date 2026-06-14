@@ -7,6 +7,7 @@ import {
   type PaidRecipeListItem,
 } from "@/lib/paid-recipes.functions";
 import { fakeRating, Stars } from "@/lib/fake-ratings";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export const Route = createFileRoute("/shop/")({
   head: () => ({
@@ -71,7 +72,7 @@ function ShopPage() {
               >
                 <div className="aspect-square bg-muted relative">
                   {r.cover_image_url ? (
-                    <img
+                    <SafeImage
                       src={r.cover_image_url}
                       alt={r.title}
                       className="w-full h-full object-cover"
@@ -94,7 +95,7 @@ function ShopPage() {
                   )}
                   <div className="flex items-center gap-1.5 mt-1.5">
                     {r.author_avatar_url ? (
-                      <img
+                      <SafeImage
                         src={r.author_avatar_url}
                         alt=""
                         className="size-5 rounded-full object-cover border border-border"

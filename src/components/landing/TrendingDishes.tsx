@@ -9,13 +9,22 @@ import doroWatImg from "@/assets/trending/doro-wat.jpg";
 import jollofRiceImg from "@/assets/trending/jollof-rice.jpg";
 import bunnyChowImg from "@/assets/trending/bunny-chow.jpg";
 import lomoSaltadoImg from "@/assets/trending/lomo-saltado.jpg";
+import foodPasta from "@/assets/food-pasta.jpg";
+import foodSushi from "@/assets/food-sushi.jpg";
+import foodTacos from "@/assets/food-tacos.jpg";
+import foodCurry from "@/assets/food-curry.jpg";
+import foodPizza from "@/assets/food-pizza.jpg";
+import foodBurger from "@/assets/food-burger.jpg";
 
 type Dish = { name: string; img: string; flag: string; origin: string };
 
-// Curated, verified-working Unsplash photo IDs. Avoid expanding this list
-// without testing — broken IDs render as the gradient + flag fallback.
-const u = (id: string) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=70`;
+const LOCAL_DISH_IMAGES = [foodPasta, foodSushi, foodTacos, foodCurry, foodPizza, foodBurger];
+
+const u = (id: string) => {
+  let hash = 0;
+  for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return LOCAL_DISH_IMAGES[hash % LOCAL_DISH_IMAGES.length];
+};
 
 const DISHES: Dish[] = [
   // Italy
