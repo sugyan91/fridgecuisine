@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteFooter } from "@/components/landing/SiteFooter";
-import logoImg from "@/assets/fridge-cuisine-logo.png";
+import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
 
 const LAST_UPDATED = "May 31, 2026";
 
@@ -81,7 +81,7 @@ function CookiesPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-4 md:px-8 py-4">
           <Link to="/" className="flex items-center gap-2.5 min-w-0">
             <img
-              src={logoImg}
+              src={logoAsset.url}
               alt="Fridge Cuisine"
               className="h-8 md:h-9 w-auto rounded-lg bg-background"
             />

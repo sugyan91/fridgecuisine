@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getSharedRecipe } from "@/lib/shared-recipes.functions";
-import logoImg from "@/assets/fridge-cuisine-logo.png";
+import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
 
 const sharedQueryOptions = (slug: string) =>
   queryOptions({
@@ -91,7 +91,7 @@ function SharedRecipePage() {
       <header className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 pb-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <img
-            src={logoImg}
+            src={logoAsset.url}
             alt="FridgeCuisine"
             className="h-8 w-auto rounded-lg bg-background"
           />

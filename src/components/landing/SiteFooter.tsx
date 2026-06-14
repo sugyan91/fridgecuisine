@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
-import logoImg from "@/assets/fridge-cuisine-logo.png";
+import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
 import { useConsent } from "@/lib/consent";
 
 export function SiteFooter() {
@@ -12,7 +12,7 @@ export function SiteFooter() {
           <div className="col-span-2 md:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <img
-                src={logoImg}
+                src={logoAsset.url}
                 alt="Fridge Cuisine"
                 className="h-9 w-auto rounded-lg bg-white/10 p-1"
               />
