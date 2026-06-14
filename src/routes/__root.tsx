@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
 import { saveRecipe as saveRecipeFn } from "@/lib/saved-recipes.functions";
 import { sendWelcomeEmail } from "@/lib/email/welcome.functions";
-import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
 import { LanguageProvider } from "@/lib/language";
 import { ConsentProvider } from "@/lib/consent";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
@@ -191,9 +190,6 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    // Make flag emojis render on Windows/Chromium desktop.
-    try { polyfillCountryFlagEmojis(); } catch {}
-
     // Boot consent-aware analytics. Will only actually load the analytics
     // script if the user has granted analytics consent (and a GA id is set).
     initAnalytics();
