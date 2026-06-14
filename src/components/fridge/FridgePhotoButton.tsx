@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { detectFridgeIngredients } from "@/lib/fridge-vision.functions";
 import { useLanguage } from "@/lib/language";
+import { capturePhotoDataUrl, isNativePlatform } from "@/lib/use-native-camera";
 
 type Props = {
   onAdd: (labels: string[]) => void;
@@ -38,6 +39,7 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
   const [isSnapEnabled, setIsSnapEnabled] = useState(false);
   const detect = useServerFn(detectFridgeIngredients);
   const { language } = useLanguage();
+  const native = isNativePlatform();
 
   useEffect(() => {
     const mql = window.matchMedia("(pointer: coarse), (max-width: 1024px)");
@@ -51,6 +53,17 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
     try {
       setStatus({ kind: "analyzing" });
       const dataUrl = await fileToResizedDataUrl(file);
+      await processDataUrl(dataUrl);
+    } catch (err) {
+      console.error("Dish photo failed", err);
+      setStatus({
+        kind: "error",
+        message: err instanceof Error ? err.message : "Something went wrong.",
+      });
+    }
+  };
+
+  const processDataUrl = async (dataUrl: string) => {
       const result = await detect({ data: { imageDataUrl: dataUrl, language: language.name } });
       if (!result.ok) {
         setStatus({ kind: "error", message: result.error });
@@ -68,8 +81,19 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
         checked: !existing.some((e) => e.toLowerCase() === ingredient.toLowerCase()),
       }));
       setStatus({ kind: "picking", picks });
+  };
+
+  const handleNativeCapture = async () => {
+    try {
+      setStatus({ kind: "analyzing" });
+      const dataUrl = await capturePhotoDataUrl();
+      if (!dataUrl) {
+        setStatus({ kind: "idle" });
+        return;
+      }
+      await processDataUrl(dataUrl);
     } catch (err) {
-      console.error("Dish photo failed", err);
+      console.error("Native camera failed", err);
       setStatus({
         kind: "error",
         message: err instanceof Error ? err.message : "Something went wrong.",
@@ -111,7 +135,7 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
   const triggerLabel =
     status.kind === "analyzing" ? "Scanning fridge…" : "📷 Snap your fridge";
   const busy = status.kind === "analyzing";
-  const isDesktop = !isSnapEnabled;
+  const isDesktop = !native && !isSnapEnabled;
   const disabled = busy || isDesktop;
 
   return (
@@ -131,7 +155,14 @@ export function FridgePhotoButton({ onAdd, existing }: Props) {
 
       <button
         type="button"
-        onClick={() => !isDesktop && inputRef.current?.click()}
+        onClick={() => {
+          if (isDesktop) return;
+          if (native) {
+            handleNativeCapture();
+          } else {
+            inputRef.current?.click();
+          }
+        }}
         disabled={disabled}
         title={isDesktop ? "Open on phone or tablet to snap your fridge" : undefined}
         aria-label={isDesktop ? "Snap your fridge — available on phone or tablet" : "Snap your fridge"}
