@@ -1,3 +1,5 @@
+import { Flag } from "@/lib/flag";
+
 type Country = { flag: string; cuisine: string; label: string };
 
 const COUNTRIES: Country[] = [
@@ -116,9 +118,10 @@ function Chip({
       className="shrink-0 px-5 py-2.5 rounded-full bg-card border border-border text-foreground hover:bg-muted hover:border-primary/40 hover:shadow-sm transition-all flex items-center gap-2.5 text-sm font-medium"
       aria-label={`Cook ${country.cuisine} cuisine`}
     >
-      <span className="text-lg leading-none animate-flag-spin" aria-hidden>
-        {country.flag}
-      </span>
+      <Flag
+        emoji={country.flag}
+        className="!w-6 !h-[18px] rounded-sm shadow-sm"
+      />
       <span>{country.cuisine}</span>
     </button>
   );
