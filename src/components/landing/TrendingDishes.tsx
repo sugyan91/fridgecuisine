@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Flag } from "@/lib/flag";
 import phoBoImg from "@/assets/trending/pho-bo.jpg";
 import momoImg from "@/assets/trending/momo.jpg";
 import xiaoLongBaoImg from "@/assets/trending/xiao-long-bao.jpg";
@@ -11,7 +12,8 @@ import lomoSaltadoImg from "@/assets/trending/lomo-saltado.jpg";
 
 type Dish = { name: string; img: string; flag: string; origin: string };
 
-// 120+ real food photos via Unsplash CDN — no API key, free, hot-linkable.
+// Curated, verified-working Unsplash photo IDs. Avoid expanding this list
+// without testing — broken IDs render as the gradient + flag fallback.
 const u = (id: string) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=70`;
 
