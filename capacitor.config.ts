@@ -6,6 +6,7 @@ const config: CapacitorConfig = {
   webDir: "dist",
   ios: {
     contentInset: "always",
+    limitsNavigationsToAppBoundDomains: false,
   },
   plugins: {
     SplashScreen: {
@@ -14,13 +15,24 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
   },
-  // For live-reload during development against the published preview, uncomment
-  // and run `npx cap sync ios && npx cap run ios`. REMOVE before submitting to
-  // the App Store — production builds must serve the bundled `dist/` assets.
-  // server: {
-  //   url: "https://fridgecuisine.lovable.app",
-  //   cleartext: false,
-  // },
+  // The iOS app loads the live web app from fridgecuisine.com. The bundled
+  // dist/index.html is a minimal bootstrap that redirects into the live site
+  // so the WebView origin is fridgecuisine.com (cookies, auth, Stripe all
+  // work normally). Native plugins (camera, push, etc.) are still bridged.
+  server: {
+    url: "https://fridgecuisine.com",
+    cleartext: false,
+    allowNavigation: [
+      "fridgecuisine.com",
+      "*.fridgecuisine.com",
+      "*.lovable.app",
+      "*.stripe.com",
+      "checkout.stripe.com",
+      "*.supabase.co",
+      "accounts.google.com",
+      "appleid.apple.com",
+    ],
+  },
 };
 
 export default config;
