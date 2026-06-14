@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: "FridgeCuisine",
   webDir: "dist",
   ios: {
-    contentInset: "always",
+    contentInset: "automatic",
+    scrollEnabled: true,
     limitsNavigationsToAppBoundDomains: false,
   },
   plugins: {
