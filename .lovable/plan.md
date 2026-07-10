@@ -1,69 +1,59 @@
-# Option B — Client-only iOS build
+# FridgeCuisine Visual Redesign
 
-## The core problem
+Right now the site reads flat and generic on mobile: thin hairlines, muted stone/gold, and a small serif that gets lost on a 390px screen. I'll take it in a **warm editorial "Trattoria Modern"** direction — food-magazine energy that actually makes you hungry, engineered mobile-first.
 
-Your web app runs on **TanStack Start**, which is an SSR framework. `npm run build` produces a Cloudflare Worker bundle in `.output/`, not a static `dist/index.html`. Capacitor needs a static folder it can ship inside the iPhone — there is no Node/Worker running on the device to render pages or execute server functions.
+## Design direction (picked)
 
-The app uses **~30+ `createServerFn` modules** (auth, recipes, payments, community, AI vision, Stripe, email, etc). Every one of those is a server-side RPC that the iPhone cannot run. They must be reached over HTTPS by calling your hosted backend at `https://fridgecuisine.com`.
+**Palette — Sunset Kitchen**
+- Background: warm ivory `#FFF7EE`
+- Ink: near-black espresso `#1B120E`
+- Primary CTA: deep tomato `#D7452B`
+- Accent: saffron gold `#F2A73B`
+- Support: basil green `#2F5D3A` for tags/success
+- Dark bands: rich cocoa `#2A1D17` (used for hero sections + footer)
 
-## What I'll build
+**Typography**
+- Display: **Fraunces** (high-contrast serif, italic optical size) — big, confident magazine headlines
+- Body/UI: **Inter Tight** — crisp, legible at small sizes
+- Eyebrow labels: uppercase Inter Tight with wide tracking
+- Real mobile scale: H1 clamps 40→72px, body 16px min, eyebrows 12px
 
-A second build target — let's call it `build:ios` — that produces a plain SPA in `dist/` by:
+**Feel**
+- Editorial, warm, hand-plated. Not "AI SaaS." Think Bon Appétit meets a modern Milanese trattoria menu.
+- Restore visual weight: remove the global `border-2 → 1px` override that flattened everything. Bring back deliberate 1.5–2px borders on cards, buttons, and tags.
+- Generous rounded corners (2xl+), soft warm shadows, tomato/gold accent underlines on section headings.
 
-1. **Adding a parallel Vite config** (`vite.ios.config.ts`) that:
-   - Disables TanStack Start's SSR plugin and Cloudflare plugin.
-   - Builds a regular client-side React + TanStack Router app.
-   - Outputs `dist/index.html` + hashed JS/CSS chunks.
-   - Inlines `VITE_API_BASE_URL=https://fridgecuisine.com` at build time.
+## Mobile-first fixes (the "looks like shit on mobile" part)
 
-2. **Switching server-function calls to fetch over HTTPS.** TanStack Start server functions are already RPC under the hood (POST to `/_serverFn/<id>`). I'll add a thin client shim that, when running on iOS, rewrites every server-function call to hit `https://fridgecuisine.com/_serverFn/<id>` instead of the local origin. This keeps the existing `useServerFn(...)` call sites unchanged — no rewriting individual `.functions.ts` consumers.
+- Rebuild the hero: bigger typographic scale, single-column stacked composition, sticky primary CTA area, no cramped side-by-side widgets.
+- Cards get real presence: cream surface, 1.5px ink border, 20–24px radius, warm shadow, larger tap targets (min 44px).
+- Section headings use a display serif + saffron underline motif so scrolling on mobile feels rhythmic.
+- Increase base font size, tighten line-height on display, loosen on body, add proper section padding (`py-16 sm:py-24`).
+- Apply the responsive grid pattern to header rows (`grid-cols-[minmax(0,1fr)_auto]` + `min-w-0` + `shrink-0 truncate`) so nothing collapses on 390px.
 
-3. **CORS on the hosted backend.** Add an `Access-Control-Allow-Origin: capacitor://localhost` (and `ionic://localhost`) middleware so the iOS WebView is allowed to call your server functions. Today nothing is configured for cross-origin because the web app is same-origin.
+## Scope of changes (presentation only, no business logic)
 
-4. **Auth token handling.** Supabase auth uses cookies on the web. On iOS the WebView origin (`capacitor://localhost`) is different from `fridgecuisine.com`, so cookies won't be sent. I'll switch the iOS client to use the Supabase JS client in `localStorage` mode (already default) and attach the bearer token to each server-function fetch via the existing `attachSupabaseAuth` flow — but on the client side. The server-side `requireSupabaseAuth` middleware already accepts a bearer token, so no server changes needed.
+1. **`src/styles.css`** — replace the palette (light + dark), swap font tokens to Fraunces + Inter Tight, add warm shadow + gradient tokens, remove the `border-2 → 1px` override, add utility classes for the accent underline and warm section bands.
+2. **`src/routes/__root.tsx`** — swap the Google Fonts `<link>` to load Fraunces + Inter Tight, update `<title>` / meta description tone to match the new voice.
+3. **Landing composition** — restyle (not restructure) these to the new system:
+   - `src/routes/index.tsx` (hero + section rhythm)
+   - `src/components/landing/HowItWorks.tsx` / `HowItWorksStrip.tsx`
+   - `src/components/landing/TrendingDishes.tsx`
+   - `src/components/landing/PremiumRecipesStrip.tsx`
+   - `src/components/landing/CountryTiles.tsx`
+   - `src/components/landing/Testimonials.tsx`
+   - `src/components/landing/ChefCTA.tsx` / `ChefSellBanner.tsx`
+   - `src/components/landing/SiteFooter.tsx`
+4. **Shared surfaces** used everywhere: `src/components/fridge/RecipeCard.tsx`, `src/components/fridge/IngredientInput.tsx`, `src/components/fridge/CommunityStrip.tsx` — new card/button/tag styling via tokens.
+5. **Buttons and tags** — introduce a `premium` and `warm` variant on the existing shadcn Button so CTAs get the tomato→saffron gradient without touching call sites' logic.
 
-5. **Replace SSR-only bits with client equivalents.**
-   - The root layout uses `shellComponent` (SSR HTML shell). The iOS build needs a standard `index.html` with a `<div id="root">` and a client-side React mount.
-   - Route `head()` SEO metadata becomes irrelevant inside the app and can be no-op'd.
-   - Public-route loaders that call server functions stay — they'll fetch over HTTPS.
+## Out of scope
 
-6. **Wire the build into Capacitor.** `package.json` script: `"build:ios": "vite build --config vite.ios.config.ts"`. README updated to: `npm run build:ios && npx cap sync ios && npx cap open ios`.
+- No changes to routing, data loading, server functions, auth, iOS icon pack, or any backend.
+- No new dependencies beyond Google Fonts already loaded via `<link>`.
 
-## Risks and unknowns I want you to know about
+## What you'll see when it ships
 
-- **TanStack Start's server-function RPC URL/protocol is not a public contract.** It works today; a future Start upgrade could break it. Mitigation: pin `@tanstack/react-start` version and add a smoke test.
-- **Stripe Checkout, magic-link auth callbacks, and email links all redirect to web URLs.** Inside the iOS app these will open Safari, not stay in the app. For v1 that's acceptable; v2 would need `@capacitor/browser` and deep linking.
-- **Payments inside the app:** Apple requires StoreKit (IAP) for digital goods and takes 15–30%. If your paid recipes / subscriptions count as digital content, Apple may reject Stripe checkout. Physical goods and services consumed outside the app are fine via Stripe. Worth checking before submission.
-- **Realtime / push notifications** are out of scope for this pass.
-- **First-load size:** the SPA bundle will be bigger than the SSR'd page because nothing is pre-rendered. Acceptable for a native app.
+A warm, magazine-grade homepage that feels appetizing on a phone: big Fraunces headlines, tomato CTAs, cream cards with real edges, saffron accents, and clear rhythm as you scroll. Interior pages inherit the tokens automatically.
 
-## What I won't do
-
-- Won't change anything about the web (`fridgecuisine.com`) — it keeps running TanStack Start SSR exactly as today.
-- Won't add IAP / StoreKit (separate workstream if Apple flags payments).
-- Won't generate the Xcode project — still happens on your Mac with `npx cap add ios`.
-
-## Deliverables in this pass
-
-- `vite.ios.config.ts`
-- `src/ios-entry.tsx` (client-only React mount)
-- `index.html` (SPA template for the iOS build)
-- `src/lib/server-fn-client.ts` (HTTPS rewrite shim for server-function calls)
-- CORS handling in `src/server.ts` / start middleware
-- `package.json` script `build:ios`
-- Updated `README-ios.md` with the new flow
-- A placeholder/empty `dist/index.html` is no longer needed — the real build will produce one
-
-## After I'm done, on your Mac
-
-```bash
-git pull
-npm install
-npm run build:ios        # produces dist/index.html for Capacitor
-npx cap sync ios
-npx cap open ios
-```
-
-## One question before I start
-
-Apple's IAP rule is the single biggest rejection risk. Are your paid recipes / Premium subscription **digital content unlocked inside the app** (likely needs StoreKit), or are they **services / physical** (Stripe is fine)? If digital, I should plan a follow-up to swap Stripe → StoreKit for the iOS build, or hide the paywall on iOS entirely for v1 submission.
+If you want a different flavor (darker/moodier "Noir & Gold," or brighter "Sunset Blaze"), say the word before I build and I'll swap the palette in the plan.
