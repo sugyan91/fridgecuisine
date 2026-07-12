@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { IngredientInput } from "@/components/fridge/IngredientInput";
 import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { RecipeCard } from "@/components/fridge/RecipeCard";
+import { RecipeSkeleton, RecipeDetailSkeleton } from "@/components/fridge/RecipeSkeleton";
 import { ShareButton } from "@/components/fridge/ShareButton";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
@@ -907,6 +908,12 @@ function Index() {
               <IngredientTicker />
             </div>
 
+            {dishLoading && (
+              <div className="max-w-3xl mx-auto mt-10">
+                <RecipeDetailSkeleton />
+              </div>
+            )}
+
               {dishResult && (
               <div className="max-w-3xl mx-auto mt-10 bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)]">
                 <div className="flex items-start justify-between gap-3 mb-2">
@@ -1136,7 +1143,7 @@ function Index() {
                 </div>
               )}
 
-              {loading && <LoadingSkeleton />}
+              {loading && <RecipeSkeleton count={3} />}
 
               {!loading && recipes && recipes.map((r, i) => (
                 <RecipeCard
@@ -1248,7 +1255,7 @@ function Index() {
               </div>
             )}
 
-            {pantryMode && loading && <LoadingSkeleton />}
+            {pantryMode && loading && <RecipeSkeleton count={3} />}
 
             {pantryMode && !loading &&
               recipes &&
@@ -1355,25 +1362,6 @@ function SectionHeader({
   );
 }
 
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-5">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className="bg-card border border-border rounded-[2rem] h-40 shadow-[var(--shadow-soft)] animate-pulse flex overflow-hidden"
-        >
-          <div className="w-48 bg-secondary" />
-          <div className="flex-1 p-6 space-y-3">
-            <div className="h-6 bg-foreground/10 rounded w-2/3" />
-            <div className="h-3 bg-foreground/10 rounded w-1/3" />
-            <div className="h-3 bg-foreground/10 rounded w-5/6" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
   const tints = [
