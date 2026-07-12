@@ -1,22 +1,38 @@
-## Goal
-Replace the "★ 4.9 from 12,000+ cooks" badge in the site footer with a non-numeric trust signal that sounds realistic for a newly launched app.
+Restructure the footer link columns in `src/components/landing/SiteFooter.tsx` so the groups feel related and meaningful to a user of an AI personal-chef app.
 
-## Change
-Edit `src/components/landing/SiteFooter.tsx`.
+Current state
+- Columns: "Cook" (Recipes, Community, Cookbook, Pricing, Account) and "For chefs" (Sell recipes, Browse chefs).
+- "Sell recipes" links to `/sell`, which has no route file — it is a dead link.
+- The group labels and items overlap in purpose and don't match how a home cook thinks about the product.
 
-- Remove the star rating and fake review count.
-- Replace the badge copy with one of the following brand-aligned options (pick before implementing):
-  1. **"AI-powered · Zero waste"**
-  2. **"Smart recipes from your fridge"**
-  3. **"Made for home cooks"**
-  4. **"Your personal AI chef"**
+Proposed change
+Group links by what the user is trying to do:
 
-Keep the existing visual style: small rounded pill badge with gold/accent coloring on the dark footer background.
+```
+Discover
+  Recipes
+  Community
+  Chefs
 
-## Out of scope
-- No backend or data wiring.
-- No changes to the shop recipe cards or fake-ratings helper (`src/lib/fake-ratings.tsx`), which are used elsewhere for individual recipe ratings.
+My kitchen
+  Cookbook
+  Account
 
-## Verification
+Upgrade
+  Pricing
+```
+
+Details
+- Replace the "Cook" and "For chefs" columns with the three intent-based columns above.
+- Remove the dead "Sell recipes" link (no `/sell` route exists).
+- Keep "Browse chefs" but move it under Discover as "Chefs".
+- Keep the Contact column and legal row unchanged.
+- Preserve the existing visual style: dark footer, uppercase tracking labels, white/85 links.
+
+Verification
 - Typecheck with `bunx tsgo --noEmit`.
-- Confirm the footer no longer shows "12,000+" or a star rating in the preview.
+- Confirm in the live preview that the footer shows the new columns and that all links resolve to existing routes.
+
+Out of scope
+- No changes to route files or page content.
+- No backend or data wiring.
