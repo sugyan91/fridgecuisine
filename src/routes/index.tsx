@@ -33,6 +33,7 @@ import { POPULAR_COMBOS as ALL_POPULAR_COMBOS } from "@/data/popular-combos";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
+import { CORE_DIETARY } from "@/lib/taxonomy";
 import { RecipeCounter } from "@/components/RecipeCounter";
 import { FreeTierBanner } from "@/components/FreeTierBanner";
 import { LimitReachedModal } from "@/components/LimitReachedModal";
