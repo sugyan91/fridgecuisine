@@ -1266,7 +1266,6 @@ function Index() {
                 onPantryGenerate={onPantryGenerate}
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
-                
                 kidFriendly={kidFriendly}
                 onKidFriendly={setKidFriendly}
                 showNutrition={showNutrition}
