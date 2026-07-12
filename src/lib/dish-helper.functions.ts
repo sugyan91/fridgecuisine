@@ -8,6 +8,7 @@ import { checkAnonQuota, recordAnonGeneration } from "./anon-tracking.server";
 
 const inputSchema = z.object({
   dish: z.string().trim().min(2).max(200),
+  dietary: z.array(z.string().trim().min(1).max(40)).max(20).optional().default([]),
   language: z
     .string()
     .trim()
@@ -61,9 +62,13 @@ export const getDishHelper = createServerFn({ method: "POST" })
       if (!anon.ok) return { ok: false, error: anon.error };
       anonFingerprint = anon.fingerprint;
     }
+    const dietaryLine =
+      data.dietary && data.dietary.length > 0
+        ? `\n- DIETARY CONSTRAINTS (STRICT — never violate): ${data.dietary.join(", ")}. Substitute or omit ingredients as needed so the recipe fully honors these. If the requested dish fundamentally cannot be adapted, still return the closest faithful adaptation that respects the constraints.`
+        : "";
     const systemPrompt = `You are an expert global chef. Given a dish name (any cuisine, any style), return its ingredients AND a clean home-cook recipe.
 Rules:
-- Use authentic ingredients and techniques for the dish's cuisine.
+- Use authentic ingredients and techniques for the dish's cuisine.${dietaryLine}
 - Ingredients list should be specific (with quantities for a typical serving) and complete.
 - Steps should be concrete, ordered, 4-12 short steps.
 - ALSO provide: prepTimeMinutes (chopping/measuring), totalTimeMinutes (prep + cook), and stepTimings — an array of integer minutes per step, SAME LENGTH as steps. Use 1 if a step is near-instant.
