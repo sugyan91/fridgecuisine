@@ -248,6 +248,26 @@ function Index() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Press "/" anywhere on the page to jump focus to the hero dish search.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      const editable =
+        target?.isContentEditable ||
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select";
+      if (editable) return;
+      e.preventDefault();
+      dishInputRef.current?.focus();
+      dishInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   useEffect(() => {
     if (!userId) {
       setSaved([]);
