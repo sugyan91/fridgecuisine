@@ -242,6 +242,39 @@ function AccountPage() {
             ) : null}
           </div>
         </section>
+
+        {/* Today's usage */}
+        <section className="mt-6 rounded-2xl border border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Today's usage
+              </p>
+              <p className="mt-1 text-lg font-semibold text-foreground">
+                {usageLoaded ? (
+                  <>
+                    {used} of {limit} recipes used
+                  </>
+                ) : (
+                  "Loading…"
+                )}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {usageLoaded ? (
+                  <>
+                    {remaining} remaining today ·{" "}
+                    <Link to="/usage" className="underline underline-offset-2 text-foreground">
+                      View details
+                    </Link>
+                  </>
+                ) : (
+                  "Fetching your recipe count…"
+                )}
+              </p>
+            </div>
+            <Sparkles className="h-8 w-8 text-primary/60" />
+          </div>
+        </section>
       </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
