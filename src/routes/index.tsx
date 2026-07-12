@@ -822,13 +822,18 @@ function Index() {
                   {dishPrompts[promptIndex]}
                 </p>
               </div>
-              <form onSubmit={onDishSubmit} className="relative max-w-2xl mx-auto">
+              <form
+                onSubmit={onDishSubmit}
+                role="search"
+                aria-label="Search for a dish to cook"
+                className="relative max-w-2xl mx-auto"
+              >
                 <div
                   aria-hidden
                   className="pointer-events-none absolute -inset-1.5 rounded-[1.75rem] opacity-60 sm:opacity-70 blur-xl"
                   style={{ background: "var(--gradient-warm)" }}
                 />
-                <div className="relative rounded-[1.35rem] sm:rounded-[1.5rem] bg-card border-[1.5px] border-foreground/10 shadow-[var(--shadow-card)] p-1.5 flex flex-col sm:flex-row sm:items-center gap-1.5">
+                <div className="relative rounded-[1.35rem] sm:rounded-[1.5rem] bg-card border-[1.5px] border-foreground/10 shadow-[var(--shadow-card)] p-1.5 flex flex-col sm:flex-row sm:items-center gap-1.5 focus-within:border-primary focus-within:ring-4 focus-within:ring-[color:var(--ring)] transition-shadow">
                   <input
                     ref={dishInputRef}
                     type="text"
@@ -838,12 +843,14 @@ function Index() {
                     onChange={(e) => setDishQuery(e.target.value)}
                     placeholder={`Try "${worldFoods[worldFoodIndex].food}"`}
                     aria-label="What dish do you want to cook?"
-                    className="flex-1 min-w-0 bg-transparent px-4 sm:px-5 py-3.5 sm:py-4 text-[16px] md:text-lg font-medium focus:outline-none placeholder:text-muted-foreground/70 truncate"
+                    enterKeyHint="search"
+                    className="flex-1 min-w-0 min-h-[48px] bg-transparent px-4 sm:px-5 py-3.5 sm:py-4 text-[16px] md:text-lg font-medium text-foreground rounded-[1rem] focus:outline-none placeholder:text-muted-foreground/70 truncate"
                   />
                   <button
                     type="submit"
                     disabled={dishLoading}
-                    className="group relative inline-flex min-h-[52px] sm:min-h-0 items-center justify-center gap-2 rounded-[1.05rem] sm:rounded-[1.15rem] px-6 sm:px-7 py-3 sm:py-4 font-display font-semibold text-base text-primary-foreground shadow-[var(--shadow-warm)] transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                    aria-label={dishLoading ? "Generating recipe" : "Cook this dish now"}
+                    className="group relative inline-flex min-h-[52px] min-w-[52px] sm:min-h-[48px] items-center justify-center gap-2 rounded-[1.05rem] sm:rounded-[1.15rem] px-6 sm:px-7 py-3 sm:py-4 font-display font-semibold text-base text-primary-foreground shadow-[var(--shadow-warm)] transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--ring)]"
                     style={{ background: "var(--gradient-warm)" }}
                   >
                     <span>{dishLoading ? "Thinking…" : "Cook this now"}</span>
@@ -855,6 +862,9 @@ function Index() {
                     </span>
                   </button>
                 </div>
+                <p className="sr-only" role="status" aria-live="polite">
+                  {dishLoading ? "Generating your recipe, please wait." : ""}
+                </p>
               </form>
               <div className="mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-5 gap-y-1.5 text-[11px] sm:text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
