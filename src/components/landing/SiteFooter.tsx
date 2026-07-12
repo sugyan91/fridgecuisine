@@ -27,7 +27,7 @@ export function SiteFooter() {
             </div>
             <div className="flex items-center gap-2 pt-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] px-3 py-1 text-xs font-semibold">
-                ★ 4.9 from 12,000+ cooks
+                Made for home cooks
               </span>
             </div>
           </div>
