@@ -20,6 +20,7 @@ const inputSchema = z.object({
 const responseSchema = z.object({
   dishName: z.string(),
   ingredients: z.array(z.string()).min(1).max(40),
+  dietary: z.array(z.string().max(40)).max(8).default([]),
   recipe: z.object({
     cookTimeMinutes: z.number(),
     prepTimeMinutes: z.number().optional(),
@@ -75,6 +76,8 @@ Rules:
 - SERVINGS: Always include an integer "servings" (1-12) indicating how many people the recipe feeds. "nutrition.servings" MUST equal this value.
 - NUTRITION (REQUIRED): Include a "nutrition" object with "servings" (integer matching the recipe's servings) and "perServing" with integer "calories", "proteinG", "carbsG", "fatG", "sugarG", "fiberG". These are APPROXIMATE estimates — do your best, do not pretend precision, but never omit them.
 - Return ONLY valid JSON matching the schema. No prose.${languageInstruction(data.language)}`;
+
+    const dietaryTagsGuidance = `\n- Set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy", "Keto", "Low-Carb", "High Protein", "Quick Meal". Include user-selected dietary tags that apply plus any others obviously true for the dish. Max 6. Use [] if none apply.`;
 
     const userPrompt = `Dish: ${data.dish}
 
