@@ -792,29 +792,28 @@ function Index() {
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
 
-            <div className="max-w-3xl mx-auto text-center pt-2 pb-4 relative">
-              <div className="mb-5 flex justify-center">
-                <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-primary/25 bg-primary/10 px-3.5 py-1.5 font-display text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
-                  <span className="relative flex h-1.5 w-1.5">
+            <div className="max-w-3xl mx-auto text-center pt-2 pb-4 relative px-1">
+              <div className="mb-4 sm:mb-5 flex justify-center">
+                <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-primary/25 bg-primary/10 px-3 py-1.5 font-display text-[9px] sm:text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.2em] sm:tracking-[0.28em] text-primary">
+                  <span className="relative flex h-1.5 w-1.5 shrink-0">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
                   </span>
-                  Your AI-powered personal chef
+                  <span className="whitespace-nowrap">AI-powered personal chef</span>
                 </span>
               </div>
-              <h1 className="font-display text-[2.75rem] leading-[0.95] sm:text-6xl md:text-7xl lg:text-[5.5rem] font-semibold tracking-[-0.02em] text-foreground mb-5">
-                What&rsquo;s cooking
-                <br className="hidden sm:inline" />{" "}
+              <h1 className="font-display text-[2rem] leading-[1.02] sm:text-5xl md:text-7xl lg:text-[5.5rem] sm:leading-[0.95] font-semibold tracking-[-0.02em] text-foreground mb-4 sm:mb-5 [text-wrap:balance]">
+                What&rsquo;s cooking{" "}
                 <span className="italic font-normal text-primary">
                   in your{" "}
                   <span className="accent-underline text-foreground">head</span>
                 </span>{" "}
                 tonight?
               </h1>
-              <div className="min-h-[3.25rem] md:min-h-[2.75rem] mb-6 flex items-center justify-center overflow-hidden px-2">
+              <div className="min-h-[3.5rem] sm:min-h-[3rem] md:min-h-[2.75rem] mb-5 sm:mb-6 flex items-center justify-center overflow-hidden px-2">
                 <p
                   key={promptIndex}
-                  className={`text-base md:text-lg leading-relaxed text-muted-foreground max-w-xl ${
+                  className={`text-[15px] sm:text-base md:text-lg leading-snug sm:leading-relaxed text-muted-foreground max-w-xl [text-wrap:balance] ${
                     promptAnim === "in"
                       ? "animate-fade-down-in"
                       : "animate-fade-down-out"
@@ -826,22 +825,25 @@ function Index() {
               <form onSubmit={onDishSubmit} className="relative max-w-2xl mx-auto">
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute -inset-1.5 rounded-[1.75rem] opacity-70 blur-xl"
+                  className="pointer-events-none absolute -inset-1.5 rounded-[1.75rem] opacity-60 sm:opacity-70 blur-xl"
                   style={{ background: "var(--gradient-warm)" }}
                 />
-                <div className="relative rounded-[1.5rem] bg-card border-[1.5px] border-foreground/10 shadow-[var(--shadow-card)] p-1.5 flex flex-col sm:flex-row sm:items-center gap-1.5">
+                <div className="relative rounded-[1.35rem] sm:rounded-[1.5rem] bg-card border-[1.5px] border-foreground/10 shadow-[var(--shadow-card)] p-1.5 flex flex-col sm:flex-row sm:items-center gap-1.5">
                   <input
                     ref={dishInputRef}
                     type="text"
+                    inputMode="text"
+                    autoComplete="off"
                     value={dishQuery}
                     onChange={(e) => setDishQuery(e.target.value)}
-                    placeholder={`Try “${worldFoods[worldFoodIndex].food}” from ${worldFoods[worldFoodIndex].country}`}
-                    className="flex-1 min-w-0 bg-transparent px-4 sm:px-5 py-3.5 sm:py-4 text-base md:text-lg font-medium focus:outline-none placeholder:text-muted-foreground/70"
+                    placeholder={`Try "${worldFoods[worldFoodIndex].food}"`}
+                    aria-label="What dish do you want to cook?"
+                    className="flex-1 min-w-0 bg-transparent px-4 sm:px-5 py-3.5 sm:py-4 text-[16px] md:text-lg font-medium focus:outline-none placeholder:text-muted-foreground/70 truncate"
                   />
                   <button
                     type="submit"
                     disabled={dishLoading}
-                    className="group relative inline-flex items-center justify-center gap-2 rounded-[1.15rem] px-6 sm:px-7 py-3.5 sm:py-4 font-display font-semibold text-base text-primary-foreground shadow-[var(--shadow-warm)] transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="group relative inline-flex min-h-[52px] sm:min-h-0 items-center justify-center gap-2 rounded-[1.05rem] sm:rounded-[1.15rem] px-6 sm:px-7 py-3 sm:py-4 font-display font-semibold text-base text-primary-foreground shadow-[var(--shadow-warm)] transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ background: "var(--gradient-warm)" }}
                   >
                     <span>{dishLoading ? "Thinking…" : "Cook this now"}</span>
@@ -854,18 +856,18 @@ function Index() {
                   </button>
                 </div>
               </form>
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs md:text-sm text-muted-foreground">
+              <div className="mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-5 gap-y-1.5 text-[11px] sm:text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="size-1.5 rounded-full bg-[var(--sage)]" />
-                  Free to try — no signup
+                  Free — no signup
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="size-1.5 rounded-full bg-accent" />
-                  500+ cuisines worldwide
+                  500+ cuisines
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="size-1.5 rounded-full bg-primary" />
-                  Recipe in seconds
+                  Ready in seconds
                 </span>
               </div>
               <div className="mt-4 flex justify-center">
