@@ -9,70 +9,79 @@ import doroWatImg from "@/assets/trending/doro-wat.jpg";
 import jollofRiceImg from "@/assets/trending/jollof-rice.jpg";
 import bunnyChowImg from "@/assets/trending/bunny-chow.jpg";
 import lomoSaltadoImg from "@/assets/trending/lomo-saltado.jpg";
-import foodPasta from "@/assets/food-pasta.jpg";
-import foodSushi from "@/assets/food-sushi.jpg";
-import foodTacos from "@/assets/food-tacos.jpg";
-import foodCurry from "@/assets/food-curry.jpg";
-import foodPizza from "@/assets/food-pizza.jpg";
-import foodBurger from "@/assets/food-burger.jpg";
+import carbonaraImg from "@/assets/trending/carbonara.jpg";
+import margheritaPizzaImg from "@/assets/trending/margherita-pizza.jpg";
+import truffleRisottoImg from "@/assets/trending/truffle-risotto.jpg";
+import cacioEPepeImg from "@/assets/trending/cacio-e-pepe.jpg";
+import salmonSushiBowlImg from "@/assets/trending/salmon-sushi-bowl.jpg";
+import tonkotsuRamenImg from "@/assets/trending/tonkotsu-ramen.jpg";
+import handPulledNoodlesImg from "@/assets/trending/hand-pulled-noodles.jpg";
+import tacosAlPastorImg from "@/assets/trending/tacos-al-pastor.jpg";
+import molePoblanoImg from "@/assets/trending/mole-poblano.jpg";
+import thaiGreenCurryImg from "@/assets/trending/thai-green-curry.jpg";
+import padSeeEwImg from "@/assets/trending/pad-see-ew.jpg";
+import butterChickenImg from "@/assets/trending/butter-chicken.jpg";
+import bibimbapImg from "@/assets/trending/bibimbap.jpg";
+import bouillabaisseImg from "@/assets/trending/bouillabaisse.jpg";
+import coqAuVinImg from "@/assets/trending/coq-au-vin.jpg";
+import paellaImg from "@/assets/trending/paella.jpg";
+import moussakaImg from "@/assets/trending/moussaka.jpg";
+import lambTagineImg from "@/assets/trending/lamb-tagine.jpg";
+import iskenderKebapImg from "@/assets/trending/iskender-kebap.jpg";
+import hummusImg from "@/assets/trending/hummus.jpg";
+import shakshukaImg from "@/assets/trending/shakshuka.jpg";
+import cevicheImg from "@/assets/trending/ceviche.jpg";
+import shrimpLinguineImg from "@/assets/trending/shrimp-linguine.jpg";
 
 type Dish = { name: string; img: string; flag: string; origin: string };
 
-const LOCAL_DISH_IMAGES = [foodPasta, foodSushi, foodTacos, foodCurry, foodPizza, foodBurger];
-
-const u = (id: string) => {
-  let hash = 0;
-  for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return LOCAL_DISH_IMAGES[hash % LOCAL_DISH_IMAGES.length];
-};
-
 const DISHES: Dish[] = [
   // Italy
-  { name: "Creamy Carbonara",        flag: "🇮🇹", origin: "Italy",       img: u("1612874742237-6526221588e3") },
-  { name: "Margherita Pizza",        flag: "🇮🇹", origin: "Italy-2",     img: u("1574071318508-1cdbab80d002") },
-  { name: "Truffle Mushroom Risotto",flag: "🇮🇹", origin: "Italy-3",     img: u("1476124369491-e7addf5db371") },
-  { name: "Cacio e Pepe",            flag: "🇮🇹", origin: "Italy-4",     img: u("1551892374-ecf8754cf8b0") },
+  { name: "Creamy Carbonara",        flag: "🇮🇹", origin: "Italy",       img: carbonaraImg },
+  { name: "Margherita Pizza",        flag: "🇮🇹", origin: "Italy-2",     img: margheritaPizzaImg },
+  { name: "Truffle Mushroom Risotto",flag: "🇮🇹", origin: "Italy-3",     img: truffleRisottoImg },
+  { name: "Cacio e Pepe",            flag: "🇮🇹", origin: "Italy-4",     img: cacioEPepeImg },
   // Japan
-  { name: "Salmon Sushi Bowl",       flag: "🇯🇵", origin: "Japan",       img: u("1579871494447-9811cf80d66c") },
-  { name: "Tonkotsu Ramen",          flag: "🇯🇵", origin: "Japan-2",     img: u("1623341214825-9f4f963727da") },
-  { name: "Hand-Pulled Noodles",     flag: "🇯🇵", origin: "Japan-3",     img: u("1569718212165-3a8278d5f624") },
+  { name: "Salmon Sushi Bowl",       flag: "🇯🇵", origin: "Japan",       img: salmonSushiBowlImg },
+  { name: "Tonkotsu Ramen",          flag: "🇯🇵", origin: "Japan-2",     img: tonkotsuRamenImg },
+  { name: "Hand-Pulled Noodles",     flag: "🇨🇳", origin: "China-2",     img: handPulledNoodlesImg },
   // Mexico
-  { name: "Street Tacos al Pastor",  flag: "🇲🇽", origin: "Mexico",      img: u("1565299585323-38d6b0865b47") },
-  { name: "Mole Poblano",            flag: "🇲🇽", origin: "Mexico-2",    img: u("1599974579688-8dbdd335c77f") },
+  { name: "Street Tacos al Pastor",  flag: "🇲🇽", origin: "Mexico",      img: tacosAlPastorImg },
+  { name: "Mole Poblano",            flag: "🇲🇽", origin: "Mexico-2",    img: molePoblanoImg },
   // Thailand
-  { name: "Thai Green Curry",        flag: "🇹🇭", origin: "Thailand",    img: u("1455619452474-d2be8b1e70cd") },
-  { name: "Pad See Ew",              flag: "🇹🇭", origin: "Thailand-2",  img: u("1559314809-0d155014e29e") },
+  { name: "Thai Green Curry",        flag: "🇹🇭", origin: "Thailand",    img: thaiGreenCurryImg },
+  { name: "Pad See Ew",              flag: "🇹🇭", origin: "Thailand-2",  img: padSeeEwImg },
   // India
-  { name: "Butter Chicken",          flag: "🇮🇳", origin: "India",       img: u("1565557623262-b51c2513a641") },
+  { name: "Butter Chicken",          flag: "🇮🇳", origin: "India",       img: butterChickenImg },
   // Nepal & East Asia
   { name: "Steamed Momo",            flag: "🇳🇵", origin: "Nepal",       img: momoImg },
-  { name: "Bibimbap",                flag: "🇰🇷", origin: "Korea",       img: u("1553163147-622ab57be1c7") },
+  { name: "Bibimbap",                flag: "🇰🇷", origin: "Korea",       img: bibimbapImg },
   { name: "Xiao Long Bao",           flag: "🇨🇳", origin: "China",       img: xiaoLongBaoImg },
   // Vietnam
   { name: "Pho Bo",                  flag: "🇻🇳", origin: "Vietnam",     img: phoBoImg },
   // France
-  { name: "Bouillabaisse",           flag: "🇫🇷", origin: "France",      img: u("1547592180-85f173990554") },
-  { name: "Coq au Vin",              flag: "🇫🇷", origin: "France-2",    img: u("1572441713132-c542fc4fe282") },
+  { name: "Bouillabaisse",           flag: "🇫🇷", origin: "France",      img: bouillabaisseImg },
+  { name: "Coq au Vin",              flag: "🇫🇷", origin: "France-2",    img: coqAuVinImg },
   // Spain & Greece
-  { name: "Paella Valenciana",       flag: "🇪🇸", origin: "Spain",       img: u("1534080564583-6be75777b70a") },
-  { name: "Lamb Moussaka",           flag: "🇬🇷", origin: "Greece",      img: u("1544025162-d76694265947") },
+  { name: "Paella Valenciana",       flag: "🇪🇸", origin: "Spain",       img: paellaImg },
+  { name: "Lamb Moussaka",           flag: "🇬🇷", origin: "Greece",      img: moussakaImg },
   // Africa
-  { name: "Lamb Tagine",             flag: "🇲🇦", origin: "Morocco",     img: u("1541518763669-27fef04b14ea") },
+  { name: "Lamb Tagine",             flag: "🇲🇦", origin: "Morocco",     img: lambTagineImg },
   { name: "Doro Wat",                flag: "🇪🇹", origin: "Ethiopia",    img: doroWatImg },
   { name: "Jollof Rice",             flag: "🇳🇬", origin: "Nigeria",     img: jollofRiceImg },
   { name: "Bunny Chow",              flag: "🇿🇦", origin: "South Africa",img: bunnyChowImg },
   // Middle East
-  { name: "İskender Kebap",          flag: "🇹🇷", origin: "Turkey",      img: u("1601050690597-df0568f70950") },
-  { name: "Hummus Plate",            flag: "🇱🇧", origin: "Lebanon",     img: u("1571197119282-7c4e3a4dab8a") },
-  { name: "Shakshuka",               flag: "🇮🇱", origin: "Israel",      img: u("1590412200988-a436970781fa") },
+  { name: "İskender Kebap",          flag: "🇹🇷", origin: "Turkey",      img: iskenderKebapImg },
+  { name: "Hummus Plate",            flag: "🇱🇧", origin: "Lebanon",     img: hummusImg },
+  { name: "Shakshuka",               flag: "🇮🇱", origin: "Israel",      img: shakshukaImg },
   // Americas
-  { name: "Ceviche Mixto",           flag: "🇵🇪", origin: "Peru",        img: u("1532634922-8fe0b757fb13") },
+  { name: "Ceviche Mixto",           flag: "🇵🇪", origin: "Peru",        img: cevicheImg },
   { name: "Lomo Saltado",            flag: "🇵🇪", origin: "Peru-2",      img: lomoSaltadoImg },
   // Eastern Europe
   { name: "Pierogi",                 flag: "🇵🇱", origin: "Poland",      img: pierogiImg },
   { name: "Borscht",                 flag: "🇺🇦", origin: "Ukraine",     img: borschtImg },
   // Seafood / Pasta extras
-  { name: "Shrimp Linguine",         flag: "🇮🇹", origin: "Italy-5",     img: u("1551183053-bf91a1d81141") },
+  { name: "Shrimp Linguine",         flag: "🇮🇹", origin: "Italy-5",     img: shrimpLinguineImg },
 ];
 
 type Props = {
