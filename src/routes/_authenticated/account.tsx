@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, CreditCard, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Loader2, CreditCard, AlertTriangle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
@@ -10,6 +10,7 @@ import {
   createPortalSession,
 } from "@/lib/payments.functions";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -55,6 +56,7 @@ function AccountPage() {
   }, []);
 
   const { subscription, isPremium, loading, tier } = useSubscription(user?.id);
+  const { used, limit, remaining, loaded: usageLoaded } = useRecipeUsage(user?.id);
   const env = getStripeEnvironment();
 
   const periodEnd = subscription?.current_period_end ?? null;
@@ -238,6 +240,39 @@ function AccountPage() {
                 Manage billing
               </Button>
             ) : null}
+          </div>
+        </section>
+
+        {/* Today's usage */}
+        <section className="mt-6 rounded-2xl border border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Today's usage
+              </p>
+              <p className="mt-1 text-lg font-semibold text-foreground">
+                {usageLoaded ? (
+                  <>
+                    {used} of {limit} recipes used
+                  </>
+                ) : (
+                  "Loading…"
+                )}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {usageLoaded ? (
+                  <>
+                    {remaining} remaining today ·{" "}
+                    <Link to="/usage" className="underline underline-offset-2 text-foreground">
+                      View details
+                    </Link>
+                  </>
+                ) : (
+                  "Fetching your recipe count…"
+                )}
+              </p>
+            </div>
+            <Sparkles className="h-8 w-8 text-primary/60" />
           </div>
         </section>
       </div>

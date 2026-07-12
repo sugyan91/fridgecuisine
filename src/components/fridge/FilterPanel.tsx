@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -14,14 +14,14 @@ type Props = {
   onPantryGenerate?: () => void;
   pantryLoading?: boolean;
   isAuthenticated: boolean;
-  counterSlot?: ReactNode;
+  
   kidFriendly?: boolean;
   onKidFriendly?: (next: boolean) => void;
   showNutrition?: boolean;
   onShowNutrition?: (next: boolean) => void;
 };
 
-export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGenerate, pantryLoading, isAuthenticated, counterSlot, kidFriendly, onKidFriendly, showNutrition, onShowNutrition }: Props) {
+export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGenerate, pantryLoading, isAuthenticated, kidFriendly, onKidFriendly, showNutrition, onShowNutrition }: Props) {
   const [customDietary, setCustomDietary] = useState<string[]>([]);
   const [customCuisines, setCustomCuisines] = useState<string[]>([]);
   const [newDietary, setNewDietary] = useState("");
@@ -198,7 +198,7 @@ export function FilterPanel({ dietary, cuisine, onDietary, onCuisine, onPantryGe
         >
           {pantryLoading ? "Cooking up recipes from your pantry…" : "Create a cuisine from the pantry list"}
         </button>
-        {counterSlot && <div className="mt-3 flex justify-center">{counterSlot}</div>}
+        
       </div>
     </div>
   );

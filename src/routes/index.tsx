@@ -35,7 +35,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
 import { CORE_DIETARY } from "@/lib/taxonomy";
-import { RecipeCounter } from "@/components/RecipeCounter";
+
 import { FreeTierBanner } from "@/components/FreeTierBanner";
 import { LimitReachedModal } from "@/components/LimitReachedModal";
 import { SaveSignupModal } from "@/components/SaveSignupModal";
@@ -950,9 +950,6 @@ function Index() {
                   Ready in seconds
                 </span>
               </div>
-              <div className="mt-4 flex justify-center">
-                <RecipeCounter userId={userId} isPremium={isPremium} isUnlimited={isUnlimited} />
-              </div>
               <LiveActivityTicker />
               <IngredientTicker />
             </div>
@@ -1176,9 +1173,6 @@ function Index() {
                   Cancel
                 </button>
               )}
-              <div className="mt-3 flex justify-center">
-                <RecipeCounter userId={userId} isPremium={isPremium} isUnlimited={isUnlimited} />
-              </div>
             </div>
 
             {/* Inline results for the cuisine flow — sits right under the button */}
@@ -1272,7 +1266,6 @@ function Index() {
                 onPantryGenerate={onPantryGenerate}
                 pantryLoading={loading && pantryMode}
                 isAuthenticated={!!email}
-                counterSlot={<RecipeCounter userId={userId} isPremium={isPremium} isUnlimited={isUnlimited} />}
                 kidFriendly={kidFriendly}
                 onKidFriendly={setKidFriendly}
                 showNutrition={showNutrition}
