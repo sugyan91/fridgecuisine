@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { IngredientInput } from "@/components/fridge/IngredientInput";
 import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { RecipeCard } from "@/components/fridge/RecipeCard";
+import { RecipeSkeleton, RecipeDetailSkeleton } from "@/components/fridge/RecipeSkeleton";
 import { ShareButton } from "@/components/fridge/ShareButton";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
 import { CommunityStrip } from "@/components/fridge/CommunityStrip";
