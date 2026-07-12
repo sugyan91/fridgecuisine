@@ -792,28 +792,29 @@ function Index() {
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
 
-            <div className="max-w-3xl mx-auto text-center pt-1 pb-2 relative">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <span className="h-px w-8 bg-accent" />
-                <p className="font-display text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent">
-                  Your AI powered personal Chef
-                </p>
-                <span className="h-px w-8 bg-accent" />
+            <div className="max-w-3xl mx-auto text-center pt-2 pb-4 relative">
+              <div className="mb-5 flex justify-center">
+                <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-primary/25 bg-primary/10 px-3.5 py-1.5 font-display text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+                  </span>
+                  Your AI-powered personal chef
+                </span>
               </div>
-              <h1 className="font-display text-3xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9] text-foreground mb-4">
-                What food is living rent-free<br className="hidden sm:inline" /> in your{" "}
-                <span
-                  className="text-accent italic normal-case tracking-tight"
-                  style={{ fontFamily: "var(--font-serif)", fontWeight: 400 }}
-                >
-                  head
+              <h1 className="font-display text-[2.75rem] leading-[0.95] sm:text-6xl md:text-7xl lg:text-[5.5rem] font-semibold tracking-[-0.02em] text-foreground mb-5">
+                What&rsquo;s cooking
+                <br className="hidden sm:inline" />{" "}
+                <span className="italic font-normal text-primary">
+                  in your{" "}
+                  <span className="accent-underline text-foreground">head</span>
                 </span>{" "}
-                right now?
+                tonight?
               </h1>
-              <div className="min-h-[3rem] md:min-h-[2.5rem] mb-4 flex items-center justify-center overflow-hidden">
+              <div className="min-h-[3.25rem] md:min-h-[2.75rem] mb-6 flex items-center justify-center overflow-hidden px-2">
                 <p
                   key={promptIndex}
-                  className={`text-sm md:text-base leading-relaxed text-muted-foreground max-w-xl ${
+                  className={`text-base md:text-lg leading-relaxed text-muted-foreground max-w-xl ${
                     promptAnim === "in"
                       ? "animate-fade-down-in"
                       : "animate-fade-down-out"
@@ -823,23 +824,51 @@ function Index() {
                 </p>
               </div>
               <form onSubmit={onDishSubmit} className="relative max-w-2xl mx-auto">
-                <input
-                  ref={dishInputRef}
-                  type="text"
-                  value={dishQuery}
-                  onChange={(e) => setDishQuery(e.target.value)}
-                  placeholder={`eg: ${worldFoods[worldFoodIndex].food} from ${worldFoods[worldFoodIndex].country}`}
-                  className="w-full bg-card border border-border rounded-2xl py-3 sm:py-4 md:py-5 pl-5 pr-4 sm:pr-36 md:pr-44 text-base md:text-lg shadow-[var(--shadow-soft)] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/60"
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -inset-1.5 rounded-[1.75rem] opacity-70 blur-xl"
+                  style={{ background: "var(--gradient-warm)" }}
                 />
-                <button
-                  type="submit"
-                  disabled={dishLoading}
-                  className="mt-2 w-full py-3 sm:mt-0 sm:w-auto sm:py-0 sm:absolute sm:right-1.5 sm:top-1.5 sm:bottom-1.5 bg-primary text-primary-foreground px-5 md:px-7 rounded-xl font-display font-semibold text-sm md:text-base hover:brightness-110 transition-all disabled:opacity-60"
-                >
-                  {dishLoading ? "Thinking…" : "Start cooking"}
-                </button>
+                <div className="relative rounded-[1.5rem] bg-card border-[1.5px] border-foreground/10 shadow-[var(--shadow-card)] p-1.5 flex flex-col sm:flex-row sm:items-center gap-1.5">
+                  <input
+                    ref={dishInputRef}
+                    type="text"
+                    value={dishQuery}
+                    onChange={(e) => setDishQuery(e.target.value)}
+                    placeholder={`Try “${worldFoods[worldFoodIndex].food}” from ${worldFoods[worldFoodIndex].country}`}
+                    className="flex-1 min-w-0 bg-transparent px-4 sm:px-5 py-3.5 sm:py-4 text-base md:text-lg font-medium focus:outline-none placeholder:text-muted-foreground/70"
+                  />
+                  <button
+                    type="submit"
+                    disabled={dishLoading}
+                    className="group relative inline-flex items-center justify-center gap-2 rounded-[1.15rem] px-6 sm:px-7 py-3.5 sm:py-4 font-display font-semibold text-base text-primary-foreground shadow-[var(--shadow-warm)] transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={{ background: "var(--gradient-warm)" }}
+                  >
+                    <span>{dishLoading ? "Thinking…" : "Cook this now"}</span>
+                    <span
+                      aria-hidden
+                      className="transition-transform group-hover:translate-x-0.5"
+                    >
+                      →
+                    </span>
+                  </button>
+                </div>
               </form>
-              <div className="mt-3 flex justify-center">
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs md:text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-[var(--sage)]" />
+                  Free to try — no signup
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-accent" />
+                  500+ cuisines worldwide
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-primary" />
+                  Recipe in seconds
+                </span>
+              </div>
+              <div className="mt-4 flex justify-center">
                 <RecipeCounter userId={userId} isPremium={isPremium} isUnlimited={isUnlimited} />
               </div>
               <LiveActivityTicker />
