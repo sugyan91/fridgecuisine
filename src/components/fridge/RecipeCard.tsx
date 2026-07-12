@@ -9,6 +9,7 @@ import { swapIngredient, type IngredientSwap } from "@/lib/ingredient-swap.funct
 import { generateRecipeImage } from "@/lib/recipe-image.functions";
 import { downloadRecipePdf } from "@/lib/recipe-pdf";
 import { SafeImage } from "@/components/ui/safe-image";
+import { DietBadgeRow } from "./DietBadge";
 
 type Props = {
   recipe: Recipe;
@@ -294,18 +295,8 @@ export function RecipeCard({
               )}
             </div>
             {dietary.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 mt-3">
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/70 mr-1">
-                  Dietary:
-                </span>
-                {dietary.map((d) => (
-                  <span
-                    key={d}
-                    className="text-[10px] font-black uppercase tracking-wide bg-paprika text-white border-2 border-border rounded-full px-2 py-0.5"
-                  >
-                    {d}
-                  </span>
-                ))}
+              <div className="mt-3">
+                <DietBadgeRow tags={dietary} selected={dietaryProp} variant="dark" />
               </div>
             )}
           </div>
@@ -568,18 +559,8 @@ export function RecipeCard({
           )}
         </div>
         {dietary.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 mb-3">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-1">
-              Dietary:
-            </span>
-            {dietary.map((d) => (
-              <span
-                key={d}
-                className="text-[10px] font-black uppercase tracking-wide bg-paprika text-white border-2 border-border rounded-full px-2 py-0.5"
-              >
-                {d}
-              </span>
-            ))}
+          <div className="mb-3">
+            <DietBadgeRow tags={dietary} selected={dietaryProp} variant="light" />
           </div>
         )}
         <p className="text-sm text-pretty mb-4 font-medium">{recipe.blurb}</p>

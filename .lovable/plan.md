@@ -1,59 +1,38 @@
-# FridgeCuisine Visual Redesign
+## Goal
+Make diet badges on recipe cards more scannable and clearly show *why* a recipe matches the filters you picked.
 
-Right now the site reads flat and generic on mobile: thin hairlines, muted stone/gold, and a small serif that gets lost on a 390px screen. I'll take it in a **warm editorial "Trattoria Modern"** direction — food-magazine energy that actually makes you hungry, engineered mobile-first.
+The AI already returns a `dietary` array per recipe and cards already list them as small pink pills. Today they read as a generic label row — nothing signals which tags satisfy your selected filters, and there are no icons to distinguish e.g. Vegan vs Gluten-Free at a glance.
 
-## Design direction (picked)
+## Changes
 
-**Palette — Sunset Kitchen**
-- Background: warm ivory `#FFF7EE`
-- Ink: near-black espresso `#1B120E`
-- Primary CTA: deep tomato `#D7452B`
-- Accent: saffron gold `#F2A73B`
-- Support: basil green `#2F5D3A` for tags/success
-- Dark bands: rich cocoa `#2A1D17` (used for hero sections + footer)
+1. **Shared badge component** — `src/components/fridge/DietBadge.tsx`
+   - One place that renders `{ emoji + label }` with a "matched" variant.
+   - Reuses the emoji map already living in `FilterPanel` (Vegetarian 🥬, Vegan 🌱, Gluten-Free 🌾, Dairy-Free 🥛, Keto 🥓, Nut-Free 🥜, Pescatarian 🐟, Halal 🕌, Kosher ✡️, Contains Pork 🐖, Contains Nuts 🥜, Spicy 🌶️, etc.).
+   - Extract the emoji lookup into `src/lib/dietary-icons.ts` so both `FilterPanel` and `DietBadge` share it (no duplication).
 
-**Typography**
-- Display: **Fraunces** (high-contrast serif, italic optical size) — big, confident magazine headlines
-- Body/UI: **Inter Tight** — crisp, legible at small sizes
-- Eyebrow labels: uppercase Inter Tight with wide tracking
-- Real mobile scale: H1 clamps 40→72px, body 16px min, eyebrows 12px
+2. **RecipeCard** — `src/components/fridge/RecipeCard.tsx`
+   - Accept the user's selected filters as a new optional prop `selectedDietary?: string[]`.
+   - Sort badges: matched tags first, then the rest.
+   - Matched badges get a stronger treatment (filled paprika + subtle ring / ✓) and an `aria-label="Matches your Vegetarian filter"`; unmatched tags stay as soft outlined chips so the row doesn't become a wall of red.
+   - When ≥1 selected filter is satisfied, prepend a compact "Matches your diet" summary chip (e.g. "✓ Matches: Vegan, Gluten-Free").
+   - Apply the same treatment in both places dietary renders today (collapsed card ~line 296 and expanded view ~line 570).
 
-**Feel**
-- Editorial, warm, hand-plated. Not "AI SaaS." Think Bon Appétit meets a modern Milanese trattoria menu.
-- Restore visual weight: remove the global `border-2 → 1px` override that flattened everything. Bring back deliberate 1.5–2px borders on cards, buttons, and tags.
-- Generous rounded corners (2xl+), soft warm shadows, tomato/gold accent underlines on section headings.
+3. **Wire selected filters through** — `src/routes/index.tsx`
+   - Pass `selectedDietary={dietary}` to every `<RecipeCard />` render (pantry results, cuisine results, saved drawer usage stays as-is if it doesn't have access to current filters — fine to omit there).
 
-## Mobile-first fixes (the "looks like shit on mobile" part)
-
-- Rebuild the hero: bigger typographic scale, single-column stacked composition, sticky primary CTA area, no cramped side-by-side widgets.
-- Cards get real presence: cream surface, 1.5px ink border, 20–24px radius, warm shadow, larger tap targets (min 44px).
-- Section headings use a display serif + saffron underline motif so scrolling on mobile feels rhythmic.
-- Increase base font size, tighten line-height on display, loosen on body, add proper section padding (`py-16 sm:py-24`).
-- Apply the responsive grid pattern to header rows (`grid-cols-[minmax(0,1fr)_auto]` + `min-w-0` + `shrink-0 truncate`) so nothing collapses on 390px.
-
-## Scope of changes (presentation only, no business logic)
-
-1. **`src/styles.css`** — replace the palette (light + dark), swap font tokens to Fraunces + Inter Tight, add warm shadow + gradient tokens, remove the `border-2 → 1px` override, add utility classes for the accent underline and warm section bands.
-2. **`src/routes/__root.tsx`** — swap the Google Fonts `<link>` to load Fraunces + Inter Tight, update `<title>` / meta description tone to match the new voice.
-3. **Landing composition** — restyle (not restructure) these to the new system:
-   - `src/routes/index.tsx` (hero + section rhythm)
-   - `src/components/landing/HowItWorks.tsx` / `HowItWorksStrip.tsx`
-   - `src/components/landing/TrendingDishes.tsx`
-   - `src/components/landing/PremiumRecipesStrip.tsx`
-   - `src/components/landing/CountryTiles.tsx`
-   - `src/components/landing/Testimonials.tsx`
-   - `src/components/landing/ChefCTA.tsx` / `ChefSellBanner.tsx`
-   - `src/components/landing/SiteFooter.tsx`
-4. **Shared surfaces** used everywhere: `src/components/fridge/RecipeCard.tsx`, `src/components/fridge/IngredientInput.tsx`, `src/components/fridge/CommunityStrip.tsx` — new card/button/tag styling via tokens.
-5. **Buttons and tags** — introduce a `premium` and `warm` variant on the existing shadcn Button so CTAs get the tomato→saffron gradient without touching call sites' logic.
+4. **Dish-helper single recipe** — `src/lib/dish-helper.functions.ts` + hero result block in `src/routes/index.tsx`
+   - Extend `responseSchema` with an optional `dietary: string[]` (same tag vocabulary as `generateRecipes`) and ask the AI to populate it.
+   - Render the same `DietBadge` row under the dish name in the hero result card so the single-dish flow is consistent with multi-recipe cards.
 
 ## Out of scope
+- No changes to the filter UI itself, the pantry flow, saved-recipes schema, or the AI prompt rules for `generateRecipes` (it already emits the right tags).
+- No new dietary tags added to the taxonomy.
 
-- No changes to routing, data loading, server functions, auth, iOS icon pack, or any backend.
-- No new dependencies beyond Google Fonts already loaded via `<link>`.
+## Technical notes
+- `Recipe.dietary` and `SavedRecipeRow.dietary` types already exist — no schema/migration work.
+- `DietBadge` stays presentational; matching logic is a pure `selectedSet.has(tag)` check inside the component.
+- Dish-helper schema change is additive with `.default([])`, so old cached responses keep parsing.
 
-## What you'll see when it ships
-
-A warm, magazine-grade homepage that feels appetizing on a phone: big Fraunces headlines, tomato CTAs, cream cards with real edges, saffron accents, and clear rhythm as you scroll. Interior pages inherit the tokens automatically.
-
-If you want a different flavor (darker/moodier "Noir & Gold," or brighter "Sunset Blaze"), say the word before I build and I'll swap the palette in the plan.
+## Verification
+- Typecheck (`bunx tsgo --noEmit`).
+- Playwright on mobile (390×844) and desktop: run a pantry generation with Vegetarian + Gluten-Free selected, confirm matched badges are visually distinct and sorted first, and the "Matches your diet" chip appears.

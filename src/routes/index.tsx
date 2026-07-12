@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { IngredientInput } from "@/components/fridge/IngredientInput";
 import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { RecipeCard } from "@/components/fridge/RecipeCard";
+import { DietBadgeRow } from "@/components/fridge/DietBadge";
 import { RecipeSkeleton, RecipeDetailSkeleton } from "@/components/fridge/RecipeSkeleton";
 import { ShareButton } from "@/components/fridge/ShareButton";
 import { SavedDrawer } from "@/components/fridge/SavedDrawer";
@@ -996,6 +997,11 @@ function Index() {
                     }}
                   />
                 </div>
+                {dishResult.dietary && dishResult.dietary.length > 0 && (
+                  <div className="mb-4">
+                    <DietBadgeRow tags={dishResult.dietary} selected={dietary} variant="light" />
+                  </div>
+                )}
                 <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mb-3">
                     Ingredients
                   </p>
