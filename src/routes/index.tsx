@@ -1362,25 +1362,6 @@ function SectionHeader({
   );
 }
 
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-5">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className="bg-card border border-border rounded-[2rem] h-40 shadow-[var(--shadow-soft)] animate-pulse flex overflow-hidden"
-        >
-          <div className="w-48 bg-secondary" />
-          <div className="flex-1 p-6 space-y-3">
-            <div className="h-6 bg-foreground/10 rounded w-2/3" />
-            <div className="h-3 bg-foreground/10 rounded w-1/3" />
-            <div className="h-3 bg-foreground/10 rounded w-5/6" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function PopularCombos({ onPick }: { onPick: (combo: string[]) => void }) {
   const tints = [
