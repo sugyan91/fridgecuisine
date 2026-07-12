@@ -1137,7 +1137,7 @@ function Index() {
                 </div>
               )}
 
-              {loading && <LoadingSkeleton />}
+              {loading && <RecipeSkeleton count={3} />}
 
               {!loading && recipes && recipes.map((r, i) => (
                 <RecipeCard
@@ -1249,7 +1249,7 @@ function Index() {
               </div>
             )}
 
-            {pantryMode && loading && <LoadingSkeleton />}
+            {pantryMode && loading && <RecipeSkeleton count={3} />}
 
             {pantryMode && !loading &&
               recipes &&
