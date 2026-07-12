@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, CreditCard, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Loader2, CreditCard, AlertTriangle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
@@ -10,6 +10,7 @@ import {
   createPortalSession,
 } from "@/lib/payments.functions";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -55,6 +56,7 @@ function AccountPage() {
   }, []);
 
   const { subscription, isPremium, loading, tier } = useSubscription(user?.id);
+  const { used, limit, remaining, loaded: usageLoaded } = useRecipeUsage(user?.id);
   const env = getStripeEnvironment();
 
   const periodEnd = subscription?.current_period_end ?? null;
