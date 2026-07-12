@@ -887,26 +887,12 @@ function Index() {
                   {dishLoading ? "Generating your recipe, please wait." : ""}
                 </p>
               </form>
-              <div className="mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-5 gap-y-1.5 text-[11px] sm:text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-[var(--sage)]" />
-                  Free — no signup
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-accent" />
-                  500+ cuisines
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-primary" />
-                  Ready in seconds
-                </span>
-              </div>
-              <div className="mt-4 flex justify-center">
-                <RecipeCounter userId={userId} isPremium={isPremium} isUnlimited={isUnlimited} />
-              </div>
-              <LiveActivityTicker />
-              <IngredientTicker />
-            </div>
+
+              {dishLoading && (
+                <div className="max-w-3xl mx-auto mt-10">
+                  <RecipeDetailSkeleton />
+                </div>
+              )}
 
               {dishResult && (
               <div className="max-w-3xl mx-auto mt-10 bg-card border border-border rounded-[2rem] p-6 md:p-8 shadow-[var(--shadow-soft)]">
