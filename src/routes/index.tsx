@@ -297,7 +297,7 @@ function Index() {
     setDishResult(null);
     setShowRecipe(false);
     try {
-      const res = await fetchDish({ data: { dish: q, language: language.name } });
+      const res = await fetchDish({ data: { dish: q, dietary, language: language.name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
@@ -321,7 +321,7 @@ function Index() {
     setDishResult(null);
     setShowRecipe(false);
     try {
-      const res = await fetchDish({ data: { dish: name, language: language.name } });
+      const res = await fetchDish({ data: { dish: name, dietary, language: language.name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
