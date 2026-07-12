@@ -33,6 +33,7 @@ import { POPULAR_COMBOS as ALL_POPULAR_COMBOS } from "@/data/popular-combos";
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
+import { CORE_DIETARY } from "@/lib/taxonomy";
 import { RecipeCounter } from "@/components/RecipeCounter";
 import { FreeTierBanner } from "@/components/FreeTierBanner";
 import { LimitReachedModal } from "@/components/LimitReachedModal";
@@ -296,7 +297,7 @@ function Index() {
     setDishResult(null);
     setShowRecipe(false);
     try {
-      const res = await fetchDish({ data: { dish: q, language: language.name } });
+      const res = await fetchDish({ data: { dish: q, dietary, language: language.name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
@@ -320,7 +321,7 @@ function Index() {
     setDishResult(null);
     setShowRecipe(false);
     try {
-      const res = await fetchDish({ data: { dish: name, language: language.name } });
+      const res = await fetchDish({ data: { dish: name, dietary, language: language.name } });
       if (!res.ok) toast.error(res.error);
       else {
         setDishResult(res.data);
@@ -887,6 +888,53 @@ function Index() {
                   {dishLoading ? "Generating your recipe, please wait." : ""}
                 </p>
               </form>
+              <div
+                className="mt-3 sm:mt-4 max-w-2xl mx-auto"
+                role="group"
+                aria-label="Dietary filters"
+              >
+                <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-muted-foreground mr-1">
+                    Diet:
+                  </span>
+                  {CORE_DIETARY.map((d) => {
+                    const active = dietary.includes(d);
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() =>
+                          setDietary(
+                            active ? dietary.filter((x) => x !== d) : [...dietary, d],
+                          )
+                        }
+                        className={`min-h-[36px] px-3 py-1.5 rounded-full border-[1.5px] text-xs sm:text-sm font-semibold transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--ring)] ${
+                          active
+                            ? "bg-primary text-primary-foreground border-primary shadow-[var(--shadow-warm)]"
+                            : "bg-card text-foreground border-foreground/15 hover:border-primary/60"
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    );
+                  })}
+                  {dietary.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setDietary([])}
+                      className="min-h-[36px] px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-muted-foreground underline hover:text-foreground"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {dietary.length > 0 && (
+                  <p className="mt-2 text-center text-[11px] sm:text-xs text-muted-foreground">
+                    Recipes will strictly honor: {dietary.join(" · ")}
+                  </p>
+                )}
+              </div>
               <div className="mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-5 gap-y-1.5 text-[11px] sm:text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="size-1.5 rounded-full bg-[var(--sage)]" />
