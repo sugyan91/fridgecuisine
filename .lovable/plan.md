@@ -1,24 +1,22 @@
-Move the "0/2 free today · Resets in 5h" counter off the homepage and into the account/settings area, where usage already has a dedicated page.
+## Goal
+Replace the "★ 4.9 from 12,000+ cooks" badge in the site footer with a non-numeric trust signal that sounds realistic for a newly launched app.
 
-### What we'll do
+## Change
+Edit `src/components/landing/SiteFooter.tsx`.
 
-1. **Remove the counter from the homepage**
-   - Delete the three `<RecipeCounter />` call sites in `src/routes/index.tsx` (hero, generate button area, filter panel).
-   - Remove the `RecipeCounter` import from `src/routes/index.tsx`.
-   - Delete `src/components/RecipeCounter.tsx` since it will no longer be used anywhere.
+- Remove the star rating and fake review count.
+- Replace the badge copy with one of the following brand-aligned options (pick before implementing):
+  1. **"AI-powered · Zero waste"**
+  2. **"Smart recipes from your fridge"**
+  3. **"Made for home cooks"**
+  4. **"Your personal AI chef"**
 
-2. **Surface usage on the Account page**
-   - Add a small "Today's usage" card to `src/routes/_authenticated/account.tsx` showing:
-     - Current tier
-     - Used / limit
-     - Remaining count
-     - A link to the full `/usage` page
-   - Keep the existing "Today's usage" button as-is.
+Keep the existing visual style: small rounded pill badge with gold/accent coloring on the dark footer background.
 
-3. **Leave the detailed usage page untouched**
-   - `src/routes/_authenticated/usage.tsx` already has the full breakdown (progress bar, reset timer, upgrade CTA), so no changes needed there.
+## Out of scope
+- No backend or data wiring.
+- No changes to the shop recipe cards or fake-ratings helper (`src/lib/fake-ratings.tsx`), which are used elsewhere for individual recipe ratings.
 
-### Result
-- The homepage cooking flow is cleaner and no longer shows the countdown.
-- Users can still see their usage at a glance on `/account` and get full details on `/usage`.
-- The limit modal still appears when the cap is hit, so users aren't caught off guard.
+## Verification
+- Typecheck with `bunx tsgo --noEmit`.
+- Confirm the footer no longer shows "12,000+" or a star rating in the preview.
