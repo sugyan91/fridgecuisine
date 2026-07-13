@@ -36,18 +36,15 @@ export function SiteFooter() {
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               Discover
             </p>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/" className="hover:text-white block">Recipes</Link>
-                <p className="text-[11px] text-white/50 mt-0.5">Turn whatever is in your fridge into a meal.</p>
               </li>
               <li>
                 <Link to="/community" className="hover:text-white block">Community</Link>
-                <p className="text-[11px] text-white/50 mt-0.5">Share tips and see what others are cooking.</p>
               </li>
               <li>
                 <Link to="/chefs" className="hover:text-white block">Chefs</Link>
-                <p className="text-[11px] text-white/50 mt-0.5">Browse cooks and their go-to recipes.</p>
               </li>
             </ul>
           </div>
