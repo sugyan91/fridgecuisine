@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, MapPin, Lock } from "lucide-react";
+import { Loader2, BookOpen } from "lucide-react";
 import {
   listPublicPaidRecipes,
   type PaidRecipeListItem,
 } from "@/lib/paid-recipes.functions";
+import { listCookbooksForSale, type CookbookListItem } from "@/lib/cookbook-shop.functions";
 import { fakeRating, Stars } from "@/lib/fake-ratings";
 import { SafeImage } from "@/components/ui/safe-image";
 
@@ -25,14 +26,19 @@ export const Route = createFileRoute("/shop/")({
 
 function ShopPage() {
   const fetchList = useServerFn(listPublicPaidRecipes);
+  const fetchCookbooks = useServerFn(listCookbooksForSale);
   const [rows, setRows] = useState<PaidRecipeListItem[]>([]);
+  const [cookbooks, setCookbooks] = useState<CookbookListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchList()
-      .then((res) => setRows(res.rows))
+    Promise.all([fetchList(), fetchCookbooks()])
+      .then(([r, c]) => {
+        setRows(r.rows);
+        setCookbooks(c.cookbooks);
+      })
       .finally(() => setLoading(false));
-  }, [fetchList]);
+  }, [fetchList, fetchCookbooks]);
 
   return (
     <main className="min-h-screen bg-background text-foreground px-4 md:px-8 py-10">
@@ -50,6 +56,37 @@ function ShopPage() {
           Browse signature dishes from real cooks. Preview is free — pay the chef to
           unlock the full ingredients and method.
         </p>
+
+        {cookbooks.length > 0 && (
+          <section className="mb-10">
+            <h2 className="font-display text-2xl uppercase mb-3">Cookbook bundles</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {cookbooks.map((c) => (
+                <Link
+                  key={c.id}
+                  to="/shop/cookbook/$cookbookId"
+                  params={{ cookbookId: c.id }}
+                  className="bg-white border-4 border-border rounded-3xl overflow-hidden shadow-[4px_4px_0px_0px_var(--border)] active:translate-y-0.5 transition-all"
+                >
+                  {c.cover_image_url ? (
+                    <SafeImage src={c.cover_image_url} alt={c.title} className="w-full aspect-video object-cover" />
+                  ) : (
+                    <div className="w-full aspect-video bg-muted grid place-items-center">
+                      <BookOpen className="size-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <p className="font-display text-lg uppercase leading-tight line-clamp-2">{c.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {c.recipe_count} recipe{c.recipe_count === 1 ? "" : "s"} · by {c.author_name || "home chef"}
+                    </p>
+                    <p className="font-black text-paprika mt-2">${(c.price_cents / 100).toFixed(2)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {loading ? (
           <div className="grid place-items-center py-20">
