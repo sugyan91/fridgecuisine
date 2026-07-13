@@ -103,7 +103,7 @@ export const getChefStorefront = createServerFn({ method: "GET" })
       storefront: {
         chef: {
           user_id: prof.user_id,
-          username: prof.username,
+          username: prof.username ?? data.username,
           display_name: prof.display_name,
           avatar_url: chefProfile?.avatar_url ?? prof.avatar_url ?? null,
           bio: chefProfile?.bio ?? null,
