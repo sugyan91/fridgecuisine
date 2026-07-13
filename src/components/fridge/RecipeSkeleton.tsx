@@ -1,23 +1,40 @@
+import { useEffect, useState } from "react";
+
+const COOKING_MESSAGES = ["Chopping…", "Simmering…", "Plating…", "Seasoning…", "Tasting…"];
+
+function CookingStatus() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((n) => (n + 1) % COOKING_MESSAGES.length), 1500);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="mt-2 h-4 text-[11px] font-black uppercase tracking-[0.2em] text-foreground/60 transition-opacity">
+      {COOKING_MESSAGES[i]}
+    </div>
+  );
+}
+
 export function RecipeSkeleton({ count = 3 }: { count?: number }) {
   return (
     <div className="space-y-5" aria-busy="true" aria-label="Generating recipes">
       {Array.from({ length: count }).map((_, i) => (
         <article
           key={i}
-          className="bg-card border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)] animate-pulse"
+          className="bg-card border-4 border-border rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_var(--border)]"
         >
           {/* Image placeholder */}
-          <div className="relative aspect-[16/9] bg-muted border-b-4 border-border overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-muted via-muted to-foreground/5" />
+          <div className="relative aspect-[16/9] border-b-4 border-border overflow-hidden bg-[color:var(--surface-cream)]">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full [animation:shimmer_1.8s_infinite]" style={{ animation: "shimmer 1.8s infinite" }} />
             <div className="absolute inset-0 grid place-items-center">
               <div className="flex flex-col items-center gap-2">
-                <div className="size-12 rounded-2xl bg-foreground/10" />
-                <div className="h-2 w-24 bg-foreground/10 rounded" />
+                <div className="text-3xl">🍳</div>
+                {i === 0 && <CookingStatus />}
               </div>
             </div>
           </div>
 
-          <div className="p-5 space-y-4">
+          <div className="p-5 space-y-4 animate-pulse">
             {/* Title + missing badge */}
             <div className="flex justify-between items-start gap-3">
               <div className="h-7 md:h-8 bg-foreground/10 rounded w-2/3" />
