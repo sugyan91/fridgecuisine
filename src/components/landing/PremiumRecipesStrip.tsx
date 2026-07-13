@@ -7,6 +7,7 @@ import {
   type PaidRecipeListItem,
 } from "@/lib/paid-recipes.functions";
 import { SafeImage } from "@/components/ui/safe-image";
+import { getRotatingPool, pickRandom } from "@/lib/rotating-pool";
 
 export function PremiumRecipesStrip() {
   const fetchList = useServerFn(listPublicPaidRecipes);
@@ -15,9 +16,12 @@ export function PremiumRecipesStrip() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchList()
-      .then((res) => {
-        if (!cancelled) setRows(res.rows.slice(0, 8));
+    getRotatingPool<PaidRecipeListItem>({
+      key: "premium-recipes-pool-v1",
+      fetcher: () => fetchList().then((res) => res.rows),
+    })
+      .then((pool) => {
+        if (!cancelled) setRows(pickRandom(pool, 8));
       })
       .catch(() => {})
       .finally(() => {

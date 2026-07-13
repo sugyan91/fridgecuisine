@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { listCommunityRecipes } from "@/lib/community.functions";
 import { SafeImage } from "@/components/ui/safe-image";
+import { getRotatingPool, pickRandom } from "@/lib/rotating-pool";
 
 type Recipe = {
   id: string;
@@ -21,9 +22,21 @@ export function CommunityStrip({ isAuthenticated }: { isAuthenticated: boolean }
   const [recipes, setRecipes] = useState<Recipe[] | null>(null);
 
   useEffect(() => {
-    fetchRecipes({ data: { limit: 6 } })
-      .then((res) => setRecipes((res.recipes as Recipe[]) ?? []))
+    let cancelled = false;
+    getRotatingPool<Recipe>({
+      key: "community-recipes-pool-v1",
+      fetcher: () =>
+        fetchRecipes({ data: { limit: 30 } }).then(
+          (res) => (res.recipes as Recipe[]) ?? [],
+        ),
+    })
+      .then((pool) => {
+        if (!cancelled) setRecipes(pickRandom(pool, 6));
+      })
       .catch(() => setRecipes([]));
+    return () => {
+      cancelled = true;
+    };
   }, [fetchRecipes]);
 
   // Don't render anything until data loads — avoids the empty-frame gap.
