@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TESTIMONIALS, type Testimonial, type TestimonialAccent } from "./testimonials-data";
+import { pickRandom } from "@/lib/rotating-pool";
 
 const ACCENT_VAR: Record<TestimonialAccent, string> = {
   gold: "var(--accent-gold)",
@@ -12,6 +13,13 @@ export function Testimonials() {
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
   const [progress, setProgress] = useState(0);
+  // Start with source order for SSR so hydration matches, then shuffle
+  // on the client after mount so each visit shows a different order.
+  const [items, setItems] = useState<Testimonial[]>(TESTIMONIALS);
+
+  useEffect(() => {
+    setItems(pickRandom(TESTIMONIALS, TESTIMONIALS.length));
+  }, []);
 
   const updateScrollState = useCallback(() => {
     const el = railRef.current;
@@ -109,7 +117,7 @@ export function Testimonials() {
         className="-mx-4 md:-mx-8 px-4 md:px-8 overflow-x-auto snap-x snap-mandatory cursor-grab active:cursor-grabbing focus:outline-none [&::-webkit-scrollbar]:hidden [scrollbar-width:none] select-none"
       >
         <div className="flex items-stretch gap-4 md:gap-5 pb-2">
-          {TESTIMONIALS.map((t) => (
+          {items.map((t) => (
             <div
               key={t.name + t.role}
               data-card
@@ -130,7 +138,7 @@ export function Testimonials() {
           />
         </div>
         <p className="text-xs text-muted-foreground whitespace-nowrap">
-          {TESTIMONIALS.length} stories
+          {items.length} stories
         </p>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
