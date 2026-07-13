@@ -887,6 +887,61 @@ export type Database = {
         }
         Relationships: []
       }
+      storefront_views: {
+        Row: {
+          chef_user_id: string
+          cookbook_id: string | null
+          id: string
+          paid_recipe_id: string | null
+          source: string
+          viewed_at: string
+          viewer_ip_hash: string | null
+          viewer_user_id: string | null
+        }
+        Insert: {
+          chef_user_id: string
+          cookbook_id?: string | null
+          id?: string
+          paid_recipe_id?: string | null
+          source: string
+          viewed_at?: string
+          viewer_ip_hash?: string | null
+          viewer_user_id?: string | null
+        }
+        Update: {
+          chef_user_id?: string
+          cookbook_id?: string | null
+          id?: string
+          paid_recipe_id?: string | null
+          source?: string
+          viewed_at?: string
+          viewer_ip_hash?: string | null
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_views_cookbook_id_fkey"
+            columns: ["cookbook_id"]
+            isOneToOne: false
+            referencedRelation: "cookbooks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_views_paid_recipe_id_fkey"
+            columns: ["paid_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "paid_recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_views_paid_recipe_id_fkey"
+            columns: ["paid_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "paid_recipes_preview"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
