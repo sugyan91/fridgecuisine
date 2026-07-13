@@ -3,6 +3,7 @@ import { z } from "zod";
 import { callChatJSON } from "./hf-client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
+import { logAiUsage } from "./ai-usage-logging.server";
 
 const inputSchema = z.object({
   recipeTitle: z.string().trim().min(1).max(200),
@@ -53,6 +54,7 @@ export const swapIngredient = createServerFn({ method: "POST" })
     );
     if (cached) {
       await recordAiGeneration(supabase, userId);
+      logAiUsage({ endpoint: "ingredient-swap", userId, cacheHit: true });
       return { ok: true, swaps: cached.swaps };
     }
 
@@ -78,6 +80,7 @@ Dietary constraints (must respect): ${dietary}`;
       }
       await recordAiGeneration(supabase, userId);
       await putCached("ingredient-swap", cacheKey, { swaps: parsed.data.swaps }, 30);
+      logAiUsage({ endpoint: "ingredient-swap", userId, cacheHit: false });
       return { ok: true, swaps: parsed.data.swaps };
     } catch (err) {
       console.error("swapIngredient failed", err);
