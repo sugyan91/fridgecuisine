@@ -30,6 +30,29 @@ export const generateRecipeImage = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const quota = await checkAiQuota(supabase, userId);
     if (!quota.ok) return { ok: false, error: quota.error };
+
+    // Cache by normalized dish name + cuisine + key ingredients — same dish
+    // returns the same photo, no image gen.
+    const { hashKey, getCached, putCached } = await import("./ai-cache.server");
+    const norm = {
+      dish: data.dishName.toLowerCase().trim(),
+      cuisine: (data.cuisine ?? "").toLowerCase().trim(),
+      ingredients: (data.keyIngredients ?? [])
+        .map((s) => stripQuantity(s).toLowerCase())
+        .filter((s) => s.length > 1)
+        .sort()
+        .slice(0, 6),
+    };
+    const cacheKey = hashKey("dish-image", norm);
+    const cached = await getCached<{ dataUrl: string; provider: "huggingface" | "lovable" }>(
+      "dish-image",
+      cacheKey,
+    );
+    if (cached) {
+      await recordAiGeneration(supabase, userId);
+      return { ok: true, dataUrl: cached.dataUrl, provider: cached.provider };
+    }
+
     const cuisinePart = data.cuisine ? `a ${data.cuisine} dish` : "a dish";
     const descPart = data.description ? ` ${data.description.replace(/\s+/g, " ").trim()}.` : "";
     const ings = (data.keyIngredients ?? [])
@@ -46,6 +69,9 @@ export const generateRecipeImage = createServerFn({ method: "POST" })
       `Overhead 3/4 angle, natural soft lighting, shallow depth of field, restaurant-quality plating, sharp focus, ultra-detailed, hi-res DSLR photograph. ` +
       `No text, no captions, no labels, no watermarks, no logos, no hands, no people.`;
     const res = await callFoodImageGen(prompt);
-    if (res.ok) await recordAiGeneration(supabase, userId);
+    if (res.ok) {
+      await recordAiGeneration(supabase, userId);
+      await putCached("dish-image", cacheKey, { dataUrl: res.dataUrl, provider: res.provider }, 90);
+    }
     return res;
   });
