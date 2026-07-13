@@ -775,7 +775,7 @@ function Index() {
             {/* Hero food collage backdrop */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 -z-10 h-[380px] md:h-[480px] overflow-hidden"
+              className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 h-[380px] md:h-[480px] overflow-hidden"
             >
               {/* Soft warm radial wash */}
               <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_25%,oklch(0.965_0.05_55_/_0.9)_0%,transparent_70%)]" />
