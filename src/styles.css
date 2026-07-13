@@ -370,3 +370,8 @@ button:not(:disabled),
 @media (prefers-reduced-motion: reduce) {
   .recipe-card, .recipe-card-media { transition: none !important; transform: none !important; }
 }
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
