@@ -780,20 +780,20 @@ function Index() {
               {/* Soft warm radial wash */}
               <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_25%,oklch(0.965_0.05_55_/_0.9)_0%,transparent_70%)]" />
               {/* Hero collage: fridge anchor + two floating dishes */}
-              <div className="hidden md:block absolute -left-12 top-2 w-64 h-72 rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] hero-rise hero-drift-a" style={{ animationDelay: "0ms, 0.9s" }}>
+              <div className="hidden md:block absolute -left-12 top-2 w-64 h-72 rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] hero-drift-a">
                 <img src={heroFridge} alt="" width={1600} height={1200} loading="eager" fetchPriority="high" className="w-full h-full object-cover" />
               </div>
-              <div className="hidden md:block absolute -right-10 top-8 size-52 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-4 ring-[color:var(--surface-cream)] hero-rise hero-drift-b" style={{ animationDelay: "120ms, 1s" }}>
+              <div className="hidden md:block absolute -right-10 top-8 size-52 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-4 ring-[color:var(--surface-cream)] hero-drift-b">
                 <img src={heroDish1} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
               </div>
-              <div className="hidden lg:block absolute right-8 bottom-2 size-40 rounded-[1.75rem] overflow-hidden shadow-[var(--shadow-card)] hero-rise hero-drift-c" style={{ animationDelay: "220ms, 1.1s" }}>
+              <div className="hidden lg:block absolute right-8 bottom-2 size-40 rounded-[1.75rem] overflow-hidden shadow-[var(--shadow-card)] hero-drift-c">
                 <img src={heroDish2} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
               </div>
               {/* Mobile: smaller floating accents */}
-              <div className="md:hidden absolute -left-6 top-4 size-24 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] hero-rise hero-drift-a">
+              <div className="md:hidden absolute -left-6 top-4 size-24 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] hero-drift-a">
                 <img src={heroFridge} alt="" width={1600} height={1200} loading="eager" fetchPriority="high" className="w-full h-full object-cover" />
               </div>
-              <div className="md:hidden absolute -right-4 top-2 size-24 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-2 ring-[color:var(--surface-cream)] hero-rise hero-drift-b" style={{ animationDelay: "120ms, 1s" }}>
+              <div className="md:hidden absolute -right-4 top-2 size-24 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-2 ring-[color:var(--surface-cream)] hero-drift-b">
                 <img src={heroDish1} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
               </div>
               {/* Bottom fade so text sits cleanly */}
