@@ -1261,16 +1261,6 @@ function Index() {
           </section>
 
           <section className="lg:col-span-7 space-y-5">
-            {!pantryMode && (!recipes || recipes.length === 0) && !loading && (
-              <PopularCombos
-                onPick={(combo) => {
-                  setIngredients(combo);
-                  requestAnimationFrame(() => {
-                    pantryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  });
-                }}
-              />
-            )}
             {pantryMode && (loading || (recipes && recipes.length > 0)) && (
               <div className="flex items-baseline justify-between">
                 <h3 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
