@@ -87,6 +87,14 @@ function RecipeDetail() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = `sv:recipe:${recipeId}`;
+    if (window.sessionStorage.getItem(key)) return;
+    window.sessionStorage.setItem(key, "1");
+    recordStorefrontView({ data: { source: "paid_recipe", paid_recipe_id: recipeId } }).catch(() => {});
+  }, [recipeId]);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: userResp } = await supabase.auth.getUser();
