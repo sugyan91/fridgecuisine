@@ -775,36 +775,27 @@ function Index() {
             {/* Hero food collage backdrop */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 -z-10 h-[360px] md:h-[440px] overflow-hidden"
+              className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 -z-10 h-[380px] md:h-[480px] overflow-hidden"
             >
               {/* Soft warm radial wash */}
               <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_25%,oklch(0.965_0.05_55_/_0.9)_0%,transparent_70%)]" />
-              {/* Decorative dish photos floated at the edges, not behind the text */}
-              <div
-                className="hidden md:block absolute -left-10 top-8 size-56 rounded-[2rem] bg-cover bg-center rotate-[-8deg] shadow-[var(--shadow-card)] opacity-90"
-                style={{ backgroundImage: `url(${foodPasta})` }}
-              />
-              <div
-                className="hidden md:block absolute -right-10 top-2 size-48 rounded-[2rem] bg-cover bg-center rotate-[6deg] shadow-[var(--shadow-card)] opacity-90"
-                style={{ backgroundImage: `url(${foodSushi})` }}
-              />
-              <div
-                className="hidden lg:block absolute left-16 bottom-4 size-40 rounded-[1.75rem] bg-cover bg-center rotate-[10deg] shadow-[var(--shadow-card)] opacity-85"
-                style={{ backgroundImage: `url(${foodTacos})` }}
-              />
-              <div
-                className="hidden lg:block absolute right-20 bottom-6 size-44 rounded-[1.75rem] bg-cover bg-center rotate-[-7deg] shadow-[var(--shadow-card)] opacity-85"
-                style={{ backgroundImage: `url(${foodCurry})` }}
-              />
-              {/* Small floating accents on mobile */}
-              <div
-                className="md:hidden absolute -left-6 top-6 size-24 rounded-2xl bg-cover bg-center rotate-[-8deg] shadow-[var(--shadow-card)] opacity-90"
-                style={{ backgroundImage: `url(${foodPasta})` }}
-              />
-              <div
-                className="md:hidden absolute -right-6 top-2 size-20 rounded-2xl bg-cover bg-center rotate-[8deg] shadow-[var(--shadow-card)] opacity-90"
-                style={{ backgroundImage: `url(${foodSushi})` }}
-              />
+              {/* Hero collage: fridge anchor + two floating dishes */}
+              <div className="hidden md:block absolute -left-12 top-2 w-64 h-72 rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] hero-rise hero-drift-a" style={{ animationDelay: "0ms, 0.9s" }}>
+                <img src={heroFridge} alt="" width={1600} height={1200} loading="eager" fetchPriority="high" className="w-full h-full object-cover" />
+              </div>
+              <div className="hidden md:block absolute -right-10 top-8 size-52 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-4 ring-[color:var(--surface-cream)] hero-rise hero-drift-b" style={{ animationDelay: "120ms, 1s" }}>
+                <img src={heroDish1} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
+              </div>
+              <div className="hidden lg:block absolute right-8 bottom-2 size-40 rounded-[1.75rem] overflow-hidden shadow-[var(--shadow-card)] hero-rise hero-drift-c" style={{ animationDelay: "220ms, 1.1s" }}>
+                <img src={heroDish2} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
+              </div>
+              {/* Mobile: smaller floating accents */}
+              <div className="md:hidden absolute -left-6 top-4 size-24 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] hero-rise hero-drift-a">
+                <img src={heroFridge} alt="" width={1600} height={1200} loading="eager" fetchPriority="high" className="w-full h-full object-cover" />
+              </div>
+              <div className="md:hidden absolute -right-4 top-2 size-24 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-2 ring-[color:var(--surface-cream)] hero-rise hero-drift-b" style={{ animationDelay: "120ms, 1s" }}>
+                <img src={heroDish1} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
+              </div>
               {/* Bottom fade so text sits cleanly */}
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
