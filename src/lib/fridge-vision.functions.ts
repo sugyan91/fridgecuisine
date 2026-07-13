@@ -4,6 +4,7 @@ import { callVisionJSON } from "./hf-client.server";
 import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
+import { logAiUsage } from "./ai-usage-logging.server";
 
 const inputSchema = z.object({
   imageDataUrl: z
@@ -61,6 +62,7 @@ Rules:
         cleaned.push(v);
       }
       await recordAiGeneration(supabase, userId);
+      logAiUsage({ endpoint: "fridge-vision", userId, cacheHit: false });
       return { ok: true, ingredients: cleaned };
     } catch (err) {
       console.error("detectFridgeIngredients failed", err);
