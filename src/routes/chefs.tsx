@@ -25,6 +25,7 @@ type ChefRow = {
   country: string | null;
   avatar_url: string | null;
   name?: string | null;
+  username?: string | null;
 };
 
 function ChefsPage() {
@@ -93,37 +94,54 @@ function ChefsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {chefs.map((c) => (
-              <div
-                key={c.user_id}
-                className="bg-white border-4 border-border rounded-3xl p-5 shadow-[6px_6px_0px_0px_var(--border)]"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="size-12 rounded-full border-2 border-border bg-turmeric grid place-items-center overflow-hidden">
-                    {c.avatar_url ? (
-                      <SafeImage src={c.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <ChefHat className="size-6" strokeWidth={2.5} />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-display text-lg uppercase truncate">
-                      {c.name || "Home chef"}
-                    </p>
-                    {c.country && (
-                      <p className="text-[11px] font-black uppercase tracking-wide text-muted-foreground">
-                        {c.country}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-4 min-h-[4rem]">
-                  {c.bio || "Recipes coming soon."}
-                </p>
-              </div>
+              <ChefCard key={c.user_id} c={c} />
             ))}
           </div>
         )}
       </div>
     </main>
+  );
+}
+
+function ChefCard({ c }: { c: ChefRow }) {
+  const inner = (
+    <>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="size-12 rounded-full border-2 border-border bg-turmeric grid place-items-center overflow-hidden">
+          {c.avatar_url ? (
+            <SafeImage src={c.avatar_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <ChefHat className="size-6" strokeWidth={2.5} />
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="font-display text-lg uppercase truncate">
+            {c.name || "Home chef"}
+          </p>
+          {c.country && (
+            <p className="text-[11px] font-black uppercase tracking-wide text-muted-foreground">
+              {c.country}
+            </p>
+          )}
+        </div>
+      </div>
+      <p className="text-sm text-muted-foreground line-clamp-4 min-h-[4rem]">
+        {c.bio || "Recipes coming soon."}
+      </p>
+      {c.username && (
+        <p className="mt-3 text-xs font-black uppercase tracking-widest text-paprika">
+          View storefront →
+        </p>
+      )}
+    </>
+  );
+  const className =
+    "block bg-white border-4 border-border rounded-3xl p-5 shadow-[6px_6px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-transform";
+  return c.username ? (
+    <Link to="/chef/$username" params={{ username: c.username }} className={className}>
+      {inner}
+    </Link>
+  ) : (
+    <div className={className}>{inner}</div>
   );
 }
