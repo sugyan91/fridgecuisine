@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { SafeImage } from "@/components/ui/safe-image";
 import { supabase } from "@/integrations/supabase/client";
+import { recordStorefrontView } from "@/lib/storefront-analytics.functions";
 
 export const Route = createFileRoute("/shop/cookbook/$cookbookId")({
   loader: ({ params }) => getCookbookDetail({ data: { id: params.cookbookId } }),
@@ -68,6 +69,14 @@ function CookbookDetailPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [owned, setOwned] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = `sv:cookbook:${cookbookId}`;
+    if (window.sessionStorage.getItem(key)) return;
+    window.sessionStorage.setItem(key, "1");
+    recordStorefrontView({ data: { source: "cookbook", cookbook_id: cookbookId } }).catch(() => {});
+  }, [cookbookId]);
 
   useEffect(() => {
     (async () => {
