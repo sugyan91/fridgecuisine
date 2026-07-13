@@ -807,16 +807,15 @@ function Index() {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
                   </span>
-                  <span className="whitespace-nowrap">AI-powered personal chef</span>
+                  <span className="whitespace-nowrap">Your fridge. Your rules. Real dinner.</span>
                 </span>
               </div>
               <h1 className="font-display text-[2rem] leading-[1.02] sm:text-5xl md:text-7xl lg:text-[5.5rem] sm:leading-[0.95] font-semibold tracking-[-0.02em] text-foreground mb-4 sm:mb-5 [text-wrap:balance]">
-                What&rsquo;s cooking{" "}
+                Open the fridge.{" "}
                 <span className="italic font-normal text-primary">
-                  in your{" "}
-                  <span className="accent-underline text-foreground">head</span>
-                </span>{" "}
-                tonight?
+                  We&rsquo;ll take it{" "}
+                  <span className="accent-underline text-foreground">from there</span>
+                </span>.
               </h1>
               <div className="min-h-[3.5rem] sm:min-h-[3rem] md:min-h-[2.75rem] mb-5 sm:mb-6 flex items-center justify-center overflow-hidden px-2">
                 <p
