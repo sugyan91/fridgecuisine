@@ -78,15 +78,13 @@ export function SiteFooter() {
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               Contact
             </p>
-            <p className="mb-1 text-sm">
+            <p className="mb-4 text-sm">
               <Link to="/contact" className="text-white/85 hover:text-white underline-offset-4 hover:underline">
                 Use the contact form →
               </Link>
             </p>
-            <p className="text-[11px] text-white/50 mb-4">Send feedback, questions, or partnership ideas.</p>
-            <ul className="space-y-4 text-sm">
+            <ul className="space-y-3 text-sm">
               <li>
-                <p className="text-[11px] text-white/50 mb-1">General inquiries</p>
                 <a
                   href="mailto:main@fridgecuisine.com"
                   className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors whitespace-nowrap"
@@ -96,7 +94,6 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
-                <p className="text-[11px] text-white/50 mb-1">Help &amp; support</p>
                 <a
                   href="mailto:support@fridgecuisine.com"
                   className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors whitespace-nowrap"
