@@ -180,7 +180,7 @@ export const listChefs = createServerFn({ method: "GET" })
         .from("profiles")
         .select("user_id, display_name, username, avatar_url")
         .in("user_id", ids);
-      nameById = new Map(
+      nameByIdWithUsername = new Map(
         (profiles ?? []).map(
           (p: {
             user_id: string;
@@ -189,16 +189,17 @@ export const listChefs = createServerFn({ method: "GET" })
             avatar_url: string | null;
           }) => [
             p.user_id,
-            { name: p.display_name || p.username || null, avatar: p.avatar_url || null },
+            { name: p.display_name || p.username || null, avatar: p.avatar_url || null, username: p.username || null },
           ],
         ),
       );
     }
     const chefs = rows.map((r) => {
-      const p = nameById.get(r.user_id);
+      const p = nameByIdWithUsername.get(r.user_id);
       return {
         ...r,
         name: p?.name ?? "Home chef",
+        username: p?.username ?? null,
         avatar_url: r.avatar_url ?? p?.avatar ?? null,
       };
     });
