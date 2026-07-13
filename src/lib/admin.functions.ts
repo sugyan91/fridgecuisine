@@ -870,3 +870,94 @@ export const adminGetAiUsageDashboard = createServerFn({ method: "POST" })
 
     return { totals, byEndpoint, series, topUsers, topAnon };
   });
+
+const userDetailSchema = z.object({
+  userId: z.string().uuid(),
+  fromIso: z.string().datetime(),
+  toIso: z.string().datetime(),
+  bucket: z.enum(["hour", "day"]).default("day"),
+  recentLimit: z.number().int().min(1).max(500).default(100),
+});
+
+export type AiUsageUserDetail = {
+  user: { id: string; email: string | null; username: string | null; display_name: string | null };
+  totals: { total: number; aiCalls: number; cacheHits: number };
+  byEndpoint: Array<{ endpoint: string; total: number; aiCalls: number; cacheHits: number }>;
+  series: Array<{ bucket: string; total: number; aiCalls: number; cacheHits: number; byEndpoint: Record<string, number> }>;
+  recent: Array<{ created_at: string; endpoint: string; cache_hit: boolean }>;
+};
+
+export const adminGetUserAiUsageDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => userDetailSchema.parse(i))
+  .handler(async ({ data, context }): Promise<AiUsageUserDetail> => {
+    await assertAdmin(context.userId);
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("ai_usage_events")
+      .select("endpoint, cache_hit, created_at")
+      .eq("user_id", data.userId)
+      .gte("created_at", data.fromIso)
+      .lte("created_at", data.toIso)
+      .order("created_at", { ascending: false })
+      .limit(50000);
+    if (error) throw new Error(error.message);
+    const events = rows ?? [];
+
+    const totals = { total: events.length, aiCalls: 0, cacheHits: 0 };
+    const byEpMap = new Map<string, { total: number; aiCalls: number; cacheHits: number }>();
+    const seriesMap = new Map<
+      string,
+      { total: number; aiCalls: number; cacheHits: number; byEndpoint: Record<string, number> }
+    >();
+
+    for (const e of events) {
+      const hit = !!e.cache_hit;
+      if (hit) totals.cacheHits++; else totals.aiCalls++;
+
+      const ep = byEpMap.get(e.endpoint) ?? { total: 0, aiCalls: 0, cacheHits: 0 };
+      ep.total++;
+      if (hit) ep.cacheHits++; else ep.aiCalls++;
+      byEpMap.set(e.endpoint, ep);
+
+      const d = new Date(e.created_at);
+      const key = data.bucket === "hour"
+        ? `${d.toISOString().slice(0, 13)}:00`
+        : d.toISOString().slice(0, 10);
+      const sb = seriesMap.get(key) ?? { total: 0, aiCalls: 0, cacheHits: 0, byEndpoint: {} };
+      sb.total++;
+      if (hit) sb.cacheHits++; else sb.aiCalls++;
+      sb.byEndpoint[e.endpoint] = (sb.byEndpoint[e.endpoint] ?? 0) + 1;
+      seriesMap.set(key, sb);
+    }
+
+    const [{ data: profile }, userRes] = await Promise.all([
+      supabaseAdmin
+        .from("profiles")
+        .select("username, display_name")
+        .eq("user_id", data.userId)
+        .maybeSingle(),
+      supabaseAdmin.auth.admin.getUserById(data.userId).catch(() => ({ data: null })),
+    ]);
+
+    return {
+      user: {
+        id: data.userId,
+        email: (userRes as { data: { user?: { email?: string | null } } | null })?.data?.user?.email ?? null,
+        username: profile?.username ?? null,
+        display_name: profile?.display_name ?? null,
+      },
+      totals,
+      byEndpoint: [...byEpMap.entries()]
+        .map(([endpoint, v]) => ({ endpoint, ...v }))
+        .sort((a, b) => b.total - a.total),
+      series: [...seriesMap.entries()]
+        .map(([bucket, v]) => ({ bucket, ...v }))
+        .sort((a, b) => a.bucket.localeCompare(b.bucket)),
+      recent: events.slice(0, data.recentLimit).map((e) => ({
+        created_at: e.created_at,
+        endpoint: e.endpoint,
+        cache_hit: !!e.cache_hit,
+      })),
+    };
+  });

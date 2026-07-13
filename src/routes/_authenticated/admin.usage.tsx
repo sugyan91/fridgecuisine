@@ -7,9 +7,15 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-is-admin";
-import { adminGetAiUsageDashboard, type AiUsageDashboard } from "@/lib/admin.functions";
+import {
+  adminGetAiUsageDashboard, adminGetUserAiUsageDetail,
+  type AiUsageDashboard, type AiUsageUserDetail,
+} from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/usage")({
   head: () => ({
@@ -64,11 +70,29 @@ function AdminUsagePage() {
 
 function Dashboard() {
   const fetchDashboard = useServerFn(adminGetAiUsageDashboard);
+  const fetchUserDetail = useServerFn(adminGetUserAiUsageDetail);
   const [range, setRange] = useState<Range>("7d");
   const [endpoint, setEndpoint] = useState<Endpoint>("all");
   const [data, setData] = useState<AiUsageDashboard | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [drillUserId, setDrillUserId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<AiUsageUserDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!drillUserId) { setDetail(null); setDetailError(null); return; }
+    let cancelled = false;
+    setDetailLoading(true);
+    setDetailError(null);
+    const { fromIso, toIso, bucket } = rangeToIso(range);
+    fetchUserDetail({ data: { userId: drillUserId, fromIso, toIso, bucket, recentLimit: 100 } })
+      .then((d) => { if (!cancelled) setDetail(d); })
+      .catch((e) => { if (!cancelled) setDetailError((e as Error).message); })
+      .finally(() => { if (!cancelled) setDetailLoading(false); });
+    return () => { cancelled = true; };
+  }, [drillUserId, range, fetchUserDetail]);
 
   const load = useMemo(
     () => async () => {
@@ -292,10 +316,15 @@ function Dashboard() {
               </thead>
               <tbody>
                 {(data?.topUsers ?? []).map((u) => (
-                  <tr key={u.userId} className="border-t border-border">
+                  <tr
+                    key={u.userId}
+                    onClick={() => setDrillUserId(u.userId)}
+                    className="cursor-pointer border-t border-border hover:bg-muted/40"
+                  >
                     <td className="px-4 py-2">
                       <div className="font-medium">{u.email ?? u.username ?? u.userId.slice(0, 8)}</div>
                       {u.username && <div className="text-xs text-muted-foreground">@{u.username}</div>}
+                      <div className="mt-0.5 text-[10px] text-muted-foreground">Click for drilldown</div>
                     </td>
                     <td className="px-4 py-2 text-right font-semibold">{u.total}</td>
                     <td className="px-4 py-2 text-right">{u.aiCalls}</td>
@@ -348,6 +377,132 @@ function Dashboard() {
           </div>
         </section>
       </div>
+
+      <Dialog open={!!drillUserId} onOpenChange={(o) => !o && setDrillUserId(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {detail?.user.email ?? detail?.user.username ?? drillUserId?.slice(0, 8) ?? "User"} — usage detail
+            </DialogTitle>
+            <DialogDescription>
+              Range: {range} · bucket: {range === "24h" ? "hourly" : "daily"}
+              {detail?.user.username ? ` · @${detail.user.username}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+
+          {detailLoading && (
+            <div className="flex items-center justify-center py-10 text-muted-foreground">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading…
+            </div>
+          )}
+          {detailError && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+              {detailError}
+            </div>
+          )}
+
+          {detail && !detailLoading && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-3 gap-3">
+                <Stat label="Total" value={detail.totals.total} />
+                <Stat label="AI calls" value={detail.totals.aiCalls} />
+                <Stat label="Cache hits" value={detail.totals.cacheHits} />
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                  By endpoint
+                </h3>
+                <div className="overflow-hidden rounded-xl border border-border">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                      <tr>
+                        <th className="px-3 py-2">Endpoint</th>
+                        <th className="px-3 py-2 text-right">Total</th>
+                        <th className="px-3 py-2 text-right">AI</th>
+                        <th className="px-3 py-2 text-right">Cache</th>
+                        <th className="px-3 py-2 text-right">Cache %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.byEndpoint.map((r) => (
+                        <tr key={r.endpoint} className="border-t border-border">
+                          <td className="px-3 py-2 font-medium">{r.endpoint}</td>
+                          <td className="px-3 py-2 text-right">{r.total}</td>
+                          <td className="px-3 py-2 text-right">{r.aiCalls}</td>
+                          <td className="px-3 py-2 text-right">{r.cacheHits}</td>
+                          <td className="px-3 py-2 text-right">
+                            {r.total ? Math.round((r.cacheHits / r.total) * 100) : 0}%
+                          </td>
+                        </tr>
+                      ))}
+                      {!detail.byEndpoint.length && (
+                        <tr><td colSpan={5} className="px-3 py-4 text-center text-muted-foreground">No activity.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                  Over time
+                </h3>
+                {detail.series.length ? (
+                  <div className="rounded-xl border border-border p-3">
+                    <div className="flex h-28 items-end gap-1">
+                      {(() => {
+                        const max = Math.max(1, ...detail.series.map((s) => s.total));
+                        return detail.series.map((s) => (
+                          <div key={s.bucket} className="flex-1 min-w-[4px]">
+                            <div
+                              className="w-full rounded-t bg-primary/70"
+                              style={{ height: `${(s.total / max) * 100}%` }}
+                              title={`${s.bucket}\nTotal ${s.total}\n${Object.entries(s.byEndpoint).map(([k, v]) => `${k}: ${v}`).join("\n")}`}
+                            />
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                    <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                      <span>{detail.series[0].bucket}</span>
+                      <span>{detail.series[detail.series.length - 1].bucket}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No activity.</p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                  Recent events ({detail.recent.length})
+                </h3>
+                <div className="max-h-64 overflow-y-auto rounded-xl border border-border">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-muted/50 text-left uppercase tracking-wide text-muted-foreground">
+                      <tr>
+                        <th className="px-3 py-2">Time</th>
+                        <th className="px-3 py-2">Endpoint</th>
+                        <th className="px-3 py-2">Source</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.recent.map((e, i) => (
+                        <tr key={i} className="border-t border-border">
+                          <td className="px-3 py-1.5 font-mono">{new Date(e.created_at).toLocaleString()}</td>
+                          <td className="px-3 py-1.5">{e.endpoint}</td>
+                          <td className="px-3 py-1.5">{e.cache_hit ? "cache" : "AI"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
