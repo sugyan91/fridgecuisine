@@ -1,5 +1,10 @@
 # Roadmap: FridgeCuisine → Top App for Chefs & Home Cooks
 
+> **Progress log**
+> - ✅ **Phase 1.1** Chef storefront pages — `/chef/:username` public route with header, stats, paid recipes, community recipes; linked from `/chefs` directory and `/sell`.
+> - ✅ **Phase 1.2** Creator revenue dashboard — `/earnings` with time-range totals, sales chart, top recipes, recent sales; linked from `/account` and `/sell`.
+> - ⏭️ **Next** — pick from Phase 1: tips (item 3), sellable cookbook bundles (item 4), chef subscription tier (item 5), promo codes (item 7), or Creator Pro plan (item 6).
+
 You picked **Creator monetization + AI cooking assistant + Chef pro tools**, a **balanced two-sided** focus, and a **hybrid** business model (take-rate + creator sub + buyer sub). Here's what you already have, what to add, what to change, and what to remove — grouped into 4 build phases you can approve one at a time.
 
 ## Where you are today (audit)
