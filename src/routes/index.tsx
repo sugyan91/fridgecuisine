@@ -660,6 +660,14 @@ function Index() {
             {/* Mobile nav */}
             <div className="flex md:hidden items-center gap-1.5 shrink-0">
               <LanguagePicker variant="icon" />
+              <Link
+                to="/sell"
+                className="text-xs font-medium px-2.5 py-1.5 rounded-full text-primary-foreground shadow-[var(--shadow-warm)] hover:brightness-110 transition-all"
+                style={{ background: "var(--gradient-warm)" }}
+              >
+                <span className="hidden xs:inline">Sell</span>
+                <span className="xs:hidden">$</span>
+              </Link>
               {email ? (
                 <Link
                   to="/community/new"
