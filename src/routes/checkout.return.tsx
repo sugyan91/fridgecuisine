@@ -8,21 +8,34 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/checkout/return")({
   validateSearch: (
     search: Record<string, unknown>,
-  ): { session_id?: string; type?: "recipe" | "subscription"; recipe_id?: string } => ({
+  ): {
+    session_id?: string;
+    type?: "recipe" | "subscription" | "cookbook" | "tip";
+    recipe_id?: string;
+    cookbook_id?: string;
+    chef?: string;
+  } => ({
     session_id: typeof search.session_id === "string" ? search.session_id : undefined,
     type:
-      search.type === "recipe" || search.type === "subscription"
+      search.type === "recipe" ||
+      search.type === "subscription" ||
+      search.type === "cookbook" ||
+      search.type === "tip"
         ? search.type
         : undefined,
     recipe_id: typeof search.recipe_id === "string" ? search.recipe_id : undefined,
+    cookbook_id: typeof search.cookbook_id === "string" ? search.cookbook_id : undefined,
+    chef: typeof search.chef === "string" ? search.chef : undefined,
   }),
   component: CheckoutReturn,
 });
 
 function CheckoutReturn() {
-  const { session_id: sessionId, type, recipe_id: recipeId } = Route.useSearch();
+  const { session_id: sessionId, type, recipe_id: recipeId, cookbook_id: cookbookId, chef } = Route.useSearch();
   const [status, setStatus] = useState<"checking" | "active" | "pending">("checking");
   const isRecipe = type === "recipe" && !!recipeId;
+  const isCookbook = type === "cookbook" && !!cookbookId;
+  const isTip = type === "tip";
 
   useEffect(() => {
     let attempts = 0;
@@ -39,6 +52,34 @@ function CheckoutReturn() {
           .eq("buyer_user_id", u.user.id)
           .eq("paid_recipe_id", recipeId)
           .eq("status", "paid")
+          .limit(1)
+          .maybeSingle();
+        if (cancelled) return;
+        if (data) {
+          setStatus("active");
+          return;
+        }
+      } else if (isCookbook && cookbookId) {
+        const { data } = await supabase
+          .from("recipe_purchases")
+          .select("status")
+          .eq("buyer_user_id", u.user.id)
+          .eq("cookbook_id", cookbookId)
+          .eq("status", "paid")
+          .limit(1)
+          .maybeSingle();
+        if (cancelled) return;
+        if (data) {
+          setStatus("active");
+          return;
+        }
+      } else if (isTip) {
+        const { data } = await supabase
+          .from("tips")
+          .select("status")
+          .eq("sender_user_id", u.user.id)
+          .eq("status", "paid")
+          .order("purchased_at", { ascending: false, nullsFirst: false })
           .limit(1)
           .maybeSingle();
         if (cancelled) return;
@@ -72,7 +113,7 @@ function CheckoutReturn() {
     return () => {
       cancelled = true;
     };
-  }, [isRecipe, recipeId]);
+  }, [isRecipe, recipeId, isCookbook, cookbookId, isTip]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -102,6 +143,43 @@ function CheckoutReturn() {
                   <Button asChild variant="outline">
                     <Link to="/shop">Browse more</Link>
                   </Button>
+                </div>
+              </>
+            ) : isCookbook ? (
+              <>
+                <h1 className="mt-6 text-3xl font-black">Cookbook unlocked! 📖</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Every recipe inside is now yours to cook.
+                </p>
+                <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                  <Button asChild>
+                    <Link to="/shop/cookbook/$cookbookId" params={{ cookbookId: cookbookId! }}>
+                      Open cookbook
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link to="/shop">Browse shop</Link>
+                  </Button>
+                </div>
+              </>
+            ) : isTip ? (
+              <>
+                <h1 className="mt-6 text-3xl font-black">Tip sent! ☕</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  The chef will be notified. Thanks for supporting home cooks.
+                </p>
+                <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                  {chef ? (
+                    <Button asChild>
+                      <Link to="/chef/$username" params={{ username: chef }}>
+                        Back to chef
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button asChild>
+                      <Link to="/chefs">Discover chefs</Link>
+                    </Button>
+                  )}
                 </div>
               </>
             ) : (
