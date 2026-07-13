@@ -35,6 +35,7 @@ import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedEarningsRouteImport } from './routes/_authenticated/earnings'
 import { Route as AuthenticatedCookbooksRouteImport } from './routes/_authenticated/cookbooks'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ShopCookbookCookbookIdRouteImport } from './routes/shop.cookbook.$cookbookId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -179,6 +180,11 @@ const AuthenticatedCookbookRoute = AuthenticatedCookbookRouteImport.update({
   path: '/cookbook',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/cookbooks': typeof AuthenticatedCookbooksRoute
   '/earnings': typeof AuthenticatedEarningsRoute
@@ -307,6 +314,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
   '/cookbooks': typeof AuthenticatedCookbooksRoute
   '/earnings': typeof AuthenticatedEarningsRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
   '/_authenticated/cookbooks': typeof AuthenticatedCookbooksRoute
   '/_authenticated/earnings': typeof AuthenticatedEarningsRoute
@@ -393,6 +402,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/account'
+    | '/analytics'
     | '/cookbook'
     | '/cookbooks'
     | '/earnings'
@@ -434,6 +444,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/account'
+    | '/analytics'
     | '/cookbook'
     | '/cookbooks'
     | '/earnings'
@@ -476,6 +487,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/account'
+    | '/_authenticated/analytics'
     | '/_authenticated/cookbook'
     | '/_authenticated/cookbooks'
     | '/_authenticated/earnings'
@@ -722,6 +734,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCookbookRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -825,6 +844,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCookbookRoute: typeof AuthenticatedCookbookRoute
   AuthenticatedCookbooksRoute: typeof AuthenticatedCookbooksRoute
   AuthenticatedEarningsRoute: typeof AuthenticatedEarningsRoute
@@ -840,6 +860,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCookbookRoute: AuthenticatedCookbookRoute,
   AuthenticatedCookbooksRoute: AuthenticatedCookbooksRoute,
   AuthenticatedEarningsRoute: AuthenticatedEarningsRoute,

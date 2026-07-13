@@ -17,6 +17,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { SafeImage } from "@/components/ui/safe-image";
+import { recordStorefrontView } from "@/lib/storefront-analytics.functions";
 
 export const Route = createFileRoute("/shop/$recipeId")({
   loader: ({ params }) => getPaidRecipeDetail({ data: { id: params.recipeId } }),
@@ -84,6 +85,14 @@ function RecipeDetail() {
   const [unlocked, setUnlocked] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = `sv:recipe:${recipeId}`;
+    if (window.sessionStorage.getItem(key)) return;
+    window.sessionStorage.setItem(key, "1");
+    recordStorefrontView({ data: { source: "paid_recipe", paid_recipe_id: recipeId } }).catch(() => {});
+  }, [recipeId]);
 
   useEffect(() => {
     let cancelled = false;
