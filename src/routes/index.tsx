@@ -46,10 +46,9 @@ import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
-import foodPasta from "@/assets/food-pasta.jpg";
-import foodSushi from "@/assets/food-sushi.jpg";
-import foodTacos from "@/assets/food-tacos.jpg";
-import foodCurry from "@/assets/food-curry.jpg";
+import heroFridge from "@/assets/hero-fridge.jpg";
+import heroDish1 from "@/assets/hero-dish-1.jpg";
+import heroDish2 from "@/assets/hero-dish-2.jpg";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { useLanguage } from "@/lib/language";
 import { IngredientIcon } from "@/lib/ingredient-icon";
@@ -154,16 +153,11 @@ function Index() {
   const [showRecipe, setShowRecipe] = useState(false);
 
   const dishPrompts = [
-    "Staring at a half-empty fridge? Tell me what's inside — I'll turn it into dinner.",
-    "Got eggs, rice, and no plan? List your ingredients and I'll build the meal.",
-    "Don't let leftovers go to waste. Name what you have and I'll craft a recipe.",
-    "Three random ingredients and zero inspiration? I'll turn them into something delicious.",
-    "Your fridge is full of possibilities. Show me what you've got and I'll plan dinner.",
-    "Tonight's dinner is hiding in your kitchen. List your ingredients and I'll find it.",
-    "No time to shop? Work with what's already in your fridge. I'll do the rest.",
-    "Turn whatever's in your fridge into a real dinner — just name the ingredients.",
-    "That wilting veg in the crisper? I'll turn it into the star of the show.",
-    "Open your fridge, tell me what you see, and I'll hand you a complete recipe.",
+    "Eggs, rice, half an onion? That's dinner.",
+    "Name three ingredients. Get a real recipe back.",
+    "Tonight's meal is already in your kitchen.",
+    "Wilting veg? Consider it the main event.",
+    "No shopping. No scrolling. Just cook.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
   const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
@@ -174,7 +168,7 @@ function Index() {
         setPromptIndex((i) => (i + 1) % dishPrompts.length);
         setPromptAnim("in");
       }, 600);
-    }, 60000);
+    }, 9000);
     return () => clearInterval(tick);
   }, [dishPrompts.length]);
 
