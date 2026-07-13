@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, ShieldAlert, RefreshCw, Loader2 } from "lucide-react";
+import { ArrowLeft, ShieldAlert, RefreshCw, Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -93,6 +93,58 @@ function Dashboard() {
 
   const maxSeries = Math.max(1, ...(data?.series.map((s) => s.total) ?? [0]));
 
+  const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+    const esc = (v: string | number) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = rows.map((r) => r.map(esc).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportAll = () => {
+    if (!data) return;
+    const { fromIso, toIso } = rangeToIso(range);
+    const stamp = `${range}_${endpoint}_${new Date().toISOString().slice(0, 10)}`;
+
+    downloadCsv(`ai-usage_by-endpoint_${stamp}.csv`, [
+      ["endpoint", "total", "ai_calls", "cache_hits", "cache_pct"],
+      ...data.byEndpoint.map((r) => [
+        r.endpoint, r.total, r.aiCalls, r.cacheHits,
+        r.total ? Math.round((r.cacheHits / r.total) * 100) : 0,
+      ]),
+    ]);
+
+    downloadCsv(`ai-usage_series_${stamp}.csv`, [
+      ["bucket", "total", "ai_calls", "cache_hits"],
+      ...data.series.map((s) => [s.bucket, s.total, s.aiCalls, s.cacheHits]),
+    ]);
+
+    downloadCsv(`ai-usage_top-users_${stamp}.csv`, [
+      ["user_id", "email", "username", "total", "ai_calls", "cache_hits", "endpoints"],
+      ...data.topUsers.map((u) => [
+        u.userId, u.email ?? "", u.username ?? "", u.total, u.aiCalls, u.cacheHits,
+        Object.entries(u.endpoints).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}:${v}`).join(" "),
+      ]),
+    ]);
+
+    downloadCsv(`ai-usage_top-anon_${stamp}.csv`, [
+      ["key", "kind", "total", "ai_calls", "cache_hits"],
+      ...data.topAnon.map((a) => [a.key, a.kind, a.total, a.aiCalls, a.cacheHits]),
+    ]);
+
+    downloadCsv(`ai-usage_meta_${stamp}.csv`, [
+      ["from", "to", "endpoint_filter", "range"],
+      [fromIso, toIso, endpoint, range],
+    ]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-6 py-10">
@@ -137,6 +189,9 @@ function Dashboard() {
             </div>
             <Button variant="outline" onClick={load} disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </Button>
+            <Button variant="outline" onClick={exportAll} disabled={loading || !data}>
+              <Download className="mr-2 h-4 w-4" /> Export CSV
             </Button>
           </div>
         </header>
