@@ -74,6 +74,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_result_cache: {
+        Row: {
+          cache_key: string
+          created_at: string
+          expires_at: string
+          hit_count: number
+          kind: string
+          payload: Json
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          expires_at: string
+          hit_count?: number
+          kind: string
+          payload: Json
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          expires_at?: string
+          hit_count?: number
+          kind?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
       anonymous_ai_usage: {
         Row: {
           count: number
