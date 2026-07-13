@@ -9,7 +9,7 @@ export function SiteFooter() {
     <footer className="bg-[var(--surface-dark)] text-white/85 mt-16">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 md:py-16">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-8 md:gap-6">
-          <div className="col-span-2 md:col-span-2 space-y-4">
+          <div className="col-span-2 md:col-span-1 space-y-4">
             <div className="flex items-center gap-2.5">
               <img
                 src={logoAsset.url}
@@ -34,24 +34,31 @@ export function SiteFooter() {
 
           <div>
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
-              Cook
+              Discover
             </p>
             <ul className="space-y-2 text-sm">
               <li><Link to="/" className="hover:text-white">Recipes</Link></li>
               <li><Link to="/community" className="hover:text-white">Community</Link></li>
+              <li><Link to="/chefs" className="hover:text-white">Chefs</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
+              My kitchen
+            </p>
+            <ul className="space-y-2 text-sm">
               <li><Link to="/cookbook" className="hover:text-white">Cookbook</Link></li>
-              <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
               <li><Link to="/account" className="hover:text-white">Account</Link></li>
             </ul>
           </div>
 
           <div>
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
-              For chefs
+              Upgrade
             </p>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/sell" className="hover:text-white">Sell recipes</Link></li>
-              <li><Link to="/chefs" className="hover:text-white">Browse chefs</Link></li>
+              <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
             </ul>
           </div>
 
