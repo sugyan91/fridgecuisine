@@ -46,10 +46,9 @@ import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
-import foodPasta from "@/assets/food-pasta.jpg";
-import foodSushi from "@/assets/food-sushi.jpg";
-import foodTacos from "@/assets/food-tacos.jpg";
-import foodCurry from "@/assets/food-curry.jpg";
+import heroFridge from "@/assets/hero-fridge.jpg";
+import heroDish1 from "@/assets/hero-dish-1.jpg";
+import heroDish2 from "@/assets/hero-dish-2.jpg";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { useLanguage } from "@/lib/language";
 import { IngredientIcon } from "@/lib/ingredient-icon";
@@ -154,16 +153,11 @@ function Index() {
   const [showRecipe, setShowRecipe] = useState(false);
 
   const dishPrompts = [
-    "Staring at a half-empty fridge? Tell me what's inside — I'll turn it into dinner.",
-    "Got eggs, rice, and no plan? List your ingredients and I'll build the meal.",
-    "Don't let leftovers go to waste. Name what you have and I'll craft a recipe.",
-    "Three random ingredients and zero inspiration? I'll turn them into something delicious.",
-    "Your fridge is full of possibilities. Show me what you've got and I'll plan dinner.",
-    "Tonight's dinner is hiding in your kitchen. List your ingredients and I'll find it.",
-    "No time to shop? Work with what's already in your fridge. I'll do the rest.",
-    "Turn whatever's in your fridge into a real dinner — just name the ingredients.",
-    "That wilting veg in the crisper? I'll turn it into the star of the show.",
-    "Open your fridge, tell me what you see, and I'll hand you a complete recipe.",
+    "Eggs, rice, half an onion? That's dinner.",
+    "Name three ingredients. Get a real recipe back.",
+    "Tonight's meal is already in your kitchen.",
+    "Wilting veg? Consider it the main event.",
+    "No shopping. No scrolling. Just cook.",
   ];
   const [promptIndex, setPromptIndex] = useState(0);
   const [promptAnim, setPromptAnim] = useState<"in" | "out">("in");
@@ -174,7 +168,7 @@ function Index() {
         setPromptIndex((i) => (i + 1) % dishPrompts.length);
         setPromptAnim("in");
       }, 600);
-    }, 60000);
+    }, 9000);
     return () => clearInterval(tick);
   }, [dishPrompts.length]);
 
@@ -781,36 +775,20 @@ function Index() {
             {/* Hero food collage backdrop */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 -z-10 h-[360px] md:h-[440px] overflow-hidden"
+              className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 h-[380px] md:h-[480px] overflow-hidden"
             >
               {/* Soft warm radial wash */}
               <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_25%,oklch(0.965_0.05_55_/_0.9)_0%,transparent_70%)]" />
-              {/* Decorative dish photos floated at the edges, not behind the text */}
-              <div
-                className="hidden md:block absolute -left-10 top-8 size-56 rounded-[2rem] bg-cover bg-center rotate-[-8deg] shadow-[var(--shadow-card)] opacity-90"
-                style={{ backgroundImage: `url(${foodPasta})` }}
-              />
-              <div
-                className="hidden md:block absolute -right-10 top-2 size-48 rounded-[2rem] bg-cover bg-center rotate-[6deg] shadow-[var(--shadow-card)] opacity-90"
-                style={{ backgroundImage: `url(${foodSushi})` }}
-              />
-              <div
-                className="hidden lg:block absolute left-16 bottom-4 size-40 rounded-[1.75rem] bg-cover bg-center rotate-[10deg] shadow-[var(--shadow-card)] opacity-85"
-                style={{ backgroundImage: `url(${foodTacos})` }}
-              />
-              <div
-                className="hidden lg:block absolute right-20 bottom-6 size-44 rounded-[1.75rem] bg-cover bg-center rotate-[-7deg] shadow-[var(--shadow-card)] opacity-85"
-                style={{ backgroundImage: `url(${foodCurry})` }}
-              />
-              {/* Small floating accents on mobile */}
-              <div
-                className="md:hidden absolute -left-6 top-6 size-24 rounded-2xl bg-cover bg-center rotate-[-8deg] shadow-[var(--shadow-card)] opacity-90"
-                style={{ backgroundImage: `url(${foodPasta})` }}
-              />
-              <div
-                className="md:hidden absolute -right-6 top-2 size-20 rounded-2xl bg-cover bg-center rotate-[8deg] shadow-[var(--shadow-card)] opacity-90"
-                style={{ backgroundImage: `url(${foodSushi})` }}
-              />
+              {/* Hero collage: fridge anchor + two floating dishes */}
+              <div className="hidden md:block absolute -left-12 top-2 w-64 h-72 rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] hero-drift-a">
+                <img src={heroFridge} alt="" width={1600} height={1200} loading="eager" fetchPriority="high" className="w-full h-full object-cover" />
+              </div>
+              <div className="hidden md:block absolute -right-10 top-8 size-52 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-4 ring-[color:var(--surface-cream)] hero-drift-b">
+                <img src={heroDish1} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
+              </div>
+              <div className="hidden lg:block absolute right-8 bottom-2 size-40 rounded-[1.75rem] overflow-hidden shadow-[var(--shadow-card)] hero-drift-c">
+                <img src={heroDish2} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
+              </div>
               {/* Bottom fade so text sits cleanly */}
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
@@ -822,16 +800,15 @@ function Index() {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
                   </span>
-                  <span className="whitespace-nowrap">AI-powered personal chef</span>
+                  <span className="whitespace-nowrap">Your fridge. Your rules. Real dinner.</span>
                 </span>
               </div>
               <h1 className="font-display text-[2rem] leading-[1.02] sm:text-5xl md:text-7xl lg:text-[5.5rem] sm:leading-[0.95] font-semibold tracking-[-0.02em] text-foreground mb-4 sm:mb-5 [text-wrap:balance]">
-                What&rsquo;s cooking{" "}
+                Open the fridge.{" "}
                 <span className="italic font-normal text-primary">
-                  in your{" "}
-                  <span className="accent-underline text-foreground">head</span>
-                </span>{" "}
-                tonight?
+                  We&rsquo;ll take it{" "}
+                  <span className="accent-underline text-foreground">from there</span>
+                </span>.
               </h1>
               <div className="min-h-[3.5rem] sm:min-h-[3rem] md:min-h-[2.75rem] mb-5 sm:mb-6 flex items-center justify-center overflow-hidden px-2">
                 <p
