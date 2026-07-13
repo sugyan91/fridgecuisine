@@ -3,6 +3,7 @@ import { z } from "zod";
 import { callFoodImageGen } from "./hf-client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
+import { logAiUsage } from "./ai-usage-logging.server";
 
 const inputSchema = z.object({
   dishName: z.string().trim().min(2).max(200),
@@ -50,6 +51,7 @@ export const generateRecipeImage = createServerFn({ method: "POST" })
     );
     if (cached) {
       await recordAiGeneration(supabase, userId);
+      logAiUsage({ endpoint: "dish-image", userId, cacheHit: true });
       return { ok: true, dataUrl: cached.dataUrl, provider: cached.provider };
     }
 
@@ -72,6 +74,7 @@ export const generateRecipeImage = createServerFn({ method: "POST" })
     if (res.ok) {
       await recordAiGeneration(supabase, userId);
       await putCached("dish-image", cacheKey, { dataUrl: res.dataUrl, provider: res.provider }, 90);
+      logAiUsage({ endpoint: "dish-image", userId, cacheHit: false });
     }
     return res;
   });
