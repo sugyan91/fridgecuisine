@@ -45,13 +45,6 @@ export async function getCached<T>(
       .maybeSingle();
     if (error || !data) return null;
     if (new Date(data.expires_at as string).getTime() <= Date.now()) return null;
-    // Fire-and-forget hit_count bump; we don't await it.
-    void supabaseAdmin.rpc as unknown; // silence linter about unused
-    void supabaseAdmin
-      .from("ai_result_cache")
-      .update({ hit_count: undefined as unknown as number })
-      .eq("cache_key", key)
-      .then(() => {}, () => {});
     console.log(`[ai-cache] hit kind=${kind}`);
     return data.payload as T;
   } catch (err) {
