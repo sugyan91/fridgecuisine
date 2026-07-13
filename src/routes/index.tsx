@@ -665,8 +665,7 @@ function Index() {
                 className="text-xs font-medium px-2.5 py-1.5 rounded-full text-primary-foreground shadow-[var(--shadow-warm)] hover:brightness-110 transition-all"
                 style={{ background: "var(--gradient-warm)" }}
               >
-                <span className="hidden sm:inline">Sell</span>
-                <span className="inline sm:hidden">$</span>
+                Sell
               </Link>
               {email ? (
                 <Link
