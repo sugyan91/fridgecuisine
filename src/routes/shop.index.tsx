@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, BookOpen } from "lucide-react";
+import { Loader2, BookOpen, MapPin, Lock } from "lucide-react";
 import {
   listPublicPaidRecipes,
   type PaidRecipeListItem,
