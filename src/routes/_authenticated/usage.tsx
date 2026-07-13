@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -31,13 +32,22 @@ function nextMidnightLocal(): Date {
 
 function UsagePage() {
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id));
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id);
+      setAuthChecked(true);
+    });
   }, []);
 
+  const isAdmin = useIsAdmin(userId);
   const { used, limit, tier, remaining, countdown, loaded } =
     useRecipeUsage(userId);
+
+  if (authChecked && userId && !isAdmin) {
+    return <Navigate to="/account" replace />;
+  }
 
   const resetAt = nextMidnightLocal();
   const pct = Math.min(100, Math.round((used / Math.max(1, limit)) * 100));
