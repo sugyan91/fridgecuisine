@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MapPin, Store, Heart, ChefHat, Utensils } from "lucide-react";
-import { getChefStorefront } from "@/lib/chef-storefront.functions";
+import { getChefStorefront, type ChefStorefront } from "@/lib/chef-storefront.functions";
 import { SafeImage } from "@/components/ui/safe-image";
 
 export const Route = createFileRoute("/chef/$username")({
@@ -55,7 +55,8 @@ export const Route = createFileRoute("/chef/$username")({
 });
 
 function ChefStorefrontPage() {
-  const { chef, stats, paidRecipes, communityRecipes } = Route.useLoaderData();
+  const loaded = Route.useLoaderData() as ChefStorefront;
+  const { chef, stats, paidRecipes, communityRecipes } = loaded;
   const displayName = chef.display_name || chef.username;
   const initial = (displayName || "?").slice(0, 1).toUpperCase();
 
