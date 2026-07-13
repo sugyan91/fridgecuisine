@@ -11,6 +11,7 @@ import {
 } from "@/lib/payments.functions";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -57,6 +58,7 @@ function AccountPage() {
 
   const { subscription, isPremium, loading, tier } = useSubscription(user?.id);
   const { used, limit, remaining, loaded: usageLoaded } = useRecipeUsage(user?.id);
+  const isAdmin = useIsAdmin(user?.id);
   const env = getStripeEnvironment();
 
   const periodEnd = subscription?.current_period_end ?? null;
@@ -207,9 +209,11 @@ function AccountPage() {
           )}
 
           <div className="mt-6 flex flex-wrap gap-2">
-            <Button asChild variant="outline">
-              <Link to="/usage">Today's usage</Link>
-            </Button>
+            {isAdmin && (
+              <Button asChild variant="outline">
+                <Link to="/usage">Today's usage</Link>
+              </Button>
+            )}
             {!isPremium && (
               <Button asChild>
                 <Link to="/pricing">See plans</Link>
@@ -243,7 +247,8 @@ function AccountPage() {
           </div>
         </section>
 
-        {/* Today's usage */}
+        {/* Today's usage — admin only */}
+        {isAdmin && (
         <section className="mt-6 rounded-2xl border border-border bg-card p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -275,6 +280,7 @@ function AccountPage() {
             <Sparkles className="h-8 w-8 text-primary/60" />
           </div>
         </section>
+        )}
       </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
