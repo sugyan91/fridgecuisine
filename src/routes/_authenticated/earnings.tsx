@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Loader2, RefreshCw, TrendingUp, DollarSign, ShoppingBag, AlertCircle } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw, TrendingUp, DollarSign, ShoppingBag, AlertCircle, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -10,6 +10,7 @@ import {
 import {
   getMyEarnings, type EarningsDashboard, type EarningsRange,
 } from "@/lib/earnings.functions";
+import { getMyTipsSummary, type ChefTipsSummary } from "@/lib/tips.functions";
 
 export const Route = createFileRoute("/_authenticated/earnings")({
   head: () => ({
@@ -35,8 +36,10 @@ function fmtMoney(cents: number, currency: string) {
 
 function EarningsPage() {
   const fetchEarnings = useServerFn(getMyEarnings);
+  const fetchTips = useServerFn(getMyTipsSummary);
   const [range, setRange] = useState<EarningsRange>("30d");
   const [data, setData] = useState<EarningsDashboard | null>(null);
+  const [tips, setTips] = useState<ChefTipsSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,14 +47,18 @@ function EarningsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchEarnings({ data: { range } });
+      const [res, t] = await Promise.all([
+        fetchEarnings({ data: { range } }),
+        fetchTips({ data: { range } }).catch(() => null),
+      ]);
       setData(res);
+      setTips(t);
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [fetchEarnings, range]);
+  }, [fetchEarnings, fetchTips, range]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -141,6 +148,41 @@ function EarningsPage() {
             value={(data?.totalsLifetime.sales_count ?? 0).toLocaleString()}
             hint={`Platform fees ${fmtMoney(data?.totalsLifetime.fee_cents ?? 0, currency)}`}
           />
+        </section>
+
+        {/* Tips */}
+        <section className="mt-6">
+          <div className="rounded-2xl border-2 border-border bg-turmeric/10 p-4 flex flex-wrap items-center gap-4">
+            <div className="size-10 rounded-xl bg-turmeric text-foreground border-2 border-border grid place-items-center">
+              <Coffee className="size-5" />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Tips (in range)</p>
+              <p className="text-2xl font-black">
+                {fmtMoney(tips?.rangeNetCents ?? 0, tips?.currency ?? currency)}{" "}
+                <span className="text-sm text-muted-foreground font-normal">from {tips?.rangeCount ?? 0} tip{(tips?.rangeCount ?? 0) === 1 ? "" : "s"}</span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Lifetime: {fmtMoney(tips?.totalNetCents ?? 0, tips?.currency ?? currency)} · {tips?.totalCount ?? 0} tips
+              </p>
+            </div>
+            {tips && tips.recent.length > 0 && (
+              <div className="w-full text-xs text-muted-foreground border-t-2 border-border pt-2">
+                <p className="font-black uppercase tracking-widest mb-1">Recent tips</p>
+                <ul className="space-y-1">
+                  {tips.recent.slice(0, 5).map((t) => (
+                    <li key={t.id} className="flex justify-between gap-3">
+                      <span className="truncate">
+                        <span className="font-black">{t.sender_name ?? "Someone"}</span>
+                        {t.message ? ` — "${t.message}"` : ""}
+                      </span>
+                      <span className="font-black text-foreground shrink-0">{fmtMoney(t.net_cents, t.currency)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Series */}
