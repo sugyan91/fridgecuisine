@@ -46,9 +46,6 @@ import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
 import { StepTimer } from "@/components/fridge/StepTimer";
 import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
-import heroFridge from "@/assets/hero-fridge.jpg";
-import heroDish1 from "@/assets/hero-dish-1.jpg";
-import heroDish2 from "@/assets/hero-dish-2.jpg";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { useLanguage } from "@/lib/language";
 import { IngredientIcon } from "@/lib/ingredient-icon";
@@ -772,24 +769,12 @@ function Index() {
         <FreeTierBanner isPremium={isPremium} userId={userId} />
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           <section className="lg:col-span-12 relative">
-            {/* Hero food collage backdrop */}
+            {/* Soft warm radial wash behind hero copy */}
             <div
               aria-hidden
               className="pointer-events-none absolute inset-x-0 -top-6 md:-top-10 h-[380px] md:h-[480px] overflow-hidden"
             >
-              {/* Soft warm radial wash */}
               <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_25%,oklch(0.965_0.05_55_/_0.9)_0%,transparent_70%)]" />
-              {/* Hero collage: fridge anchor + two floating dishes */}
-              <div className="hidden md:block absolute -left-12 top-2 w-64 h-72 rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] hero-drift-a">
-                <img src={heroFridge} alt="" width={1600} height={1200} loading="eager" fetchPriority="high" className="w-full h-full object-cover" />
-              </div>
-              <div className="hidden md:block absolute -right-10 top-8 size-52 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-4 ring-[color:var(--surface-cream)] hero-drift-b">
-                <img src={heroDish1} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
-              </div>
-              <div className="hidden lg:block absolute right-8 bottom-2 size-40 rounded-[1.75rem] overflow-hidden shadow-[var(--shadow-card)] hero-drift-c">
-                <img src={heroDish2} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
-              </div>
-              {/* Bottom fade so text sits cleanly */}
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
 
