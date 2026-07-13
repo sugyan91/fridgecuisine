@@ -224,6 +224,9 @@ function AccountPage() {
                 <Link to="/pricing">Upgrade to Unlimited</Link>
               </Button>
             )}
+            <Button asChild variant="outline">
+              <Link to="/earnings">Your earnings</Link>
+            </Button>
             {isPremium && !pendingCancel && (
               <Button
                 variant="outline"
