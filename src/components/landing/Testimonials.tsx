@@ -13,11 +13,15 @@ export function Testimonials() {
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
   const [progress, setProgress] = useState(0);
-  // Start with source order for SSR so hydration matches, then shuffle
-  // on the client after mount so each visit shows a different order.
-  const [items, setItems] = useState<Testimonial[]>(TESTIMONIALS);
+  // Always render the source order on the server AND on the first client
+  // render, so hydration is byte-for-byte stable. Only after hydration
+  // completes do we swap in a shuffled order (once per mount).
+  const [items, setItems] = useState<Testimonial[]>(() => TESTIMONIALS);
+  const shuffledRef = useRef(false);
 
   useEffect(() => {
+    if (shuffledRef.current) return;
+    shuffledRef.current = true;
     setItems(pickRandom(TESTIMONIALS, TESTIMONIALS.length));
   }, []);
 
