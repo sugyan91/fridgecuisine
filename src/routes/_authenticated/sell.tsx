@@ -56,6 +56,20 @@ function SellPage() {
   const [saving, setSaving] = useState(false);
   const [linking, setLinking] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [myUsername, setMyUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", uid)
+        .maybeSingle();
+      setMyUsername(p?.username ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     fetchProfile()
@@ -144,6 +158,23 @@ function SellPage() {
             Share your signature dishes with home cooks worldwide. You set the price and
             Stripe pays you directly.
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                to="/earnings"
+                className="inline-flex items-center gap-1.5 bg-white border-2 border-border px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-0.5"
+              >
+                Your earnings →
+              </Link>
+              {myUsername && (
+                <Link
+                  to="/chef/$username"
+                  params={{ username: myUsername }}
+                  className="inline-flex items-center gap-1.5 bg-white border-2 border-border px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-0.5"
+                >
+                  View your public storefront →
+                </Link>
+              )}
+            </div>
           </header>
 
           {loading ? (

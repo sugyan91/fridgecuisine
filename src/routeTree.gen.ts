@@ -25,12 +25,14 @@ import { Route as ShopRecipeIdRouteImport } from './routes/shop.$recipeId'
 import { Route as SharedSlugRouteImport } from './routes/shared.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CommunityRecipeIdRouteImport } from './routes/community.$recipeId'
+import { Route as ChefUsernameRouteImport } from './routes/chef.$username'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
 import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
+import { Route as AuthenticatedEarningsRouteImport } from './routes/_authenticated/earnings'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -125,6 +127,11 @@ const CommunityRecipeIdRoute = CommunityRecipeIdRouteImport.update({
   path: '/community/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChefUsernameRoute = ChefUsernameRouteImport.update({
+  id: '/chef/$username',
+  path: '/chef/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   id: '/checkout/return',
   path: '/checkout/return',
@@ -153,6 +160,11 @@ const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
 const AuthenticatedMyRecipesRoute = AuthenticatedMyRecipesRouteImport.update({
   id: '/my-recipes',
   path: '/my-recipes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedEarningsRoute = AuthenticatedEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedCookbookRoute = AuthenticatedCookbookRouteImport.update({
@@ -243,12 +255,14 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
+  '/earnings': typeof AuthenticatedEarningsRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/chef/$username': typeof ChefUsernameRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/shared/$slug': typeof SharedSlugRoute
@@ -280,12 +294,14 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
+  '/earnings': typeof AuthenticatedEarningsRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/chef/$username': typeof ChefUsernameRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/shared/$slug': typeof SharedSlugRoute
@@ -319,12 +335,14 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
+  '/_authenticated/earnings': typeof AuthenticatedEarningsRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/chef/$username': typeof ChefUsernameRoute
   '/community/$recipeId': typeof CommunityRecipeIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/shared/$slug': typeof SharedSlugRoute
@@ -358,12 +376,14 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/cookbook'
+    | '/earnings'
     | '/my-recipes'
     | '/pricing'
     | '/sell'
     | '/usage'
     | '/checkout/cancel'
     | '/checkout/return'
+    | '/chef/$username'
     | '/community/$recipeId'
     | '/email/unsubscribe'
     | '/shared/$slug'
@@ -395,12 +415,14 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/cookbook'
+    | '/earnings'
     | '/my-recipes'
     | '/pricing'
     | '/sell'
     | '/usage'
     | '/checkout/cancel'
     | '/checkout/return'
+    | '/chef/$username'
     | '/community/$recipeId'
     | '/email/unsubscribe'
     | '/shared/$slug'
@@ -433,12 +455,14 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/cookbook'
+    | '/_authenticated/earnings'
     | '/_authenticated/my-recipes'
     | '/_authenticated/pricing'
     | '/_authenticated/sell'
     | '/_authenticated/usage'
     | '/checkout/cancel'
     | '/checkout/return'
+    | '/chef/$username'
     | '/community/$recipeId'
     | '/email/unsubscribe'
     | '/shared/$slug'
@@ -472,6 +496,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
+  ChefUsernameRoute: typeof ChefUsernameRoute
   CommunityRecipeIdRoute: typeof CommunityRecipeIdRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   SharedSlugRoute: typeof SharedSlugRoute
@@ -602,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chef/$username': {
+      id: '/chef/$username'
+      path: '/chef/$username'
+      fullPath: '/chef/$username'
+      preLoaderRoute: typeof ChefUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/return': {
       id: '/checkout/return'
       path: '/checkout/return'
@@ -642,6 +674,13 @@ declare module '@tanstack/react-router' {
       path: '/my-recipes'
       fullPath: '/my-recipes'
       preLoaderRoute: typeof AuthenticatedMyRecipesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/earnings': {
+      id: '/_authenticated/earnings'
+      path: '/earnings'
+      fullPath: '/earnings'
+      preLoaderRoute: typeof AuthenticatedEarningsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cookbook': {
@@ -748,6 +787,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedCookbookRoute: typeof AuthenticatedCookbookRoute
+  AuthenticatedEarningsRoute: typeof AuthenticatedEarningsRoute
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
@@ -761,6 +801,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedCookbookRoute: AuthenticatedCookbookRoute,
+  AuthenticatedEarningsRoute: AuthenticatedEarningsRoute,
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSellRoute: AuthenticatedSellRoute,
@@ -788,6 +829,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
+  ChefUsernameRoute: ChefUsernameRoute,
   CommunityRecipeIdRoute: CommunityRecipeIdRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   SharedSlugRoute: SharedSlugRoute,
