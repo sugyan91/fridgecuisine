@@ -34,6 +34,14 @@ export type ChefStorefrontCommunityRecipe = {
   created_at: string;
 };
 
+export type ChefStorefrontCookbook = {
+  id: string;
+  title: string;
+  description: string | null;
+  cover_image_url: string | null;
+  price_cents: number;
+};
+
 export type ChefStorefrontStats = {
   paidCount: number;
   communityCount: number;
@@ -45,6 +53,7 @@ export type ChefStorefront = {
   stats: ChefStorefrontStats;
   paidRecipes: ChefStorefrontPaidRecipe[];
   communityRecipes: ChefStorefrontCommunityRecipe[];
+  cookbooks: ChefStorefrontCookbook[];
 };
 
 /**
@@ -72,7 +81,7 @@ export const getChefStorefront = createServerFn({ method: "GET" })
       .eq("user_id", prof.user_id)
       .maybeSingle();
 
-    const [{ data: paidRows }, { data: communityRows }] = await Promise.all([
+    const [{ data: paidRows }, { data: communityRows }, { data: cookbookRows }] = await Promise.all([
       supabaseAdmin
         .from("paid_recipes")
         .select("id, title, local_name, cuisine, country, city, cover_image_url, price_cents, created_at")
@@ -87,6 +96,14 @@ export const getChefStorefront = createServerFn({ method: "GET" })
         .eq("is_published", true)
         .order("created_at", { ascending: false })
         .limit(60),
+      supabaseAdmin
+        .from("cookbooks")
+        .select("id, title, description, cover_image_url, price_cents, created_at")
+        .eq("chef_user_id", prof.user_id)
+        .eq("is_published", true)
+        .gt("price_cents", 0)
+        .order("created_at", { ascending: false })
+        .limit(30),
     ]);
 
     let totalLikes = 0;
@@ -135,6 +152,13 @@ export const getChefStorefront = createServerFn({ method: "GET" })
           city: r.city,
           image_url: r.image_url,
           created_at: r.created_at ?? new Date(0).toISOString(),
+        })),
+        cookbooks: (cookbookRows ?? []).map((c) => ({
+          id: c.id,
+          title: c.title,
+          description: c.description,
+          cover_image_url: c.cover_image_url,
+          price_cents: c.price_cents ?? 0,
         })),
       },
     };
