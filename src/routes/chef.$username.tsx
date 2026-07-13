@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MapPin, Store, Heart, ChefHat, Utensils, Coffee, BookOpen } from "lucide-react";
 import { getChefStorefront, type ChefStorefront } from "@/lib/chef-storefront.functions";
+import { recordStorefrontView } from "@/lib/storefront-analytics.functions";
 import { SafeImage } from "@/components/ui/safe-image";
 import { TipChefDialog } from "@/components/tips/TipChefDialog";
 
@@ -62,6 +63,14 @@ function ChefStorefrontPage() {
   const displayName = chef.display_name || chef.username;
   const initial = (displayName || "?").slice(0, 1).toUpperCase();
   const [tipOpen, setTipOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = `sv:storefront:${chef.username}`;
+    if (window.sessionStorage.getItem(key)) return;
+    window.sessionStorage.setItem(key, "1");
+    recordStorefrontView({ data: { source: "storefront", username: chef.username } }).catch(() => {});
+  }, [chef.username]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
