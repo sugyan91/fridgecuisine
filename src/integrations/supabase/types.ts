@@ -959,6 +959,57 @@ export type Database = {
         }
         Relationships: []
       }
+      tips: {
+        Row: {
+          chef_net_cents: number
+          chef_user_id: string
+          created_at: string
+          currency: string
+          gross_cents: number
+          id: string
+          message: string | null
+          platform_fee_cents: number
+          purchased_at: string | null
+          sender_user_id: string | null
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          chef_net_cents?: number
+          chef_user_id: string
+          created_at?: string
+          currency?: string
+          gross_cents: number
+          id?: string
+          message?: string | null
+          platform_fee_cents?: number
+          purchased_at?: string | null
+          sender_user_id?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chef_net_cents?: number
+          chef_user_id?: string
+          created_at?: string
+          currency?: string
+          gross_cents?: number
+          id?: string
+          message?: string | null
+          platform_fee_cents?: number
+          purchased_at?: string | null
+          sender_user_id?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
