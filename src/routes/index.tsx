@@ -30,7 +30,7 @@ import {
   type SavedRecipeRow,
 } from "@/lib/saved-recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
-import { POPULAR_COMBOS as ALL_POPULAR_COMBOS } from "@/data/popular-combos";
+
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
 import { DEFAULT_CUISINES } from "@/lib/taxonomy";
