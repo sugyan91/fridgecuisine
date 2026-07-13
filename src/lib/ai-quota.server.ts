@@ -9,15 +9,15 @@ export interface CallerSignals {
 export type Tier = "free" | "basic" | "unlimited";
 
 export const TIER_LIMITS: Record<Tier, number> = {
-  free: 2,
-  basic: 10,
+  free: 1,
+  basic: 8,
   // "Unlimited" is marketed as unlimited but enforces a fair-use daily cap
   // to protect against abuse / runaway AI cost from a single account.
-  unlimited: 50,
+  unlimited: 30,
 };
 
 /** Minimum seconds between two AI generations for the same user (all tiers). */
-export const RATE_LIMIT_SECONDS = 3;
+export const RATE_LIMIT_SECONDS = 8;
 
 /** Back-compat export — free tier limit. */
 export const FREE_DAILY_LIMIT = TIER_LIMITS.free;
