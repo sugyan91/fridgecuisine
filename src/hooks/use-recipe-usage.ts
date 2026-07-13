@@ -7,7 +7,7 @@ export { FREE_DAILY_LIMIT };
 export type UsageTier = "anon" | "free" | "basic" | "unlimited";
 
 /** Anonymous users get 2 generations per day, then a sign-in wall. */
-const ANON_DAILY_LIMIT = 2;
+const ANON_DAILY_LIMIT = 1;
 
 function startOfTodayLocal(): Date {
   const d = new Date();

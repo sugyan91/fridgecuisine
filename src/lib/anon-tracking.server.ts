@@ -121,7 +121,7 @@ export function resolveAnonFingerprint(): string {
 }
 
 /** Daily cap for anonymous (not signed-in) generations, per fingerprint AND per IP. */
-export const ANON_DAILY_LIMIT = 2;
+export const ANON_DAILY_LIMIT = 1;
 /** Back-compat alias kept so older imports keep building; semantics are now daily. */
 export const ANON_LIFETIME_LIMIT = ANON_DAILY_LIMIT;
 

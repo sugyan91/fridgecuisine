@@ -63,6 +63,24 @@ export const getDishHelper = createServerFn({ method: "POST" })
       if (!anon.ok) return { ok: false, error: anon.error };
       anonFingerprint = anon.fingerprint;
     }
+
+    const { hashKey, getCached, putCached } = await import("./ai-cache.server");
+    const norm = {
+      dish: data.dish.toLowerCase().trim(),
+      dietary: [...(data.dietary ?? [])]
+        .map((s) => s.toLowerCase().trim())
+        .sort(),
+      language: data.language,
+    };
+    const cacheKey = hashKey("dish-helper", norm);
+    type CachedDish = z.infer<typeof responseSchema>;
+    const cached = await getCached<CachedDish>("dish-helper", cacheKey);
+    if (cached) {
+      if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+      else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
+      return { ok: true, data: cached };
+    }
+
     const dietaryLine =
       data.dietary && data.dietary.length > 0
         ? `\n- DIETARY CONSTRAINTS (STRICT — never violate): ${data.dietary.join(", ")}. Substitute or omit ingredients as needed so the recipe fully honors these. If the requested dish fundamentally cannot be adapted, still return the closest faithful adaptation that respects the constraints.`
@@ -115,6 +133,7 @@ Return JSON shaped exactly like:
       if (!result.success) return { ok: false, error: "AI returned an unexpected format." };
       if (auth) await recordAiGeneration(auth.supabase, auth.userId);
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
+      await putCached("dish-helper", cacheKey, result.data, 30);
       return { ok: true, data: result.data };
     } catch (err) {
       console.error("getDishHelper failed", err);

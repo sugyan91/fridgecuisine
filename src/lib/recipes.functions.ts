@@ -197,6 +197,25 @@ Return JSON shaped exactly like:
 }`;
 
     try {
+      // Cache: normalized key of (sorted pantry, cuisine, sorted dietary,
+      // sorted exclude, kidFriendly, language). Same request → same recipes,
+      // no AI call. Quota/rate-limit still counted above.
+      const { hashKey, getCached, putCached } = await import("./ai-cache.server");
+      const norm = {
+        ingredients: [...data.ingredients].map((s) => s.toLowerCase().trim()).sort(),
+        cuisine: data.cuisine.toLowerCase().trim(),
+        dietary: [...data.dietary].map((s) => s.toLowerCase().trim()).sort(),
+        exclude: [...data.exclude].map((s) => s.toLowerCase().trim()).sort(),
+        kidFriendly: !!data.kidFriendly,
+        language: data.language,
+      };
+      const cacheKey = hashKey("recipes", norm);
+      const cached = await getCached<{ recipes: Recipe[] }>("recipes", cacheKey);
+      if (cached) {
+        if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+        else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
+        return { ok: true, recipes: cached.recipes };
+      }
       const aiRes = await callChatJSON(systemPrompt, userPrompt);
       if (!aiRes.ok) {
         return { ok: false, error: aiRes.error, code: aiRes.code === "parse" ? "server" : aiRes.code };
@@ -213,6 +232,7 @@ Return JSON shaped exactly like:
 
       if (auth) await recordAiGeneration(auth.supabase, auth.userId);
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
+      await putCached("recipes", cacheKey, { recipes: result.data.recipes }, 30);
       return { ok: true, recipes: result.data.recipes };
     } catch (err) {
       console.error("generateRecipes failed", err);
