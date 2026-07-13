@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Sparkles, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
-import { useIsAdmin } from "@/hooks/use-is-admin";
+import { getMyAdminStatus } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -32,20 +33,26 @@ function nextMidnightLocal(): Date {
 
 function UsagePage() {
   const [userId, setUserId] = useState<string | undefined>(undefined);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [adminState, setAdminState] = useState<"loading" | "yes" | "no">("loading");
+  const fetchAdmin = useServerFn(getMyAdminStatus);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id);
-      setAuthChecked(true);
+      if (!data.user?.id) {
+        setAdminState("no");
+        return;
+      }
+      fetchAdmin()
+        .then((r) => setAdminState(r.isAdmin ? "yes" : "no"))
+        .catch(() => setAdminState("no"));
     });
-  }, []);
+  }, [fetchAdmin]);
 
-  const isAdmin = useIsAdmin(userId);
   const { used, limit, tier, remaining, countdown, loaded } =
     useRecipeUsage(userId);
 
-  if (authChecked && userId && !isAdmin) {
+  if (adminState === "no") {
     return <Navigate to="/account" replace />;
   }
 
