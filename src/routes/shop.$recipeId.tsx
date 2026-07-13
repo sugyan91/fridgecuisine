@@ -17,6 +17,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { SafeImage } from "@/components/ui/safe-image";
+import { recordStorefrontView } from "@/lib/storefront-analytics.functions";
 
 export const Route = createFileRoute("/shop/$recipeId")({
   loader: ({ params }) => getPaidRecipeDetail({ data: { id: params.recipeId } }),
