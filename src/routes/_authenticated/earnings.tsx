@@ -98,6 +98,9 @@ function EarningsPage() {
             <Button variant="outline" onClick={load} disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             </Button>
+            <Button asChild variant="outline">
+              <Link to="/analytics">Analytics</Link>
+            </Button>
           </div>
         </header>
 
