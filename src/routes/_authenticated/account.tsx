@@ -227,6 +227,9 @@ function AccountPage() {
             <Button asChild variant="outline">
               <Link to="/earnings">Your earnings</Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link to="/analytics">Storefront analytics</Link>
+            </Button>
             {isPremium && !pendingCancel && (
               <Button
                 variant="outline"
