@@ -174,7 +174,10 @@ export const listChefs = createServerFn({ method: "GET" })
       avatar_url: string | null;
     }>;
     const ids = rows.map((r) => r.user_id);
-    let nameById = new Map<string, { name: string | null; avatar: string | null }>();
+    let nameByIdWithUsername = new Map<
+      string,
+      { name: string | null; avatar: string | null; username: string | null }
+    >();
     if (ids.length > 0) {
       const { data: profiles } = await supabaseAdmin
         .from("profiles")
