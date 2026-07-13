@@ -6,6 +6,8 @@ import { SUPPORTED_LANGUAGE_NAMES, languageInstruction } from "./language";
 import { checkAiQuota, recordAiGeneration } from "./ai-quota.server";
 import { tryGetSupabaseUser } from "./optional-auth.server";
 import { checkAnonQuota, recordAnonGeneration } from "./anon-tracking.server";
+import { logAiUsage } from "./ai-usage-logging.server";
+import { resolveAnonContext } from "./anon-tracking.server";
 
 const inputSchema = z.object({
   ingredients: z
@@ -214,6 +216,13 @@ Return JSON shaped exactly like:
       if (cached) {
         if (auth) await recordAiGeneration(auth.supabase, auth.userId);
         else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
+        logAiUsage({
+          endpoint: "recipes",
+          userId: auth?.userId ?? null,
+          fingerprint: anonFingerprint,
+          ipHash: auth ? null : safeAnonIpHash(),
+          cacheHit: true,
+        });
         return { ok: true, recipes: cached.recipes };
       }
       const aiRes = await callChatJSON(systemPrompt, userPrompt);
@@ -233,9 +242,20 @@ Return JSON shaped exactly like:
       if (auth) await recordAiGeneration(auth.supabase, auth.userId);
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
       await putCached("recipes", cacheKey, { recipes: result.data.recipes }, 30);
+      logAiUsage({
+        endpoint: "recipes",
+        userId: auth?.userId ?? null,
+        fingerprint: anonFingerprint,
+        ipHash: auth ? null : safeAnonIpHash(),
+        cacheHit: false,
+      });
       return { ok: true, recipes: result.data.recipes };
     } catch (err) {
       console.error("generateRecipes failed", err);
       return { ok: false, error: "Something went wrong. Try again.", code: "server" };
     }
   });
+
+function safeAnonIpHash(): string | null {
+  try { return resolveAnonContext().ipHash || null; } catch { return null; }
+}
