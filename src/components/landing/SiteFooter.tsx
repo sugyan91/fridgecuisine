@@ -38,13 +38,13 @@ export function SiteFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="hover:text-white block">Recipes</Link>
+                <Link to="/" title="Find recipes from your ingredients" className="hover:text-white block">Recipes</Link>
               </li>
               <li>
-                <Link to="/community" className="hover:text-white block">Community</Link>
+                <Link to="/community" title="Join the cooking community" className="hover:text-white block">Community</Link>
               </li>
               <li>
-                <Link to="/chefs" className="hover:text-white block">Chefs</Link>
+                <Link to="/chefs" title="Browse chef profiles" className="hover:text-white block">Chefs</Link>
               </li>
             </ul>
           </div>
@@ -55,10 +55,10 @@ export function SiteFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/cookbook" className="hover:text-white block">Cookbook</Link>
+                <Link to="/cookbook" title="Your saved recipes" className="hover:text-white block">Cookbook</Link>
               </li>
               <li>
-                <Link to="/account" className="hover:text-white block">Account</Link>
+                <Link to="/account" title="Manage your account" className="hover:text-white block">Account</Link>
               </li>
             </ul>
           </div>
@@ -69,7 +69,7 @@ export function SiteFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/pricing" className="hover:text-white block">Pricing</Link>
+                <Link to="/pricing" title="View pricing plans" className="hover:text-white block">Pricing</Link>
               </li>
             </ul>
           </div>
@@ -79,7 +79,7 @@ export function SiteFooter() {
               Contact
             </p>
             <p className="mb-4 text-sm">
-              <Link to="/contact" className="text-white/85 hover:text-white underline-offset-4 hover:underline">
+              <Link to="/contact" title="Send us a message" className="text-white/85 hover:text-white underline-offset-4 hover:underline">
                 Use the contact form →
               </Link>
             </p>
@@ -87,6 +87,7 @@ export function SiteFooter() {
               <li>
                 <a
                   href="mailto:main@fridgecuisine.com"
+                  title="Email general inquiries"
                   className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors whitespace-nowrap"
                 >
                   <Mail size={13} className="shrink-0" />
@@ -96,6 +97,7 @@ export function SiteFooter() {
               <li>
                 <a
                   href="mailto:support@fridgecuisine.com"
+                  title="Email support"
                   className="inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors whitespace-nowrap"
                 >
                   <Mail size={13} className="shrink-0" />
@@ -108,13 +110,14 @@ export function SiteFooter() {
 
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col gap-4 text-xs text-white/55">
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <Link to="/privacy" className="hover:text-white">Privacy</Link>
-            <Link to="/terms" className="hover:text-white">Terms</Link>
-            <Link to="/cookies" className="hover:text-white">Cookies</Link>
+            <Link to="/privacy" title="Privacy policy" className="hover:text-white">Privacy</Link>
+            <Link to="/terms" title="Terms of service" className="hover:text-white">Terms</Link>
+            <Link to="/cookies" title="Cookie policy" className="hover:text-white">Cookies</Link>
             {consent && (
               <button
                 type="button"
                 onClick={consent.reopen}
+                title="Update cookie preferences"
                 className="hover:text-white"
               >
                 Manage cookies
