@@ -789,13 +789,6 @@ function Index() {
               <div className="hidden lg:block absolute right-8 bottom-2 size-40 rounded-[1.75rem] overflow-hidden shadow-[var(--shadow-card)] hero-drift-c">
                 <img src={heroDish2} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
               </div>
-              {/* Mobile: smaller floating accents */}
-              <div className="md:hidden absolute -left-6 top-4 size-24 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] hero-drift-a">
-                <img src={heroFridge} alt="" width={1600} height={1200} loading="eager" fetchPriority="high" className="w-full h-full object-cover" />
-              </div>
-              <div className="md:hidden absolute -right-4 top-2 size-24 rounded-full overflow-hidden shadow-[var(--shadow-card)] ring-2 ring-[color:var(--surface-cream)] hero-drift-b">
-                <img src={heroDish1} alt="" width={1200} height={1200} loading="eager" className="w-full h-full object-cover" />
-              </div>
               {/* Bottom fade so text sits cleanly */}
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
             </div>
