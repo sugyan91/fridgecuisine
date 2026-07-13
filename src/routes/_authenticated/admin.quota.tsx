@@ -65,6 +65,11 @@ function AdminQuotaPage() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Abuse events
           </Link>
         </Button>
+        <div className="mb-4">
+          <Button asChild size="sm" variant="outline">
+            <Link to="/admin/usage">AI usage dashboard →</Link>
+          </Button>
+        </div>
 
         <header className="mb-8">
           <h1 className="text-4xl font-black tracking-tight">Quota troubleshooting</h1>
