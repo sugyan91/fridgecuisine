@@ -578,6 +578,13 @@ function Index() {
                 Shop
               </Link>
               <Link
+                to="/sell"
+                className="text-sm font-medium px-3 py-2 rounded-full text-primary-foreground shadow-[var(--shadow-warm)] hover:brightness-110 transition-all"
+                style={{ background: "var(--gradient-warm)" }}
+              >
+                Sell recipes
+              </Link>
+              <Link
                 to="/contact"
                 className="hidden lg:inline-flex items-center gap-1.5 text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
               >
@@ -684,6 +691,16 @@ function Index() {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-border bg-background shadow-lg">
               <div className="max-w-6xl mx-auto px-4 py-2 flex flex-col">
+                <Link
+                  to="/sell"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-3 text-sm font-medium text-primary hover:text-primary/90 border-b border-border inline-flex items-center gap-2"
+                >
+                  <span className="inline-flex items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold px-1.5 py-0.5">
+                    $
+                  </span>
+                  Sell recipes
+                </Link>
                 <Link
                   to="/community"
                   onClick={() => setMobileMenuOpen(false)}
