@@ -134,7 +134,7 @@ export const getChefStorefront = createServerFn({ method: "GET" })
           country: r.country,
           city: r.city,
           image_url: r.image_url,
-          created_at: r.created_at,
+          created_at: r.created_at ?? new Date(0).toISOString(),
         })),
       },
     };
