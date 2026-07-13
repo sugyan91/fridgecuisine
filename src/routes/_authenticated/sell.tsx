@@ -166,6 +166,12 @@ function SellPage() {
                 Your earnings →
               </Link>
               <Link
+                to="/analytics"
+                className="inline-flex items-center gap-1.5 bg-white border-2 border-border px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-0.5"
+              >
+                Storefront analytics →
+              </Link>
+              <Link
                 to="/cookbooks"
                 className="inline-flex items-center gap-1.5 bg-white border-2 border-border px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_2px_0px_0px_var(--border)] active:translate-y-0.5"
               >
