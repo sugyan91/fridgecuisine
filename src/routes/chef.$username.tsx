@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { MapPin, Store, Heart, ChefHat, Utensils } from "lucide-react";
+import { MapPin, Store, Heart, ChefHat, Utensils, Coffee, BookOpen } from "lucide-react";
 import { getChefStorefront, type ChefStorefront } from "@/lib/chef-storefront.functions";
 import { SafeImage } from "@/components/ui/safe-image";
+import { TipChefDialog } from "@/components/tips/TipChefDialog";
 
 export const Route = createFileRoute("/chef/$username")({
   loader: async ({ params }) => {
@@ -56,9 +58,10 @@ export const Route = createFileRoute("/chef/$username")({
 
 function ChefStorefrontPage() {
   const loaded = Route.useLoaderData() as ChefStorefront;
-  const { chef, stats, paidRecipes, communityRecipes } = loaded;
+  const { chef, stats, paidRecipes, communityRecipes, cookbooks } = loaded;
   const displayName = chef.display_name || chef.username;
   const initial = (displayName || "?").slice(0, 1).toUpperCase();
+  const [tipOpen, setTipOpen] = useState(false);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -98,12 +101,58 @@ function ChefStorefrontPage() {
                 <Stat icon={<Utensils className="size-4" />} label="Community recipes" value={stats.communityCount} />
                 <Stat icon={<Heart className="size-4" />} label="Total likes" value={stats.totalLikes} />
               </div>
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setTipOpen(true)}
+                  className="inline-flex items-center gap-2 bg-turmeric text-foreground border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+                >
+                  <Coffee className="size-4" /> Send a tip
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 md:px-8 py-10 space-y-12">
+        {/* Cookbooks */}
+        {cookbooks.length > 0 && (
+          <section>
+            <div className="flex items-baseline justify-between mb-4">
+              <h2 className="font-display text-2xl uppercase">Cookbooks</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {cookbooks.map((c) => (
+                <Link
+                  key={c.id}
+                  to="/shop/cookbook/$cookbookId"
+                  params={{ cookbookId: c.id }}
+                  className="group rounded-2xl border-4 border-border bg-card overflow-hidden hover:-translate-y-0.5 transition-transform"
+                >
+                  {c.cover_image_url ? (
+                    <SafeImage src={c.cover_image_url} alt={c.title} className="w-full aspect-video object-cover" />
+                  ) : (
+                    <div className="w-full aspect-video bg-muted grid place-items-center">
+                      <BookOpen className="size-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <p className="font-display text-lg uppercase leading-tight line-clamp-2">{c.title}</p>
+                    {c.description && (
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{c.description}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cookbook bundle</span>
+                      <span className="font-black text-paprika">${(c.price_cents / 100).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Paid recipes */}
         <section>
           <div className="flex items-baseline justify-between mb-4">
@@ -185,6 +234,13 @@ function ChefStorefrontPage() {
           )}
         </section>
       </div>
+
+      <TipChefDialog
+        open={tipOpen}
+        onOpenChange={setTipOpen}
+        chefUsername={chef.username}
+        chefName={displayName}
+      />
     </main>
   );
 }

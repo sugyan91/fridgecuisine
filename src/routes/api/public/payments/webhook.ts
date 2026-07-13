@@ -83,7 +83,40 @@ async function handleCheckoutCompleted(session: any) {
   // Only handle one-off recipe purchases here (subscriptions go through
   // customer.subscription.* events).
   if (session.mode !== "payment") return;
-  if (session.metadata?.type !== "recipe_purchase") return;
+  const type = session.metadata?.type;
+  if (type !== "recipe_purchase" && type !== "cookbook_purchase" && type !== "tip") return;
+
+  if (type === "tip") {
+    const sessionId = session.id as string;
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id ?? null;
+    const purchasedAt = new Date().toISOString();
+    const { error } = await (getSupabase().from("tips") as any).upsert(
+      {
+        stripe_checkout_session_id: sessionId,
+        stripe_payment_intent_id: paymentIntentId,
+        status: "paid",
+        purchased_at: purchasedAt,
+        updated_at: purchasedAt,
+        sender_user_id: session.metadata?.userId ?? undefined,
+        chef_user_id: session.metadata?.chef_user_id ?? undefined,
+        message: session.metadata?.tip_message ?? undefined,
+        gross_cents: session.amount_total ?? undefined,
+        platform_fee_cents: session.metadata?.platform_fee_cents
+          ? Number(session.metadata.platform_fee_cents)
+          : undefined,
+        chef_net_cents: session.metadata?.chef_net_cents
+          ? Number(session.metadata.chef_net_cents)
+          : undefined,
+        currency: (session.currency as string) ?? "usd",
+      },
+      { onConflict: "stripe_checkout_session_id" },
+    );
+    if (error) console.error("Failed to upsert tip:", error);
+    return;
+  }
 
   const sessionId = session.id as string;
   const paymentIntentId =
@@ -93,8 +126,9 @@ async function handleCheckoutCompleted(session: any) {
 
   const purchasedAt = new Date().toISOString();
 
-  // Upsert by stripe_checkout_session_id (unique) so we cover both the
-  // pre-inserted pending row and any case where the row is missing.
+  // Upsert by stripe_checkout_session_id (unique) — covers both the
+  // pre-inserted pending row and the missing-row fallback. Same shape
+  // for recipe_purchase and cookbook_purchase.
   const { error } = await (getSupabase().from("recipe_purchases") as any).upsert(
     {
       stripe_checkout_session_id: sessionId,
@@ -102,10 +136,12 @@ async function handleCheckoutCompleted(session: any) {
       status: "paid",
       purchased_at: purchasedAt,
       updated_at: purchasedAt,
-      // Defensive backfill from metadata in case the pending row is gone.
       buyer_user_id: session.metadata?.userId ?? undefined,
       chef_user_id: session.metadata?.chef_user_id ?? undefined,
-      paid_recipe_id: session.metadata?.paid_recipe_id ?? undefined,
+      paid_recipe_id:
+        type === "recipe_purchase" ? session.metadata?.paid_recipe_id ?? undefined : undefined,
+      cookbook_id:
+        type === "cookbook_purchase" ? session.metadata?.cookbook_id ?? undefined : undefined,
       gross_cents: session.amount_total ?? undefined,
       platform_fee_cents: session.metadata?.platform_fee_cents
         ? Number(session.metadata.platform_fee_cents)
@@ -117,7 +153,7 @@ async function handleCheckoutCompleted(session: any) {
     },
     { onConflict: "stripe_checkout_session_id" },
   );
-  if (error) console.error("Failed to upsert recipe_purchase:", error);
+  if (error) console.error("Failed to upsert purchase:", error);
 
   // Fire-and-forget purchase receipt email.
   try {

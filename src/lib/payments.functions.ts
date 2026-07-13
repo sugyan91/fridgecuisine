@@ -78,6 +78,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       return_url: data.returnUrl,
       managed_payments: { enabled: true },
       customer: customerId,
+      allow_promotion_codes: true,
       metadata: { userId },
       ...(isRecurring && { subscription_data: { metadata: { userId } } }),
     } as any);
@@ -241,6 +242,7 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
       ui_mode: "embedded_page",
       return_url: data.returnUrl,
       customer: customerId,
+      allow_promotion_codes: true,
       line_items: [
         {
           quantity: 1,

@@ -33,8 +33,10 @@ import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/s
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
 import { Route as AuthenticatedEarningsRouteImport } from './routes/_authenticated/earnings'
+import { Route as AuthenticatedCookbooksRouteImport } from './routes/_authenticated/cookbooks'
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as ShopCookbookCookbookIdRouteImport } from './routes/shop.cookbook.$cookbookId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
@@ -167,6 +169,11 @@ const AuthenticatedEarningsRoute = AuthenticatedEarningsRouteImport.update({
   path: '/earnings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCookbooksRoute = AuthenticatedCookbooksRouteImport.update({
+  id: '/cookbooks',
+  path: '/cookbooks',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedCookbookRoute = AuthenticatedCookbookRouteImport.update({
   id: '/cookbook',
   path: '/cookbook',
@@ -176,6 +183,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ShopCookbookCookbookIdRoute = ShopCookbookCookbookIdRouteImport.update({
+  id: '/shop/cookbook/$cookbookId',
+  path: '/shop/cookbook/$cookbookId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
@@ -255,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
+  '/cookbooks': typeof AuthenticatedCookbooksRoute
   '/earnings': typeof AuthenticatedEarningsRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -275,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -294,6 +308,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
+  '/cookbooks': typeof AuthenticatedCookbooksRoute
   '/earnings': typeof AuthenticatedEarningsRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -314,6 +329,7 @@ export interface FileRoutesByTo {
   '/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -335,6 +351,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
+  '/_authenticated/cookbooks': typeof AuthenticatedCookbooksRoute
   '/_authenticated/earnings': typeof AuthenticatedEarningsRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
@@ -355,6 +372,7 @@ export interface FileRoutesById {
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -376,6 +394,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/cookbook'
+    | '/cookbooks'
     | '/earnings'
     | '/my-recipes'
     | '/pricing'
@@ -396,6 +415,7 @@ export interface FileRouteTypes {
     | '/community/new'
     | '/api/public/contact'
     | '/lovable/email/suppression'
+    | '/shop/cookbook/$cookbookId'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -415,6 +435,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/cookbook'
+    | '/cookbooks'
     | '/earnings'
     | '/my-recipes'
     | '/pricing'
@@ -435,6 +456,7 @@ export interface FileRouteTypes {
     | '/community/new'
     | '/api/public/contact'
     | '/lovable/email/suppression'
+    | '/shop/cookbook/$cookbookId'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -455,6 +477,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/cookbook'
+    | '/_authenticated/cookbooks'
     | '/_authenticated/earnings'
     | '/_authenticated/my-recipes'
     | '/_authenticated/pricing'
@@ -475,6 +498,7 @@ export interface FileRouteTypes {
     | '/_authenticated/community/new'
     | '/api/public/contact'
     | '/lovable/email/suppression'
+    | '/shop/cookbook/$cookbookId'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -505,6 +529,7 @@ export interface RootRouteChildren {
   ShopIndexRoute: typeof ShopIndexRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ShopCookbookCookbookIdRoute: typeof ShopCookbookCookbookIdRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -683,6 +708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEarningsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cookbooks': {
+      id: '/_authenticated/cookbooks'
+      path: '/cookbooks'
+      fullPath: '/cookbooks'
+      preLoaderRoute: typeof AuthenticatedCookbooksRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/cookbook': {
       id: '/_authenticated/cookbook'
       path: '/cookbook'
@@ -696,6 +728,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/account'
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/shop/cookbook/$cookbookId': {
+      id: '/shop/cookbook/$cookbookId'
+      path: '/shop/cookbook/$cookbookId'
+      fullPath: '/shop/cookbook/$cookbookId'
+      preLoaderRoute: typeof ShopCookbookCookbookIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
@@ -787,6 +826,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedCookbookRoute: typeof AuthenticatedCookbookRoute
+  AuthenticatedCookbooksRoute: typeof AuthenticatedCookbooksRoute
   AuthenticatedEarningsRoute: typeof AuthenticatedEarningsRoute
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
@@ -801,6 +841,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedCookbookRoute: AuthenticatedCookbookRoute,
+  AuthenticatedCookbooksRoute: AuthenticatedCookbooksRoute,
   AuthenticatedEarningsRoute: AuthenticatedEarningsRoute,
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
@@ -838,6 +879,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopIndexRoute: ShopIndexRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ShopCookbookCookbookIdRoute: ShopCookbookCookbookIdRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
