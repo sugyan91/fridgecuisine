@@ -53,14 +53,12 @@ export function SiteFooter() {
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               My kitchen
             </p>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/cookbook" className="hover:text-white block">Cookbook</Link>
-                <p className="text-[11px] text-white/50 mt-0.5">Save recipes and build your personal collection.</p>
               </li>
               <li>
                 <Link to="/account" className="hover:text-white block">Account</Link>
-                <p className="text-[11px] text-white/50 mt-0.5">Manage your profile, plan, and preferences.</p>
               </li>
             </ul>
           </div>
@@ -69,10 +67,9 @@ export function SiteFooter() {
             <p className="font-display text-[10px] tracking-[0.25em] uppercase text-white/45 mb-3">
               Upgrade
             </p>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/pricing" className="hover:text-white block">Pricing</Link>
-                <p className="text-[11px] text-white/50 mt-0.5">Compare plans and unlock more daily recipes.</p>
               </li>
             </ul>
           </div>
