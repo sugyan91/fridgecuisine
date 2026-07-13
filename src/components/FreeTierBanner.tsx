@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 const DISMISS_KEY = "fridge-banner-dismissed";
 const DISMISS_DAYS = 7;
@@ -8,6 +9,7 @@ type Props = { isPremium: boolean; userId: string | undefined };
 
 export function FreeTierBanner({ isPremium, userId }: Props) {
   const [visible, setVisible] = useState(false);
+  const isAdmin = useIsAdmin(userId);
 
   useEffect(() => {
     if (isPremium) return;
@@ -33,6 +35,7 @@ export function FreeTierBanner({ isPremium, userId }: Props) {
     setVisible(false);
   };
 
+  if (!isAdmin) return null;
   if (isPremium || !visible) return null;
 
   return (
