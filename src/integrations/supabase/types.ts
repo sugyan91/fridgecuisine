@@ -101,6 +101,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage_events: {
+        Row: {
+          cache_hit: boolean
+          created_at: string
+          endpoint: string
+          fingerprint: string | null
+          id: string
+          ip_hash: string | null
+          user_id: string | null
+        }
+        Insert: {
+          cache_hit?: boolean
+          created_at?: string
+          endpoint: string
+          fingerprint?: string | null
+          id?: string
+          ip_hash?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          cache_hit?: boolean
+          created_at?: string
+          endpoint?: string
+          fingerprint?: string | null
+          id?: string
+          ip_hash?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       anonymous_ai_usage: {
         Row: {
           count: number

@@ -684,3 +684,189 @@ export const adminAdjustAnonQuota = createServerFn({ method: "POST" })
     );
     return { updatedFingerprint, updatedIp, ipHash, today };
   });
+
+// ---------------- AI usage dashboard ----------------
+
+const usageQuerySchema = z.object({
+  fromIso: z.string().datetime(),
+  toIso: z.string().datetime(),
+  endpoint: z
+    .enum(["all", "recipes", "dish-image", "ingredient-swap", "dish-helper", "fridge-vision"])
+    .default("all"),
+  bucket: z.enum(["hour", "day"]).default("day"),
+  topLimit: z.number().int().min(1).max(100).default(20),
+});
+
+export type AiUsageDashboard = {
+  totals: {
+    total: number;
+    cacheHits: number;
+    aiCalls: number;
+    signedInEvents: number;
+    anonEvents: number;
+    uniqueUsers: number;
+    uniqueAnon: number;
+  };
+  byEndpoint: Array<{ endpoint: string; total: number; cacheHits: number; aiCalls: number }>;
+  series: Array<{ bucket: string; total: number; cacheHits: number; aiCalls: number }>;
+  topUsers: Array<{
+    userId: string;
+    email: string | null;
+    username: string | null;
+    total: number;
+    aiCalls: number;
+    cacheHits: number;
+    endpoints: Record<string, number>;
+  }>;
+  topAnon: Array<{
+    key: string;
+    kind: "fingerprint" | "ip_hash";
+    total: number;
+    aiCalls: number;
+    cacheHits: number;
+  }>;
+};
+
+export const adminGetAiUsageDashboard = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => usageQuerySchema.parse(i))
+  .handler(async ({ data, context }): Promise<AiUsageDashboard> => {
+    await assertAdmin(context.userId);
+
+    let q = supabaseAdmin
+      .from("ai_usage_events")
+      .select("endpoint, user_id, fingerprint, ip_hash, cache_hit, created_at")
+      .gte("created_at", data.fromIso)
+      .lte("created_at", data.toIso)
+      .order("created_at", { ascending: false })
+      .limit(50000);
+    if (data.endpoint !== "all") q = q.eq("endpoint", data.endpoint);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    const events = rows ?? [];
+
+    const totals = {
+      total: events.length,
+      cacheHits: 0,
+      aiCalls: 0,
+      signedInEvents: 0,
+      anonEvents: 0,
+      uniqueUsers: 0,
+      uniqueAnon: 0,
+    };
+    const userSet = new Set<string>();
+    const anonSet = new Set<string>();
+    const byEndpointMap = new Map<string, { total: number; cacheHits: number; aiCalls: number }>();
+    const seriesMap = new Map<string, { total: number; cacheHits: number; aiCalls: number }>();
+    const userAgg = new Map<
+      string,
+      { total: number; aiCalls: number; cacheHits: number; endpoints: Record<string, number> }
+    >();
+    const anonAgg = new Map<
+      string,
+      { kind: "fingerprint" | "ip_hash"; total: number; aiCalls: number; cacheHits: number }
+    >();
+
+    for (const e of events) {
+      const hit = !!e.cache_hit;
+      if (hit) totals.cacheHits++;
+      else totals.aiCalls++;
+      if (e.user_id) {
+        totals.signedInEvents++;
+        userSet.add(e.user_id);
+      } else {
+        totals.anonEvents++;
+        const k = e.fingerprint || e.ip_hash;
+        if (k) anonSet.add(k);
+      }
+
+      const ep = byEndpointMap.get(e.endpoint) ?? { total: 0, cacheHits: 0, aiCalls: 0 };
+      ep.total++;
+      if (hit) ep.cacheHits++; else ep.aiCalls++;
+      byEndpointMap.set(e.endpoint, ep);
+
+      const d = new Date(e.created_at);
+      const bucketKey =
+        data.bucket === "hour"
+          ? `${d.toISOString().slice(0, 13)}:00`
+          : d.toISOString().slice(0, 10);
+      const sb = seriesMap.get(bucketKey) ?? { total: 0, cacheHits: 0, aiCalls: 0 };
+      sb.total++;
+      if (hit) sb.cacheHits++; else sb.aiCalls++;
+      seriesMap.set(bucketKey, sb);
+
+      if (e.user_id) {
+        const u = userAgg.get(e.user_id) ?? { total: 0, aiCalls: 0, cacheHits: 0, endpoints: {} };
+        u.total++;
+        if (hit) u.cacheHits++; else u.aiCalls++;
+        u.endpoints[e.endpoint] = (u.endpoints[e.endpoint] ?? 0) + 1;
+        userAgg.set(e.user_id, u);
+      } else if (e.fingerprint || e.ip_hash) {
+        const key = e.fingerprint || (e.ip_hash as string);
+        const kind: "fingerprint" | "ip_hash" = e.fingerprint ? "fingerprint" : "ip_hash";
+        const a = anonAgg.get(key) ?? { kind, total: 0, aiCalls: 0, cacheHits: 0 };
+        a.total++;
+        if (hit) a.cacheHits++; else a.aiCalls++;
+        anonAgg.set(key, a);
+      }
+    }
+
+    totals.uniqueUsers = userSet.size;
+    totals.uniqueAnon = anonSet.size;
+
+    const byEndpoint = [...byEndpointMap.entries()]
+      .map(([endpoint, v]) => ({ endpoint, ...v }))
+      .sort((a, b) => b.total - a.total);
+    const series = [...seriesMap.entries()]
+      .map(([bucket, v]) => ({ bucket, ...v }))
+      .sort((a, b) => a.bucket.localeCompare(b.bucket));
+
+    const topUserIds = [...userAgg.entries()]
+      .sort((a, b) => b[1].total - a[1].total)
+      .slice(0, data.topLimit)
+      .map(([id]) => id);
+    let profileMap = new Map<string, { username: string | null; display_name: string | null }>();
+    let emailMap = new Map<string, string | null>();
+    if (topUserIds.length) {
+      const { data: profiles } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, username, display_name")
+        .in("user_id", topUserIds);
+      profileMap = new Map(
+        (profiles ?? []).map((p) => [p.user_id, { username: p.username, display_name: p.display_name }]),
+      );
+      // Fetch emails one by one (Auth Admin API has no batch by ids in current SDK)
+      const emailPairs = await Promise.all(
+        topUserIds.map(async (id) => {
+          try {
+            const { data: u } = await supabaseAdmin.auth.admin.getUserById(id);
+            return [id, u?.user?.email ?? null] as const;
+          } catch {
+            return [id, null] as const;
+          }
+        }),
+      );
+      emailMap = new Map(emailPairs);
+    }
+
+    const topUsers = topUserIds.map((id) => {
+      const agg = userAgg.get(id)!;
+      const prof = profileMap.get(id);
+      return {
+        userId: id,
+        email: emailMap.get(id) ?? null,
+        username: prof?.username ?? null,
+        total: agg.total,
+        aiCalls: agg.aiCalls,
+        cacheHits: agg.cacheHits,
+        endpoints: agg.endpoints,
+      };
+    });
+
+    const topAnon = [...anonAgg.entries()]
+      .sort((a, b) => b[1].total - a[1].total)
+      .slice(0, data.topLimit)
+      .map(([key, v]) => ({ key, ...v }));
+
+    return { totals, byEndpoint, series, topUsers, topAnon };
+  });
