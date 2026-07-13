@@ -37,6 +37,25 @@ export const swapIngredient = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const quota = await checkAiQuota(supabase, userId);
     if (!quota.ok) return { ok: false, error: quota.error };
+
+    const { hashKey, getCached, putCached } = await import("./ai-cache.server");
+    const norm = {
+      recipe: data.recipeTitle.toLowerCase().trim(),
+      cuisine: (data.cuisine ?? "").toLowerCase().trim(),
+      ingredient: data.ingredient.toLowerCase().trim(),
+      pantry: [...data.pantry].map((s) => s.toLowerCase().trim()).sort(),
+      dietary: [...data.dietary].map((s) => s.toLowerCase().trim()).sort(),
+    };
+    const cacheKey = hashKey("ingredient-swap", norm);
+    const cached = await getCached<{ swaps: IngredientSwap[] }>(
+      "ingredient-swap",
+      cacheKey,
+    );
+    if (cached) {
+      await recordAiGeneration(supabase, userId);
+      return { ok: true, swaps: cached.swaps };
+    }
+
     const dietary = data.dietary.length ? data.dietary.join(", ") : "none";
     const pantry = data.pantry.length ? data.pantry.join(", ") : "(none listed)";
 
@@ -58,6 +77,7 @@ Dietary constraints (must respect): ${dietary}`;
         return { ok: false, error: "Couldn't read AI response. Try again." };
       }
       await recordAiGeneration(supabase, userId);
+      await putCached("ingredient-swap", cacheKey, { swaps: parsed.data.swaps }, 30);
       return { ok: true, swaps: parsed.data.swaps };
     } catch (err) {
       console.error("swapIngredient failed", err);
