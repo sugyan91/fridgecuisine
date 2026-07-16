@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Loader2, RefreshCw, TrendingUp, DollarSign, ShoppingBag, AlertCircle, Coffee } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw, TrendingUp, DollarSign, ShoppingBag, AlertCircle, Coffee, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import {
   getMyEarnings, type EarningsDashboard, type EarningsRange,
+  exportMyEarningsCsv,
 } from "@/lib/earnings.functions";
 import { getMyTipsSummary, type ChefTipsSummary } from "@/lib/tips.functions";
 
@@ -37,6 +38,8 @@ function fmtMoney(cents: number, currency: string) {
 function EarningsPage() {
   const fetchEarnings = useServerFn(getMyEarnings);
   const fetchTips = useServerFn(getMyTipsSummary);
+  const fetchCsv = useServerFn(exportMyEarningsCsv);
+  const [exporting, setExporting] = useState(false);
   const [range, setRange] = useState<EarningsRange>("30d");
   const [data, setData] = useState<EarningsDashboard | null>(null);
   const [tips, setTips] = useState<ChefTipsSummary | null>(null);
@@ -100,6 +103,36 @@ function EarningsPage() {
             </Button>
             <Button asChild variant="outline">
               <Link to="/analytics">Analytics</Link>
+            </Button>
+            <Button
+              variant="outline"
+              disabled={exporting || !data?.isChef}
+              onClick={async () => {
+                setExporting(true);
+                try {
+                  const rows = await fetchCsv();
+                  const header = ["purchased_at","status","type","title","gross","platform_fee","net","currency"];
+                  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+                  const body = rows.map((r) => [
+                    r.purchased_at, r.status, r.type, r.title,
+                    (r.gross_cents / 100).toFixed(2),
+                    (r.platform_fee_cents / 100).toFixed(2),
+                    (r.chef_net_cents / 100).toFixed(2),
+                    r.currency,
+                  ].map((x) => esc(String(x))).join(",")).join("\n");
+                  const csv = header.join(",") + "\n" + body;
+                  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `earnings-${new Date().toISOString().slice(0,10)}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } finally { setExporting(false); }
+              }}
+            >
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+              CSV
             </Button>
           </div>
         </header>
