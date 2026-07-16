@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -37,6 +38,8 @@ import { Route as AuthenticatedCookbooksRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCookbookRouteImport } from './routes/_authenticated/cookbook'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ShopCookbookCookbookIdRouteImport } from './routes/shop.cookbook.$cookbookId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
@@ -44,6 +47,8 @@ import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authenticated/admin.usage'
 import { Route as AuthenticatedAdminQuotaRouteImport } from './routes/_authenticated/admin.quota'
 import { Route as AuthenticatedAdminAbuseRouteImport } from './routes/_authenticated/admin.abuse'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -69,6 +74,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -190,6 +200,18 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ShopCookbookCookbookIdRoute = ShopCookbookCookbookIdRouteImport.update({
   id: '/shop/cookbook/$cookbookId',
   path: '/shop/cookbook/$cookbookId',
@@ -225,6 +247,17 @@ const AuthenticatedAdminAbuseRoute = AuthenticatedAdminAbuseRouteImport.update({
   id: '/admin/abuse',
   path: '/admin/abuse',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
@@ -267,10 +300,13 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
@@ -289,6 +325,8 @@ export interface FileRoutesByFullPath {
   '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/abuse': typeof AuthenticatedAdminAbuseRoute
   '/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
@@ -309,10 +347,13 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/cookbook': typeof AuthenticatedCookbookRoute
@@ -331,6 +372,8 @@ export interface FileRoutesByTo {
   '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community': typeof CommunityIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/abuse': typeof AuthenticatedAdminAbuseRoute
   '/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
@@ -353,10 +396,13 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/cookbook': typeof AuthenticatedCookbookRoute
@@ -375,6 +421,8 @@ export interface FileRoutesById {
   '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/abuse': typeof AuthenticatedAdminAbuseRoute
   '/_authenticated/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/_authenticated/admin/usage': typeof AuthenticatedAdminUsageRoute
@@ -397,10 +445,13 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/login'
+    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/analytics'
     | '/cookbook'
@@ -419,6 +470,8 @@ export interface FileRouteTypes {
     | '/shop/$recipeId'
     | '/community/'
     | '/shop/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/abuse'
     | '/admin/quota'
     | '/admin/usage'
@@ -439,10 +492,13 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/login'
+    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/analytics'
     | '/cookbook'
@@ -461,6 +517,8 @@ export interface FileRouteTypes {
     | '/shop/$recipeId'
     | '/community'
     | '/shop'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/abuse'
     | '/admin/quota'
     | '/admin/usage'
@@ -482,10 +540,13 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/login'
+    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/account'
     | '/_authenticated/analytics'
     | '/_authenticated/cookbook'
@@ -504,6 +565,8 @@ export interface FileRouteTypes {
     | '/shop/$recipeId'
     | '/community/'
     | '/shop/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/abuse'
     | '/_authenticated/admin/quota'
     | '/_authenticated/admin/usage'
@@ -526,10 +589,13 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   ChefUsernameRoute: typeof ChefUsernameRoute
@@ -539,6 +605,8 @@ export interface RootRouteChildren {
   ShopRecipeIdRoute: typeof ShopRecipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ShopCookbookCookbookIdRoute: typeof ShopCookbookCookbookIdRoute
@@ -578,6 +646,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -748,6 +823,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop/cookbook/$cookbookId': {
       id: '/shop/cookbook/$cookbookId'
       path: '/shop/cookbook/$cookbookId'
@@ -796,6 +885,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/abuse'
       preLoaderRoute: typeof AuthenticatedAdminAbuseRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
@@ -885,10 +988,14 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   ChefUsernameRoute: ChefUsernameRoute,
@@ -898,6 +1005,8 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRecipeIdRoute: ShopRecipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ShopCookbookCookbookIdRoute: ShopCookbookCookbookIdRoute,
