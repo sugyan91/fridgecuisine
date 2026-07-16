@@ -142,7 +142,11 @@ function Index() {
   const saveRecipeRpc = useServerFn(saveRecipeFn);
   const unsaveRecipeRpc = useServerFn(unsaveRecipeFn);
   const setCookedRpc = useServerFn(setCookedStatus);
+  const fetchPrefsRpc = useServerFn(getUserPreferences);
+  const fetchPantryRpc = useServerFn(listPantry);
   const { language } = useLanguage();
+
+  const [profileExclude, setProfileExclude] = useState<string[]>([]);
 
   const [dishQuery, setDishQuery] = useState("");
   const [dishLoading, setDishLoading] = useState(false);
