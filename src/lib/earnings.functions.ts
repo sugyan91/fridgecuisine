@@ -47,6 +47,17 @@ export type EarningsRecentSale = {
   cookbook_title: string | null;
 };
 
+export type EarningsCsvRow = {
+  purchased_at: string;
+  status: string;
+  type: "recipe" | "cookbook" | "other";
+  title: string;
+  gross_cents: number;
+  platform_fee_cents: number;
+  chef_net_cents: number;
+  currency: string;
+};
+
 export type EarningsDashboard = {
   currency: string;
   totals: EarningsTotals;
