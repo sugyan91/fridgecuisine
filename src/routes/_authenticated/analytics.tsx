@@ -286,3 +286,13 @@ function LegendDot({ color, label }: { color: string; label: string }) {
     </span>
   );
 }
+
+function FunnelStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-background/50 p-3">
+      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="mt-1 text-xl font-black">{value}</p>
+      {sub && <p className="text-[11px] text-muted-foreground mt-1">{sub}</p>}
+    </div>
+  );
+}
