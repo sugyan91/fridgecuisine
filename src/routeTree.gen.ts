@@ -43,6 +43,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as ShopCookbookCookbookIdRouteImport } from './routes/shop.cookbook.$cookbookId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
+import { Route as AuthenticatedCookIdRouteImport } from './routes/_authenticated/cook.$id'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
 import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authenticated/admin.usage'
 import { Route as AuthenticatedAdminQuotaRouteImport } from './routes/_authenticated/admin.quota'
@@ -227,6 +228,11 @@ const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
   path: '/api/public/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCookIdRoute = AuthenticatedCookIdRouteImport.update({
+  id: '/cook/$id',
+  path: '/cook/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedCommunityNewRoute =
   AuthenticatedCommunityNewRouteImport.update({
     id: '/community/new',
@@ -331,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
+  '/cook/$id': typeof AuthenticatedCookIdRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
@@ -378,6 +385,7 @@ export interface FileRoutesByTo {
   '/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
+  '/cook/$id': typeof AuthenticatedCookIdRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
@@ -427,6 +435,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/_authenticated/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
+  '/_authenticated/cook/$id': typeof AuthenticatedCookIdRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
@@ -476,6 +485,7 @@ export interface FileRouteTypes {
     | '/admin/quota'
     | '/admin/usage'
     | '/community/new'
+    | '/cook/$id'
     | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/shop/cookbook/$cookbookId'
@@ -523,6 +533,7 @@ export interface FileRouteTypes {
     | '/admin/quota'
     | '/admin/usage'
     | '/community/new'
+    | '/cook/$id'
     | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/shop/cookbook/$cookbookId'
@@ -571,6 +582,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/quota'
     | '/_authenticated/admin/usage'
     | '/_authenticated/community/new'
+    | '/_authenticated/cook/$id'
     | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/shop/cookbook/$cookbookId'
@@ -858,6 +870,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/cook/$id': {
+      id: '/_authenticated/cook/$id'
+      path: '/cook/$id'
+      fullPath: '/cook/$id'
+      preLoaderRoute: typeof AuthenticatedCookIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/community/new': {
       id: '/_authenticated/community/new'
       path: '/community/new'
@@ -959,6 +978,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminQuotaRoute: typeof AuthenticatedAdminQuotaRoute
   AuthenticatedAdminUsageRoute: typeof AuthenticatedAdminUsageRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
+  AuthenticatedCookIdRoute: typeof AuthenticatedCookIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -975,6 +995,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminQuotaRoute: AuthenticatedAdminQuotaRoute,
   AuthenticatedAdminUsageRoute: AuthenticatedAdminUsageRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
+  AuthenticatedCookIdRoute: AuthenticatedCookIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
