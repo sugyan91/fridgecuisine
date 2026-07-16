@@ -5,6 +5,7 @@ import { getChefStorefront, type ChefStorefront } from "@/lib/chef-storefront.fu
 import { recordStorefrontView } from "@/lib/storefront-analytics.functions";
 import { SafeImage } from "@/components/ui/safe-image";
 import { TipChefDialog } from "@/components/tips/TipChefDialog";
+import { FollowButton } from "@/components/chefs/FollowButton";
 
 export const Route = createFileRoute("/chef/$username")({
   loader: async ({ params }) => {
@@ -111,6 +112,8 @@ function ChefStorefrontPage() {
                 <Stat icon={<Heart className="size-4" />} label="Total likes" value={stats.totalLikes} />
               </div>
               <div className="mt-4">
+                <div className="flex flex-wrap items-center gap-2">
+                <FollowButton username={chef.username} />
                 <button
                   type="button"
                   onClick={() => setTipOpen(true)}
@@ -118,6 +121,7 @@ function ChefStorefrontPage() {
                 >
                   <Coffee className="size-4" /> Send a tip
                 </button>
+                </div>
               </div>
             </div>
           </div>
