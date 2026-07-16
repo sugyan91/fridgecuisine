@@ -325,13 +325,17 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
     // window if buyer abandons — acceptable trade-off vs. adding a webhook
     // hook. Max-uses is enforced above with room to spare.
     if (appliedPromoId) {
-      await supabaseAdmin.rpc("noop_increment_promo", { _id: appliedPromoId }).catch(() => {});
-      await supabaseAdmin
+      const { data: current } = await supabaseAdmin
         .from("promo_codes")
-        .update({ uses_count: (await supabaseAdmin
-          .from("promo_codes").select("uses_count").eq("id", appliedPromoId).maybeSingle()
-        ).data?.uses_count ?? 0 })
-        .eq("id", appliedPromoId); // no-op fallback to keep types happy
+        .select("uses_count")
+        .eq("id", appliedPromoId)
+        .maybeSingle();
+      if (current) {
+        await supabaseAdmin
+          .from("promo_codes")
+          .update({ uses_count: (current.uses_count ?? 0) + 1 })
+          .eq("id", appliedPromoId);
+      }
     }
 
     return { clientSecret: session.client_secret ?? "", alreadyPurchased: false as const };
