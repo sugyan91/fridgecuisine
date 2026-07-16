@@ -150,11 +150,16 @@ function RecipeDetail() {
 
   const fetchClientSecret = async (): Promise<string> => {
     const returnUrl = `${window.location.origin}/checkout/return?type=recipe&recipe_id=${recipeId}&session_id={CHECKOUT_SESSION_ID}`;
+    const promoCode =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("promo") ?? undefined
+        : undefined;
     const res = await startCheckout({
       data: {
         recipeId: recipeId,
         returnUrl,
         environment: getStripeEnvironment(),
+        ...(promoCode && { promoCode }),
       },
     });
     if (res.alreadyPurchased) {
