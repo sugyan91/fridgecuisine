@@ -231,3 +231,48 @@ export const getMyEarnings = createServerFn({ method: "POST" })
       isChef,
     };
   });
+
+/**
+ * Export all of a chef's sales (paid + refunded) as flat rows for CSV
+ * download. Includes recipe / cookbook titles resolved via admin client.
+ */
+export const exportMyEarningsCsv = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<EarningsCsvRow[]> => {
+    const { supabase, userId } = context;
+    const { data: rows, error } = await supabase
+      .from("recipe_purchases")
+      .select("paid_recipe_id, cookbook_id, gross_cents, platform_fee_cents, chef_net_cents, currency, status, purchased_at, created_at")
+      .eq("chef_user_id", userId)
+      .order("purchased_at", { ascending: false, nullsFirst: false })
+      .limit(10000);
+    if (error) throw new Error(error.message);
+    const all = rows ?? [];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const recipeIds = Array.from(new Set(all.map((r) => r.paid_recipe_id).filter(Boolean) as string[]));
+    const cookbookIds = Array.from(new Set(all.map((r) => r.cookbook_id).filter(Boolean) as string[]));
+    const rTitles = new Map<string, string>();
+    const cTitles = new Map<string, string>();
+    if (recipeIds.length) {
+      const { data } = await supabaseAdmin.from("paid_recipes").select("id, title").in("id", recipeIds);
+      (data ?? []).forEach((r) => rTitles.set(r.id, r.title as string));
+    }
+    if (cookbookIds.length) {
+      const { data } = await supabaseAdmin.from("cookbooks").select("id, title").in("id", cookbookIds);
+      (data ?? []).forEach((c) => cTitles.set(c.id, c.title as string));
+    }
+    return all.map((r) => ({
+      purchased_at: r.purchased_at ?? r.created_at ?? "",
+      status: r.status ?? "",
+      type: r.paid_recipe_id ? "recipe" : r.cookbook_id ? "cookbook" : "other",
+      title: r.paid_recipe_id
+        ? rTitles.get(r.paid_recipe_id) ?? ""
+        : r.cookbook_id
+        ? cTitles.get(r.cookbook_id) ?? ""
+        : "",
+      gross_cents: r.gross_cents ?? 0,
+      platform_fee_cents: r.platform_fee_cents ?? 0,
+      chef_net_cents: r.chef_net_cents ?? 0,
+      currency: (r.currency ?? "usd").toLowerCase(),
+    }));
+  });
