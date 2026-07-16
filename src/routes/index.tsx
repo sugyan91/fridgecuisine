@@ -1265,6 +1265,49 @@ function Index() {
                 ingredients={ingredients}
                 onChange={setIngredients}
               />
+              {email && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const { items } = await fetchPantryRpc();
+                        if (items.length === 0) {
+                          toast("Your pantry is empty. Add items in Pantry.");
+                          return;
+                        }
+                        const existing = new Set(ingredients.map((i) => i.toLowerCase()));
+                        const merged = [...ingredients];
+                        for (const it of items) {
+                          if (!existing.has(it.name.toLowerCase()) && merged.length < 30) {
+                            merged.push(it.name);
+                            existing.add(it.name.toLowerCase());
+                          }
+                        }
+                        setIngredients(merged);
+                        toast.success(`Loaded ${items.length} pantry item${items.length === 1 ? "" : "s"}.`);
+                      } catch {
+                        toast.error("Couldn't load pantry.");
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 font-medium hover:bg-secondary"
+                  >
+                    Use my pantry
+                  </button>
+                  <Link
+                    to="/pantry"
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 font-medium hover:bg-secondary"
+                  >
+                    Manage pantry
+                  </Link>
+                  <Link
+                    to="/preferences"
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 font-medium hover:bg-secondary"
+                  >
+                    Dietary profile
+                  </Link>
+                </div>
+              )}
 
               <div className="my-5 border-t border-border" />
 
