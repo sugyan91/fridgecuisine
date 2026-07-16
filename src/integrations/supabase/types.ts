@@ -742,6 +742,51 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_codes: {
+        Row: {
+          active: boolean
+          chef_user_id: string
+          code: string
+          created_at: string
+          currency: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          updated_at: string
+          uses_count: number
+        }
+        Insert: {
+          active?: boolean
+          chef_user_id: string
+          code: string
+          created_at?: string
+          currency?: string
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          updated_at?: string
+          uses_count?: number
+        }
+        Update: {
+          active?: boolean
+          chef_user_id?: string
+          code?: string
+          created_at?: string
+          currency?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          updated_at?: string
+          uses_count?: number
+        }
+        Relationships: []
+      }
       recipe_collections: {
         Row: {
           color: string | null
