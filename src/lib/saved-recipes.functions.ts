@@ -87,6 +87,21 @@ export const listSavedRecipes = createServerFn({ method: "GET" })
     return { rows: (data ?? []) as unknown as SavedRecipeRow[] };
   });
 
+export const getSavedRecipe = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ row: SavedRecipeRow | null }> => {
+    const { supabase, userId } = context;
+    const { data: row, error } = await supabase
+      .from("saved_recipes")
+      .select("id, title, cuisine, cook_time_minutes, recipe:recipe, saved_at, cooked_at")
+      .eq("user_id", userId)
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { row: (row as unknown as SavedRecipeRow | null) ?? null };
+  });
+
 export const saveRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ recipe: recipeSchema }).parse(input))

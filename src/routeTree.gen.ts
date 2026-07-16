@@ -32,6 +32,7 @@ import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
 import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
+import { Route as AuthenticatedPlanRouteImport } from './routes/_authenticated/plan'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
 import { Route as AuthenticatedEarningsRouteImport } from './routes/_authenticated/earnings'
 import { Route as AuthenticatedCookbooksRouteImport } from './routes/_authenticated/cookbooks'
@@ -43,6 +44,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as ShopCookbookCookbookIdRouteImport } from './routes/shop.cookbook.$cookbookId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
+import { Route as AuthenticatedCookIdRouteImport } from './routes/_authenticated/cook.$id'
 import { Route as AuthenticatedCommunityNewRouteImport } from './routes/_authenticated/community.new'
 import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authenticated/admin.usage'
 import { Route as AuthenticatedAdminQuotaRouteImport } from './routes/_authenticated/admin.quota'
@@ -170,6 +172,11 @@ const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPlanRoute = AuthenticatedPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMyRecipesRoute = AuthenticatedMyRecipesRouteImport.update({
   id: '/my-recipes',
   path: '/my-recipes',
@@ -226,6 +233,11 @@ const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
   id: '/api/public/contact',
   path: '/api/public/contact',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCookIdRoute = AuthenticatedCookIdRouteImport.update({
+  id: '/cook/$id',
+  path: '/cook/$id',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedCommunityNewRoute =
   AuthenticatedCommunityNewRouteImport.update({
@@ -313,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/cookbooks': typeof AuthenticatedCookbooksRoute
   '/earnings': typeof AuthenticatedEarningsRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/plan': typeof AuthenticatedPlanRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
@@ -331,6 +344,7 @@ export interface FileRoutesByFullPath {
   '/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
+  '/cook/$id': typeof AuthenticatedCookIdRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
@@ -360,6 +374,7 @@ export interface FileRoutesByTo {
   '/cookbooks': typeof AuthenticatedCookbooksRoute
   '/earnings': typeof AuthenticatedEarningsRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/plan': typeof AuthenticatedPlanRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
@@ -378,6 +393,7 @@ export interface FileRoutesByTo {
   '/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/community/new': typeof AuthenticatedCommunityNewRoute
+  '/cook/$id': typeof AuthenticatedCookIdRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
@@ -409,6 +425,7 @@ export interface FileRoutesById {
   '/_authenticated/cookbooks': typeof AuthenticatedCookbooksRoute
   '/_authenticated/earnings': typeof AuthenticatedEarningsRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/_authenticated/plan': typeof AuthenticatedPlanRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
@@ -427,6 +444,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/quota': typeof AuthenticatedAdminQuotaRoute
   '/_authenticated/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/_authenticated/community/new': typeof AuthenticatedCommunityNewRoute
+  '/_authenticated/cook/$id': typeof AuthenticatedCookIdRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/shop/cookbook/$cookbookId': typeof ShopCookbookCookbookIdRoute
@@ -458,6 +476,7 @@ export interface FileRouteTypes {
     | '/cookbooks'
     | '/earnings'
     | '/my-recipes'
+    | '/plan'
     | '/pricing'
     | '/sell'
     | '/usage'
@@ -476,6 +495,7 @@ export interface FileRouteTypes {
     | '/admin/quota'
     | '/admin/usage'
     | '/community/new'
+    | '/cook/$id'
     | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/shop/cookbook/$cookbookId'
@@ -505,6 +525,7 @@ export interface FileRouteTypes {
     | '/cookbooks'
     | '/earnings'
     | '/my-recipes'
+    | '/plan'
     | '/pricing'
     | '/sell'
     | '/usage'
@@ -523,6 +544,7 @@ export interface FileRouteTypes {
     | '/admin/quota'
     | '/admin/usage'
     | '/community/new'
+    | '/cook/$id'
     | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/shop/cookbook/$cookbookId'
@@ -553,6 +575,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cookbooks'
     | '/_authenticated/earnings'
     | '/_authenticated/my-recipes'
+    | '/_authenticated/plan'
     | '/_authenticated/pricing'
     | '/_authenticated/sell'
     | '/_authenticated/usage'
@@ -571,6 +594,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/quota'
     | '/_authenticated/admin/usage'
     | '/_authenticated/community/new'
+    | '/_authenticated/cook/$id'
     | '/api/public/contact'
     | '/lovable/email/suppression'
     | '/shop/cookbook/$cookbookId'
@@ -781,6 +805,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPricingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/plan': {
+      id: '/_authenticated/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof AuthenticatedPlanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/my-recipes': {
       id: '/_authenticated/my-recipes'
       path: '/my-recipes'
@@ -857,6 +888,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/contact'
       preLoaderRoute: typeof ApiPublicContactRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/cook/$id': {
+      id: '/_authenticated/cook/$id'
+      path: '/cook/$id'
+      fullPath: '/cook/$id'
+      preLoaderRoute: typeof AuthenticatedCookIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/community/new': {
       id: '/_authenticated/community/new'
@@ -952,6 +990,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCookbooksRoute: typeof AuthenticatedCookbooksRoute
   AuthenticatedEarningsRoute: typeof AuthenticatedEarningsRoute
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
+  AuthenticatedPlanRoute: typeof AuthenticatedPlanRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
@@ -959,6 +998,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminQuotaRoute: typeof AuthenticatedAdminQuotaRoute
   AuthenticatedAdminUsageRoute: typeof AuthenticatedAdminUsageRoute
   AuthenticatedCommunityNewRoute: typeof AuthenticatedCommunityNewRoute
+  AuthenticatedCookIdRoute: typeof AuthenticatedCookIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -968,6 +1008,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCookbooksRoute: AuthenticatedCookbooksRoute,
   AuthenticatedEarningsRoute: AuthenticatedEarningsRoute,
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
+  AuthenticatedPlanRoute: AuthenticatedPlanRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedUsageRoute: AuthenticatedUsageRoute,
@@ -975,6 +1016,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminQuotaRoute: AuthenticatedAdminQuotaRoute,
   AuthenticatedAdminUsageRoute: AuthenticatedAdminUsageRoute,
   AuthenticatedCommunityNewRoute: AuthenticatedCommunityNewRoute,
+  AuthenticatedCookIdRoute: AuthenticatedCookIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
