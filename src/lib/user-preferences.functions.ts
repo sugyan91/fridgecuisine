@@ -39,16 +39,9 @@ export const saveUserPreferences = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const payload: Record<string, unknown> = { user_id: userId };
-    if (data.custom_dietary !== undefined) payload.custom_dietary = data.custom_dietary;
-    if (data.custom_cuisines !== undefined) payload.custom_cuisines = data.custom_cuisines;
-    if (data.allergies !== undefined) payload.allergies = data.allergies;
-    if (data.disliked_ingredients !== undefined) payload.disliked_ingredients = data.disliked_ingredients;
-    if (data.default_servings !== undefined) payload.default_servings = data.default_servings;
-    if (data.spice_level !== undefined) payload.spice_level = data.spice_level;
     const { error } = await supabase
       .from("user_preferences")
-      .upsert(payload, { onConflict: "user_id" });
+      .upsert({ user_id: userId, ...data }, { onConflict: "user_id" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
