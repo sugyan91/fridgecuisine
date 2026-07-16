@@ -661,6 +661,36 @@ export type Database = {
         }
         Relationships: []
       }
+      pantry_items: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          name: string
+          quantity: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          name: string
+          quantity?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          name?: string
+          quantity?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1067,26 +1097,38 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          allergies: string[]
           created_at: string
           custom_cuisines: string[]
           custom_dietary: string[]
+          default_servings: number | null
+          disliked_ingredients: string[]
           id: string
+          spice_level: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          allergies?: string[]
           created_at?: string
           custom_cuisines?: string[]
           custom_dietary?: string[]
+          default_servings?: number | null
+          disliked_ingredients?: string[]
           id?: string
+          spice_level?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          allergies?: string[]
           created_at?: string
           custom_cuisines?: string[]
           custom_dietary?: string[]
+          default_servings?: number | null
+          disliked_ingredients?: string[]
           id?: string
+          spice_level?: string | null
           updated_at?: string
           user_id?: string
         }

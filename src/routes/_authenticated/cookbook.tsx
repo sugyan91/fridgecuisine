@@ -82,12 +82,26 @@ function CookbookPage() {
           <Link to="/" className="font-black text-xs uppercase opacity-60">
             ← Home
           </Link>
-          <Link
-            to="/plan"
-            className="font-black text-xs uppercase bg-turmeric border-2 border-border rounded-full px-3 py-1.5 shadow-[3px_3px_0px_0px_var(--border)]"
-          >
-            Plan a week →
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/pantry"
+              className="font-black text-xs uppercase bg-white border-2 border-border rounded-full px-3 py-1.5 shadow-[3px_3px_0px_0px_var(--border)]"
+            >
+              Pantry
+            </Link>
+            <Link
+              to="/preferences"
+              className="font-black text-xs uppercase bg-white border-2 border-border rounded-full px-3 py-1.5 shadow-[3px_3px_0px_0px_var(--border)]"
+            >
+              Diet
+            </Link>
+            <Link
+              to="/plan"
+              className="font-black text-xs uppercase bg-turmeric border-2 border-border rounded-full px-3 py-1.5 shadow-[3px_3px_0px_0px_var(--border)]"
+            >
+              Plan →
+            </Link>
+          </div>
         </div>
         <h1 className="font-display text-4xl md:text-5xl text-paprika mb-2 uppercase">
           My Cookbook

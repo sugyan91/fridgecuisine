@@ -30,6 +30,8 @@ import {
   type SavedRecipeRow,
 } from "@/lib/saved-recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
+import { getUserPreferences } from "@/lib/user-preferences.functions";
+import { listPantry } from "@/lib/pantry.functions";
 
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
@@ -140,7 +142,11 @@ function Index() {
   const saveRecipeRpc = useServerFn(saveRecipeFn);
   const unsaveRecipeRpc = useServerFn(unsaveRecipeFn);
   const setCookedRpc = useServerFn(setCookedStatus);
+  const fetchPrefsRpc = useServerFn(getUserPreferences);
+  const fetchPantryRpc = useServerFn(listPantry);
   const { language } = useLanguage();
+
+  const [profileExclude, setProfileExclude] = useState<string[]>([]);
 
   const [dishQuery, setDishQuery] = useState("");
   const [dishLoading, setDishLoading] = useState(false);
@@ -241,6 +247,27 @@ function Index() {
     });
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  // Auto-apply saved dietary profile whenever the user is signed in.
+  useEffect(() => {
+    if (!userId) {
+      setProfileExclude([]);
+      return;
+    }
+    fetchPrefsRpc()
+      .then((p) => {
+        setDietary((prev) => {
+          if (prev.length > 0) return prev;
+          const merged = [...(p.custom_dietary ?? []), ...(p.allergies ?? [])];
+          return Array.from(new Set(merged));
+        });
+        setProfileExclude([
+          ...(p.disliked_ingredients ?? []),
+          ...(p.allergies ?? []),
+        ]);
+      })
+      .catch(() => {});
+  }, [userId, fetchPrefsRpc]);
 
   // Press "/" anywhere on the page to jump focus to the hero dish search.
   useEffect(() => {
@@ -351,7 +378,7 @@ function Index() {
     });
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine, exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
+        data: { ingredients, dietary, cuisine, exclude: profileExclude, kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
@@ -386,7 +413,7 @@ function Index() {
     setRecipes(null);
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
+        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: profileExclude, kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
@@ -420,7 +447,7 @@ function Index() {
           ingredients,
           dietary,
           cuisine,
-          exclude: recipes.map((r) => r.title),
+          exclude: [...recipes.map((r) => r.title), ...profileExclude],
           kidFriendly,
           includeNutrition: showNutrition,
           language: language.name,
@@ -1238,6 +1265,49 @@ function Index() {
                 ingredients={ingredients}
                 onChange={setIngredients}
               />
+              {email && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const { items } = await fetchPantryRpc();
+                        if (items.length === 0) {
+                          toast("Your pantry is empty. Add items in Pantry.");
+                          return;
+                        }
+                        const existing = new Set(ingredients.map((i) => i.toLowerCase()));
+                        const merged = [...ingredients];
+                        for (const it of items) {
+                          if (!existing.has(it.name.toLowerCase()) && merged.length < 30) {
+                            merged.push(it.name);
+                            existing.add(it.name.toLowerCase());
+                          }
+                        }
+                        setIngredients(merged);
+                        toast.success(`Loaded ${items.length} pantry item${items.length === 1 ? "" : "s"}.`);
+                      } catch {
+                        toast.error("Couldn't load pantry.");
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 font-medium hover:bg-secondary"
+                  >
+                    Use my pantry
+                  </button>
+                  <Link
+                    to="/pantry"
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 font-medium hover:bg-secondary"
+                  >
+                    Manage pantry
+                  </Link>
+                  <Link
+                    to="/preferences"
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 font-medium hover:bg-secondary"
+                  >
+                    Dietary profile
+                  </Link>
+                </div>
+              )}
 
               <div className="my-5 border-t border-border" />
 
