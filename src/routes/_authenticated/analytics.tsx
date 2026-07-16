@@ -155,6 +155,31 @@ function AnalyticsPage() {
           </div>
         </section>
 
+        {/* Conversion funnel */}
+        {data?.isChef && (
+          <section className="mt-6">
+            <h2 className="text-xl font-bold mb-3">Conversion funnel</h2>
+            <div className="rounded-2xl border-2 border-border bg-card p-4">
+              {(() => {
+                const views = data.totals.views || 0;
+                const paidViews = (data.totals.recipe_views || 0) + (data.totals.cookbook_views || 0);
+                const sales = data.totals.sales_count || 0;
+                const convOverall = views ? (sales / views) * 100 : 0;
+                const convPaid = paidViews ? (sales / paidViews) * 100 : 0;
+                const avgOrder = sales ? (data.totals.sales_gross_cents || 0) / sales : 0;
+                return (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <FunnelStat label="All views" value={views.toLocaleString()} />
+                    <FunnelStat label="Product views" value={paidViews.toLocaleString()} sub={`${views ? Math.round((paidViews / views) * 100) : 0}% of all`} />
+                    <FunnelStat label="Sales" value={sales.toLocaleString()} sub={`${convPaid.toFixed(1)}% of product views`} />
+                    <FunnelStat label="Avg order" value={fmtMoney(avgOrder, currency)} sub={`Overall conv ${convOverall.toFixed(2)}%`} />
+                  </div>
+                );
+              })()}
+            </div>
+          </section>
+        )}
+
         {/* Series chart */}
         <section className="mt-10">
           <div className="flex items-center justify-between mb-3">
