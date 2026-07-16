@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "sdk_version": "0.22.2",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://efauycpebomagrmhkyxd.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "fridgecuisine-mcp",
+      "version": "0.1.0",
+      "title": "FridgeCuisine"
+    },
+    "tools": [
+      {
+        "name": "list_saved_recipes",
+        "title": "List saved recipes",
+        "description": "Return the signed-in FridgeCuisine user's saved recipes (title, cuisine, cook time, saved date).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 20,
+              "description": "Max recipes to return.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_community_recipes",
+        "title": "Search community recipes",
+        "description": "Search FridgeCuisine's published community recipes by title, cuisine, or city.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Text to match in the title.",
+              "type": "string",
+              "maxLength": 80
+            },
+            "cuisine": {
+              "description": "Filter by cuisine name.",
+              "type": "string",
+              "maxLength": 80
+            },
+            "city": {
+              "description": "Filter by city (substring).",
+              "type": "string",
+              "maxLength": 80
+            },
+            "limit": {
+              "default": 20,
+              "description": "Max recipes to return.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_profile",
+        "title": "Get my FridgeCuisine profile",
+        "description": "Return the signed-in FridgeCuisine user's profile (display name, username, bio) and account email.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
