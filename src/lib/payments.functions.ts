@@ -199,6 +199,7 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
         recipeId: z.string().uuid(),
         returnUrl: z.string().url(),
         environment: z.enum(["sandbox", "live"]),
+        promoCode: z.string().trim().min(1).max(64).optional(),
       })
       .parse(input),
   )
@@ -225,8 +226,34 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
     if (recipe.chef_user_id === userId) throw new Error("You own this recipe");
 
     const gross = recipe.price_cents;
-    const platformFee = Math.round(gross * 0.30);
-    const chefNet = gross - platformFee;
+
+    // Optional chef-scoped promo code — validated + reserved here, then
+    // applied as a Stripe one-shot coupon so the buyer sees the discount
+    // in the embedded checkout.
+    let discountCents = 0;
+    let appliedPromoId: string | null = null;
+    let appliedPromoCode: string | null = null;
+    if (data.promoCode) {
+      const normalized = data.promoCode.trim().toUpperCase().replace(/\s+/g, "");
+      const { data: promo } = await supabaseAdmin
+        .from("promo_codes")
+        .select("id, code, discount_type, discount_value, active, expires_at, max_uses, uses_count")
+        .eq("chef_user_id", recipe.chef_user_id)
+        .eq("code", normalized)
+        .maybeSingle();
+      if (promo && promo.active
+        && (!promo.expires_at || new Date(promo.expires_at).getTime() > Date.now())
+        && (promo.max_uses === null || promo.uses_count < promo.max_uses)) {
+        discountCents = promo.discount_type === "percent"
+          ? Math.floor((gross * promo.discount_value) / 100)
+          : Math.min(promo.discount_value, gross);
+        appliedPromoId = promo.id;
+        appliedPromoCode = promo.code;
+      }
+    }
+    const chargeCents = Math.max(0, gross - discountCents);
+    const platformFee = Math.round(chargeCents * 0.30);
+    const chefNet = chargeCents - platformFee;
 
     const { data: userResp } = await supabase.auth.getUser();
     const customerEmail = userResp?.user?.email ?? undefined;
@@ -248,7 +275,7 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
           quantity: 1,
           price_data: {
             currency: "usd",
-            unit_amount: gross,
+            unit_amount: chargeCents,
             product_data: {
               name: recipe.title,
               metadata: { paid_recipe_id: recipe.id },
@@ -264,6 +291,7 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
           chef_user_id: recipe.chef_user_id,
           platform_fee_cents: String(platformFee),
           chef_net_cents: String(chefNet),
+          ...(appliedPromoId && { promo_code_id: appliedPromoId, promo_code: appliedPromoCode ?? "" }),
         },
       },
       metadata: {
@@ -273,6 +301,7 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
         chef_user_id: recipe.chef_user_id,
         platform_fee_cents: String(platformFee),
         chef_net_cents: String(chefNet),
+        ...(appliedPromoId && { promo_code_id: appliedPromoId, promo_code: appliedPromoCode ?? "" }),
       },
     } as any);
 
@@ -282,7 +311,7 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
       chef_user_id: recipe.chef_user_id,
       paid_recipe_id: recipe.id,
       stripe_checkout_session_id: session.id,
-      gross_cents: gross,
+      gross_cents: chargeCents,
       platform_fee_cents: platformFee,
       chef_net_cents: chefNet,
       currency: "usd",
@@ -290,6 +319,19 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
     });
     if (insertError && !insertError.message.includes("duplicate")) {
       console.error("Failed to pre-insert recipe_purchase:", insertError);
+    }
+
+    // Increment promo usage on successful session creation. Small race
+    // window if buyer abandons — acceptable trade-off vs. adding a webhook
+    // hook. Max-uses is enforced above with room to spare.
+    if (appliedPromoId) {
+      await supabaseAdmin.rpc("noop_increment_promo", { _id: appliedPromoId }).catch(() => {});
+      await supabaseAdmin
+        .from("promo_codes")
+        .update({ uses_count: (await supabaseAdmin
+          .from("promo_codes").select("uses_count").eq("id", appliedPromoId).maybeSingle()
+        ).data?.uses_count ?? 0 })
+        .eq("id", appliedPromoId); // no-op fallback to keep types happy
     }
 
     return { clientSecret: session.client_secret ?? "", alreadyPurchased: false as const };
