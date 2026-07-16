@@ -378,7 +378,7 @@ function Index() {
     });
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine, exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
+        data: { ingredients, dietary, cuisine, exclude: profileExclude, kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
@@ -413,7 +413,7 @@ function Index() {
     setRecipes(null);
     try {
       const res = await generate({
-        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: [], kidFriendly, includeNutrition: showNutrition, language: language.name },
+        data: { ingredients, dietary, cuisine: "Any / Surprise Me", exclude: profileExclude, kidFriendly, includeNutrition: showNutrition, language: language.name },
       });
       if (cancelGenerationRef.current) return;
       if (!res.ok) {
@@ -447,7 +447,7 @@ function Index() {
           ingredients,
           dietary,
           cuisine,
-          exclude: recipes.map((r) => r.title),
+          exclude: [...recipes.map((r) => r.title), ...profileExclude],
           kidFriendly,
           includeNutrition: showNutrition,
           language: language.name,
