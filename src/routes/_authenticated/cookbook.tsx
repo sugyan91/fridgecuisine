@@ -82,6 +82,12 @@ function CookbookPage() {
           <Link to="/" className="font-black text-xs uppercase opacity-60">
             ← Home
           </Link>
+          <Link
+            to="/plan"
+            className="font-black text-xs uppercase bg-turmeric border-2 border-border rounded-full px-3 py-1.5 shadow-[3px_3px_0px_0px_var(--border)]"
+          >
+            Plan a week →
+          </Link>
         </div>
         <h1 className="font-display text-4xl md:text-5xl text-paprika mb-2 uppercase">
           My Cookbook
@@ -150,6 +156,13 @@ function CookbookPage() {
                   >
                     {r.cooked_at ? "Mark as not cooked" : "Mark as cooked"}
                   </button>
+                  <Link
+                    to="/cook/$id"
+                    params={{ id: r.id }}
+                    className="mt-2 block text-center w-full text-[11px] font-black uppercase tracking-widest py-2 rounded-full border-2 border-border bg-paprika text-white shadow-[3px_3px_0px_0px_var(--border)]"
+                  >
+                    Cook now →
+                  </Link>
                 </li>
               ))}
             </ul>
