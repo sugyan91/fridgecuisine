@@ -151,6 +151,36 @@ function LoginPage() {
 
   const redirectTo = search.redirect || "/";
 
+  // Validate `next` from search as a same-origin relative path we can use as
+  // an OAuth redirect_uri/emailRedirectTo destination. Guards against
+  // open-redirect and off-origin values.
+  const safeRedirectPath =
+    redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/";
+  const oauthReturnUrl =
+    safeRedirectPath === "/"
+      ? typeof window !== "undefined"
+        ? window.location.origin
+        : ""
+      : typeof window !== "undefined"
+        ? `${window.location.origin}/login?redirect=${encodeURIComponent(safeRedirectPath)}`
+        : "";
+
+  // If a session already exists (e.g. after an OAuth round-trip that
+  // returned to /login?redirect=...), forward to the intended destination
+  // instead of showing the sign-in form.
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
+      if (data.session && safeRedirectPath !== "/") {
+        navigate({ to: safeRedirectPath });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [safeRedirectPath, navigate]);
+
   const USERNAME_RE = /^[a-z][a-z0-9_]{2,19}$/;
   const RESERVED = new Set(["admin","root","support","help","api","auth","login","signup","me","fridgecuisine"]);
 
@@ -259,7 +289,7 @@ function LoginPage() {
           email: cleanEmail,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}${safeRedirectPath}`,
             data: { username: cleanUsername },
           },
         });
@@ -357,7 +387,7 @@ function LoginPage() {
   const onGoogle = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: oauthReturnUrl,
     });
     if (result.error) {
       toast.error(result.error.message || "Google sign-in failed");
@@ -371,7 +401,7 @@ function LoginPage() {
   const onApple = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: window.location.origin,
+      redirect_uri: oauthReturnUrl,
     });
     if (result.error) {
       toast.error(result.error.message || "Apple sign-in failed");
