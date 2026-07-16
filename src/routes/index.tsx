@@ -248,6 +248,27 @@ function Index() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Auto-apply saved dietary profile whenever the user is signed in.
+  useEffect(() => {
+    if (!userId) {
+      setProfileExclude([]);
+      return;
+    }
+    fetchPrefsRpc()
+      .then((p) => {
+        setDietary((prev) => {
+          if (prev.length > 0) return prev;
+          const merged = [...(p.custom_dietary ?? []), ...(p.allergies ?? [])];
+          return Array.from(new Set(merged));
+        });
+        setProfileExclude([
+          ...(p.disliked_ingredients ?? []),
+          ...(p.allergies ?? []),
+        ]);
+      })
+      .catch(() => {});
+  }, [userId, fetchPrefsRpc]);
+
   // Press "/" anywhere on the page to jump focus to the hero dish search.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
