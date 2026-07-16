@@ -96,6 +96,12 @@ function CookbookPage() {
               Diet
             </Link>
             <Link
+              to="/following"
+              className="font-black text-xs uppercase bg-white border-2 border-border rounded-full px-3 py-1.5 shadow-[3px_3px_0px_0px_var(--border)]"
+            >
+              Following
+            </Link>
+            <Link
               to="/plan"
               className="font-black text-xs uppercase bg-turmeric border-2 border-border rounded-full px-3 py-1.5 shadow-[3px_3px_0px_0px_var(--border)]"
             >
