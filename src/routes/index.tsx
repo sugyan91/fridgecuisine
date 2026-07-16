@@ -30,6 +30,8 @@ import {
   type SavedRecipeRow,
 } from "@/lib/saved-recipes.functions";
 import { getDishHelper, type DishHelperResult } from "@/lib/dish-helper.functions";
+import { getUserPreferences } from "@/lib/user-preferences.functions";
+import { listPantry } from "@/lib/pantry.functions";
 
 import { supabase } from "@/integrations/supabase/client";
 import { worldFoods } from "@/lib/world-foods";
