@@ -28,6 +28,7 @@ import {
 } from "@/lib/paid-recipes.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { SafeImage } from "@/components/ui/safe-image";
+import { PromoCodesManager } from "@/components/chefs/PromoCodesManager";
 
 export const Route = createFileRoute("/_authenticated/sell")({
   head: () => ({
@@ -306,6 +307,11 @@ function SellPage() {
               {/* Step 3 — List recipes (coming soon) */}
               <Card step={3} title="List your first recipe" complete={false}>
                 <RecipesManager />
+              </Card>
+
+              {/* Step 4 — Promo codes */}
+              <Card step={4} title="Promo codes" complete={false}>
+                <PromoCodesManager />
               </Card>
             </div>
           )}
