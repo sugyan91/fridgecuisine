@@ -48,6 +48,7 @@ import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminQuotaRouteImport } from './routes/_authenticated/admin.quota'
 import { Route as AuthenticatedAdminAbuseRouteImport } from './routes/_authenticated/admin.abuse'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -253,6 +254,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -319,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/abuse': typeof AuthenticatedAdminAbuseRoute
   '/admin/quota': typeof AuthenticatedAdminQuotaRoute
@@ -365,6 +372,7 @@ export interface FileRoutesByTo {
   '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community': typeof CommunityIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/abuse': typeof AuthenticatedAdminAbuseRoute
   '/admin/quota': typeof AuthenticatedAdminQuotaRoute
@@ -413,6 +421,7 @@ export interface FileRoutesById {
   '/shop/$recipeId': typeof ShopRecipeIdRoute
   '/community/': typeof CommunityIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/abuse': typeof AuthenticatedAdminAbuseRoute
   '/_authenticated/admin/quota': typeof AuthenticatedAdminQuotaRoute
@@ -461,6 +470,7 @@ export interface FileRouteTypes {
     | '/shop/$recipeId'
     | '/community/'
     | '/shop/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/abuse'
     | '/admin/quota'
@@ -507,6 +517,7 @@ export interface FileRouteTypes {
     | '/shop/$recipeId'
     | '/community'
     | '/shop'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/abuse'
     | '/admin/quota'
@@ -554,6 +565,7 @@ export interface FileRouteTypes {
     | '/shop/$recipeId'
     | '/community/'
     | '/shop/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/abuse'
     | '/_authenticated/admin/quota'
@@ -593,6 +605,7 @@ export interface RootRouteChildren {
   ShopRecipeIdRoute: typeof ShopRecipeIdRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -880,6 +893,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -985,6 +1005,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRecipeIdRoute: ShopRecipeIdRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
