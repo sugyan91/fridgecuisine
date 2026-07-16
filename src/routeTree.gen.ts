@@ -32,6 +32,7 @@ import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
 import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
+import { Route as AuthenticatedPlanRouteImport } from './routes/_authenticated/plan'
 import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authenticated/my-recipes'
 import { Route as AuthenticatedEarningsRouteImport } from './routes/_authenticated/earnings'
 import { Route as AuthenticatedCookbooksRouteImport } from './routes/_authenticated/cookbooks'
@@ -169,6 +170,11 @@ const AuthenticatedSellRoute = AuthenticatedSellRouteImport.update({
 const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPlanRoute = AuthenticatedPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMyRecipesRoute = AuthenticatedMyRecipesRouteImport.update({
@@ -319,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/cookbooks': typeof AuthenticatedCookbooksRoute
   '/earnings': typeof AuthenticatedEarningsRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/plan': typeof AuthenticatedPlanRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
@@ -367,6 +374,7 @@ export interface FileRoutesByTo {
   '/cookbooks': typeof AuthenticatedCookbooksRoute
   '/earnings': typeof AuthenticatedEarningsRoute
   '/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/plan': typeof AuthenticatedPlanRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
@@ -417,6 +425,7 @@ export interface FileRoutesById {
   '/_authenticated/cookbooks': typeof AuthenticatedCookbooksRoute
   '/_authenticated/earnings': typeof AuthenticatedEarningsRoute
   '/_authenticated/my-recipes': typeof AuthenticatedMyRecipesRoute
+  '/_authenticated/plan': typeof AuthenticatedPlanRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
@@ -467,6 +476,7 @@ export interface FileRouteTypes {
     | '/cookbooks'
     | '/earnings'
     | '/my-recipes'
+    | '/plan'
     | '/pricing'
     | '/sell'
     | '/usage'
@@ -515,6 +525,7 @@ export interface FileRouteTypes {
     | '/cookbooks'
     | '/earnings'
     | '/my-recipes'
+    | '/plan'
     | '/pricing'
     | '/sell'
     | '/usage'
@@ -564,6 +575,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cookbooks'
     | '/_authenticated/earnings'
     | '/_authenticated/my-recipes'
+    | '/_authenticated/plan'
     | '/_authenticated/pricing'
     | '/_authenticated/sell'
     | '/_authenticated/usage'
@@ -793,6 +805,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPricingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/plan': {
+      id: '/_authenticated/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof AuthenticatedPlanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/my-recipes': {
       id: '/_authenticated/my-recipes'
       path: '/my-recipes'
@@ -971,6 +990,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCookbooksRoute: typeof AuthenticatedCookbooksRoute
   AuthenticatedEarningsRoute: typeof AuthenticatedEarningsRoute
   AuthenticatedMyRecipesRoute: typeof AuthenticatedMyRecipesRoute
+  AuthenticatedPlanRoute: typeof AuthenticatedPlanRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
@@ -988,6 +1008,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCookbooksRoute: AuthenticatedCookbooksRoute,
   AuthenticatedEarningsRoute: AuthenticatedEarningsRoute,
   AuthenticatedMyRecipesRoute: AuthenticatedMyRecipesRoute,
+  AuthenticatedPlanRoute: AuthenticatedPlanRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedUsageRoute: AuthenticatedUsageRoute,
