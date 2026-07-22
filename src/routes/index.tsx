@@ -39,6 +39,7 @@ import { DEFAULT_CUISINES } from "@/lib/taxonomy";
 import { CORE_DIETARY } from "@/lib/taxonomy";
 
 import { FreeTierBanner } from "@/components/FreeTierBanner";
+import { DailyDinnerCard } from "@/components/home/DailyDinnerCard";
 import { LimitReachedModal } from "@/components/LimitReachedModal";
 import { SaveSignupModal } from "@/components/SaveSignupModal";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
@@ -818,6 +819,7 @@ function Index() {
         </header>
 
         <FreeTierBanner isPremium={isPremium} userId={userId} />
+        <DailyDinnerCard isAuthenticated={!!email} />
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           <section className="lg:col-span-12 relative">
             {/* Soft warm radial wash behind hero copy */}
