@@ -9,7 +9,7 @@ import {
   listWeek,
   type MealPlanEntry,
 } from "@/lib/meal-plan.functions";
-import { readCustomShopping, removeCustomShopping } from "@/lib/custom-shopping";
+import { readCustomShopping } from "@/lib/custom-shopping";
 
 const CHECKED_KEY = "fc-shopping-checked";
 
