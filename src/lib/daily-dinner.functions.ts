@@ -138,7 +138,7 @@ async function generateRecipe(
     ].filter(Boolean),
   });
 
-  const res = await callChatJSON(system, user);
+  const res = await callChatJSON(system, user, { maxTokens: 700, temperature: 0.5 });
   if (!res.ok) return null;
   const j = res.json as Record<string, unknown>;
 
