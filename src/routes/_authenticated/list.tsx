@@ -9,6 +9,7 @@ import {
   listWeek,
   type MealPlanEntry,
 } from "@/lib/meal-plan.functions";
+import { readCustomShopping, removeCustomShopping } from "@/lib/custom-shopping";
 
 const CHECKED_KEY = "fc-shopping-checked";
 
@@ -58,6 +59,15 @@ function ShoppingListPage() {
   }, [startISO, endISO, load]);
 
   const shopping = useMemo(() => aggregateShoppingList(entries), [entries]);
+  const [custom, setCustom] = useState<string[]>([]);
+  useEffect(() => { setCustom(readCustomShopping()); }, []);
+  const combined = useMemo(() => {
+    const seen = new Set(shopping.map((s) => s.name.toLowerCase()));
+    const extras = custom
+      .filter((c) => !seen.has(c.toLowerCase()))
+      .map((name) => ({ name, count: 1 } as { name: string; count: number }));
+    return [...shopping, ...extras];
+  }, [shopping, custom]);
 
   const persist = (next: Set<string>) => {
     setChecked(next);
