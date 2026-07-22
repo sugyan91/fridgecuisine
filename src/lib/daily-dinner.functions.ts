@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
 
 export type DailyDinner = {
   title: string;
@@ -12,6 +13,16 @@ export type DailyDinner = {
   steps: string[];
   reason: string;
 };
+
+export const DailyDinnerOverridesSchema = z
+  .object({
+    dietary: z.array(z.string().max(40)).max(10).optional(),
+    allergies: z.array(z.string().max(40)).max(20).optional(),
+    spiceLevel: z.enum(["none", "mild", "medium", "hot"]).optional(),
+    maxTimeMinutes: z.number().int().min(10).max(180).optional(),
+  })
+  .strict();
+export type DailyDinnerOverrides = z.infer<typeof DailyDinnerOverridesSchema>;
 
 const MAX_REFRESHES_PER_DAY = 1;
 
@@ -36,6 +47,7 @@ async function generateRecipe(
   supabase: import("@supabase/supabase-js").SupabaseClient,
   userId: string,
   avoidTitles: string[],
+  overrides?: DailyDinnerOverrides,
 ): Promise<DailyDinner | null> {
   const [pantryRes, prefsRes] = await Promise.all([
     supabase.from("pantry_items").select("name").eq("user_id", userId).limit(50),
@@ -56,23 +68,35 @@ async function generateRecipe(
     spice_level: null,
   };
 
+  const mergedDietary = overrides?.dietary?.length
+    ? Array.from(new Set([...(prefs.custom_dietary ?? []), ...overrides.dietary]))
+    : prefs.custom_dietary;
+  const mergedAllergies = overrides?.allergies?.length
+    ? Array.from(new Set([...(prefs.allergies ?? []), ...overrides.allergies]))
+    : prefs.allergies;
+  const mergedSpice = overrides?.spiceLevel ?? prefs.spice_level;
+  const maxTime = overrides?.maxTimeMinutes;
+
   const { callChatJSON } = await import("./hf-client.server");
   const system =
     "You are a personal cook. Recommend ONE dinner for tonight that best matches the user's pantry and preferences. Reply ONLY with valid JSON.";
   const user = JSON.stringify({
     pantry,
-    dietary: prefs.custom_dietary,
-    allergies: prefs.allergies,
+    dietary: mergedDietary,
+    allergies: mergedAllergies,
     dislikes: prefs.disliked_ingredients,
     preferredCuisines: prefs.custom_cuisines,
-    spiceLevel: prefs.spice_level,
+    spiceLevel: mergedSpice,
     servings: prefs.default_servings ?? 2,
+    maxTimeMinutes: maxTime,
     today: todayKey(),
     avoid: avoidTitles,
     instructions: [
       "Return JSON: {title, blurb, cuisine, totalTimeMinutes(int 5..180), difficulty(easy|medium|hard), usedIngredients[], missingIngredients[], steps[](5-8), reason}.",
       "Prefer pantry items when non-empty. If pantry is empty, pick a beloved dinner that fits preferences.",
       "STRICTLY avoid allergies and dislikes. Respect dietary restrictions. Realistic weeknight dinner.",
+      maxTime ? `Total cooking time MUST be at most ${maxTime} minutes.` : "",
+      mergedSpice ? `Match spice level: ${mergedSpice}.` : "",
       avoidTitles.length
         ? "Do NOT suggest anything similar to items in 'avoid' — pick a clearly different cuisine, protein, or format."
         : "",
@@ -92,7 +116,7 @@ async function generateRecipe(
   const diff = (v: unknown): "easy" | "medium" | "hard" =>
     v === "easy" || v === "medium" || v === "hard" ? v : "easy";
 
-  return {
+  const recipe: DailyDinner = {
     title: typeof j.title === "string" ? j.title.slice(0, 80) : "Tonight's dinner",
     blurb: typeof j.blurb === "string" ? j.blurb.slice(0, 240) : "",
     cuisine: typeof j.cuisine === "string" ? j.cuisine.slice(0, 40) : "",
@@ -106,6 +130,10 @@ async function generateRecipe(
     steps: asStrArr(j.steps, 10),
     reason: typeof j.reason === "string" ? j.reason.slice(0, 160) : "",
   };
+  if (maxTime && recipe.totalTimeMinutes > maxTime) {
+    recipe.totalTimeMinutes = maxTime;
+  }
+  return recipe;
 }
 
 function endOfUtcDayISO(): string {
