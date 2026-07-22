@@ -284,16 +284,44 @@ function RecipeDetail() {
 }
 
 function UnlockedView({ recipe }: { recipe: PaidRecipeFull }) {
+  const baseServings = recipe.servings && recipe.servings > 0 ? recipe.servings : 4;
+  const [servings, setServings] = useState(baseServings);
+  const [unit, setUnit] = useUnitSystem();
+  const factor = servings / baseServings;
+
+  const scaled = useMemo(
+    () => (recipe.ingredients ?? []).map((ing) => scaleIngredient(ing, factor, unit)),
+    [recipe.ingredients, factor, unit],
+  );
+
+  const addMissingToList = () => {
+    if (scaled.length === 0) return;
+    addCustomShopping(scaled);
+    toast.success(`Added ${scaled.length} items to your shopping list.`);
+  };
+
   return (
     <div className="mt-6 space-y-6">
       {recipe.ingredients?.length > 0 && (
         <section>
-          <h2 className="font-display text-xl uppercase mb-2">Ingredients</h2>
-          <ul className="list-disc pl-5 space-y-1 text-sm">
-            {recipe.ingredients.map((ing, i) => (
-              <li key={i}>{ing}</li>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <h2 className="font-display text-xl uppercase">Ingredients</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <ServingScaler base={baseServings} value={servings} onChange={setServings} />
+              <UnitToggle value={unit} onChange={setUnit} />
+            </div>
+          </div>
+          <ul className="bg-white border-2 border-border rounded-2xl px-4 py-2 divide-y divide-border/40">
+            {scaled.map((ing, i) => (
+              <IngredientChip key={i} line={ing} recipeTitle={recipe.title} cuisine={recipe.cuisine ?? undefined} />
             ))}
           </ul>
+          <button
+            onClick={addMissingToList}
+            className="mt-3 inline-flex items-center gap-2 bg-turmeric border-2 border-border rounded-full px-4 py-2 font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_0px_var(--border)]"
+          >
+            <ShoppingCart className="w-4 h-4" /> Add all to shopping list
+          </button>
         </section>
       )}
       <section>
