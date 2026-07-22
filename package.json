@@ -111,5 +111,11 @@
     "overrides": {
       "entities": "4.5.0"
     }
+  },
+  "overrides": {
+    "tar": "^7.5.19"
+  },
+  "resolutions": {
+    "tar": "^7.5.19"
   }
 }
