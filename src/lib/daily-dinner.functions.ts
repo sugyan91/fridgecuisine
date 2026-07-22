@@ -284,6 +284,9 @@ export const refreshDailyDinner = createServerFn({ method: "POST" })
       };
     }
 
+    // The user asked for a new pick — record the previous suggestion as skipped.
+    await recordFeedback(supabase, userId, currentRecipe, "skip");
+
     const payload: CachedPayload = {
       recipe: fresh,
       refreshCount: refreshCount + 1,
