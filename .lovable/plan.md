@@ -1,72 +1,47 @@
 
-## Goal
-Cut AI cost of recipe generation (and related AI calls) with the smallest possible quality hit. Focus on `generateRecipes` (the biggest surface), then apply the same pattern to daily-dinner, dish-helper, ingredient-swap, substitutions, and paid-recipe teaser.
+## What I found
 
-## Where the money goes today
-Confirmed from the code:
-- `generateRecipes` returns **10 recipes** per call with a ~1.8 KB system prompt, no `max_tokens` cap, `temperature: 0.7`, and always includes `nutrition`, `stepTimings`, `substitutions`, `difficulty`, `dietary[]` — output can easily be 3-6 K tokens.
-- HF chain is tried first (3 models). If HF is set, every request pays HF tokens; only if all three fail does it fall back to `google/gemini-3.1-flash-lite`.
-- Cache exists (30-day, keyed by sorted pantry + cuisine + dietary + **exclude** + kidFriendly + language). Because `exclude` grows every "Show more", cache almost never hits on refresh.
-- Daily dinner, tweaks, and dislike-regen each call the model in full with steps/reason/ingredients — no output cap.
+The "Peek with AI" crash wasn't isolated. I checked the database directly and confirmed the shape mismatch is systemic:
 
-## Changes — high-impact first
+- `paid_recipes.ingredients` — **18 of 18 rows** store ingredients as `{name, quantity}` objects, not strings.
+- `community_recipes.ingredients` and `.steps` — **125 of 125 rows** are objects too, but the community render code already handles both shapes, so that path is safe.
+- `paid_recipes.steps` — all strings, safe.
+- AI-generated recipes (saved/shared/cook mode/meal plan/pdf) — always strings, safe.
 
-### 1. Cap output tokens on every call (biggest single knob)
-In `hf-client.server.ts`, add a `maxTokens` parameter to `callOpenAICompat` / `callChatJSON` (default 1200, override per call site). Cost per call is dominated by output tokens — this alone can cut spend 40-60% on truncation-resistant flows.
+The bug the user hit is only the visible tip. The same object data flows through several other consumers that assume strings and would crash or render `[object Object]`:
 
-Per call-site caps:
-- `generateRecipes`: 2000 (10 recipes × ~200 tokens each after slimming)
-- `daily-dinner` variants: 500
-- `substitutions`, `ingredient-swap`, `dish-helper`, `paid-recipe teaser`: 400
+**`src/lib/paid-recipes.functions.ts` → `getPaidRecipeFull`** blindly casts `full.ingredients` as `string[]`. Every downstream consumer inherits the bad shape:
 
-### 2. Slim the recipe output shape
-Cut structural bloat that costs both input (schema) and output tokens:
-- Drop `stepTimings`, `substitutions`, `difficulty`, `kidFriendly` from the response by default. Keep them only when a caller asks for them (new `detailed: boolean` flag; default false).
-- Make `nutrition` opt-in via the existing `includeNutrition` flag (currently ignored — code forces nutrition on). This alone cuts ~200 tokens per recipe.
-- Return **6 recipes** by default instead of 10; add a "Show more" that re-queries for 4 more with the excluded titles.
+**`src/routes/shop.$recipeId.tsx` → `UnlockedView`** (post-purchase and owner view):
+- `scaleIngredient(ing, factor, unit)` calls `line.match(QTY_RE)` on the object → **runtime crash** for every buyer and every chef opening their own paid recipe.
+- `<IngredientChip line={ing} />` renders `{line}` in JSX → React "Objects are not valid as a React child" crash.
+- The "Swap" button posts `{ ingredient: <object> }` to the AI substitutions server fn → server error.
+- `addCustomShopping(scaled)` writes objects into the shopping-list localStorage → the `/list` page then crashes.
 
-### 3. Tighten the system prompt
-Rewrite the recipe system prompt from ~1.8 KB to ~600 bytes: keep the rules, drop the repetition, move examples inline into the JSON template, remove tag list enumeration (let the model infer from a short whitelist). Move dietary compliance into one line with the tags interpolated.
+In other words, any chef viewing their own paid recipe and any buyer after successful checkout currently sees a broken page. This is the same class of bug as the teaser one, just on the unlocked path.
 
-### 4. Drop the HF chain by default
-Set `LOVABLE_MODEL` (`gemini-3.1-flash-lite`) as the primary path. Only try HF when an env flag `AI_USE_HF=1` is present. Rationale: HF chain adds latency and a second bill; Gemini flash-lite is already the cheapest capable model on the gateway and honors `response_format: json_object` natively (fewer parse retries).
+## What to change
 
-### 5. Fix caching so it actually hits
-- Remove `exclude` from the cache key. Cache the full pool by (pantry, cuisine, dietary, kidFriendly, language), then filter out excluded titles client-side when paginating. Same-pantry refreshes become free after the first call.
-- Extend TTL from 30 → 90 days for shared, pantry-agnostic queries (e.g. `cuisine="Any / Surprise Me"` with empty pantry — this is popular and identical across users).
-- Add a public/shared cache tier: if `ingredients.length === 0`, use a project-wide key with no user salt. First user pays, everyone else is free.
-- Cache daily-dinner "Tweak" combos too: key by `(userId, day, dietary+allergies+spice+maxTime)` so toggling the same chips again is free.
+Two-layer fix so both current data and future writes are safe:
 
-### 6. Lower temperature
-Drop `temperature` from `0.7` → `0.3` on JSON calls. Deterministic-ish output reduces parse-failure retries and repeat generations. Keep 0.7 only for `generateRecipes` where variety matters, and reduce to `0.5` there.
+1. **Normalize at the source** — `getPaidRecipeFull` in `src/lib/paid-recipes.functions.ts` runs the same normalization the teaser fn already uses (`string` | `{ name, quantity | qty | amount }` → `"<qty> <name>"`). This heals every paid-recipe consumer in one place without touching UI code.
 
-### 7. Preflight: skip the model when we can
-- Reject obviously empty/duplicate inputs before the call (already partially done — audit and tighten).
-- Client-side: don't allow "Show more" to fire when we have ≥N recipes cached for the current filter set.
-- Debounce daily-dinner "Tweak" applies from 400 ms → 800 ms to collapse rapid chip toggles.
+2. **Defense in depth** — `scaleIngredient` in `src/lib/units.ts` accepts `unknown`, coerces non-strings via the same helper, and returns a safe string. This protects against any future data path that forgets to normalize (custom shopping list items, imported recipes, MCP callers).
 
-### 8. Downsize daily-dinner output
-Reduce steps from 5-8 → 3-5, drop `reason` and `usedIngredients`/`missingIngredients` from the initial payload; fetch full details only when the user expands the card. First render becomes a 150-token response instead of ~600.
+3. **Shared helper** — extract the normalizer used by the teaser into a small util (`src/lib/ingredient-normalize.ts`) and reuse it in both `getPaidRecipeFull` and `scaleIngredient`, so the fix stays consistent.
 
-## Technical details
+No schema migration. No changes to community/AI/PDF paths — they're already correct. No UI restructuring.
 
-Files touched:
-- `src/lib/hf-client.server.ts` — add `maxTokens` param, HF opt-in, lower temperature default.
-- `src/lib/recipes.functions.ts` — slim prompt, drop always-on fields, remove `exclude` from cache key, add shared cache path, cut recipe count.
-- `src/lib/daily-dinner.functions.ts` — smaller output shape, cache tweak combos, lazy-load details.
-- `src/lib/substitutions.functions.ts`, `src/lib/ingredient-swap.functions.ts`, `src/lib/dish-helper.functions.ts`, `src/lib/paid-recipes.functions.ts` — pass tight `maxTokens`.
-- `src/lib/ai-cache.server.ts` — add `getSharedCached` helper for pantry-agnostic keys.
-- Recipe UI — pagination for "Show more" reading from cached pool, opt-in "Show nutrition/timings" toggle.
+## Verification after the change
 
-Rough expected savings on a "typical" recipe-gen request:
-- Output tokens: ~3500 → ~1300 (−63%)
-- Input tokens: ~1900 → ~700 (−63%)
-- Cache hit rate on repeat/paginate: <5% → ~70% for same-pantry sessions
+- Reproduce the previous crash: click Peek with AI on a paid recipe → returns hints.
+- Open an unlocked paid recipe (owner view) → ingredients render as "2 tbsp olive oil" style strings, Swap button fetches AI substitutions successfully, "Add all to shopping list" pushes strings into `/list`.
+- Serving scaler and metric/US toggle continue to work on the same recipe.
+- Check `src/routes/_authenticated/list.tsx` still renders after the add.
 
-## Trade-offs the user should know
-- Nutrition, timings-per-step, and substitutions become opt-in — hidden until the user asks for them.
-- Default result count drops from 10 → 6 (pagination fills the rest, and it's free from cache).
-- Slightly less "creative" wording at lower temperature.
-- HF fallback is disabled unless `AI_USE_HF=1` is set — one less provider to bill, but also one less safety net if Lovable AI is briefly down.
+## Technical notes
 
-If any of these trade-offs are unacceptable (e.g. "always show nutrition"), say which and I'll adjust the plan before building.
+- Keep the normalizer client-safe (no server imports); import from both `paid-recipes.functions.ts` handler and `units.ts`.
+- Accept keys `name`, `quantity`, `qty`, `amount` (matches the teaser code the user already accepted).
+- `scaleIngredient` signature change is `(line: string, ...)` → `(line: unknown, ...)`; call sites already pass strings so no caller edits needed.
+- Do not backfill the `paid_recipes` table — normalization at read is idempotent and safer than a destructive rewrite of seed data.
