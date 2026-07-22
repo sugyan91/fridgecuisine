@@ -128,8 +128,8 @@ function PlanPage() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <Link to="/" className="font-black text-xs uppercase opacity-60">← Home</Link>
-          <Link to="/cookbook" className="font-black text-xs uppercase opacity-60">
-            My cookbook →
+          <Link to="/list" className="font-black text-xs uppercase opacity-60">
+            Shopping list →
           </Link>
         </div>
 
