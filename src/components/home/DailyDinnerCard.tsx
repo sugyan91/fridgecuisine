@@ -16,6 +16,58 @@ const ALLERGY_CHOICES = ["Nuts", "Peanuts", "Dairy", "Eggs", "Gluten", "Shellfis
 const SPICE_CHOICES: DailyDinnerOverrides["spiceLevel"][] = ["none", "mild", "medium", "hot"];
 const TIME_CHOICES: number[] = [15, 30, 45, 60];
 
+function Chip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "text-[11px] font-black uppercase tracking-widest rounded-full px-2.5 py-1 border-2 transition-colors " +
+        (active
+          ? "bg-white text-paprika border-white"
+          : "bg-white/10 text-white border-white/30 hover:bg-white/20")
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function ToggleGroup({
+  label,
+  options,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase font-black tracking-widest text-white/70 mb-1.5">
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((o) => (
+          <Chip key={o} active={selected.includes(o)} onClick={() => onToggle(o)}>
+            {o}
+          </Chip>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function DailyDinnerCard({
   isAuthenticated,
   onCookThis,
