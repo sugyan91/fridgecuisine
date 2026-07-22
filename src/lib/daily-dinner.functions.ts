@@ -371,3 +371,67 @@ export const applyDailyDinnerOverrides = createServerFn({ method: "POST" })
       refreshesRemaining: Math.max(0, MAX_REFRESHES_PER_DAY - refreshCount),
     };
   });
+
+export const dislikeDailyDinner = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<DailyDinnerResult> => {
+    const { supabase, userId } = context;
+    const key = `daily-dinner:${userId}:${todayKey()}`;
+
+    const { data: cached } = await supabase
+      .from("ai_result_cache")
+      .select("payload")
+      .eq("cache_key", key)
+      .maybeSingle();
+
+    let refreshCount = 0;
+    let previousTitles: string[] = [];
+    let currentRecipe: DailyDinner | null = null;
+    if (cached?.payload) {
+      const p = cached.payload as unknown as Partial<CachedPayload> & Partial<DailyDinner>;
+      if (p && typeof p === "object" && "recipe" in p && p.recipe) {
+        currentRecipe = p.recipe as DailyDinner;
+        refreshCount = p.refreshCount ?? 0;
+        previousTitles = p.previousTitles ?? [];
+      } else {
+        currentRecipe = p as DailyDinner;
+      }
+    }
+
+    // Log the dislike; this will steer future days away from this cuisine/ingredients.
+    await recordFeedback(supabase, userId, currentRecipe, "dislike");
+
+    // Immediately regenerate an alternative without spending the daily refresh budget.
+    const avoid = [...previousTitles, currentRecipe?.title].filter(
+      (s): s is string => typeof s === "string" && s.length > 0,
+    );
+    const fresh = await generateRecipe(supabase, userId, avoid);
+    if (!fresh) {
+      return {
+        recipe: currentRecipe,
+        source: "cache",
+        refreshesRemaining: Math.max(0, MAX_REFRESHES_PER_DAY - refreshCount),
+      };
+    }
+
+    const payload: CachedPayload = {
+      recipe: fresh,
+      refreshCount,
+      previousTitles: avoid.slice(-5),
+    };
+    await supabase.from("ai_result_cache").upsert(
+      {
+        cache_key: key,
+        kind: "daily-dinner",
+        payload: payload as unknown as never,
+        expires_at: endOfUtcDayISO(),
+      },
+      { onConflict: "cache_key" },
+    );
+
+    return {
+      recipe: fresh,
+      source: "fresh",
+      refreshesRemaining: Math.max(0, MAX_REFRESHES_PER_DAY - refreshCount),
+    };
+  });
