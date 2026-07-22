@@ -1,13 +1,20 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Compass, CalendarDays, ShoppingBag, User } from "lucide-react";
 
-const TABS = [
+type Tab = {
+  to: "/" | "/community" | "/plan" | "/shop" | "/account";
+  label: string;
+  icon: typeof Home;
+  exact?: boolean;
+};
+
+const TABS: Tab[] = [
   { to: "/", label: "Home", icon: Home, exact: true },
   { to: "/community", label: "Discover", icon: Compass },
   { to: "/plan", label: "Plan", icon: CalendarDays },
   { to: "/shop", label: "Shop", icon: ShoppingBag },
   { to: "/account", label: "Me", icon: User },
-] as const;
+];
 
 // Routes where we hide the bottom nav (fullscreen / focused flows).
 const HIDDEN_PREFIXES = [
