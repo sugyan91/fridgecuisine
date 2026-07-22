@@ -294,7 +294,7 @@ export const getPaidRecipeTeaser = createServerFn({ method: "GET" })
       ],
     });
 
-    const res = await callChatJSON(system, user);
+    const res = await callChatJSON(system, user, { maxTokens: 350, temperature: 0.5 });
 
     const fallback: PaidRecipeTeaser = {
       hook:
