@@ -224,6 +224,28 @@ function RecipeDetail() {
         )}
       </div>
 
+      {!unlocked && (
+        <div className="fixed bottom-16 md:hidden inset-x-0 z-30 p-3 bg-background/95 backdrop-blur border-t-2 border-border pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+          {authed ? (
+            <button
+              type="button"
+              onClick={() => setCheckoutOpen(true)}
+              className="w-full bg-paprika text-white border-2 border-border px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+            >
+              Unlock — ${((data.price_cents ?? 0) / 100).toFixed(2)}
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              search={{ redirect: `/shop/${recipeId}` }}
+              className="block text-center w-full bg-paprika text-white border-2 border-border px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+            >
+              Sign in to buy · ${((data.price_cents ?? 0) / 100).toFixed(2)}
+            </Link>
+          )}
+        </div>
+      )}
+
       <Drawer open={isMobile && checkoutOpen} onOpenChange={setCheckoutOpen}>
         <DrawerContent className="h-[92vh] p-0">
           <div className="flex items-center justify-between border-b px-4 py-3">
