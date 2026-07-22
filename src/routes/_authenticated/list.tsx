@@ -9,6 +9,7 @@ import {
   listWeek,
   type MealPlanEntry,
 } from "@/lib/meal-plan.functions";
+import { readCustomShopping } from "@/lib/custom-shopping";
 
 const CHECKED_KEY = "fc-shopping-checked";
 
@@ -58,6 +59,15 @@ function ShoppingListPage() {
   }, [startISO, endISO, load]);
 
   const shopping = useMemo(() => aggregateShoppingList(entries), [entries]);
+  const [custom, setCustom] = useState<string[]>([]);
+  useEffect(() => { setCustom(readCustomShopping()); }, []);
+  const combined = useMemo(() => {
+    const seen = new Set(shopping.map((s) => s.name.toLowerCase()));
+    const extras = custom
+      .filter((c) => !seen.has(c.toLowerCase()))
+      .map((name) => ({ name, count: 1 } as { name: string; count: number }));
+    return [...shopping, ...extras];
+  }, [shopping, custom]);
 
   const persist = (next: Set<string>) => {
     setChecked(next);
@@ -75,7 +85,7 @@ function ShoppingListPage() {
 
   const clearChecked = () => persist(new Set());
 
-  const remaining = shopping.filter((s) => !checked.has(s.name)).length;
+  const remaining = combined.filter((s) => !checked.has(s.name)).length;
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
@@ -128,7 +138,7 @@ function ShoppingListPage() {
 
         {loading ? (
           <p className="opacity-60">Loading…</p>
-        ) : shopping.length === 0 ? (
+        ) : combined.length === 0 ? (
           <div className="bg-white border-2 border-border rounded-2xl p-6 text-center">
             <p className="opacity-70 text-sm">
               No items yet.{" "}
@@ -141,10 +151,10 @@ function ShoppingListPage() {
         ) : (
           <section className="bg-white border-2 border-border rounded-2xl p-4 shadow-[3px_3px_0px_0px_var(--border)]">
             <p className="text-[11px] uppercase font-black opacity-60 mb-3">
-              {remaining} of {shopping.length} to buy
+              {remaining} of {combined.length} to buy
             </p>
             <ul className="divide-y divide-border/60">
-              {shopping.map((s) => {
+              {combined.map((s) => {
                 const isChecked = checked.has(s.name);
                 return (
                   <li key={s.name}>

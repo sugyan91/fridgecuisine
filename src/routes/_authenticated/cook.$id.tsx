@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Check, Mic, MicOff } from "lucide-react";
 import {
   getSavedRecipe,
   setCookedStatus,
   type SavedRecipeRow,
 } from "@/lib/saved-recipes.functions";
+import { useVoiceCook, speak } from "@/hooks/use-voice-cook";
 
 export const Route = createFileRoute("/_authenticated/cook/$id")({
   head: () => ({
@@ -79,6 +80,31 @@ function CookModePage() {
   const timings = useMemo(() => row?.recipe.stepTimings ?? [], [row]);
   const suggested = timings[stepIdx] ?? 0;
 
+  const goNextRef = useRef<() => void>(() => {});
+  const goPrevRef = useRef<() => void>(() => {});
+  const handleVoice = useCallback(
+    (cmd: "next" | "back" | "repeat" | "start" | "pause" | "reset" | "howlong") => {
+      if (cmd === "next") goNextRef.current();
+      else if (cmd === "back") goPrevRef.current();
+      else if (cmd === "repeat") speak(steps[stepIdx] ?? "");
+      else if (cmd === "start") setRunning(true);
+      else if (cmd === "pause") setRunning(false);
+      else if (cmd === "reset") { setRunning(false); setSeconds((suggested || 0) * 60); }
+      else if (cmd === "howlong") {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        speak(m > 0 ? `${m} minute${m === 1 ? "" : "s"} ${s ? `and ${s} seconds` : ""} left` : `${s} seconds left`);
+      }
+    },
+    [seconds, stepIdx, steps, suggested],
+  );
+  const voice = useVoiceCook(handleVoice);
+
+  // Speak the current step when it changes while listening.
+  useEffect(() => {
+    if (voice.listening && steps[stepIdx]) speak(steps[stepIdx]);
+  }, [stepIdx, voice.listening, steps]);
+
   // Reset timer when moving to a new step.
   useEffect(() => {
     setRunning(false);
@@ -115,8 +141,9 @@ function CookModePage() {
     return () => clearInterval(t);
   }, [running, suggested]);
 
-  const goNext = () => setStepIdx((i) => Math.min(steps.length - 1, i + 1));
-  const goPrev = () => setStepIdx((i) => Math.max(0, i - 1));
+  const goNext = useCallback(() => setStepIdx((i) => Math.min(steps.length - 1, i + 1)), [steps.length]);
+  const goPrev = useCallback(() => setStepIdx((i) => Math.max(0, i - 1)), []);
+  useEffect(() => { goNextRef.current = goNext; goPrevRef.current = goPrev; }, [goNext, goPrev]);
 
   const onFinish = async () => {
     if (!row) return;
@@ -158,7 +185,16 @@ function CookModePage() {
         <p className="font-black text-xs uppercase tracking-widest opacity-70">
           Step {stepIdx + 1} / {steps.length}
         </p>
-        <span className="text-xs opacity-0">.</span>
+        <button
+          onClick={voice.toggle}
+          disabled={!voice.supported}
+          aria-label={voice.listening ? "Stop voice control" : "Start voice control"}
+          className={`grid place-items-center size-9 rounded-full border-2 border-border ${
+            voice.listening ? "bg-paprika text-white animate-pulse" : "bg-white"
+          } disabled:opacity-40`}
+        >
+          {voice.listening ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+        </button>
       </header>
 
       <div className="px-6 pt-6">

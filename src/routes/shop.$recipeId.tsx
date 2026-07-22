@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Lock, MapPin, Clock, Sparkles, ChefHat, ListChecks } from "lucide-react";
+import { Loader2, Lock, MapPin, Clock, Sparkles, ChefHat, ListChecks, ShoppingCart } from "lucide-react";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import {
   getPaidRecipeDetail,
@@ -20,6 +20,13 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { SafeImage } from "@/components/ui/safe-image";
 import { recordStorefrontView } from "@/lib/storefront-analytics.functions";
+import { IngredientChip } from "@/components/recipe/IngredientChip";
+import { ServingScaler } from "@/components/recipe/ServingScaler";
+import { UnitToggle } from "@/components/recipe/UnitToggle";
+import { useUnitSystem } from "@/hooks/use-unit-system";
+import { scaleIngredient } from "@/lib/units";
+import { addCustomShopping } from "@/lib/custom-shopping";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/shop/$recipeId")({
   loader: ({ params }) => getPaidRecipeDetail({ data: { id: params.recipeId } }),
@@ -277,16 +284,45 @@ function RecipeDetail() {
 }
 
 function UnlockedView({ recipe }: { recipe: PaidRecipeFull }) {
+  const rec = recipe as PaidRecipeFull & { servings?: number | null };
+  const baseServings = rec.servings && rec.servings > 0 ? rec.servings : 4;
+  const [servings, setServings] = useState(baseServings);
+  const [unit, setUnit] = useUnitSystem();
+  const factor = servings / baseServings;
+
+  const scaled = useMemo(
+    () => (recipe.ingredients ?? []).map((ing) => scaleIngredient(ing, factor, unit)),
+    [recipe.ingredients, factor, unit],
+  );
+
+  const addMissingToList = () => {
+    if (scaled.length === 0) return;
+    addCustomShopping(scaled);
+    toast.success(`Added ${scaled.length} items to your shopping list.`);
+  };
+
   return (
     <div className="mt-6 space-y-6">
       {recipe.ingredients?.length > 0 && (
         <section>
-          <h2 className="font-display text-xl uppercase mb-2">Ingredients</h2>
-          <ul className="list-disc pl-5 space-y-1 text-sm">
-            {recipe.ingredients.map((ing, i) => (
-              <li key={i}>{ing}</li>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <h2 className="font-display text-xl uppercase">Ingredients</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <ServingScaler base={baseServings} value={servings} onChange={setServings} />
+              <UnitToggle value={unit} onChange={setUnit} />
+            </div>
+          </div>
+          <ul className="bg-white border-2 border-border rounded-2xl px-4 py-2 divide-y divide-border/40">
+            {scaled.map((ing, i) => (
+              <IngredientChip key={i} line={ing} recipeTitle={recipe.title} cuisine={recipe.cuisine ?? undefined} />
             ))}
           </ul>
+          <button
+            onClick={addMissingToList}
+            className="mt-3 inline-flex items-center gap-2 bg-turmeric border-2 border-border rounded-full px-4 py-2 font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_0px_var(--border)]"
+          >
+            <ShoppingCart className="w-4 h-4" /> Add all to shopping list
+          </button>
         </section>
       )}
       <section>
