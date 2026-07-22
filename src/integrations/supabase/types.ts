@@ -464,6 +464,36 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_dinner_feedback: {
+        Row: {
+          created_at: string
+          cuisine: string | null
+          id: string
+          key_ingredients: string[]
+          signal: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cuisine?: string | null
+          id?: string
+          key_ingredients?: string[]
+          signal: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cuisine?: string | null
+          id?: string
+          key_ingredients?: string[]
+          signal?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
