@@ -217,6 +217,26 @@ export const getDailyDinner = createServerFn({ method: "POST" })
     return { recipe, source: "fresh", refreshesRemaining: MAX_REFRESHES_PER_DAY };
   });
 
+async function recordFeedback(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+  recipe: DailyDinner | null,
+  signal: "skip" | "dislike",
+): Promise<void> {
+  if (!recipe?.title) return;
+  const key = (recipe.usedIngredients ?? [])
+    .concat(recipe.missingIngredients ?? [])
+    .map((s) => s.toLowerCase())
+    .slice(0, 8);
+  await supabase.from("daily_dinner_feedback").insert({
+    user_id: userId,
+    title: recipe.title,
+    cuisine: recipe.cuisine || null,
+    key_ingredients: key,
+    signal,
+  });
+}
+
 export const refreshDailyDinner = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DailyDinnerResult & { limited?: boolean }> => {
