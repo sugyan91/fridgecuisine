@@ -38,8 +38,11 @@ async function callOpenAICompat(
   model: string,
   messages: ChatMsg[],
   useResponseFormat: boolean,
+  maxTokens?: number,
+  temperature: number = 0.3,
 ): Promise<{ status: number; content: string; raw: string }> {
-  const body: Record<string, unknown> = { model, messages, temperature: 0.7 };
+  const body: Record<string, unknown> = { model, messages, temperature };
+  if (typeof maxTokens === "number" && maxTokens > 0) body.max_tokens = maxTokens;
   if (useResponseFormat) body.response_format = { type: "json_object" };
 
   const res = await fetch(url, {
@@ -88,18 +91,20 @@ function tryParseJSON(content: string): unknown | null {
 export async function callChatJSON(
   systemPrompt: string,
   userPrompt: string,
+  opts: { maxTokens?: number; temperature?: number } = {},
 ): Promise<ChatJSONResult> {
   const messages: ChatMsg[] = [
     { role: "system", content: systemPrompt },
     { role: "user", content: userPrompt },
   ];
 
-  const hfKey = process.env.HUGGINGFACE_API_KEY;
+  const useHF = process.env.AI_USE_HF === "1";
+  const hfKey = useHF ? process.env.HUGGINGFACE_API_KEY : undefined;
   if (hfKey) {
     for (const model of HF_MODEL_CHAIN) {
       try {
         // HF router doesn't reliably honor response_format; rely on prompt + parse.
-        const r = await callOpenAICompat(HF_URL, hfKey, model, messages, false);
+        const r = await callOpenAICompat(HF_URL, hfKey, model, messages, false, opts.maxTokens, opts.temperature ?? 0.3);
         if (r.status === 200) {
           const parsed = tryParseJSON(r.content);
           if (parsed) {
@@ -115,8 +120,6 @@ export async function callChatJSON(
       }
     }
     console.warn("[hf] all HF models failed, falling back to Lovable");
-  } else {
-    console.warn("[hf] HUGGINGFACE_API_KEY not set — using Lovable only");
   }
 
   const lovableKey = process.env.LOVABLE_API_KEY;
@@ -124,7 +127,7 @@ export async function callChatJSON(
     return { ok: false, code: "server", error: "AI service not configured." };
   }
   try {
-    const r = await callOpenAICompat(LOVABLE_URL, lovableKey, LOVABLE_MODEL, messages, true);
+    const r = await callOpenAICompat(LOVABLE_URL, lovableKey, LOVABLE_MODEL, messages, true, opts.maxTokens, opts.temperature ?? 0.3);
     if (r.status === 429) return { ok: false, code: "rate_limit", error: "Too many requests — try again in a moment." };
     if (r.status === 402) {
       console.error("[lovable] 402 credits exhausted");
