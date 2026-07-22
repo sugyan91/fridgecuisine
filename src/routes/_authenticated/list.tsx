@@ -85,7 +85,7 @@ function ShoppingListPage() {
 
   const clearChecked = () => persist(new Set());
 
-  const remaining = shopping.filter((s) => !checked.has(s.name)).length;
+  const remaining = combined.filter((s) => !checked.has(s.name)).length;
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
@@ -138,7 +138,7 @@ function ShoppingListPage() {
 
         {loading ? (
           <p className="opacity-60">Loading…</p>
-        ) : shopping.length === 0 ? (
+        ) : combined.length === 0 ? (
           <div className="bg-white border-2 border-border rounded-2xl p-6 text-center">
             <p className="opacity-70 text-sm">
               No items yet.{" "}
@@ -151,10 +151,10 @@ function ShoppingListPage() {
         ) : (
           <section className="bg-white border-2 border-border rounded-2xl p-4 shadow-[3px_3px_0px_0px_var(--border)]">
             <p className="text-[11px] uppercase font-black opacity-60 mb-3">
-              {remaining} of {shopping.length} to buy
+              {remaining} of {combined.length} to buy
             </p>
             <ul className="divide-y divide-border/60">
-              {shopping.map((s) => {
+              {combined.map((s) => {
                 const isChecked = checked.has(s.name);
                 return (
                   <li key={s.name}>
