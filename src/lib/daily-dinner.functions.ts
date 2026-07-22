@@ -49,13 +49,20 @@ async function generateRecipe(
   avoidTitles: string[],
   overrides?: DailyDinnerOverrides,
 ): Promise<DailyDinner | null> {
-  const [pantryRes, prefsRes] = await Promise.all([
+  const [pantryRes, prefsRes, feedbackRes] = await Promise.all([
     supabase.from("pantry_items").select("name").eq("user_id", userId).limit(50),
     supabase
       .from("user_preferences")
       .select("custom_dietary, custom_cuisines, allergies, disliked_ingredients, default_servings, spice_level")
       .eq("user_id", userId)
       .maybeSingle(),
+    supabase
+      .from("daily_dinner_feedback")
+      .select("title, cuisine, key_ingredients, signal, created_at")
+      .eq("user_id", userId)
+      .gte("created_at", new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString())
+      .order("created_at", { ascending: false })
+      .limit(60),
   ]);
 
   const pantry = (pantryRes.data ?? []).map((r: { name: string }) => r.name).filter(Boolean);
@@ -68,6 +75,22 @@ async function generateRecipe(
     spice_level: null,
   };
 
+  type FeedbackRow = { title: string; cuisine: string | null; key_ingredients: string[]; signal: "skip" | "dislike" };
+  const feedback: FeedbackRow[] = (feedbackRes.data ?? []) as FeedbackRow[];
+  const feedbackTitles = Array.from(
+    new Set(feedback.map((f) => f.title).filter((s): s is string => !!s)),
+  ).slice(0, 30);
+  const dislikes = feedback.filter((f) => f.signal === "dislike");
+  const dislikedCuisines = Array.from(
+    new Set(dislikes.map((f) => (f.cuisine ?? "").trim().toLowerCase()).filter(Boolean)),
+  ).slice(0, 10);
+  const dislikedIngredients = Array.from(
+    new Set(dislikes.flatMap((f) => f.key_ingredients ?? []).map((s) => s.toLowerCase())),
+  ).slice(0, 20);
+  const mergedDislikedIngredients = Array.from(
+    new Set([...(prefs.disliked_ingredients ?? []), ...dislikedIngredients]),
+  );
+
   const mergedDietary = overrides?.dietary?.length
     ? Array.from(new Set([...(prefs.custom_dietary ?? []), ...overrides.dietary]))
     : prefs.custom_dietary;
@@ -77,6 +100,8 @@ async function generateRecipe(
   const mergedSpice = overrides?.spiceLevel ?? prefs.spice_level;
   const maxTime = overrides?.maxTimeMinutes;
 
+  const allAvoidTitles = Array.from(new Set([...avoidTitles, ...feedbackTitles])).slice(0, 40);
+
   const { callChatJSON } = await import("./hf-client.server");
   const system =
     "You are a personal cook. Recommend ONE dinner for tonight that best matches the user's pantry and preferences. Reply ONLY with valid JSON.";
@@ -84,17 +109,25 @@ async function generateRecipe(
     pantry,
     dietary: mergedDietary,
     allergies: mergedAllergies,
-    dislikes: prefs.disliked_ingredients,
+    dislikes: mergedDislikedIngredients,
+    dislikedCuisines,
     preferredCuisines: prefs.custom_cuisines,
     spiceLevel: mergedSpice,
     servings: prefs.default_servings ?? 2,
     maxTimeMinutes: maxTime,
     today: todayKey(),
-    avoid: avoidTitles,
+    avoid: allAvoidTitles,
+    recentlySkipped: feedbackTitles,
     instructions: [
       "Return JSON: {title, blurb, cuisine, totalTimeMinutes(int 5..180), difficulty(easy|medium|hard), usedIngredients[], missingIngredients[], steps[](5-8), reason}.",
       "Prefer pantry items when non-empty. If pantry is empty, pick a beloved dinner that fits preferences.",
       "STRICTLY avoid allergies and dislikes. Respect dietary restrictions. Realistic weeknight dinner.",
+      dislikedCuisines.length
+        ? `AVOID these cuisines the user has disliked recently: ${dislikedCuisines.join(", ")}.`
+        : "",
+      feedbackTitles.length
+        ? "Do NOT repeat or closely resemble any title in 'avoid' or 'recentlySkipped' — the user already passed on those."
+        : "",
       maxTime ? `Total cooking time MUST be at most ${maxTime} minutes.` : "",
       mergedSpice ? `Match spice level: ${mergedSpice}.` : "",
       avoidTitles.length
