@@ -260,7 +260,26 @@ export const getPaidRecipeTeaser = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!row || !row.is_published) return { teaser: null };
 
-    const ingredients = ((row.ingredients ?? []) as string[]).filter(Boolean);
+    const rawIngredients = (row.ingredients ?? []) as unknown[];
+    const ingredients: string[] = rawIngredients
+      .map((i) => {
+        if (typeof i === "string") return i;
+        if (i && typeof i === "object") {
+          const o = i as { name?: unknown; quantity?: unknown; qty?: unknown; amount?: unknown };
+          const name = typeof o.name === "string" ? o.name : "";
+          const qty =
+            typeof o.quantity === "string"
+              ? o.quantity
+              : typeof o.qty === "string"
+                ? o.qty
+                : typeof o.amount === "string"
+                  ? o.amount
+                  : "";
+          return [qty, name].filter(Boolean).join(" ").trim();
+        }
+        return "";
+      })
+      .filter((s): s is string => typeof s === "string" && s.length > 0);
     const steps = ((row.steps ?? []) as Array<{ text: string; minutes?: number }>).filter(
       (s) => s && typeof s.text === "string",
     );
