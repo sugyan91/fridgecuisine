@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Lock, MapPin, Clock, Sparkles, ChefHat, ListChecks } from "lucide-react";
+import { Loader2, Lock, MapPin, Clock, Sparkles, ChefHat, ListChecks, ShoppingCart } from "lucide-react";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import {
   getPaidRecipeDetail,
@@ -20,6 +20,13 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { SafeImage } from "@/components/ui/safe-image";
 import { recordStorefrontView } from "@/lib/storefront-analytics.functions";
+import { IngredientChip } from "@/components/recipe/IngredientChip";
+import { ServingScaler } from "@/components/recipe/ServingScaler";
+import { UnitToggle } from "@/components/recipe/UnitToggle";
+import { useUnitSystem } from "@/hooks/use-unit-system";
+import { scaleIngredient } from "@/lib/units";
+import { addCustomShopping } from "@/lib/custom-shopping";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/shop/$recipeId")({
   loader: ({ params }) => getPaidRecipeDetail({ data: { id: params.recipeId } }),
