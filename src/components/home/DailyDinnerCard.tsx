@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Clock, ChefHat, RefreshCw, ArrowRight, ShoppingCart, Sliders, Flame } from "lucide-react";
+import { Sparkles, Clock, ChefHat, RefreshCw, ArrowRight, ShoppingCart, Sliders, Flame, ThumbsDown } from "lucide-react";
 import { toast } from "sonner";
 import {
   getDailyDinner,
   refreshDailyDinner,
   applyDailyDinnerOverrides,
+  dislikeDailyDinner,
   type DailyDinner,
   type DailyDinnerOverrides,
 } from "@/lib/daily-dinner.functions";
@@ -78,9 +79,11 @@ export function DailyDinnerCard({
   const load = useServerFn(getDailyDinner);
   const refresh = useServerFn(refreshDailyDinner);
   const applyOverrides = useServerFn(applyDailyDinnerOverrides);
+  const dislike = useServerFn(dislikeDailyDinner);
   const [recipe, setRecipe] = useState<DailyDinner | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [disliking, setDisliking] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [refreshesRemaining, setRefreshesRemaining] = useState<number>(1);
   const [showToggles, setShowToggles] = useState(false);
@@ -218,6 +221,21 @@ export function DailyDinnerCard({
     if (!recipe?.missingIngredients?.length) return;
     addCustomShopping(recipe.missingIngredients);
     toast.success(`Added ${recipe.missingIngredients.length} items to your shopping list.`);
+  };
+
+  const onDislike = async () => {
+    if (!recipe || disliking) return;
+    setDisliking(true);
+    try {
+      const res = await dislike();
+      setRecipe(res.recipe);
+      setRefreshesRemaining(res.refreshesRemaining ?? 0);
+      toast.success("Got it — we'll steer future picks away from this.");
+    } catch {
+      toast.error("Couldn't save that — try again.");
+    } finally {
+      setDisliking(false);
+    }
   };
 
   if (!isAuthenticated) return null;
@@ -400,6 +418,16 @@ export function DailyDinnerCard({
                   : refreshesRemaining > 0
                     ? `New pick (${refreshesRemaining} left)`
                     : "No more today"}
+              </button>
+              <button
+                onClick={onDislike}
+                disabled={disliking}
+                title="Not for me — steer future picks away from this cuisine and ingredients"
+                className="inline-flex items-center gap-2 bg-white/10 border-2 border-white/40 rounded-full px-3 py-2 font-black text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="Mark as not for me"
+              >
+                <ThumbsDown className={`w-4 h-4 ${disliking ? "animate-pulse" : ""}`} />
+                {disliking ? "…" : "Not for me"}
               </button>
             </div>
           </div>
