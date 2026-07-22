@@ -1,112 +1,72 @@
 
-# Mobile-first upgrade — 4 phases
+## Goal
+Cut AI cost of recipe generation (and related AI calls) with the smallest possible quality hit. Focus on `generateRecipes` (the biggest surface), then apply the same pattern to daily-dinner, dish-helper, ingredient-swap, substitutions, and paid-recipe teaser.
 
-You approved all four bundles + one opinionated visual pass, no chef subscriptions. Each phase is independently shippable; I'll land them in this order so kitchen utility lands first (highest daily value), then habit loops, then polish.
+## Where the money goes today
+Confirmed from the code:
+- `generateRecipes` returns **10 recipes** per call with a ~1.8 KB system prompt, no `max_tokens` cap, `temperature: 0.7`, and always includes `nutrition`, `stepTimings`, `substitutions`, `difficulty`, `dietary[]` — output can easily be 3-6 K tokens.
+- HF chain is tried first (3 models). If HF is set, every request pays HF tokens; only if all three fail does it fall back to `google/gemini-3.1-flash-lite`.
+- Cache exists (30-day, keyed by sorted pantry + cuisine + dietary + **exclude** + kidFriendly + language). Because `exclude` grows every "Show more", cache almost never hits on refresh.
+- Daily dinner, tweaks, and dislike-regen each call the model in full with steps/reason/ingredients — no output cap.
 
----
+## Changes — high-impact first
 
-## Phase 1 — Kitchen power
+### 1. Cap output tokens on every call (biggest single knob)
+In `hf-client.server.ts`, add a `maxTokens` parameter to `callOpenAICompat` / `callChatJSON` (default 1200, override per call site). Cost per call is dominated by output tokens — this alone can cut spend 40-60% on truncation-resistant flows.
 
-Turn Cook Mode into a hands-free, adaptive kitchen surface.
+Per call-site caps:
+- `generateRecipes`: 2000 (10 recipes × ~200 tokens each after slimming)
+- `daily-dinner` variants: 500
+- `substitutions`, `ingredient-swap`, `dish-helper`, `paid-recipe teaser`: 400
 
-1. **Voice control in Cook Mode**
-   - Web Speech API (`SpeechRecognition`), no backend cost.
-   - Commands: "next", "back", "repeat", "start timer", "pause", "how long".
-   - Mic toggle button in the Cook Mode header; visual indicator when listening; TTS confirmation ("Step 3 of 8") via `speechSynthesis`.
-   - Fallback message on unsupported browsers (Firefox/older iOS).
+### 2. Slim the recipe output shape
+Cut structural bloat that costs both input (schema) and output tokens:
+- Drop `stepTimings`, `substitutions`, `difficulty`, `kidFriendly` from the response by default. Keep them only when a caller asks for them (new `detailed: boolean` flag; default false).
+- Make `nutrition` opt-in via the existing `includeNutrition` flag (currently ignored — code forces nutrition on). This alone cuts ~200 tokens per recipe.
+- Return **6 recipes** by default instead of 10; add a "Show more" that re-queries for 4 more with the excluded titles.
 
-2. **Serving scaler**
-   - `×0.5 / ×1 / ×2 / ×4` toggle on both unlocked recipe pages and Cook Mode.
-   - Ingredient parser handles integers, decimals, fractions (`1½`, `1 1/2`), and units. Non-parseable strings render unchanged with a `~` marker.
-   - Rescaled quantities also propagate into shopping-list generation and the "add missing" action.
+### 3. Tighten the system prompt
+Rewrite the recipe system prompt from ~1.8 KB to ~600 bytes: keep the rules, drop the repetition, move examples inline into the JSON template, remove tag list enumeration (let the model infer from a short whitelist). Move dietary compliance into one line with the tags interpolated.
 
-3. **AI ingredient substitutions**
-   - Long-press / tap an ingredient chip → bottom sheet with 3 AI-generated swaps (with ratios and flavor tradeoffs).
-   - Uses existing Lovable AI gateway (`google/gemini-3.1-flash-lite`), cached per `(recipe_id, ingredient)` in `localStorage` for the session.
+### 4. Drop the HF chain by default
+Set `LOVABLE_MODEL` (`gemini-3.1-flash-lite`) as the primary path. Only try HF when an env flag `AI_USE_HF=1` is present. Rationale: HF chain adds latency and a second bill; Gemini flash-lite is already the cheapest capable model on the gateway and honors `response_format: json_object` natively (fewer parse retries).
 
-4. **"Add missing to shopping list"**
-   - On any unlocked recipe: button diffs recipe ingredients against `pantry_items`, opens a checklist of missing items, adds selected to this week's plan-derived `/list`.
-   - Also available inside Cook Mode header.
+### 5. Fix caching so it actually hits
+- Remove `exclude` from the cache key. Cache the full pool by (pantry, cuisine, dietary, kidFriendly, language), then filter out excluded titles client-side when paginating. Same-pantry refreshes become free after the first call.
+- Extend TTL from 30 → 90 days for shared, pantry-agnostic queries (e.g. `cuisine="Any / Surprise Me"` with empty pantry — this is popular and identical across users).
+- Add a public/shared cache tier: if `ingredients.length === 0`, use a project-wide key with no user salt. First user pays, everyone else is free.
+- Cache daily-dinner "Tweak" combos too: key by `(userId, day, dietary+allergies+spice+maxTime)` so toggling the same chips again is free.
 
-5. **Unit toggle (metric ↔ US)**
-   - Per-user preference in `user_preferences` (add `unit_system` column). Reuses the parser from #2. Persists across sessions.
+### 6. Lower temperature
+Drop `temperature` from `0.7` → `0.3` on JSON calls. Deterministic-ish output reduces parse-failure retries and repeat generations. Keep 0.7 only for `generateRecipes` where variety matters, and reduce to `0.5` there.
 
----
+### 7. Preflight: skip the model when we can
+- Reject obviously empty/duplicate inputs before the call (already partially done — audit and tighten).
+- Client-side: don't allow "Show more" to fire when we have ≥N recipes cached for the current filter set.
+- Debounce daily-dinner "Tweak" applies from 400 ms → 800 ms to collapse rapid chip toggles.
 
-## Phase 2 — Retention loop
+### 8. Downsize daily-dinner output
+Reduce steps from 5-8 → 3-5, drop `reason` and `usedIngredients`/`missingIngredients` from the initial payload; fetch full details only when the user expands the card. First render becomes a 150-token response instead of ~600.
 
-Make the app worth opening every day.
+## Technical details
 
-6. **Daily suggestion on Home**
-   - New hero card above the fridge input: "Tonight, from your pantry" — one AI-picked saved/community/paid recipe based on pantry + preferences + what's already in this week's plan.
-   - Regenerates once per calendar day per user (cached in a new `daily_suggestions` table).
-   - Actions: "Cook it", "Add to plan", "Skip → new pick" (spends one manual regen, capped at 3/day).
+Files touched:
+- `src/lib/hf-client.server.ts` — add `maxTokens` param, HF opt-in, lower temperature default.
+- `src/lib/recipes.functions.ts` — slim prompt, drop always-on fields, remove `exclude` from cache key, add shared cache path, cut recipe count.
+- `src/lib/daily-dinner.functions.ts` — smaller output shape, cache tweak combos, lazy-load details.
+- `src/lib/substitutions.functions.ts`, `src/lib/ingredient-swap.functions.ts`, `src/lib/dish-helper.functions.ts`, `src/lib/paid-recipes.functions.ts` — pass tight `maxTokens`.
+- `src/lib/ai-cache.server.ts` — add `getSharedCached` helper for pantry-agnostic keys.
+- Recipe UI — pagination for "Show more" reading from cached pool, opt-in "Show nutrition/timings" toggle.
 
-7. **"I cooked it" + real ratings + photo**
-   - Cook Mode "Finish" screen prompts: 1–5 stars, optional 200-char note, optional photo upload to Supabase Storage.
-   - New tables: `cook_logs` (user × recipe × timestamp) and `recipe_ratings` (real ratings — displayed alongside/eventually replacing `fakeRating`).
-   - Personal `/journal` page: chronological list of everything you've cooked with photos.
+Rough expected savings on a "typical" recipe-gen request:
+- Output tokens: ~3500 → ~1300 (−63%)
+- Input tokens: ~1900 → ~700 (−63%)
+- Cache hit rate on repeat/paginate: <5% → ~70% for same-pantry sessions
 
-8. **Streaks + weekly recap**
-   - `cook_logs` powers a streak counter on Home ("🔥 3-day streak") and a Sunday weekly recap card ("You cooked 4 recipes, tried 2 new cuisines").
-   - No emails — all in-app.
+## Trade-offs the user should know
+- Nutrition, timings-per-step, and substitutions become opt-in — hidden until the user asks for them.
+- Default result count drops from 10 → 6 (pagination fills the rest, and it's free from cache).
+- Slightly less "creative" wording at lower temperature.
+- HF fallback is disabled unless `AI_USE_HF=1` is set — one less provider to bill, but also one less safety net if Lovable AI is briefly down.
 
-9. **Save for later inbox**
-   - Global bookmark button on any recipe card / detail page. Writes to a new `bookmarks` table.
-   - New "Saved" section on Home surfacing the last 6 bookmarks.
-
----
-
-## Phase 3 — Notifications & social polish
-
-Close the follow → discover → notify loop.
-
-10. **In-app notification center**
-    - `notifications` table with `user_id, kind, payload, read_at`.
-    - Bell icon in top-right on desktop and inside `/account` on mobile. Unread badge on the "Me" tab.
-    - Triggers: new recipe from followed chef, tip received, recipe/cookbook sold, promo code redeemed, someone rated your recipe.
-    - Server-mediated inserts from the relevant server functions and webhook handlers (no direct client writes).
-
-11. **Recently viewed rail on Home**
-    - `localStorage`-backed (last 8 recipes, dedup by id). Horizontal scroller under the daily suggestion.
-
-12. **Native share sheet**
-    - `navigator.share` with title, description, and cover image on every recipe/cookbook/chef page. Fallback to copy-link toast on unsupported browsers.
-
----
-
-## Phase 4 — Visual refresh (opinionated single pass)
-
-Keep the paprika + turmeric + zine feel. Fix the loudness and mobile density.
-
-- **Home page above the fold**: replace the text-heavy landing with a big square "Scan my fridge" tile (camera icon + short label) + the daily suggestion card. Everything else moves below.
-- **Recipe cards**: tall aspect image (4:5), title + price overlaid at bottom on a subtle gradient, chef row below. Kills the current cramped 3-column info fight.
-- **Shadow discipline**: `shadow-[3px_3px_0px_0px_var(--border)]` reserved for primary CTAs and hero-tier cards only. Secondary cards get `border-2` alone.
-- **Type scale**: introduce two mid sizes (`text-lg`, `text-2xl`) between body and display. Cap display usage to page titles + hero cards.
-- **Bottom nav**: bump icons to `h-6 w-6`, use filled Lucide variants (`HomeIcon` filled) when active, thin outline when not.
-- **Cook Mode entry**: sticky "Cook this →" bar on every unlocked recipe, styled like the unlock CTA on locked ones.
-- **Dashboards (`/analytics`, `/earnings`)**: unify KPI card style, calmer borders, keep charts as-is.
-
-No 3-direction picker — I'll ship this as one coherent pass and iterate on your feedback.
-
----
-
-## Technical notes
-
-- **New tables**: `daily_suggestions`, `cook_logs`, `recipe_ratings`, `bookmarks`, `notifications`. Each with RLS (`auth.uid() = user_id` on owner rows) and explicit `GRANT` per the public-schema-grants rule. Ratings get a public-read policy scoped to published recipes only.
-- **Storage**: new `cook-photos` bucket (private, owner-scoped signed URLs).
-- **Server functions**: extend `saved-recipes.functions.ts`, `pantry.functions.ts`, and add `cook-log.functions.ts`, `notifications.functions.ts`, `bookmarks.functions.ts`, `daily-suggestion.functions.ts`, `substitutions.functions.ts`.
-- **AI**: substitutions + daily suggestions use existing `callChatJSON` on `google/gemini-3.1-flash-lite`. Voice control is fully client-side (Web Speech API + `speechSynthesis`), no gateway calls.
-- **Notifications on the server side**: existing server functions that already perform the triggering write (follow, tip webhook, sale webhook, rating insert) get an additional insert into `notifications` in the same handler.
-- **Migrations**: one migration per phase, keeping RLS + GRANT + policies in the same file.
-
----
-
-## Order of work
-
-1. Phase 1 (kitchen power) — 5 features, mostly client + one pref column.
-2. Phase 2 (retention) — 4 features + 4 new tables + storage bucket.
-3. Phase 3 (notifications & social polish) — 1 new table + wiring into existing handlers.
-4. Phase 4 (visual refresh) — pure UI, no schema.
-
-I'll pause between phases only if you want to review. Otherwise I ship them back-to-back and you review at the end.
+If any of these trade-offs are unacceptable (e.g. "always show nutrition"), say which and I'll adjust the plan before building.

@@ -153,62 +153,59 @@ export const generateRecipes = createServerFn({ method: "POST" })
       ? `\n- KID-FRIENDLY MODE: All recipes MUST be kid-approved. Prefer mild flavors, no chili heat, no strong funk (blue cheese, anchovy, fish sauce, strong fermented items), nothing raw (no tartare, no runny eggs unless cooked through), and avoid bitter greens. Hide vegetables in sauces/blends where possible. Favor familiar shapes (meatballs, pasta, pancakes, finger foods). Set "kidFriendly": true on every recipe.`
       : "";
 
-    const nutritionRule = `\n- NUTRITION (REQUIRED): Include a "nutrition" object with "servings" (integer matching top-level servings) and "perServing" with integer "calories", "proteinG", "carbsG", "fatG", "sugarG", "fiberG". These are APPROXIMATE estimates — do your best, do not pretend precision, but never omit them.`;
-
-    const systemPrompt = `You are an expert home cook. Generate 10 realistic, delicious recipes${hasIngredients ? " the user can cook with mostly the ingredients they have on hand" : " for the selected cuisine"}. ${cuisineGuidance}
-Rules:
-- ${ingredientRule}
-- Steps must be concrete and ordered (4-8 short steps).
-- cookTimeMinutes must be realistic (5-90) — active cooking time only.
-- ALSO provide: prepTimeMinutes (chopping/measuring/marinating), totalTimeMinutes (prep + cook), and stepTimings — an array of integer minutes per step, SAME LENGTH as steps. If a step is instant, use 1.
-- SERVINGS: Always include a top-level integer "servings" (1-12) indicating how many people the recipe feeds. If nutrition is included, "nutrition.servings" MUST equal this value.
-- INGREDIENTS MUST INCLUDE EXACT QUANTITIES AND UNITS used by the steps. Every entry in usedIngredients and missingIngredients must be formatted as "<quantity> <unit> <ingredient>" — for example "2 cups all-purpose flour", "1 tbsp olive oil", "200 g chicken thighs, diced", "3 cloves garlic, minced", "1/2 tsp salt", "to taste black pepper". Never return a bare ingredient name without an amount. Use metric or US units consistent with the cuisine. Quantities must match the servings count above and be sufficient for the steps to work.
-- Set "difficulty" to "easy" (≤25 min total, ≤5 simple steps, basic technique), "medium" (most weeknight cooking), or "hard" (advanced technique, multi-component, or >45 min total).${kidFriendlyRule}${nutritionRule}
-- Honor dietary constraints STRICTLY: ${dietary}. Every single recipe MUST comply with ALL listed dietary tags. Treat each tag as a hard allergy/diet constraint — if a tag names an ingredient or food family (e.g. "Peanut allergy", "No shellfish", "No mushrooms", "Lactose intolerant"), exclude that ingredient AND its derivatives/cross-contaminants entirely, and mention a safe swap in "substitutions". If a tag is "Vegan", use zero animal products (no meat, fish, dairy, eggs, honey). If "Vegetarian", no meat or fish. If "Gluten-Free", no wheat/barley/rye/soy sauce. If "Dairy-Free", no milk/butter/cheese/yogurt/ghee. If "Halal" or "Kosher", strictly follow rules. Discard any recipe that would violate a tag — do not include it.
-- If "Quick Meal" is selected, all recipes must be <= 20 minutes.
-- For every recipe, set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy". Include any user-selected dietary tags that apply, plus any other tags that are obviously true for the dish. Max 6 tags. Use [] if none apply.
-- Return ONLY valid JSON matching the schema. No prose.${languageInstruction(data.language)}`;
-
-    const excludeBlock = data.exclude.length
-      ? `\n\nDo NOT repeat or closely resemble these recipes already shown:\n- ${data.exclude.join("\n- ")}`
+    const includeNutrition = data.includeNutrition !== false;
+    const nutritionRule = includeNutrition
+      ? `\n- Include "nutrition": {servings, perServing:{calories, proteinG, carbsG, fatG, sugarG, fiberG}} — integer approximate estimates.`
       : "";
 
-    const userPrompt = `Ingredients on hand: ${hasIngredients ? data.ingredients.join(", ") : "(none — user has not specified any)"}
+    const RECIPE_COUNT = 6;
+    const systemPrompt = `You are an expert home cook. Generate ${RECIPE_COUNT} realistic, delicious recipes${hasIngredients ? " using mostly the user's ingredients" : " for the selected cuisine"}. ${cuisineGuidance}
+Rules:
+- ${ingredientRule}
+- 4-6 short concrete ordered steps. cookTimeMinutes 5-90 realistic active time.
+- Include prepTimeMinutes and totalTimeMinutes. Include integer servings (1-12).
+- Every ingredient entry must be "<qty> <unit> <ingredient>" (e.g. "2 cups rice", "1 tsp salt"). Never bare names.${kidFriendlyRule}${nutritionRule}
+- Dietary constraints STRICT — must comply with ALL tags: ${dietary}. Treat named foods as hard allergies (exclude derivatives). If "Quick Meal", total ≤ 20 min.
+- Set "dietary" to applicable short tags from: Vegan, Vegetarian, Pescatarian, Gluten-Free, Dairy-Free, Nut-Free, Halal, Kosher, Contains Pork, Contains Nuts, Spicy. Max 6. Use [] if none.
+- Return ONLY valid JSON. No prose.${languageInstruction(data.language)}`;
+
+    const excludeBlock = data.exclude.length
+      ? `\nAvoid: ${data.exclude.slice(0, 20).join("; ")}`
+      : "";
+
+    const userPrompt = `Ingredients: ${hasIngredients ? data.ingredients.join(", ") : "(none)"}
 Cuisine preference: ${data.cuisine}
 Dietary: ${dietary}${excludeBlock}
 
-Return JSON shaped exactly like:
+Return JSON shaped like:
 {
   "recipes": [
     {
       "title": "string",
-      "blurb": "one-sentence description",
+      "blurb": "one-sentence",
       "cookTimeMinutes": 25,
       "prepTimeMinutes": 10,
       "totalTimeMinutes": 35,
       "cuisine": "Nepali",
       "servings": 4,
-      "usedIngredients": ["2 cups basmati rice", "200 g paneer, cubed"],
-      "missingIngredients": ["1 tbsp ghee", "1 tsp cumin seeds", "1/2 tsp salt"],
-      "steps": ["step 1", "step 2"],
-      "stepTimings": [5, 10],
-      "substitutions": ["No paneer? Use tofu."],
-      "dietary": ["Vegetarian", "Gluten-Free"]
+      "usedIngredients": ["2 cups rice"],
+      "missingIngredients": ["1 tbsp ghee"],
+      "steps": ["step 1","step 2"],
+      "dietary": ["Vegetarian"]
     }
   ]
 }`;
 
     try {
-      // Cache: normalized key of (sorted pantry, cuisine, sorted dietary,
-      // sorted exclude, kidFriendly, language). Same request → same recipes,
-      // no AI call. Quota/rate-limit still counted above.
+      // Cache key intentionally excludes `exclude` so pagination/refreshes
+      // hit cache; excluded titles are filtered client-side after.
       const { hashKey, getCached, putCached } = await import("./ai-cache.server");
       const norm = {
         ingredients: [...data.ingredients].map((s) => s.toLowerCase().trim()).sort(),
         cuisine: data.cuisine.toLowerCase().trim(),
         dietary: [...data.dietary].map((s) => s.toLowerCase().trim()).sort(),
-        exclude: [...data.exclude].map((s) => s.toLowerCase().trim()).sort(),
         kidFriendly: !!data.kidFriendly,
+        nutrition: includeNutrition,
         language: data.language,
       };
       const cacheKey = hashKey("recipes", norm);
@@ -225,7 +222,10 @@ Return JSON shaped exactly like:
         });
         return { ok: true, recipes: cached.recipes };
       }
-      const aiRes = await callChatJSON(systemPrompt, userPrompt);
+      const aiRes = await callChatJSON(systemPrompt, userPrompt, {
+        maxTokens: includeNutrition ? 2400 : 1600,
+        temperature: 0.5,
+      });
       if (!aiRes.ok) {
         return { ok: false, error: aiRes.error, code: aiRes.code === "parse" ? "server" : aiRes.code };
       }
@@ -241,7 +241,9 @@ Return JSON shaped exactly like:
 
       if (auth) await recordAiGeneration(auth.supabase, auth.userId);
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
-      await putCached("recipes", cacheKey, { recipes: result.data.recipes }, 30);
+      // Pantry-agnostic queries are identical across users → cache longer.
+      const ttlDays = hasIngredients ? 30 : 90;
+      await putCached("recipes", cacheKey, { recipes: result.data.recipes }, ttlDays);
       logAiUsage({
         endpoint: "recipes",
         userId: auth?.userId ?? null,

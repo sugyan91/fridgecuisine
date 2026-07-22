@@ -92,57 +92,40 @@ export const getDishHelper = createServerFn({ method: "POST" })
 
     const dietaryLine =
       data.dietary && data.dietary.length > 0
-        ? `\n- DIETARY CONSTRAINTS (STRICT — never violate): ${data.dietary.join(", ")}. Substitute or omit ingredients as needed so the recipe fully honors these. If the requested dish fundamentally cannot be adapted, still return the closest faithful adaptation that respects the constraints.`
+        ? `\n- DIETARY STRICT: ${data.dietary.join(", ")}. Substitute/omit as needed.`
         : "";
-    const systemPrompt = `You are an expert global chef. Given a dish name (any cuisine, any style), return its ingredients AND a clean home-cook recipe.
-Rules:
-- Use authentic ingredients and techniques for the dish's cuisine.${dietaryLine}
-- Ingredients list should be specific (with quantities for a typical serving) and complete.
-- Steps should be concrete, ordered, 4-12 short steps.
-- ALSO provide: prepTimeMinutes (chopping/measuring), totalTimeMinutes (prep + cook), and stepTimings — an array of integer minutes per step, SAME LENGTH as steps. Use 1 if a step is near-instant.
-- SERVINGS: Always include an integer "servings" (1-12) indicating how many people the recipe feeds. "nutrition.servings" MUST equal this value.
-- NUTRITION (REQUIRED): Include a "nutrition" object with "servings" (integer matching the recipe's servings) and "perServing" with integer "calories", "proteinG", "carbsG", "fatG", "sugarG", "fiberG". These are APPROXIMATE estimates — do your best, do not pretend precision, but never omit them.
-- Set "dietary" to the list of applicable short tags from: "Vegan", "Vegetarian", "Pescatarian", "Gluten-Free", "Dairy-Free", "Nut-Free", "Halal", "Kosher", "Contains Pork", "Contains Nuts", "Spicy", "Keto", "Low-Carb", "High Protein", "Quick Meal". Include user-selected dietary tags that apply plus any others obviously true for the dish. Max 6. Use [] if none apply.
-- Return ONLY valid JSON matching the schema. No prose.${languageInstruction(data.language)}`;
+    const systemPrompt = `You are an expert global chef. Given a dish, return authentic ingredients and a home-cook recipe.${dietaryLine}
+- Ingredients: specific with quantities for a typical serving.
+- 4-10 concrete ordered steps. Include cookTimeMinutes, prepTimeMinutes, totalTimeMinutes, integer servings (1-12).
+- Include "nutrition":{servings, perServing:{calories,proteinG,carbsG,fatG,sugarG,fiberG}} — integer estimates.
+- Set "dietary" to applicable short tags from: Vegan, Vegetarian, Pescatarian, Gluten-Free, Dairy-Free, Nut-Free, Halal, Kosher, Contains Pork, Contains Nuts, Spicy, Keto, Low-Carb, High Protein, Quick Meal. Max 6.
+- Return ONLY valid JSON.${languageInstruction(data.language)}`;
 
     const userPrompt = `Dish: ${data.dish}
 
-Return JSON shaped exactly like:
+Return JSON shaped like:
 {
   "dishName": "string",
-  "ingredients": ["2 cups all-purpose flour", "1 tsp salt", "..."],
-  "dietary": ["Vegetarian", "Gluten-Free"],
+  "ingredients": ["2 cups flour","1 tsp salt"],
+  "dietary": ["Vegetarian"],
   "recipe": {
     "cookTimeMinutes": 45,
     "prepTimeMinutes": 15,
     "totalTimeMinutes": 60,
-    "serves": "4",
     "servings": 4,
-    "steps": ["step 1", "step 2"],
-    "stepTimings": [5, 10],
-    "tips": ["optional tip"],
-    "nutrition": {
-      "servings": 4,
-      "perServing": {
-        "calories": 520,
-        "proteinG": 28,
-        "carbsG": 60,
-        "fatG": 18,
-        "sugarG": 6,
-        "fiberG": 4
-      }
-    }
+    "steps": ["step 1","step 2"],
+    "nutrition": { "servings": 4, "perServing": { "calories": 520, "proteinG": 28, "carbsG": 60, "fatG": 18, "sugarG": 6, "fiberG": 4 } }
   }
 }`;
 
     try {
-      const aiRes = await callChatJSON(systemPrompt, userPrompt);
+      const aiRes = await callChatJSON(systemPrompt, userPrompt, { maxTokens: 1200, temperature: 0.3 });
       if (!aiRes.ok) return { ok: false, error: aiRes.error };
       const result = responseSchema.safeParse(aiRes.json);
       if (!result.success) return { ok: false, error: "AI returned an unexpected format." };
       if (auth) await recordAiGeneration(auth.supabase, auth.userId);
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
-      await putCached("dish-helper", cacheKey, result.data, 30);
+      await putCached("dish-helper", cacheKey, result.data, 90);
       logAiUsage({
         endpoint: "dish-helper",
         userId: auth?.userId ?? null,
