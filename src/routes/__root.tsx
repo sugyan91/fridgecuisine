@@ -16,6 +16,7 @@ import { sendWelcomeEmail } from "@/lib/email/welcome.functions";
 import { LanguageProvider } from "@/lib/language";
 import { ConsentProvider } from "@/lib/consent";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { initAnalytics, trackPageview } from "@/lib/analytics";
 
 const PENDING_SAVE_KEY = "fc-pending-save";
@@ -248,7 +249,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <ConsentProvider>
-          <Outlet />
+          <div className="pb-16 md:pb-0">
+            <Outlet />
+          </div>
+          <MobileBottomNav />
           <CookieConsentBanner />
         </ConsentProvider>
       </LanguageProvider>
