@@ -252,3 +252,66 @@ export const refreshDailyDinner = createServerFn({ method: "POST" })
       refreshesRemaining: MAX_REFRESHES_PER_DAY - (refreshCount + 1),
     };
   });
+
+export const applyDailyDinnerOverrides = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => DailyDinnerOverridesSchema.parse(input))
+  .handler(async ({ context, data }): Promise<DailyDinnerResult> => {
+    const { supabase, userId } = context;
+    const key = `daily-dinner:${userId}:${todayKey()}`;
+
+    const { data: cached } = await supabase
+      .from("ai_result_cache")
+      .select("payload")
+      .eq("cache_key", key)
+      .maybeSingle();
+
+    let refreshCount = 0;
+    let previousTitles: string[] = [];
+    let currentRecipe: DailyDinner | null = null;
+    if (cached?.payload) {
+      const p = cached.payload as unknown as Partial<CachedPayload> & Partial<DailyDinner>;
+      if (p && typeof p === "object" && "recipe" in p && p.recipe) {
+        currentRecipe = p.recipe as DailyDinner;
+        refreshCount = p.refreshCount ?? 0;
+        previousTitles = p.previousTitles ?? [];
+      } else {
+        currentRecipe = p as DailyDinner;
+      }
+    }
+
+    const avoid = [...previousTitles, currentRecipe?.title].filter(
+      (s): s is string => typeof s === "string" && s.length > 0,
+    );
+    const fresh = await generateRecipe(supabase, userId, avoid, data);
+    if (!fresh) {
+      return {
+        recipe: currentRecipe,
+        source: "cache",
+        refreshesRemaining: Math.max(0, MAX_REFRESHES_PER_DAY - refreshCount),
+      };
+    }
+
+    // Override-driven regenerations do NOT consume the daily refresh budget,
+    // but we still record the previous title so subsequent picks stay varied.
+    const payload: CachedPayload = {
+      recipe: fresh,
+      refreshCount,
+      previousTitles: avoid.slice(-5),
+    };
+    await supabase.from("ai_result_cache").upsert(
+      {
+        cache_key: key,
+        kind: "daily-dinner",
+        payload: payload as unknown as never,
+        expires_at: endOfUtcDayISO(),
+      },
+      { onConflict: "cache_key" },
+    );
+
+    return {
+      recipe: fresh,
+      source: "fresh",
+      refreshesRemaining: Math.max(0, MAX_REFRESHES_PER_DAY - refreshCount),
+    };
+  });
