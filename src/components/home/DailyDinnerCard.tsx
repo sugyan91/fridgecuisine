@@ -22,12 +22,14 @@ export function DailyDinnerCard({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [refreshesRemaining, setRefreshesRemaining] = useState<number>(1);
 
   const fetchIt = useCallback(async () => {
     setLoading(true);
     try {
       const res = await load();
       setRecipe(res.recipe);
+      setRefreshesRemaining(res.refreshesRemaining ?? 0);
     } catch {
       /* opportunistic */
     } finally {
@@ -41,11 +43,24 @@ export function DailyDinnerCard({
   }, [isAuthenticated, fetchIt]);
 
   const onRefresh = async () => {
+    if (refreshesRemaining <= 0) {
+      toast.info("You've used your alternate pick for today. Come back tomorrow!");
+      return;
+    }
     setRefreshing(true);
     try {
-      await refresh();
-      await fetchIt();
-      toast.success("Fresh idea for tonight.");
+      const res = await refresh();
+      setRecipe(res.recipe);
+      setRefreshesRemaining(res.refreshesRemaining ?? 0);
+      if (res.limited) {
+        toast.info("No more refreshes today.");
+      } else {
+        toast.success(
+          res.refreshesRemaining > 0
+            ? "Fresh idea for tonight."
+            : "Here's your alternate pick — no more refreshes today.",
+        );
+      }
     } catch {
       toast.error("Couldn't refresh — try again.");
     } finally {
@@ -161,12 +176,21 @@ export function DailyDinnerCard({
               )}
               <button
                 onClick={onRefresh}
-                disabled={refreshing}
-                className="inline-flex items-center gap-2 bg-white/10 border-2 border-white/40 rounded-full px-3 py-2 font-black text-xs uppercase tracking-widest disabled:opacity-50"
-                aria-label="Refresh pick"
+                disabled={refreshing || refreshesRemaining <= 0}
+                title={
+                  refreshesRemaining <= 0
+                    ? "You've used today's alternate pick. Resets at midnight UTC."
+                    : "Get one alternate suggestion for today"
+                }
+                className="inline-flex items-center gap-2 bg-white/10 border-2 border-white/40 rounded-full px-3 py-2 font-black text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="Get an alternate pick"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-                {refreshing ? "…" : "New pick"}
+                {refreshing
+                  ? "…"
+                  : refreshesRemaining > 0
+                    ? `New pick (${refreshesRemaining} left)`
+                    : "No more today"}
               </button>
             </div>
           </div>
