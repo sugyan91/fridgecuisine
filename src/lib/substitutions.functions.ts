@@ -35,7 +35,7 @@ export const suggestSubstitutions = createServerFn({ method: "POST" })
       ],
     });
 
-    const res = await callChatJSON(system, user);
+    const res = await callChatJSON(system, user, { maxTokens: 400, temperature: 0.3 });
     if (!res.ok) return { subs: [] };
     const parsed = res.json as { subs?: unknown };
     if (!Array.isArray(parsed.subs)) return { subs: [] };
