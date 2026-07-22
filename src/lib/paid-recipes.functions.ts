@@ -234,3 +234,108 @@ export const getPaidRecipeFull = createServerFn({ method: "GET" })
     };
     return { unlocked: true as const, recipe };
   });
+
+export type PaidRecipeTeaser = {
+  hook: string;
+  ingredientHints: string[];
+  stepPeeks: string[];
+  totalIngredients: number;
+  totalSteps: number;
+  totalMinutes: number | null;
+};
+
+/**
+ * AI-generated tantalizing preview of a locked recipe. Uses the full recipe
+ * server-side but returns only teasers — first-word/category hints for
+ * ingredients and short step openers with the method redacted.
+ */
+export const getPaidRecipeTeaser = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }): Promise<{ teaser: PaidRecipeTeaser | null }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin
+      .from("paid_recipes")
+      .select("title, cuisine, country, description, ingredients, steps, is_published")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (!row || !row.is_published) return { teaser: null };
+
+    const ingredients = ((row.ingredients ?? []) as string[]).filter(Boolean);
+    const steps = ((row.steps ?? []) as Array<{ text: string; minutes?: number }>).filter(
+      (s) => s && typeof s.text === "string",
+    );
+    const totalMinutes = steps.reduce(
+      (acc, s) => acc + (typeof s.minutes === "number" ? s.minutes : 0),
+      0,
+    );
+
+    const { callChatJSON } = await import("./hf-client.server");
+
+    const system = [
+      "You write mouth-watering recipe teasers for a marketplace where the",
+      "full recipe is locked behind a paywall. Never reveal exact quantities,",
+      "temperatures, timings, or the specific technique. Hints must sound like",
+      "a magazine caption, not a shopping list. Reply ONLY with valid JSON.",
+    ].join(" ");
+
+    const user = JSON.stringify({
+      title: row.title,
+      cuisine: row.cuisine,
+      country: row.country,
+      description: row.description,
+      ingredients: ingredients.slice(0, 30),
+      firstSteps: steps.slice(0, 3).map((s) => s.text.slice(0, 260)),
+      instructions: [
+        "Return JSON of shape {\"hook\": string, \"ingredientHints\": string[5-7], \"stepPeeks\": string[2]}.",
+        "hook: one vivid sentence (max 140 chars) selling the dish.",
+        "ingredientHints: 5-7 short items (max 4 words each). Reveal category or vibe, not amounts. Example: 'toasted spices', 'a bright citrus'.",
+        "stepPeeks: 2 short teasers (max 90 chars each) that hint at the first two moves without giving the method. Example: 'You start by blooming aromatics in ghee…'.",
+        "Never quote the full step text. Never mention exact minutes or degrees.",
+      ],
+    });
+
+    const res = await callChatJSON(system, user);
+
+    const fallback: PaidRecipeTeaser = {
+      hook:
+        row.description?.trim().slice(0, 140) ||
+        `A chef-made ${row.cuisine ?? ""} recipe worth unlocking.`.trim(),
+      ingredientHints: ingredients.slice(0, 5).map((i) => i.split(",")[0].trim().slice(0, 30)),
+      stepPeeks: steps.slice(0, 2).map((s) => s.text.split(/[.!?]/)[0].slice(0, 80) + "…"),
+      totalIngredients: ingredients.length,
+      totalSteps: steps.length,
+      totalMinutes: totalMinutes > 0 ? totalMinutes : null,
+    };
+
+    if (!res.ok) return { teaser: fallback };
+
+    const parsed = res.json as {
+      hook?: unknown;
+      ingredientHints?: unknown;
+      stepPeeks?: unknown;
+    };
+    const hook = typeof parsed.hook === "string" ? parsed.hook.slice(0, 200) : fallback.hook;
+    const ingredientHints = Array.isArray(parsed.ingredientHints)
+      ? parsed.ingredientHints
+          .filter((x): x is string => typeof x === "string")
+          .map((x) => x.slice(0, 40))
+          .slice(0, 7)
+      : fallback.ingredientHints;
+    const stepPeeks = Array.isArray(parsed.stepPeeks)
+      ? parsed.stepPeeks
+          .filter((x): x is string => typeof x === "string")
+          .map((x) => x.slice(0, 120))
+          .slice(0, 2)
+      : fallback.stepPeeks;
+
+    return {
+      teaser: {
+        hook,
+        ingredientHints: ingredientHints.length ? ingredientHints : fallback.ingredientHints,
+        stepPeeks: stepPeeks.length ? stepPeeks : fallback.stepPeeks,
+        totalIngredients: ingredients.length,
+        totalSteps: steps.length,
+        totalMinutes: totalMinutes > 0 ? totalMinutes : null,
+      },
+    };
+  });

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Lock, MapPin, Clock } from "lucide-react";
+import { Loader2, Lock, MapPin, Clock, Sparkles, ChefHat, ListChecks } from "lucide-react";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import {
   getPaidRecipeDetail,
   getPaidRecipeFull,
+  getPaidRecipeTeaser,
+  type PaidRecipeTeaser,
   type PaidRecipeFull,
 } from "@/lib/paid-recipes.functions";
 import { createRecipePurchaseCheckout } from "@/lib/payments.functions";
@@ -363,33 +365,171 @@ function LockedView({
   onBuy: () => void;
   recipeId: string;
 }) {
+  const fetchTeaser = useServerFn(getPaidRecipeTeaser);
+  const [teaser, setTeaser] = useState<PaidRecipeTeaser | null>(null);
+  const [loadingTeaser, setLoadingTeaser] = useState(false);
+  const [teaserError, setTeaserError] = useState<string | null>(null);
+
+  const loadTeaser = async () => {
+    if (teaser || loadingTeaser) return;
+    setLoadingTeaser(true);
+    setTeaserError(null);
+    try {
+      const res = await fetchTeaser({ data: { id: recipeId } });
+      if (!res.teaser) setTeaserError("Preview unavailable.");
+      else setTeaser(res.teaser);
+    } catch {
+      setTeaserError("Couldn't generate preview. Try again.");
+    } finally {
+      setLoadingTeaser(false);
+    }
+  };
+
   return (
-    <div className="mt-6 bg-turmeric/15 border-4 border-dashed border-border rounded-3xl p-6 text-center">
-      <div className="size-12 rounded-2xl bg-foreground text-background border-2 border-border grid place-items-center mx-auto mb-3">
-        <Lock className="size-5" />
-      </div>
-      <p className="font-display text-xl uppercase">Unlock the full recipe</p>
-      <p className="text-sm text-muted-foreground mt-1">
-        Ingredients and step-by-step method are available after purchase.
-      </p>
-      <p className="font-black text-2xl mt-3">${(priceCents / 100).toFixed(2)}</p>
-      {authed ? (
-        <button
-          type="button"
-          onClick={onBuy}
-          className="mt-4 bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
-        >
-          Buy & unlock
-        </button>
-      ) : (
-        <Link
-          to="/login"
-          search={{ redirect: `/shop/${recipeId}` }}
-          className="mt-4 inline-block bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
-        >
-          Sign in or sign up to buy
-        </Link>
+    <div className="mt-6 space-y-4">
+      {!teaser && (
+        <div className="bg-turmeric/15 border-4 border-dashed border-border rounded-3xl p-6 text-center">
+          <div className="size-12 rounded-2xl bg-foreground text-background border-2 border-border grid place-items-center mx-auto mb-3">
+            <Lock className="size-5" />
+          </div>
+          <p className="font-display text-xl uppercase">Unlock the full recipe</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Not sure yet? Get a free AI-generated peek at what's inside.
+          </p>
+          <button
+            type="button"
+            onClick={loadTeaser}
+            disabled={loadingTeaser}
+            className="mt-4 inline-flex items-center gap-2 bg-foreground text-background border-2 border-border px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5 disabled:opacity-60"
+          >
+            {loadingTeaser ? (
+              <>
+                <Loader2 className="size-4 animate-spin" /> Cooking preview…
+              </>
+            ) : (
+              <>
+                <Sparkles className="size-4" /> Peek with AI
+              </>
+            )}
+          </button>
+          {teaserError && (
+            <p className="text-xs text-destructive mt-3">{teaserError}</p>
+          )}
+        </div>
       )}
+
+      {teaser && (
+        <div className="bg-white border-2 border-border rounded-3xl p-5 shadow-[3px_3px_0px_0px_var(--border)]">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-paprika">
+            <Sparkles className="size-3.5" /> AI preview
+          </div>
+          <p className="font-display text-lg md:text-xl mt-2 leading-snug">
+            {teaser.hook}
+          </p>
+
+          <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+            <Stat label="Ingredients" value={teaser.totalIngredients} />
+            <Stat label="Steps" value={teaser.totalSteps} />
+            <Stat
+              label="Total time"
+              value={teaser.totalMinutes ? `${teaser.totalMinutes}m` : "—"}
+            />
+          </div>
+
+          {teaser.ingredientHints.length > 0 && (
+            <div className="mt-5">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">
+                <ChefHat className="size-3.5" /> What's inside (hints)
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {teaser.ingredientHints.map((h, i) => (
+                  <span
+                    key={i}
+                    className="text-xs bg-turmeric/20 border-2 border-border rounded-full px-2.5 py-1 font-black"
+                  >
+                    {h}
+                  </span>
+                ))}
+                {teaser.totalIngredients > teaser.ingredientHints.length && (
+                  <span className="text-xs bg-muted border-2 border-dashed border-border rounded-full px-2.5 py-1 font-black text-muted-foreground">
+                    + {teaser.totalIngredients - teaser.ingredientHints.length} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {teaser.stepPeeks.length > 0 && (
+            <div className="mt-5">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">
+                <ListChecks className="size-3.5" /> First moves
+              </div>
+              <ol className="space-y-2">
+                {teaser.stepPeeks.map((s, i) => (
+                  <li
+                    key={i}
+                    className="text-sm bg-background border-2 border-border rounded-2xl p-3 flex gap-2"
+                  >
+                    <span className="size-6 rounded-full bg-foreground text-background grid place-items-center text-[10px] font-black shrink-0">
+                      {i + 1}
+                    </span>
+                    <span className="italic opacity-90">{s}</span>
+                  </li>
+                ))}
+                {teaser.totalSteps > teaser.stepPeeks.length && (
+                  <li className="text-xs font-black uppercase tracking-widest text-muted-foreground text-center pt-1">
+                    + {teaser.totalSteps - teaser.stepPeeks.length} more steps locked
+                  </li>
+                )}
+              </ol>
+            </div>
+          )}
+
+          <p className="text-[10px] text-muted-foreground mt-4 leading-relaxed">
+            AI-generated preview. Exact amounts, timings, and technique are in
+            the full recipe.
+          </p>
+        </div>
+      )}
+
+      <div className="bg-turmeric/15 border-4 border-dashed border-border rounded-3xl p-6 text-center">
+        <div className="size-12 rounded-2xl bg-foreground text-background border-2 border-border grid place-items-center mx-auto mb-3">
+          <Lock className="size-5" />
+        </div>
+        <p className="font-display text-xl uppercase">Unlock the full recipe</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Ingredients and step-by-step method are available after purchase.
+        </p>
+        <p className="font-black text-2xl mt-3">${(priceCents / 100).toFixed(2)}</p>
+        {authed ? (
+          <button
+            type="button"
+            onClick={onBuy}
+            className="mt-4 bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+          >
+            Buy & unlock
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            search={{ redirect: `/shop/${recipeId}` }}
+            className="mt-4 inline-block bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+          >
+            Sign in or sign up to buy
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="bg-background border-2 border-border rounded-2xl py-2">
+      <p className="font-black text-lg leading-none">{value}</p>
+      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">
+        {label}
+      </p>
     </div>
   );
 }
