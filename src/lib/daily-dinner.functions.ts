@@ -105,7 +105,7 @@ export const getDailyDinner = createServerFn({ method: "POST" })
       {
         cache_key: key,
         kind: "daily-dinner",
-        payload: recipe as unknown as Record<string, unknown>,
+        payload: recipe as unknown as never,
         expires_at: expires.toISOString(),
       },
       { onConflict: "cache_key" },
