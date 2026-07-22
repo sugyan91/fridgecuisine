@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { normalizeIngredients } from "./ingredient-normalize";
 
 export type RecipeStep = { text: string; minutes?: number };
 
@@ -228,7 +229,7 @@ export const getPaidRecipeFull = createServerFn({ method: "GET" })
       cover_image_url: full.cover_image_url,
       price_cents: full.price_cents,
       description: full.description,
-      ingredients: (full.ingredients ?? []) as string[],
+      ingredients: normalizeIngredients(full.ingredients),
       steps: (full.steps ?? []) as RecipeStep[],
       is_published: full.is_published,
     };
@@ -260,26 +261,7 @@ export const getPaidRecipeTeaser = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!row || !row.is_published) return { teaser: null };
 
-    const rawIngredients = (row.ingredients ?? []) as unknown[];
-    const ingredients: string[] = rawIngredients
-      .map((i) => {
-        if (typeof i === "string") return i;
-        if (i && typeof i === "object") {
-          const o = i as { name?: unknown; quantity?: unknown; qty?: unknown; amount?: unknown };
-          const name = typeof o.name === "string" ? o.name : "";
-          const qty =
-            typeof o.quantity === "string"
-              ? o.quantity
-              : typeof o.qty === "string"
-                ? o.qty
-                : typeof o.amount === "string"
-                  ? o.amount
-                  : "";
-          return [qty, name].filter(Boolean).join(" ").trim();
-        }
-        return "";
-      })
-      .filter((s): s is string => typeof s === "string" && s.length > 0);
+    const ingredients = normalizeIngredients(row.ingredients);
     const steps = ((row.steps ?? []) as Array<{ text: string; minutes?: number }>).filter(
       (s) => s && typeof s.text === "string",
     );
