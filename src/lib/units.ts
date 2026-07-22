@@ -1,5 +1,6 @@
 // Ingredient line parsing + serving scaling + metric/US conversion.
 // Client-safe, no imports.
+import { normalizeIngredient } from "./ingredient-normalize";
 
 export type UnitSystem = "us" | "metric";
 
@@ -107,11 +108,13 @@ function convert(qty: number, unit: string, target: UnitSystem): { qty: number; 
 }
 
 /** Scale (and optionally convert) a single ingredient string. */
-export function scaleIngredient(line: string, factor: number, system?: UnitSystem): string {
-  const p = parseIngredient(line);
+export function scaleIngredient(line: unknown, factor: number, system?: UnitSystem): string {
+  const safe = typeof line === "string" ? line : normalizeIngredient(line);
+  if (!safe) return "";
+  const p = parseIngredient(safe);
   if (p.qty == null) {
     // Non-parseable — mark with ~ when scaled to any non-1 factor.
-    return factor === 1 ? line : `~ ${line}`;
+    return factor === 1 ? safe : `~ ${safe}`;
   }
   let qty = p.qty * factor;
   let unit = p.unit ?? "";
@@ -128,8 +131,8 @@ export function scaleIngredient(line: string, factor: number, system?: UnitSyste
 }
 
 /** Scale a whole list of ingredient strings. */
-export function scaleIngredients(list: string[], factor: number, system?: UnitSystem): string[] {
-  return list.map((l) => scaleIngredient(l, factor, system));
+export function scaleIngredients(list: unknown[], factor: number, system?: UnitSystem): string[] {
+  return list.map((l) => scaleIngredient(l, factor, system)).filter((s) => s.length > 0);
 }
 
 /** Return the ingredient name (rest) lowercased for pantry-diffing. */
