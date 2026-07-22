@@ -72,7 +72,7 @@ User's pantry: ${pantry}
 Dietary constraints (must respect): ${dietary}`;
 
     try {
-      const aiRes = await callChatJSON(systemPrompt, userPrompt);
+      const aiRes = await callChatJSON(systemPrompt, userPrompt, { maxTokens: 400, temperature: 0.3 });
       if (!aiRes.ok) return { ok: false, error: aiRes.error };
       const parsed = responseSchema.safeParse(aiRes.json);
       if (!parsed.success) {
