@@ -284,7 +284,8 @@ function RecipeDetail() {
 }
 
 function UnlockedView({ recipe }: { recipe: PaidRecipeFull }) {
-  const baseServings = recipe.servings && recipe.servings > 0 ? recipe.servings : 4;
+  const rec = recipe as PaidRecipeFull & { servings?: number | null };
+  const baseServings = rec.servings && rec.servings > 0 ? rec.servings : 4;
   const [servings, setServings] = useState(baseServings);
   const [unit, setUnit] = useUnitSystem();
   const factor = servings / baseServings;
