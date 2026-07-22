@@ -26,7 +26,7 @@ export function DailyDinnerCard({
   const fetchIt = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await load({ data: {} });
+      const res = await load();
       setRecipe(res.recipe);
     } catch {
       /* opportunistic */
@@ -43,7 +43,7 @@ export function DailyDinnerCard({
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await refresh({ data: {} });
+      await refresh();
       await fetchIt();
       toast.success("Fresh idea for tonight.");
     } catch {
