@@ -38,9 +38,9 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-background/90 backdrop-blur-xl border-t border-border/70 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_-12px_rgb(27_18_14_/_0.15)]"
+      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-background/85 backdrop-blur-2xl border-t border-border/60 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_32px_-16px_rgb(27_18_14_/_0.18)]"
     >
-      <ul className="grid grid-cols-5 px-1 pt-1.5">
+      <ul className="grid grid-cols-5 px-2 pt-2">
         {TABS.map(({ to, label, icon: Icon, exact }) => {
           const active = exact ? pathname === to : pathname === to || pathname.startsWith(to + "/") || pathname.startsWith(to);
           return (
@@ -49,27 +49,27 @@ export function MobileBottomNav() {
                 to={to}
                 aria-current={active ? "page" : undefined}
                 aria-label={label}
-                className={`group relative flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                className={`group relative flex flex-col items-center justify-center gap-1 py-1.5 rounded-2xl text-[10px] font-semibold tracking-wide transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   active
-                    ? "text-paprika"
+                    ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span
-                  className={`flex h-8 w-12 items-center justify-center rounded-full transition-all duration-200 ${
+                  className={`flex h-9 w-14 items-center justify-center rounded-full transition-all duration-300 ease-out ${
                     active
-                      ? "bg-paprika/12 scale-100"
+                      ? "bg-primary/12 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--primary)_20%,transparent)]"
                       : "bg-transparent scale-95 group-hover:bg-muted/60"
                   }`}
                 >
                   <Icon
-                    className={`h-[18px] w-[18px] transition-transform duration-200 ${
-                      active ? "stroke-[2.5] scale-110" : "stroke-2"
+                    className={`h-[19px] w-[19px] transition-all duration-300 ${
+                      active ? "stroke-[2.4] scale-110" : "stroke-[1.8]"
                     } motion-reduce:transform-none`}
                     aria-hidden
                   />
                 </span>
-                <span>{label}</span>
+                <span className={active ? "opacity-100" : "opacity-80"}>{label}</span>
               </Link>
             </li>
           );
