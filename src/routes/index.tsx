@@ -176,11 +176,11 @@ function Index() {
     return () => clearInterval(tick);
   }, [dishPrompts.length]);
 
-  // Rotating "food from country" placeholder — 500 dishes worldwide, every 30s
-  const [worldFoodIndex, setWorldFoodIndex] = useState(() =>
-    Math.floor(Math.random() * worldFoods.length),
-  );
+  // Rotating "food from country" placeholder — 500 dishes worldwide, every 30s.
+  // Start at 0 for deterministic SSR, randomize after hydration to avoid mismatch.
+  const [worldFoodIndex, setWorldFoodIndex] = useState(0);
   useEffect(() => {
+    setWorldFoodIndex(Math.floor(Math.random() * worldFoods.length));
     const tick = setInterval(() => {
       setWorldFoodIndex((i) => (i + 1) % worldFoods.length);
     }, 30000);
