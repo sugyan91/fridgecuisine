@@ -167,7 +167,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@type": "Organization",
           name: "FridgeCuisine",
           url: "https://fridgecuisine.com",
-          logo: "https://fridgecuisine.com/favicon.ico",
+          logo: "https://fridgecuisine.com/favicon.png",
         }),
       },
       {
