@@ -1,4 +1,4 @@
-import { useState, useRef, type KeyboardEvent } from "react";
+import { useState, useRef, useEffect, type KeyboardEvent } from "react";
 import { FridgePhotoButton } from "./FridgePhotoButton";
 import { IngredientIcon } from "@/lib/ingredient-icon";
 import { getIngredientHistory, pushIngredientHistory } from "@/lib/errors";
@@ -135,7 +135,9 @@ export function IngredientInput({ ingredients, onChange }: Props) {
     .filter((h) => !ingredients.some((i) => i.toLowerCase() === h.toLowerCase()))
     .slice(0, 8);
 
-  const promptIdeas = getPromptIdeas(ingredients);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const promptIdeas = getPromptIdeas(ingredients, hydrated);
 
   return (
     <div>
@@ -250,14 +252,18 @@ export function IngredientInput({ ingredients, onChange }: Props) {
   );
 }
 
-function getPromptIdeas(ingredients: string[]): string[] {
+function getPromptIdeas(ingredients: string[], hydrated: boolean): string[] {
   const ideas: string[] = [];
-  const hour = new Date().getHours();
   if (ingredients.length === 0) {
-    if (hour < 11) ideas.push("Try: quick breakfast");
-    else if (hour < 15) ideas.push("Try: 20-min lunch");
-    else if (hour < 21) ideas.push("Try: cozy dinner");
-    else ideas.push("Try: late-night snack");
+    if (hydrated) {
+      const hour = new Date().getHours();
+      if (hour < 11) ideas.push("Try: quick breakfast");
+      else if (hour < 15) ideas.push("Try: 20-min lunch");
+      else if (hour < 21) ideas.push("Try: cozy dinner");
+      else ideas.push("Try: late-night snack");
+    } else {
+      ideas.push("Try: cozy dinner");
+    }
     ideas.push("Try: kid-friendly");
   } else if (ingredients.length < 3) {
     ideas.push("Add a protein for better matches");
