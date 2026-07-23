@@ -40,12 +40,13 @@ export const swapIngredient = createServerFn({ method: "POST" })
     if (!quota.ok) return { ok: false, error: quota.error };
 
     const { hashKey, getCached, putCached } = await import("./ai-cache.server");
+    const { normalizeForCacheKey } = await import("./ai-cache.server");
     const norm = {
-      recipe: data.recipeTitle.toLowerCase().trim(),
-      cuisine: (data.cuisine ?? "").toLowerCase().trim(),
-      ingredient: data.ingredient.toLowerCase().trim(),
-      pantry: [...data.pantry].map((s) => s.toLowerCase().trim()).sort(),
-      dietary: [...data.dietary].map((s) => s.toLowerCase().trim()).sort(),
+      recipe: normalizeForCacheKey(data.recipeTitle),
+      cuisine: normalizeForCacheKey(data.cuisine ?? ""),
+      ingredient: normalizeForCacheKey(data.ingredient),
+      pantry: [...data.pantry].map(normalizeForCacheKey).sort(),
+      dietary: [...data.dietary].map(normalizeForCacheKey).sort(),
     };
     const cacheKey = hashKey("ingredient-swap", norm);
     const cached = await getCached<{ swaps: IngredientSwap[] }>(
@@ -61,10 +62,7 @@ export const swapIngredient = createServerFn({ method: "POST" })
     const dietary = data.dietary.length ? data.dietary.join(", ") : "none";
     const pantry = data.pantry.length ? data.pantry.join(", ") : "(none listed)";
 
-    const systemPrompt = `You are an expert home cook helping a user swap an ingredient they don't have in a specific recipe.
-Return 1-2 realistic substitutions (max 3). Prefer items from the user's pantry when sensible. Each swap must respect the dietary constraints STRICTLY.
-For each swap, "name" is the replacement ingredient (with quantity hint if helpful, e.g. "Greek yogurt (3 tbsp)"). "note" is a single short sentence explaining how it changes the dish or any technique tweak.
-Return ONLY JSON: { "swaps": [{ "name": "...", "note": "..." }] } — no prose.`;
+    const systemPrompt = `Expert home cook. Swap an ingredient in a recipe. Return 1-3 realistic subs, prefer pantry items, respect dietary strictly. "name" = replacement (with qty hint). "note" = one line on impact. JSON only: {"swaps":[{"name":"...","note":"..."}]}`;
 
     const userPrompt = `Recipe: ${data.recipeTitle}${data.cuisine ? ` (${data.cuisine} cuisine)` : ""}
 Ingredient to swap: ${data.ingredient}
@@ -72,14 +70,14 @@ User's pantry: ${pantry}
 Dietary constraints (must respect): ${dietary}`;
 
     try {
-      const aiRes = await callChatJSON(systemPrompt, userPrompt, { maxTokens: 400, temperature: 0.3 });
+      const aiRes = await callChatJSON(systemPrompt, userPrompt, { maxTokens: 220, temperature: 0.2 });
       if (!aiRes.ok) return { ok: false, error: aiRes.error };
       const parsed = responseSchema.safeParse(aiRes.json);
       if (!parsed.success) {
         return { ok: false, error: "Couldn't read AI response. Try again." };
       }
       await recordAiGeneration(supabase, userId);
-      await putCached("ingredient-swap", cacheKey, { swaps: parsed.data.swaps }, 30);
+      await putCached("ingredient-swap", cacheKey, { swaps: parsed.data.swaps }, 90);
       logAiUsage({ endpoint: "ingredient-swap", userId, cacheHit: false });
       return { ok: true, swaps: parsed.data.swaps };
     } catch (err) {

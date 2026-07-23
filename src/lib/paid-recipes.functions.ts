@@ -261,6 +261,17 @@ export const getPaidRecipeTeaser = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!row || !row.is_published) return { teaser: null };
 
+    // Cache teaser by recipe id + updated_at — invalidates automatically on edit.
+    const { hashKey, getCached, putCached } = await import("./ai-cache.server");
+    const { data: meta } = await supabaseAdmin
+      .from("paid_recipes")
+      .select("updated_at")
+      .eq("id", data.id)
+      .maybeSingle();
+    const cacheKey = hashKey("paid-teaser", { id: data.id, u: meta?.updated_at ?? "" });
+    const cachedTeaser = await getCached<{ teaser: PaidRecipeTeaser }>("paid-teaser", cacheKey);
+    if (cachedTeaser) return cachedTeaser;
+
     const ingredients = normalizeIngredients(row.ingredients);
     const steps = ((row.steps ?? []) as Array<{ text: string; minutes?: number }>).filter(
       (s) => s && typeof s.text === "string",
@@ -272,30 +283,19 @@ export const getPaidRecipeTeaser = createServerFn({ method: "GET" })
 
     const { callChatJSON } = await import("./hf-client.server");
 
-    const system = [
-      "You write mouth-watering recipe teasers for a marketplace where the",
-      "full recipe is locked behind a paywall. Never reveal exact quantities,",
-      "temperatures, timings, or the specific technique. Hints must sound like",
-      "a magazine caption, not a shopping list. Reply ONLY with valid JSON.",
-    ].join(" ");
+    const system =
+      'Write a paywalled recipe teaser. Never reveal quantities, temps, timings, or exact technique. JSON only: {"hook":str(<=140,one vivid sentence),"ingredientHints":[5-7 items <=4 words, category/vibe not amount],"stepPeeks":[2 items <=90 chars hinting first 2 moves without method]}';
 
     const user = JSON.stringify({
       title: row.title,
       cuisine: row.cuisine,
       country: row.country,
-      description: row.description,
-      ingredients: ingredients.slice(0, 30),
-      firstSteps: steps.slice(0, 3).map((s) => s.text.slice(0, 260)),
-      instructions: [
-        "Return JSON of shape {\"hook\": string, \"ingredientHints\": string[5-7], \"stepPeeks\": string[2]}.",
-        "hook: one vivid sentence (max 140 chars) selling the dish.",
-        "ingredientHints: 5-7 short items (max 4 words each). Reveal category or vibe, not amounts. Example: 'toasted spices', 'a bright citrus'.",
-        "stepPeeks: 2 short teasers (max 90 chars each) that hint at the first two moves without giving the method. Example: 'You start by blooming aromatics in ghee…'.",
-        "Never quote the full step text. Never mention exact minutes or degrees.",
-      ],
+      description: (row.description ?? "").slice(0, 200),
+      ingredients: ingredients.slice(0, 20),
+      firstSteps: steps.slice(0, 2).map((s) => s.text.slice(0, 160)),
     });
 
-    const res = await callChatJSON(system, user, { maxTokens: 350, temperature: 0.5 });
+    const res = await callChatJSON(system, user, { maxTokens: 220, temperature: 0.4 });
 
     const fallback: PaidRecipeTeaser = {
       hook:
@@ -329,14 +329,14 @@ export const getPaidRecipeTeaser = createServerFn({ method: "GET" })
           .slice(0, 2)
       : fallback.stepPeeks;
 
-    return {
-      teaser: {
-        hook,
-        ingredientHints: ingredientHints.length ? ingredientHints : fallback.ingredientHints,
-        stepPeeks: stepPeeks.length ? stepPeeks : fallback.stepPeeks,
-        totalIngredients: ingredients.length,
-        totalSteps: steps.length,
-        totalMinutes: totalMinutes > 0 ? totalMinutes : null,
-      },
+    const finalTeaser: PaidRecipeTeaser = {
+      hook,
+      ingredientHints: ingredientHints.length ? ingredientHints : fallback.ingredientHints,
+      stepPeeks: stepPeeks.length ? stepPeeks : fallback.stepPeeks,
+      totalIngredients: ingredients.length,
+      totalSteps: steps.length,
+      totalMinutes: totalMinutes > 0 ? totalMinutes : null,
     };
+    await putCached("paid-teaser", cacheKey, { teaser: finalTeaser }, 60);
+    return { teaser: finalTeaser };
   });

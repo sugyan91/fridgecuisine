@@ -17,7 +17,7 @@ type Status =
   | { kind: "picking"; picks: Pick[] }
   | { kind: "error"; message: string };
 
-async function fileToResizedDataUrl(file: File, maxDim = 1024, quality = 0.82): Promise<string> {
+async function fileToResizedDataUrl(file: File, maxDim = 768, quality = 0.72): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
   const w = Math.round(bitmap.width * scale);

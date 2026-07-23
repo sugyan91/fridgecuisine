@@ -13,7 +13,10 @@ const HF_MODEL_CHAIN = [
   "meta-llama/Llama-3.3-70B-Instruct",
   "meta-llama/Llama-3.1-8B-Instruct",
 ];
-const LOVABLE_MODEL = "google/gemini-3.1-flash-lite";
+const LOVABLE_MODEL_DEFAULT = "google/gemini-3.1-flash-lite";
+const LOVABLE_MODEL_QUALITY = "google/gemini-3.6-flash";
+
+export type ChatTier = "cheap" | "quality";
 
 const HF_IMAGE_MODEL_CHAIN = [
   "black-forest-labs/FLUX.1-schnell",
@@ -91,59 +94,71 @@ function tryParseJSON(content: string): unknown | null {
 export async function callChatJSON(
   systemPrompt: string,
   userPrompt: string,
-  opts: { maxTokens?: number; temperature?: number } = {},
+  opts: { maxTokens?: number; temperature?: number; tier?: ChatTier } = {},
 ): Promise<ChatJSONResult> {
   const messages: ChatMsg[] = [
     { role: "system", content: systemPrompt },
     { role: "user", content: userPrompt },
   ];
 
+  const model = opts.tier === "quality" ? LOVABLE_MODEL_QUALITY : LOVABLE_MODEL_DEFAULT;
+  const temp = opts.temperature ?? 0.2;
+
+  // Lovable AI first (cheap, reliable). Fall back to HF only on gateway
+  // saturation (429/402/5xx) and only if HF is explicitly enabled.
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  let lovableStatus = 0;
+  if (!lovableKey) {
+    // If no Lovable key, we'll still try HF below.
+    console.warn("[chat] LOVABLE_API_KEY missing, will try HF fallback if enabled.");
+  } else {
+    try {
+      const r = await callOpenAICompat(
+        LOVABLE_URL, lovableKey, model, messages, true, opts.maxTokens, temp,
+      );
+      lovableStatus = r.status;
+      if (r.status === 200) {
+        const parsed = tryParseJSON(r.content);
+        if (parsed) return { ok: true, json: parsed, provider: "lovable" };
+        console.warn("[lovable] unparseable JSON, trying HF fallback if enabled");
+      } else if (r.status !== 429 && r.status !== 402 && r.status < 500) {
+        // Terminal 4xx (bad request) — do not retry HF, surface immediately.
+        console.error("[lovable]", r.status, r.raw.slice(0, 300));
+        return { ok: false, code: "server", error: `AI service error (${r.status}).` };
+      } else {
+        console.warn(`[lovable] ${r.status}, will try HF fallback if enabled. Body: ${r.raw.slice(0, 200)}`);
+      }
+    } catch (err) {
+      console.warn("[lovable] threw, will try HF fallback if enabled:", err);
+    }
+  }
+
   const useHF = process.env.AI_USE_HF === "1";
   const hfKey = useHF ? process.env.HUGGINGFACE_API_KEY : undefined;
   if (hfKey) {
-    for (const model of HF_MODEL_CHAIN) {
+    for (const hfModel of HF_MODEL_CHAIN) {
       try {
-        // HF router doesn't reliably honor response_format; rely on prompt + parse.
-        const r = await callOpenAICompat(HF_URL, hfKey, model, messages, false, opts.maxTokens, opts.temperature ?? 0.3);
+        const r = await callOpenAICompat(HF_URL, hfKey, hfModel, messages, false, opts.maxTokens, temp);
         if (r.status === 200) {
           const parsed = tryParseJSON(r.content);
           if (parsed) {
-            console.log(`[hf] success with ${model}`);
+            console.log(`[hf-fallback] success with ${hfModel}`);
             return { ok: true, json: parsed, provider: "huggingface" };
           }
-          console.warn(`[hf] ${model} returned unparseable JSON, trying next model`);
         } else {
-          console.warn(`[hf] ${model} ${r.status}, trying next. Body: ${r.raw.slice(0, 200)}`);
+          console.warn(`[hf-fallback] ${hfModel} ${r.status}, trying next.`);
         }
       } catch (err) {
-        console.warn(`[hf] ${model} threw, trying next:`, err);
+        console.warn(`[hf-fallback] ${hfModel} threw:`, err);
       }
     }
-    console.warn("[hf] all HF models failed, falling back to Lovable");
   }
 
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  if (!lovableKey) {
-    return { ok: false, code: "server", error: "AI service not configured." };
-  }
-  try {
-    const r = await callOpenAICompat(LOVABLE_URL, lovableKey, LOVABLE_MODEL, messages, true, opts.maxTokens, opts.temperature ?? 0.3);
-    if (r.status === 429) return { ok: false, code: "rate_limit", error: "Too many requests — try again in a moment." };
-    if (r.status === 402) {
-      console.error("[lovable] 402 credits exhausted");
-      return { ok: false, code: "credits", error: "Our kitchen is taking a quick break — please try again later." };
-    }
-    if (r.status !== 200) {
-      console.error("[lovable]", r.status, r.raw.slice(0, 300));
-      return { ok: false, code: "server", error: `AI service error (${r.status}).` };
-    }
-    const parsed = tryParseJSON(r.content);
-    if (!parsed) return { ok: false, code: "parse", error: "AI returned invalid JSON." };
-    return { ok: true, json: parsed, provider: "lovable" };
-  } catch (err) {
-    console.error("[lovable] threw:", err);
-    return { ok: false, code: "server", error: "Something went wrong. Try again." };
-  }
+  // Nothing worked — surface whatever Lovable told us.
+  if (lovableStatus === 429) return { ok: false, code: "rate_limit", error: "Too many requests — try again in a moment." };
+  if (lovableStatus === 402) return { ok: false, code: "credits", error: "Our kitchen is taking a quick break — please try again later." };
+  if (lovableStatus === 0 && !lovableKey) return { ok: false, code: "server", error: "AI service not configured." };
+  return { ok: false, code: "parse", error: "AI returned invalid JSON." };
 }
 
 /**
@@ -179,9 +194,10 @@ export async function callVisionJSON(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: LOVABLE_MODEL,
+        model: LOVABLE_MODEL_DEFAULT,
         messages,
         temperature: 0.2,
+        max_tokens: 250,
         response_format: { type: "json_object" },
       }),
     });

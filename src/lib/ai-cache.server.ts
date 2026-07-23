@@ -8,7 +8,10 @@ export type CacheKind =
   | "recipes"
   | "dish-image"
   | "ingredient-swap"
-  | "dish-helper";
+  | "dish-helper"
+  | "substitutions"
+  | "paid-teaser"
+  | "fridge-vision";
 
 function stableStringify(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
@@ -20,6 +23,23 @@ function stableStringify(value: unknown): string {
   return `{${keys
     .map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`)
     .join(",")}}`;
+}
+
+/**
+ * Aggressive normalization for cache keys — lowercase, trim, strip punctuation,
+ * stem common plural forms so "Tomatoes", "tomato ", "tomato." all collide.
+ * Use for user-supplied ingredient / dish text before hashing.
+ */
+export function normalizeForCacheKey(s: string): string {
+  const t = s
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  // very light stemming: remove trailing "es" / "s"
+  if (t.length > 4 && t.endsWith("es")) return t.slice(0, -2);
+  if (t.length > 3 && t.endsWith("s")) return t.slice(0, -1);
+  return t;
 }
 
 export function hashKey(kind: CacheKind, input: unknown): string {

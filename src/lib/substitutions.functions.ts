@@ -18,24 +18,20 @@ export const suggestSubstitutions = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }): Promise<{ subs: Substitution[] }> => {
+    const { hashKey, getCached, putCached, normalizeForCacheKey } = await import("./ai-cache.server");
+    const cacheKey = hashKey("substitutions", {
+      ingredient: normalizeForCacheKey(data.ingredient),
+      cuisine: normalizeForCacheKey(data.cuisine ?? ""),
+    });
+    const cached = await getCached<{ subs: Substitution[] }>("substitutions", cacheKey);
+    if (cached) return cached;
+
     const { callChatJSON } = await import("./hf-client.server");
     const system =
-      "You are a professional cook. Given an ingredient in a recipe, suggest 3 practical " +
-      "substitutions a home cook might have. Reply ONLY with valid JSON.";
-    const user = JSON.stringify({
-      ingredient: data.ingredient,
-      recipeTitle: data.recipeTitle,
-      cuisine: data.cuisine,
-      instructions: [
-        "Return JSON: {\"subs\": [{ \"swap\": string, \"ratio\": string, \"note\": string }, ... 3 items]}.",
-        "swap: the replacement ingredient (max 60 chars).",
-        "ratio: the amount to use vs the original (max 40 chars). e.g. '1:1', '¾ cup per 1 cup'.",
-        "note: one line on flavor/texture tradeoff (max 120 chars).",
-        "Prefer common pantry items. Skip weird or hard-to-find swaps.",
-      ],
-    });
+      'Professional cook. Suggest 3 practical pantry substitutions. JSON only: {"subs":[{"swap":str(<60),"ratio":str(<40,e.g. "1:1"),"note":str(<120,tradeoff)}]}';
+    const user = `Ingredient: ${data.ingredient}${data.recipeTitle ? ` | Recipe: ${data.recipeTitle}` : ""}${data.cuisine ? ` | Cuisine: ${data.cuisine}` : ""}`;
 
-    const res = await callChatJSON(system, user, { maxTokens: 400, temperature: 0.3 });
+    const res = await callChatJSON(system, user, { maxTokens: 220, temperature: 0.2 });
     if (!res.ok) return { subs: [] };
     const parsed = res.json as { subs?: unknown };
     if (!Array.isArray(parsed.subs)) return { subs: [] };
@@ -57,5 +53,6 @@ export const suggestSubstitutions = createServerFn({ method: "POST" })
       }
       if (subs.length >= 3) break;
     }
+    if (subs.length > 0) await putCached("substitutions", cacheKey, { subs }, 90);
     return { subs };
   });
