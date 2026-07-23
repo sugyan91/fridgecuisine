@@ -8,6 +8,7 @@ import {
   addPlanEntry,
   aggregateShoppingList,
   listWeek,
+  movePlanEntry,
   removePlanEntry,
   type MealPlanEntry,
   type MealSlot,
@@ -39,6 +40,7 @@ function PlanPage() {
   const load = useServerFn(listWeek);
   const add = useServerFn(addPlanEntry);
   const remove = useServerFn(removePlanEntry);
+  const move = useServerFn(movePlanEntry);
   const loadSaved = useServerFn(listSavedRecipes);
 
   const [weekStart, setWeekStart] = useState<Date>(() =>
@@ -49,6 +51,8 @@ function PlanPage() {
   const [loading, setLoading] = useState(true);
   const [picker, setPicker] = useState<{ date: string; slot: MealSlot } | null>(null);
   const [showList, setShowList] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
 
   const startISO = format(weekStart, "yyyy-MM-dd");
   const endISO = format(addDays(weekStart, 6), "yyyy-MM-dd");
@@ -120,6 +124,26 @@ function PlanPage() {
       setEntries((prev) => prev.filter((e) => e.id !== id));
     } catch {
       toast.error("Couldn't remove.");
+    }
+  };
+
+  const onDropEntry = async (id: string, date: string, slot: MealSlot) => {
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) return;
+    if (entry.plan_date === date && entry.meal_slot === slot) return;
+    // Optimistic
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.id === id ? { ...e, plan_date: date, meal_slot: slot } : e,
+      ),
+    );
+    try {
+      await move({ data: { id, plan_date: date, meal_slot: slot } });
+    } catch {
+      toast.error("Couldn't move.");
+      // Reload to sync state
+      const w = await load({ data: { startDate: startISO, endDate: endISO } });
+      setEntries(w.entries);
     }
   };
 
@@ -196,15 +220,50 @@ function PlanPage() {
                   <div className="space-y-2">
                     {SLOTS.map((slot) => {
                       const items = dayEntries.filter((e) => e.meal_slot === slot);
+                      const targetKey = `${iso}:${slot}`;
+                      const isTarget = dropTarget === targetKey;
                       return (
-                        <div key={slot}>
+                        <div
+                          key={slot}
+                          onDragOver={(e) => {
+                            if (!dragId) return;
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = "move";
+                            if (dropTarget !== targetKey) setDropTarget(targetKey);
+                          }}
+                          onDragLeave={() => {
+                            if (dropTarget === targetKey) setDropTarget(null);
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            const id = e.dataTransfer.getData("text/plain") || dragId;
+                            setDropTarget(null);
+                            setDragId(null);
+                            if (id) onDropEntry(id, iso, slot);
+                          }}
+                          className={`rounded-xl transition-colors ${
+                            isTarget ? "bg-turmeric/25 ring-2 ring-paprika/60 -m-1 p-1" : ""
+                          }`}
+                        >
                           <p className="text-[10px] uppercase font-black opacity-50 mb-1">
                             {SLOT_LABEL[slot]}
                           </p>
                           {items.map((it) => (
                             <div
                               key={it.id}
-                              className="group bg-background border-2 border-border rounded-xl p-2 mb-1"
+                              draggable
+                              onDragStart={(e) => {
+                                setDragId(it.id);
+                                e.dataTransfer.setData("text/plain", it.id);
+                                e.dataTransfer.effectAllowed = "move";
+                              }}
+                              onDragEnd={() => {
+                                setDragId(null);
+                                setDropTarget(null);
+                              }}
+                              className={`group bg-background border-2 border-border rounded-xl p-2 mb-1 cursor-grab active:cursor-grabbing ${
+                                dragId === it.id ? "opacity-40" : ""
+                              }`}
                             >
                               <p className="text-xs font-black leading-tight break-words">
                                 {it.title}
