@@ -134,7 +134,7 @@ export function RecipeCard({
   const SignInPhotoCta = ({ tone = "light" }: { tone?: "light" | "dark" }) => (
     <div className="absolute inset-0 grid place-items-center bg-black/35 backdrop-blur-[1px]">
       <Link
-        to="/auth"
+        to="/login"
         className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-border font-black uppercase tracking-widest text-[11px] shadow-[4px_4px_0px_0px_var(--border)] hover:-translate-y-0.5 transition-transform ${
           tone === "dark" ? "bg-white text-foreground" : "bg-turmeric text-foreground"
         }`}
