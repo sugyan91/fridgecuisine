@@ -35,6 +35,18 @@ export const detectFridgeIngredients = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const quota = await checkAiQuota(supabase, userId);
     if (!quota.ok) return { ok: false, error: quota.error };
+
+    // Content-addressable cache — same photo = same result, no re-billing.
+    const { hashKey, getCached, putCached } = await import("./ai-cache.server");
+    const { createHash } = await import("crypto");
+    const imgHash = createHash("sha256").update(data.imageDataUrl).digest("hex");
+    const cacheKey = hashKey("fridge-vision", { img: imgHash, lang: data.language });
+    const cached = await getCached<{ ingredients: string[] }>("fridge-vision", cacheKey);
+    if (cached) {
+      logAiUsage({ endpoint: "fridge-vision", userId, cacheHit: true });
+      return { ok: true, ingredients: cached.ingredients };
+    }
+
     const systemPrompt = `You identify edible food ingredients visible in a photo of a fridge, pantry, or kitchen counter.
 Rules:
 - List only items that could be cooked with (vegetables, fruit, dairy, meat, eggs, condiments, herbs, packaged goods).
@@ -62,6 +74,7 @@ Rules:
         cleaned.push(v);
       }
       await recordAiGeneration(supabase, userId);
+      await putCached("fridge-vision", cacheKey, { ingredients: cleaned }, 30);
       logAiUsage({ endpoint: "fridge-vision", userId, cacheHit: false });
       return { ok: true, ingredients: cleaned };
     } catch (err) {
