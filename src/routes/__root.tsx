@@ -44,19 +44,29 @@ async function drainPendingSave() {
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+        <div className="mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 font-display text-4xl font-bold text-primary">
+          404
+        </div>
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
+          We can't find that page
+        </h1>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+          The link may be broken, or the page may have been moved. Let's get you back to something delicious.
         </p>
-        <div className="mt-6">
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="btn-premium-surface inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium transition-transform hover:-translate-y-[1px]"
           >
-            Go home
+            Back to Home
+          </Link>
+          <Link
+            to="/community"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-border/70 bg-background/60 px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent/40"
+          >
+            Discover recipes
           </Link>
         </div>
       </div>
@@ -69,27 +79,30 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+      <div className="max-w-md rounded-3xl border border-border/60 bg-card p-8 text-center shadow-soft">
+        <div className="mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>
+        </div>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+          Something went wrong
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+        <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+          We couldn't finish loading this page. Try again in a moment, or head back home.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div className="mt-7 flex flex-wrap justify-center gap-3">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="btn-premium-surface inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium transition-transform hover:-translate-y-[1px]"
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-border/70 bg-background/60 px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent/40"
           >
             Go home
           </a>
