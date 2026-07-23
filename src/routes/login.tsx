@@ -432,9 +432,14 @@ function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
+    <main className="relative min-h-dvh bg-background text-foreground flex items-center justify-center p-4 overflow-hidden">
+      {/* Ambient warm glow — decorative */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-0">
+        <div className="absolute -top-32 -left-24 h-80 w-80 rounded-full bg-paprika/10 blur-3xl" />
+        <div className="absolute -bottom-32 -right-24 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+      </div>
       <Toaster />
-      <div className="w-full max-w-md">
+      <div className="relative w-full max-w-md">
         <Link to="/" className="block text-center text-xs font-black uppercase tracking-widest mb-4 opacity-60 hover:opacity-100">
           ← Back to site
         </Link>
@@ -447,7 +452,7 @@ function LoginPage() {
           </p>
         </Link>
 
-        <div className="bg-white border-4 border-border rounded-[32px] p-6 shadow-[8px_8px_0px_0px_var(--border)]">
+        <div className="bg-card border-4 border-border rounded-[32px] p-6 shadow-[8px_8px_0px_0px_var(--border)]">
           {forgotOpen ? (
             forgotSent ? (
               <div className="text-center py-4">
