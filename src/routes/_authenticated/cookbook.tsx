@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { toast } from "sonner";
+import { BookHeart, ChefHat } from "lucide-react";
 import {
   listSavedRecipes,
   setCookedStatus,
   unsaveRecipe,
   type SavedRecipeRow,
 } from "@/lib/saved-recipes.functions";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { toastError, toastSuccess } from "@/lib/errors";
 
 export const Route = createFileRoute("/_authenticated/cookbook")({
   head: () => ({
@@ -41,7 +44,7 @@ function CookbookPage() {
   useEffect(() => {
     list()
       .then((res) => setRows(res.rows))
-      .catch(() => toast.error("Couldn't load your cookbook."))
+      .catch((e) => toastError(e, "Couldn't load your cookbook."))
       .finally(() => setLoading(false));
   }, [list]);
 
@@ -50,9 +53,9 @@ function CookbookPage() {
     try {
       const res = await cook({ data: { id: row.id, cooked: nextCooked } });
       setRows((prev) => prev.map((r) => (r.id === row.id ? res.row : r)));
-      toast.success(nextCooked ? "Logged to history" : "Removed from history");
-    } catch {
-      toast.error("Couldn't update status.");
+      toastSuccess(nextCooked ? "Logged to history" : "Removed from history");
+    } catch (e) {
+      toastError(e, "Couldn't update status.");
     }
   };
 
@@ -61,8 +64,8 @@ function CookbookPage() {
     try {
       await unsave({ data: { title: row.title } });
       setRows((prev) => prev.filter((r) => r.id !== row.id));
-    } catch {
-      toast.error("Couldn't remove.");
+    } catch (e) {
+      toastError(e, "Couldn't remove.");
     }
   };
 
@@ -136,12 +139,15 @@ function CookbookPage() {
         </div>
 
         {loading ? (
-          <p className="opacity-60">Loading…</p>
+          <SkeletonList count={4} />
         ) : tab === "saved" ? (
           savedList.length === 0 ? (
-            <p className="opacity-60">
-              Nothing saved yet. Tap the heart on a recipe to add it here.
-            </p>
+            <EmptyState
+              icon={BookHeart}
+              title="Your cookbook is empty"
+              description="Tap the heart on any recipe to save it here for quick access."
+              action={{ label: "Find recipes", to: "/" }}
+            />
           ) : (
             <ul className="space-y-3">
               {savedList.map((r) => (
@@ -188,9 +194,12 @@ function CookbookPage() {
             </ul>
           )
         ) : history.length === 0 ? (
-          <p className="opacity-60">
-            No cooked meals yet. Mark a saved recipe as cooked to start your history.
-          </p>
+          <EmptyState
+            icon={ChefHat}
+            title="No cooked meals yet"
+            description="Mark a saved recipe as cooked to start building your meal history."
+            action={{ label: "Browse saved", onClick: () => setTab("saved") }}
+          />
         ) : (
           <ul className="space-y-3">
             {history.map((r) => (

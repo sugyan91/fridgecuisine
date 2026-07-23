@@ -38,9 +38,9 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-background/95 backdrop-blur border-t-2 border-border pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-background/90 backdrop-blur-xl border-t border-border/70 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_-12px_rgb(27_18_14_/_0.15)]"
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-5 px-1 pt-1.5">
         {TABS.map(({ to, label, icon: Icon, exact }) => {
           const active = exact ? pathname === to : pathname === to || pathname.startsWith(to + "/") || pathname.startsWith(to);
           return (
@@ -48,11 +48,27 @@ export function MobileBottomNav() {
               <Link
                 to={to}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                  active ? "text-paprika" : "text-muted-foreground"
+                aria-label={label}
+                className={`group relative flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                  active
+                    ? "text-paprika"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className={`h-5 w-5 ${active ? "stroke-[2.5]" : ""}`} />
+                <span
+                  className={`flex h-8 w-12 items-center justify-center rounded-full transition-all duration-200 ${
+                    active
+                      ? "bg-paprika/12 scale-100"
+                      : "bg-transparent scale-95 group-hover:bg-muted/60"
+                  }`}
+                >
+                  <Icon
+                    className={`h-[18px] w-[18px] transition-transform duration-200 ${
+                      active ? "stroke-[2.5] scale-110" : "stroke-2"
+                    } motion-reduce:transform-none`}
+                    aria-hidden
+                  />
+                </span>
                 <span>{label}</span>
               </Link>
             </li>
