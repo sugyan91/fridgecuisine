@@ -131,6 +131,8 @@ function PlanPage() {
     const entry = entries.find((e) => e.id === id);
     if (!entry) return;
     if (entry.plan_date === date && entry.meal_slot === slot) return;
+    const prevDate = entry.plan_date;
+    const prevSlot = entry.meal_slot;
     // Optimistic
     setEntries((prev) =>
       prev.map((e) =>
@@ -139,6 +141,25 @@ function PlanPage() {
     );
     try {
       await move({ data: { id, plan_date: date, meal_slot: slot } });
+      toast.success(`Moved to ${SLOT_LABEL[slot]} · ${format(new Date(date), "EEE d")}`, {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            setEntries((prev) =>
+              prev.map((e) =>
+                e.id === id ? { ...e, plan_date: prevDate, meal_slot: prevSlot } : e,
+              ),
+            );
+            try {
+              await move({ data: { id, plan_date: prevDate, meal_slot: prevSlot } });
+            } catch {
+              toast.error("Couldn't undo.");
+              const w = await load({ data: { startDate: startISO, endDate: endISO } });
+              setEntries(w.entries);
+            }
+          },
+        },
+      });
     } catch {
       toast.error("Couldn't move.");
       // Reload to sync state
