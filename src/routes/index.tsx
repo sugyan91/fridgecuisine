@@ -52,6 +52,7 @@ import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { useLanguage } from "@/lib/language";
 import { IngredientIcon } from "@/lib/ingredient-icon";
+import { WelcomeTour } from "@/components/onboarding/WelcomeTour";
 
 const CUISINE_TO_COUNTRY: Record<string, string> = {
   Chinese: "China", Cantonese: "China", Sichuan: "China", Hunan: "China",
@@ -515,6 +516,7 @@ function Index() {
   return (
     <>
       <Toaster />
+      <WelcomeTour />
       <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
       <LimitReachedModal
         open={limitModalOpen}
