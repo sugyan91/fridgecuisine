@@ -17,6 +17,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -35,7 +36,6 @@ import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPantryRouteImport } from './routes/_authenticated/pantry'
 import { Route as AuthenticatedPlanRouteImport } from './routes/_authenticated/plan'
 import { Route as AuthenticatedPreferencesRouteImport } from './routes/_authenticated/preferences'
-import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
@@ -101,6 +101,11 @@ const LoginRoute = LoginRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -196,11 +201,6 @@ const AuthenticatedPreferencesRoute =
     path: '/preferences',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedSellRoute = AuthenticatedSellRouteImport.update({
   id: '/sell',
   path: '/sell',
@@ -351,6 +351,7 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
@@ -369,7 +370,6 @@ export interface FileRoutesByFullPath {
   '/pantry': typeof AuthenticatedPantryRoute
   '/plan': typeof AuthenticatedPlanRoute
   '/preferences': typeof AuthenticatedPreferencesRoute
-  '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -406,6 +406,7 @@ export interface FileRoutesByTo {
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
@@ -424,7 +425,6 @@ export interface FileRoutesByTo {
   '/pantry': typeof AuthenticatedPantryRoute
   '/plan': typeof AuthenticatedPlanRoute
   '/preferences': typeof AuthenticatedPreferencesRoute
-  '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -463,6 +463,7 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
@@ -481,7 +482,6 @@ export interface FileRoutesById {
   '/_authenticated/pantry': typeof AuthenticatedPantryRoute
   '/_authenticated/plan': typeof AuthenticatedPlanRoute
   '/_authenticated/preferences': typeof AuthenticatedPreferencesRoute
-  '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -520,6 +520,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/login'
     | '/mcp'
+    | '/pricing'
     | '/privacy'
     | '/reset-password'
     | '/security'
@@ -538,7 +539,6 @@ export interface FileRouteTypes {
     | '/pantry'
     | '/plan'
     | '/preferences'
-    | '/pricing'
     | '/sell'
     | '/usage'
     | '/checkout/cancel'
@@ -575,6 +575,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/login'
     | '/mcp'
+    | '/pricing'
     | '/privacy'
     | '/reset-password'
     | '/security'
@@ -593,7 +594,6 @@ export interface FileRouteTypes {
     | '/pantry'
     | '/plan'
     | '/preferences'
-    | '/pricing'
     | '/sell'
     | '/usage'
     | '/checkout/cancel'
@@ -631,6 +631,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/login'
     | '/mcp'
+    | '/pricing'
     | '/privacy'
     | '/reset-password'
     | '/security'
@@ -649,7 +650,6 @@ export interface FileRouteTypes {
     | '/_authenticated/pantry'
     | '/_authenticated/plan'
     | '/_authenticated/preferences'
-    | '/_authenticated/pricing'
     | '/_authenticated/sell'
     | '/_authenticated/usage'
     | '/checkout/cancel'
@@ -688,6 +688,7 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
+  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SecurityRoute: typeof SecurityRoute
@@ -773,6 +774,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -899,13 +907,6 @@ declare module '@tanstack/react-router' {
       path: '/preferences'
       fullPath: '/preferences'
       preLoaderRoute: typeof AuthenticatedPreferencesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/pricing': {
-      id: '/_authenticated/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof AuthenticatedPricingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/sell': {
@@ -1112,7 +1113,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPantryRoute: typeof AuthenticatedPantryRoute
   AuthenticatedPlanRoute: typeof AuthenticatedPlanRoute
   AuthenticatedPreferencesRoute: typeof AuthenticatedPreferencesRoute
-  AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
   AuthenticatedAdminAbuseRoute: typeof AuthenticatedAdminAbuseRoute
@@ -1134,7 +1134,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPantryRoute: AuthenticatedPantryRoute,
   AuthenticatedPlanRoute: AuthenticatedPlanRoute,
   AuthenticatedPreferencesRoute: AuthenticatedPreferencesRoute,
-  AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedUsageRoute: AuthenticatedUsageRoute,
   AuthenticatedAdminAbuseRoute: AuthenticatedAdminAbuseRoute,
@@ -1157,6 +1156,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
+  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SecurityRoute: SecurityRoute,
