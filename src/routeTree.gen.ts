@@ -35,7 +35,6 @@ import { Route as AuthenticatedMyRecipesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPantryRouteImport } from './routes/_authenticated/pantry'
 import { Route as AuthenticatedPlanRouteImport } from './routes/_authenticated/plan'
 import { Route as AuthenticatedPreferencesRouteImport } from './routes/_authenticated/preferences'
-import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
 import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
@@ -196,11 +195,6 @@ const AuthenticatedPreferencesRoute =
     path: '/preferences',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedSellRoute = AuthenticatedSellRouteImport.update({
   id: '/sell',
   path: '/sell',
@@ -369,7 +363,6 @@ export interface FileRoutesByFullPath {
   '/pantry': typeof AuthenticatedPantryRoute
   '/plan': typeof AuthenticatedPlanRoute
   '/preferences': typeof AuthenticatedPreferencesRoute
-  '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -424,7 +417,6 @@ export interface FileRoutesByTo {
   '/pantry': typeof AuthenticatedPantryRoute
   '/plan': typeof AuthenticatedPlanRoute
   '/preferences': typeof AuthenticatedPreferencesRoute
-  '/pricing': typeof AuthenticatedPricingRoute
   '/sell': typeof AuthenticatedSellRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -481,7 +473,6 @@ export interface FileRoutesById {
   '/_authenticated/pantry': typeof AuthenticatedPantryRoute
   '/_authenticated/plan': typeof AuthenticatedPlanRoute
   '/_authenticated/preferences': typeof AuthenticatedPreferencesRoute
-  '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -538,7 +529,6 @@ export interface FileRouteTypes {
     | '/pantry'
     | '/plan'
     | '/preferences'
-    | '/pricing'
     | '/sell'
     | '/usage'
     | '/checkout/cancel'
@@ -593,7 +583,6 @@ export interface FileRouteTypes {
     | '/pantry'
     | '/plan'
     | '/preferences'
-    | '/pricing'
     | '/sell'
     | '/usage'
     | '/checkout/cancel'
@@ -649,7 +638,6 @@ export interface FileRouteTypes {
     | '/_authenticated/pantry'
     | '/_authenticated/plan'
     | '/_authenticated/preferences'
-    | '/_authenticated/pricing'
     | '/_authenticated/sell'
     | '/_authenticated/usage'
     | '/checkout/cancel'
@@ -901,13 +889,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPreferencesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/pricing': {
-      id: '/_authenticated/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof AuthenticatedPricingRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/sell': {
       id: '/_authenticated/sell'
       path: '/sell'
@@ -1112,7 +1093,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPantryRoute: typeof AuthenticatedPantryRoute
   AuthenticatedPlanRoute: typeof AuthenticatedPlanRoute
   AuthenticatedPreferencesRoute: typeof AuthenticatedPreferencesRoute
-  AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
   AuthenticatedAdminAbuseRoute: typeof AuthenticatedAdminAbuseRoute
@@ -1134,7 +1114,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPantryRoute: AuthenticatedPantryRoute,
   AuthenticatedPlanRoute: AuthenticatedPlanRoute,
   AuthenticatedPreferencesRoute: AuthenticatedPreferencesRoute,
-  AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedUsageRoute: AuthenticatedUsageRoute,
   AuthenticatedAdminAbuseRoute: AuthenticatedAdminAbuseRoute,
