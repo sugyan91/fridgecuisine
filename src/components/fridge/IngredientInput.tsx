@@ -1,6 +1,8 @@
 import { useState, useRef, type KeyboardEvent } from "react";
 import { FridgePhotoButton } from "./FridgePhotoButton";
 import { IngredientIcon } from "@/lib/ingredient-icon";
+import { getIngredientHistory, pushIngredientHistory } from "@/lib/errors";
+import { Sparkles } from "lucide-react";
 
 const SUGGESTIONS = [
   "Rice",
@@ -67,6 +69,7 @@ export function IngredientInput({ ingredients, onChange }: Props) {
   const [draft, setDraft] = useState("");
   const [previousIngredients, setPreviousIngredients] = useState<string[] | null>(null);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [history, setHistory] = useState<string[]>(() => getIngredientHistory());
 
   const add = (raw: string) => {
     const v = raw.trim().slice(0, 40);
@@ -75,6 +78,8 @@ export function IngredientInput({ ingredients, onChange }: Props) {
     if (ingredients.length >= 30) return;
     onChange([...ingredients, v]);
     setDraft("");
+    pushIngredientHistory([v]);
+    setHistory(getIngredientHistory());
   };
 
   const addMany = (raws: string[]) => {
@@ -86,7 +91,11 @@ export function IngredientInput({ ingredients, onChange }: Props) {
       if (merged.length >= 30) break;
       merged.push(v);
     }
-    if (merged.length !== ingredients.length) onChange(merged);
+    if (merged.length !== ingredients.length) {
+      onChange(merged);
+      pushIngredientHistory(merged.slice(ingredients.length));
+      setHistory(getIngredientHistory());
+    }
   };
 
   const remove = (v: string) => {
@@ -122,9 +131,28 @@ export function IngredientInput({ ingredients, onChange }: Props) {
     (s) => !ingredients.some((i) => i.toLowerCase() === s.toLowerCase())
   ).slice(0, 6);
 
+  const recent = history
+    .filter((h) => !ingredients.some((i) => i.toLowerCase() === h.toLowerCase()))
+    .slice(0, 8);
+
+  const promptIdeas = getPromptIdeas(ingredients);
+
   return (
     <div>
       <FridgePhotoButton onAdd={addMany} existing={ingredients} />
+
+      {promptIdeas.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {promptIdeas.map((p) => (
+            <span
+              key={p}
+              className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-turmeric/20 text-foreground/80"
+            >
+              <Sparkles className="h-3 w-3" aria-hidden /> {p}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2 mb-3 min-h-[2.5rem]">
         {ingredients.map((ing, idx) => (
@@ -132,6 +160,7 @@ export function IngredientInput({ ingredients, onChange }: Props) {
             key={ing}
             type="button"
             onClick={() => remove(ing)}
+            aria-label={`Remove ${ing}`}
             className={`${COLORS[idx % COLORS.length]} ${ROTATIONS[idx % ROTATIONS.length]} px-3 py-1.5 rounded-full border-2 border-border font-bold text-sm flex items-center gap-2 shadow-[2px_2px_0px_0px_var(--border)] hover:translate-y-[-1px] transition-transform`}
           >
             <IngredientIcon name={ing} className="text-base leading-none" />
@@ -178,9 +207,30 @@ export function IngredientInput({ ingredients, onChange }: Props) {
         onKeyDown={onKey}
         onBlur={() => draft && add(draft)}
         placeholder="Add ingredient + Enter"
+        aria-label="Add an ingredient"
         maxLength={40}
         className="w-full border-2 border-border bg-white px-4 py-3 rounded-xl font-bold text-sm outline-none focus:shadow-[3px_3px_0px_0px_var(--border)] transition-shadow"
       />
+
+      {recent.length > 0 && (
+        <div className="mt-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">
+            Recent
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {recent.map((s) => (
+              <button
+                key={`r-${s}`}
+                type="button"
+                onClick={() => add(s)}
+                className="text-xs font-bold px-2 py-1 rounded-full border border-border/40 bg-turmeric/10 hover:bg-turmeric/25 transition-colors"
+              >
+                <IngredientIcon name={s} className="mr-1" />+ {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {remaining.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
@@ -198,4 +248,21 @@ export function IngredientInput({ ingredients, onChange }: Props) {
       )}
     </div>
   );
+}
+
+function getPromptIdeas(ingredients: string[]): string[] {
+  const ideas: string[] = [];
+  const hour = new Date().getHours();
+  if (ingredients.length === 0) {
+    if (hour < 11) ideas.push("Try: quick breakfast");
+    else if (hour < 15) ideas.push("Try: 20-min lunch");
+    else if (hour < 21) ideas.push("Try: cozy dinner");
+    else ideas.push("Try: late-night snack");
+    ideas.push("Try: kid-friendly");
+  } else if (ingredients.length < 3) {
+    ideas.push("Add a protein for better matches");
+  } else {
+    ideas.push(`${ingredients.length} in — tap Cook`);
+  }
+  return ideas.slice(0, 2);
 }
