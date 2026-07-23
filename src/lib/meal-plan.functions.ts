@@ -118,6 +118,42 @@ export const removePlanEntry = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const movePlanEntry = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        plan_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        meal_slot: z.enum(["breakfast", "lunch", "dinner", "snack"]),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    // Place at end of the target slot.
+    const { data: existing } = await supabase
+      .from("meal_plan_entries")
+      .select("position")
+      .eq("user_id", userId)
+      .eq("plan_date", data.plan_date)
+      .eq("meal_slot", data.meal_slot)
+      .order("position", { ascending: false })
+      .limit(1);
+    const nextPos = (existing?.[0]?.position ?? -1) + 1;
+    const { error } = await supabase
+      .from("meal_plan_entries")
+      .update({
+        plan_date: data.plan_date,
+        meal_slot: data.meal_slot,
+        position: nextPos,
+      })
+      .eq("id", data.id)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export type ShoppingListItem = { name: string; count: number };
 
 /** Aggregate all ingredients (used + missing) from a list of plan entries. */
