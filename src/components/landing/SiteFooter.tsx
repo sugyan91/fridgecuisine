@@ -71,6 +71,12 @@ export function SiteFooter() {
               <li>
                 <Link to="/pricing" title="View pricing plans" aria-label="Pricing – view pricing plans" className="hover:text-white block">Pricing</Link>
               </li>
+              <li>
+                <Link to="/about" title="About FridgeCuisine" aria-label="About – learn about FridgeCuisine" className="hover:text-white block">About</Link>
+              </li>
+              <li>
+                <Link to="/security" title="Security & privacy" aria-label="Security – how we protect your data" className="hover:text-white block">Security</Link>
+              </li>
             </ul>
           </div>
 
@@ -115,6 +121,8 @@ export function SiteFooter() {
             <Link to="/privacy" title="Privacy policy" aria-label="Privacy policy" className="hover:text-white">Privacy</Link>
             <Link to="/terms" title="Terms of service" aria-label="Terms of service" className="hover:text-white">Terms</Link>
             <Link to="/cookies" title="Cookie policy" aria-label="Cookie policy" className="hover:text-white">Cookies</Link>
+            <Link to="/security" title="Security & privacy" aria-label="Security & privacy" className="hover:text-white">Security</Link>
+            <Link to="/about" title="About FridgeCuisine" aria-label="About" className="hover:text-white">About</Link>
             {consent && (
               <button
                 type="button"

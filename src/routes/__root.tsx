@@ -117,25 +117,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fridge Chef — What Can I Cook With What I Have?" },
+      { title: "FridgeCuisine — Your AI personal chef" },
       {
         name: "description",
         content:
-          "Type the ingredients in your fridge and get AI-generated recipes with steps, cook time, and substitutions. Any cuisine, any diet.",
+          "Turn what's in your fridge into real meals. AI recipes with steps, cook times, and substitutions — any cuisine, any diet.",
       },
-      { name: "author", content: "Fridge Chef" },
+      { name: "author", content: "FridgeCuisine" },
+      { name: "theme-color", content: "#c4654a" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "FridgeCuisine" },
       { name: "google-site-verification", content: "VLZZMynlIIESF6ygQoSSBH10dZntp_KolorFqbOrcRo" },
-      { property: "og:title", content: "Fridge Chef — What Can I Cook With What I Have?" },
+      { property: "og:title", content: "FridgeCuisine — Your AI personal chef" },
       {
         property: "og:description",
         content:
-          "Turn random ingredients into real meals. AI recipes with steps, substitutions, and cook time.",
+          "Turn what's in your fridge into real meals. AI recipes, meal plans, and chef-made dishes.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Fridge Chef — What Can I Cook With What I Have?" },
-      { name: "twitter:description", content: "Turn random ingredients into real meals. AI recipes with steps, substitutions, and cook time." },
+      { name: "twitter:title", content: "FridgeCuisine — Your AI personal chef" },
+      { name: "twitter:description", content: "Turn what's in your fridge into real meals. AI recipes, meal plans, and chef-made dishes." },
       { property: "og:site_name", content: "FridgeCuisine" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Q2fhDCrVOphfKxIevHpm4F2c6Fu1/social-images/social-1779069681377-Screenshot_2026-05-17_at_4.37.34_PM.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Q2fhDCrVOphfKxIevHpm4F2c6Fu1/social-images/social-1779069681377-Screenshot_2026-05-17_at_4.37.34_PM.webp" },
@@ -145,6 +148,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "icon", href: "/favicon.ico", sizes: "any" },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=Inter+Tight:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Hind:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap",
@@ -162,7 +167,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@type": "Organization",
           name: "FridgeCuisine",
           url: "https://fridgecuisine.com",
-          logo: "https://fridgecuisine.com/favicon.ico",
+          logo: "https://fridgecuisine.com/favicon.png",
         }),
       },
       {
