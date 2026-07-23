@@ -1,0 +1,15 @@
+{
+  "name": "FridgeCuisine — Your AI personal chef",
+  "short_name": "FridgeCuisine",
+  "description": "Turn what's in your fridge into real meals. AI recipes, meal plans, and chef-made dishes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf8f5",
+  "theme_color": "#c4654a",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
