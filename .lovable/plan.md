@@ -1,60 +1,73 @@
+# Make FridgeCuisine feel like a shipped product, not a side project
 
-# AI Cost Optimization Plan
+Goal: a first-time visitor believes this was built by an established software company. The plan targets the specific tells that break that trust — brand inconsistency, empty screens, unlabeled loading, generic errors, thin onboarding, and missing "who's behind this" signals — without touching business logic.
 
-Goal: cut Lovable AI credit spend on recipe/dish/teaser/swap/vision flows by ~50-70% without losing quality. Every call currently routes through `callChatJSON` → HF chain first, then Gemini Flash Lite. Cache exists but keys are strict, TTLs are short, and prompts still ship JSON examples inline every call.
+## What's actually there today (verified)
 
-## What we'll change
+- 25+ routes exist including `terms`, `privacy`, `cookies`, `contact`, and full auth flow — solid foundation.
+- Design system already has a `premium` button variant, `SurfaceCard`, glass overlays, and Inter Tight typography from the last polish pass.
+- Recent hydration bug fixed; homepage renders clean.
+- What's still missing/inconsistent: no unified brand header across authed pages, empty-state and skeleton coverage is partial, onboarding is zero-touch (user lands on a dense homepage), no "About / trust" surface, error copy is generic, and mobile chrome varies page-to-page.
 
-### 1. Model routing — cheapest capable model first
-- `src/lib/hf-client.server.ts`: reorder so **Lovable AI `google/gemini-3.1-flash-lite`** is the default (cheapest current-gen chat model, already in catalog). Fall back to HF chain only if gateway 429/402/5xx. Today HF models run first which is more expensive per successful JSON call after retries.
-- Add a per-endpoint model override so cheap tasks (swap, substitutions, teaser) always use `flash-lite`, and only recipe generation may escalate to `gemini-3.6-flash` when quality matters.
-- Set `reasoning_effort: "none"` where supported. Drop temperature to 0.2 for structured JSON tasks (fewer retries on schema failure = fewer paid tokens).
+## Wave 1 — Brand & trust shell (highest first-impression ROI)
 
-### 2. Prompt slimming (biggest wins)
-- Move the JSON shape example out of the *user* prompt into the *system* prompt, and shorten it. Current dish-helper user prompt sends ~120 tokens of JSON example every call — that becomes cache-shared once in the system.
-- Strip verbose instructions in `paid-recipe-teaser`, `substitutions`, `ingredient-swap` (the "instructions" arrays are 5-8 lines; collapse to 2).
-- Remove `description` from teaser input when >200 chars (truncate).
-- Drop `firstSteps` to first 2 steps (was 3), truncate to 160 chars (was 260).
+Small, cross-cutting changes that a visitor sees within the first 15 seconds.
 
-### 3. Tighter token caps
-- `dish-helper`: 1200 → **800** (nutrition + 10 steps fits comfortably in 700).
-- `ingredient-swap`: 400 → **220**.
-- `substitutions`: 400 → **220**.
-- `paid-recipe-teaser`: 350 → **220**.
-- `fridge-vision`: already vision-only; add explicit `maxTokens: 250`.
+1. **Unified app chrome**
+   - Extract the header from `index.tsx` into `AppHeader.tsx`; use across all authed routes (currently each route rolls its own or has none).
+   - Consistent logo lockup, active-nav state, avatar menu, "Upgrade" pill for free users.
+   - Match `MobileBottomNav` visual language.
+2. **Site footer everywhere**
+   - `SiteFooter` currently only renders on `index`. Mount it in `__root.tsx` (except auth/checkout/cook full-screen routes) with Product / Company / Legal / Social columns, small "Made in [city]" line, and version tag.
+3. **Trust surface**
+   - New `/about` route: mission, how the AI works (plain language), safety & sourcing, team placeholder, press/contact.
+   - New `/security` route generated with trust-page guidance (app-owned qualifier, no certification claims).
+   - Add "Trusted by X home cooks" + testimonial pull-quote block on `/` above the fold.
+4. **Metadata & OG audit**
+   - Sweep every content route: unique title < 60 chars, description < 160, `og:title`, `og:description`, `og:type`, `twitter:card`. Add absolute `og:image` on leaf routes with hero imagery (recipe detail, chef profile, shop item).
+5. **Favicon + app icon polish**
+   - Verify `public/favicon.png` matches the current logo; add `apple-touch-icon` and web manifest for PWA install prompt on mobile.
 
-### 4. Smarter, longer-lived caching
-- `src/lib/ai-cache.server.ts`: add `normalizeForCacheKey()` that lowercases, sorts, strips punctuation, and stems common plurals ("tomatoes" → "tomato") so near-identical requests share a cache row.
-- Bump TTLs for stable outputs: dish-helper 90 → **180 days**, substitutions/swap 30 → **90 days**, teaser (currently uncached) → **cache 60 days** keyed by recipe id + updated_at.
-- **New**: cache teaser results. Right now every "Peek with AI" click regenerates — huge waste since recipes rarely change. Key on `paid_recipes.id + updated_at`.
-- **New**: cache substitutions (currently no cache at all). Key on ingredient+cuisine.
+## Wave 2 — Onboarding, empty & error states
 
-### 5. Vision cost control
-- `fridge-vision`: downscale images client-side to max 768px before upload (they're currently up to 2MB base64). Fewer image tokens = big savings on vision calls.
-- Add a 24h cache keyed by SHA256 of the image bytes so repeated uploads of the same photo don't re-bill.
+Turn the first-run silence into a guided moment; make every "nothing here yet" screen feel intentional.
 
-### 6. Observability
-- Extend `ai-usage-logging.server` to record `tokensIn/tokensOut/costCredits` from the gateway response. Surface a per-endpoint cost breakdown card on `/admin/usage` so you can see which endpoint burns the most and iterate.
+1. **First-run onboarding (3 steps, dismissable)**
+   - Sheet that appears on first visit: pick 3 dietary preferences → add 3 pantry staples → generate first recipe. Persist a `fc-onboarded` flag.
+   - Skippable, one-tap "Show me a demo dish" fallback.
+2. **Empty states everywhere**
+   - Cookbook, Saved, Pantry, Following, Meal Plan, Earnings, Analytics, Community, Shop — audit each. Use existing `EmptyState.tsx` with illustration, one-line reason, and a primary CTA that moves the user forward.
+3. **Loading states**
+   - Replace bare spinners/`Loading...` text with skeleton shells that match the final layout (extend the pattern from `RecipeSkeleton`). Cover Cookbook grid, Plan week, Earnings tables, Analytics KPI cards.
+4. **Error states with recovery**
+   - Extend `src/lib/errors.ts` friendly-error map. Every network-failure surface (recipe generate, AI peek, image upload, unlock/purchase) gets a titled card with retry + "contact support" mailto.
+   - Root `ErrorComponent` shows a copyable error ID so support requests are actionable.
+5. **Toasts**
+   - Standardize on 3 severities (success/info/error) with consistent icons and duration; remove ad-hoc `toast()` calls with only strings.
 
-## Files touched
+## Wave 3 — Confidence & finish
 
-- `src/lib/hf-client.server.ts` — reorder chain, add per-endpoint model hint, reasoning_effort:none.
-- `src/lib/ai-cache.server.ts` — normalization helper + longer TTLs.
-- `src/lib/dish-helper.functions.ts` — slim prompt, lower cap, use cheaper model.
-- `src/lib/ingredient-swap.functions.ts` — slim prompt, cap 220.
-- `src/lib/substitutions.functions.ts` — add caching + slim prompt.
-- `src/lib/paid-recipes.functions.ts` — cache teaser, slim prompt, cap 220.
-- `src/lib/fridge-vision.functions.ts` — image cache + explicit cap.
-- Client image downscale util (new `src/lib/image-downscale.ts`) + wire into fridge upload UI.
-- `src/lib/ai-usage-logging.server.ts` + `admin.usage.tsx` — cost breakdown.
+Details users don't consciously notice but feel when missing.
 
-## Expected impact
+1. **Auth polish**
+   - Login page split-screen with brand imagery on desktop; social buttons above email (Google is enabled). Show password requirements inline, not as post-submit error.
+   - Post-signup "welcome" screen that lands on onboarding, not a raw dashboard.
+2. **Pricing page rewrite**
+   - Feature comparison table, "most popular" chip, FAQ accordion, money-back sentence, security & privacy badges linking to `/security`.
+3. **Accessibility & motion**
+   - Verify focus rings on all interactive elements, aria-labels on icon-only buttons, `prefers-reduced-motion` respected. Add a real skip-to-content link.
+4. **Perf & polish signals**
+   - Add `<Suspense>` boundaries to lazy routes so navigation never flashes blank. Preload logo and hero image. Compress any oversized assets.
+5. **Small confidence cues**
+   - "Autosaved" indicator on preferences/pantry edits, "Copied" microstate on share buttons, humanized timestamps ("2h ago") consistently, contextual tooltips on Pro features.
 
-| Lever | Est. savings |
-|---|---|
-| Route to flash-lite by default | 30-50% per call |
-| Prompt slimming + lower caps | 20-30% input+output tokens |
-| Teaser + substitutions caching | ~80% on repeat views |
-| Image downscale | 40-60% on vision calls |
+## Technical notes
 
-Combined, most cached/warm traffic drops to near-zero; cold generations become materially cheaper. Say go and I'll ship it in one pass.
+- No schema or business-logic changes — presentation, routing, copy, and metadata only.
+- New files anticipated: `src/components/AppHeader.tsx`, `src/components/Onboarding.tsx`, `src/routes/about.tsx`, `src/routes/security.tsx`. Existing `EmptyState.tsx`, `SurfaceCard.tsx`, `errors.ts` extended, not replaced.
+- Root layout changes limited to mounting header/footer conditionally by pathname; `<Outlet />` stays intact.
+- Each wave is independently shippable and reversible.
+
+## How I'd like to proceed
+
+Wave 1 delivers the biggest first-impression jump for the least code churn. I'll start there once approved, ship it end-to-end, then check in before Wave 2. If you'd rather I do all three in one go, say the word and I'll batch them.
