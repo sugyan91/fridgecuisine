@@ -8,7 +8,7 @@ import {
   unsaveRecipe,
   type SavedRecipeRow,
 } from "@/lib/saved-recipes.functions";
-import { SkeletonList } from "@/components/ui/Skeleton";
+import { SkeletonList } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { toastError, toastSuccess } from "@/lib/errors";
 
