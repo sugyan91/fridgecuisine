@@ -131,7 +131,7 @@ export function WelcomeTour() {
             </Button>
           </div>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            You can always restart this tour from your account settings.
+            This intro won't appear again on this device.
           </p>
         </div>
       </DialogContent>
