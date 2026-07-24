@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "fc.welcomeTour.v1";
 
+// Fallback in-memory session cache so the tour stays hidden for the current
+// session even when localStorage is unavailable (private mode, disabled storage, etc.).
+const sessionHidden = new Set<string>();
+
 const SLIDES = [
   {
     icon: ChefHat,
@@ -23,26 +27,51 @@ const SLIDES = [
   },
 ];
 
+function isHidden(): boolean {
+  if (sessionHidden.has(STORAGE_KEY)) return true;
+  if (typeof window === "undefined") return false;
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      sessionHidden.add(STORAGE_KEY);
+      return true;
+    }
+  } catch (err) {
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.warn("[WelcomeTour] Could not read localStorage:", err);
+    }
+  }
+  return false;
+}
+
+function markHidden() {
+  sessionHidden.add(STORAGE_KEY);
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(STORAGE_KEY, "1");
+  } catch (err) {
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.warn("[WelcomeTour] Could not write localStorage:", err);
+    }
+  }
+}
+
 export function WelcomeTour() {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    try {
-      if (localStorage.getItem(STORAGE_KEY)) return;
-    } catch {
-      return;
-    }
+    if (isHidden()) return;
     const t = setTimeout(() => setOpen(true), 700);
     return () => clearTimeout(t);
   }, []);
 
   const finish = () => {
-    try {
-      localStorage.setItem(STORAGE_KEY, "1");
-    } catch {
-      /* ignore */
-    }
+    markHidden();
     setOpen(false);
   };
 
@@ -54,6 +83,7 @@ export function WelcomeTour() {
     <Dialog
       open={open}
       onOpenChange={(o) => {
+        // Closing via X, Escape, or outside click also marks the tour as hidden.
         if (!o) finish();
       }}
     >
@@ -80,24 +110,29 @@ export function WelcomeTour() {
             ))}
           </div>
         </div>
-        <div className="flex items-center justify-between gap-3 px-6 pb-6">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={finish}
-            className="text-muted-foreground"
-          >
-            Skip
-          </Button>
-          <Button
-            type="button"
-            variant="premium"
-            size="sm"
-            onClick={() => (isLast ? finish() : setIndex((i) => i + 1))}
-          >
-            {isLast ? "Start cooking" : "Next"}
-          </Button>
+        <div className="px-6 pb-6">
+          <div className="flex items-center justify-between gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={finish}
+              className="text-muted-foreground"
+            >
+              Don't show again
+            </Button>
+            <Button
+              type="button"
+              variant="premium"
+              size="sm"
+              onClick={() => (isLast ? finish() : setIndex((i) => i + 1))}
+            >
+              {isLast ? "Start cooking" : "Next"}
+            </Button>
+          </div>
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            This intro won't appear again on this device.
+          </p>
         </div>
       </DialogContent>
     </Dialog>
