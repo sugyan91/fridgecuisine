@@ -110,24 +110,29 @@ export function WelcomeTour() {
             ))}
           </div>
         </div>
-        <div className="flex items-center justify-between gap-3 px-6 pb-6">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={finish}
-            className="text-muted-foreground"
-          >
-            Skip
-          </Button>
-          <Button
-            type="button"
-            variant="premium"
-            size="sm"
-            onClick={() => (isLast ? finish() : setIndex((i) => i + 1))}
-          >
-            {isLast ? "Start cooking" : "Next"}
-          </Button>
+        <div className="px-6 pb-6">
+          <div className="flex items-center justify-between gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={finish}
+              className="text-muted-foreground"
+            >
+              Don't show again
+            </Button>
+            <Button
+              type="button"
+              variant="premium"
+              size="sm"
+              onClick={() => (isLast ? finish() : setIndex((i) => i + 1))}
+            >
+              {isLast ? "Start cooking" : "Next"}
+            </Button>
+          </div>
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            You can always restart this tour from your account settings.
+          </p>
         </div>
       </DialogContent>
     </Dialog>
