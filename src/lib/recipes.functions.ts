@@ -219,7 +219,7 @@ Return JSON shaped like:
       const cacheKey = hashKey("recipes", norm);
       const cached = await getCached<{ recipes: Recipe[] }>("recipes", cacheKey);
       if (cached) {
-        if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+        if (auth) await recordAiGeneration(auth.supabase, auth.userId, "recipes");
         else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
         logAiUsage({
           endpoint: "recipes",
