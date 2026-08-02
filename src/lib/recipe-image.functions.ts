@@ -29,7 +29,7 @@ export const generateRecipeImage = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data, context }): Promise<RecipeImageResult> => {
     const { supabase, userId } = context;
-    const quota = await checkAiQuota(supabase, userId);
+    const quota = await checkAiQuota(supabase, userId, {}, "dish-image");
     if (!quota.ok) return { ok: false, error: quota.error };
 
     // Cache by normalized dish name + cuisine + key ingredients — same dish
@@ -50,7 +50,7 @@ export const generateRecipeImage = createServerFn({ method: "POST" })
       cacheKey,
     );
     if (cached) {
-      await recordAiGeneration(supabase, userId);
+      await recordAiGeneration(supabase, userId, "dish-image");
       logAiUsage({ endpoint: "dish-image", userId, cacheHit: true });
       return { ok: true, dataUrl: cached.dataUrl, provider: cached.provider };
     }
