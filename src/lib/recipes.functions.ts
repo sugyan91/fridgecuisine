@@ -247,7 +247,7 @@ Return JSON shaped like:
         };
       }
 
-      if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+      if (auth) await recordAiGeneration(auth.supabase, auth.userId, "recipes");
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
       // Pantry-agnostic queries are identical across users → cache longer.
       const ttlDays = hasIngredients ? 30 : 90;
