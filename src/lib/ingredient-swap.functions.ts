@@ -76,7 +76,7 @@ Dietary constraints (must respect): ${dietary}`;
       if (!parsed.success) {
         return { ok: false, error: "Couldn't read AI response. Try again." };
       }
-      await recordAiGeneration(supabase, userId);
+      await recordAiGeneration(supabase, userId, "ingredient-swap");
       await putCached("ingredient-swap", cacheKey, { swaps: parsed.data.swaps }, 90);
       logAiUsage({ endpoint: "ingredient-swap", userId, cacheHit: false });
       return { ok: true, swaps: parsed.data.swaps };
