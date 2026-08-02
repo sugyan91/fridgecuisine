@@ -72,7 +72,7 @@ export const generateRecipeImage = createServerFn({ method: "POST" })
       `No text, no captions, no labels, no watermarks, no logos, no hands, no people.`;
     const res = await callFoodImageGen(prompt);
     if (res.ok) {
-      await recordAiGeneration(supabase, userId);
+      await recordAiGeneration(supabase, userId, "dish-image");
       await putCached("dish-image", cacheKey, { dataUrl: res.dataUrl, provider: res.provider }, 90);
       logAiUsage({ endpoint: "dish-image", userId, cacheHit: false });
     }
