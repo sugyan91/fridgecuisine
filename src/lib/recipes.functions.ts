@@ -231,7 +231,7 @@ Return JSON shaped like:
         return { ok: true, recipes: cached.recipes };
       }
       const aiRes = await callChatJSON(systemPrompt, userPrompt, {
-        maxTokens: includeNutrition ? 2400 : 1600,
+        maxTokens,
         temperature: 0.5,
       });
       if (!aiRes.ok) {
