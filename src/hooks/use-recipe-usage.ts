@@ -6,7 +6,7 @@ export { FREE_DAILY_LIMIT };
 
 export type UsageTier = "anon" | "free" | "basic" | "unlimited";
 
-/** Anonymous users get 2 generations per day, then a sign-in wall. */
+/** Anonymous users get 1 recipe generation per day, then a sign-in wall. */
 const ANON_DAILY_LIMIT = 1;
 
 function startOfTodayLocal(): Date {
@@ -29,8 +29,10 @@ function todayKey(): string {
 
 export function useRecipeUsage(userId: string | undefined) {
   const fetchUsage = useServerFn(getRecipeUsage);
-  const [used, setUsed] = useState<number | null>(null);
-  const [serverLimit, setServerLimit] = useState<number | null>(FREE_DAILY_LIMIT);
+  const [usedRecipes, setUsedRecipes] = useState<number | null>(null);
+  const [limitRecipes, setLimitRecipes] = useState<number | null>(FREE_DAILY_LIMIT);
+  const [usedHelpers, setUsedHelpers] = useState<number | null>(null);
+  const [limitHelpers, setLimitHelpers] = useState<number | null>(5);
   const [serverTier, setServerTier] = useState<UsageTier | null>(null);
   const [resetMs, setResetMs] = useState<number>(() => nextMidnightLocalMs());
   const [, setTick] = useState(0);
@@ -40,8 +42,10 @@ export function useRecipeUsage(userId: string | undefined) {
       const res = await fetchUsage({
         data: { sinceIso: startOfTodayLocal().toISOString() },
       });
-      setUsed(res.used);
-      setServerLimit(res.limit);
+      setUsedRecipes(res.usedRecipes);
+      setLimitRecipes(res.limitRecipes);
+      setUsedHelpers(res.usedHelpers);
+      setLimitHelpers(res.limitHelpers);
       setServerTier(res.tier as UsageTier);
     } catch (e) {
       console.error("usage fetch failed", e);
@@ -78,22 +82,30 @@ export function useRecipeUsage(userId: string | undefined) {
   const countdown =
     h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m ${s}s` : `${s}s`;
 
-  const current = used ?? 0;
+  const currentRecipes = usedRecipes ?? 0;
+  const currentHelpers = usedHelpers ?? 0;
   const tier: UsageTier = serverTier ?? (userId ? "free" : "anon");
-  const limit = serverLimit;
+  const recipeLimit = limitRecipes ?? (tier === "anon" ? ANON_DAILY_LIMIT : FREE_DAILY_LIMIT);
+  const helperLimit = limitHelpers ?? 5;
   // No tier is truly unlimited anymore — "unlimited" has a fair-use cap.
   const unlimited = false;
   const lifetime = false;
   return {
-    used: current,
-    limit: limit ?? (tier === "anon" ? ANON_DAILY_LIMIT : FREE_DAILY_LIMIT),
+    used: currentRecipes,
+    limit: recipeLimit,
     unlimited,
     tier,
     lifetime,
-    remaining: unlimited ? Infinity : Math.max(0, (limit ?? 0) - current),
-    atLimit: !unlimited && current >= (limit ?? 0),
+    remaining: unlimited ? Infinity : Math.max(0, recipeLimit - currentRecipes),
+    atLimit: !unlimited && currentRecipes >= recipeLimit,
+    atRecipeLimit: !unlimited && currentRecipes >= recipeLimit,
+    atHelperLimit: !unlimited && currentHelpers >= helperLimit,
+    remainingRecipes: Math.max(0, recipeLimit - currentRecipes),
+    remainingHelpers: Math.max(0, helperLimit - currentHelpers),
+    usedRecipes: currentRecipes,
+    usedHelpers: currentHelpers,
     countdown,
-    loaded: used !== null,
+    loaded: usedRecipes !== null,
     logGeneration,
     refresh,
   };
