@@ -33,7 +33,7 @@ export const detectFridgeIngredients = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data, context }): Promise<FridgeVisionResult> => {
     const { supabase, userId } = context;
-    const quota = await checkAiQuota(supabase, userId);
+    const quota = await checkAiQuota(supabase, userId, {}, "fridge-vision");
     if (!quota.ok) return { ok: false, error: quota.error };
 
     // Content-addressable cache — same photo = same result, no re-billing.
@@ -73,7 +73,7 @@ Rules:
         seen.add(key);
         cleaned.push(v);
       }
-      await recordAiGeneration(supabase, userId);
+      await recordAiGeneration(supabase, userId, "fridge-vision");
       await putCached("fridge-vision", cacheKey, { ingredients: cleaned }, 30);
       logAiUsage({ endpoint: "fridge-vision", userId, cacheHit: false });
       return { ok: true, ingredients: cleaned };
