@@ -154,10 +154,11 @@ export const generateRecipes = createServerFn({ method: "POST" })
     }
     const hasIngredients = data.ingredients.length > 0;
 
-    // Lite mode for free/anon: fewer recipes and no nutrition to keep AI costs low.
-    const isFreeTier = tier === "free";
-    const RECIPE_COUNT = isFreeTier ? 3 : 6;
-    const includeNutrition = !isFreeTier && data.includeNutrition !== false;
+    // Output depth is driven entirely by the plan: free/anon keep the cheap
+    // lite output, paid tiers get progressively richer detail.
+    const features = TIER_FEATURES[tier as PlanTier];
+    const RECIPE_COUNT = features.recipeCount;
+    const includeNutrition = features.nutrition && data.includeNutrition !== false;
 
     const cuisineGuidance =
       data.cuisine === "Any / Surprise Me"
@@ -182,13 +183,35 @@ export const generateRecipes = createServerFn({ method: "POST" })
       ? `\n- Include "nutrition": {servings, perServing:{calories, proteinG, carbsG, fatG, sugarG, fiberG}} — integer approximate estimates.`
       : "";
 
-    const maxTokens = isFreeTier ? 1200 : includeNutrition ? 2400 : 1600;
+    const pairingRule = features.pairing
+      ? `\n- Include "pairing": one short sentence suggesting a drink and a side that go with the dish.`
+      : "";
+    const chefNoteRule = features.chefNote
+      ? `\n- Include "chefNote": 1-2 sentences on why the dish works and the ONE technique that matters most.`
+      : "";
+    const difficultyRule = features.difficulty
+      ? `\n- Include "difficulty" ("easy"|"medium"|"hard") and "fasterTip": one short shortcut to make it quicker.`
+      : "";
+    const variationsRule = features.variations
+      ? `\n- Include "variations": exactly 2 entries [{name, how}] — meaningfully different takes (e.g. spicier, vegan/veg swap, kid-friendly), each "how" one sentence.`
+      : "";
+    const storageRule = features.storage
+      ? `\n- Include "storage": one or two sentences on make-ahead, fridge/freezer storage and reheating leftovers.`
+      : "";
+    const allergenRule = features.allergenFlags
+      ? `\n- Include "allergens": short tags for allergens actually present (e.g. Gluten, Dairy, Eggs, Peanuts, Tree nuts, Soy, Fish, Shellfish, Sesame). Use [] if none.`
+      : "";
+    const stepRule = features.detailedSteps
+      ? `- 6-9 detailed ordered steps with sensory cues (what it should look/smell like). Include "stepTimings": array of minutes aligned to steps (0 where a step has no wait).`
+      : `- 4-6 short concrete ordered steps.`;
+
+    const maxTokens = features.maxTokens;
     const systemPrompt = `You are an expert home cook. Generate ${RECIPE_COUNT} realistic, delicious recipes${hasIngredients ? " using mostly the user's ingredients" : " for the selected cuisine"}. ${cuisineGuidance}
 Rules:
 - ${ingredientRule}
-- 4-6 short concrete ordered steps. cookTimeMinutes 5-90 realistic active time.
+${stepRule} cookTimeMinutes 5-90 realistic active time.
 - Include prepTimeMinutes and totalTimeMinutes. Include integer servings (1-12).
-- Every ingredient entry must be "<qty> <unit> <ingredient>" (e.g. "2 cups rice", "1 tsp salt"). Never bare names.${kidFriendlyRule}${nutritionRule}
+- Every ingredient entry must be "<qty> <unit> <ingredient>" (e.g. "2 cups rice", "1 tsp salt"). Never bare names.${kidFriendlyRule}${nutritionRule}${pairingRule}${chefNoteRule}${difficultyRule}${variationsRule}${storageRule}${allergenRule}
 - Dietary constraints STRICT — must comply with ALL tags: ${dietary}. Treat named foods as hard allergies (exclude derivatives). If "Quick Meal", total ≤ 20 min.
 - Set "dietary" to applicable short tags from: Vegan, Vegetarian, Pescatarian, Gluten-Free, Dairy-Free, Nut-Free, Halal, Kosher, Contains Pork, Contains Nuts, Spicy. Max 6. Use [] if none.
 - Return ONLY valid JSON. No prose.${languageInstruction(data.language)}`;
