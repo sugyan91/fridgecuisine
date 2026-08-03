@@ -341,31 +341,52 @@ button:not(:disabled),
   }
 }
 
-@keyframes tagline-sweep {
-  0%, 18% { transform: translateX(0); }
-  45%, 55% { transform: translateX(calc(-1 * var(--tagline-shift, 38%))); }
-  82%, 100% { transform: translateX(0); }
+@keyframes tagline-shimmer {
+  0% {
+    background-position: -200% 0;
+    opacity: 0.85;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 200% 0;
+    opacity: 1;
+  }
 }
 
-.tagline-sweep {
+.tagline-shimmer {
   display: inline-block;
   white-space: nowrap;
-  will-change: transform;
-  animation: tagline-sweep 22s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--muted-foreground) 0%,
+    var(--muted-foreground) 35%,
+    var(--primary) 45%,
+    var(--accent-gold) 55%,
+    var(--muted-foreground) 65%,
+    var(--muted-foreground) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  will-change: background-position;
+  animation: tagline-shimmer 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-.tagline-mask {
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
-  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
-}
-
-.tagline-sweep:hover,
-.tagline-sweep.tagline-paused {
+.tagline-shimmer:hover {
   animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tagline-sweep { animation: none !important; }
+  .tagline-shimmer {
+    background: none;
+    -webkit-text-fill-color: var(--muted-foreground);
+    color: var(--muted-foreground);
+    animation: none !important;
+  }
 }
 
 /* ---- Hero collage motion (2D transforms only; no translate3d/will-change to avoid compositor layer quirks) ---- */
