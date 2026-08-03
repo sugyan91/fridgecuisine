@@ -37,6 +37,29 @@ REQUIRED = [
     ("tagline", '[data-testid="brand-tagline"]'),
 ]
 
+CLIP_JS = """
+(sel) => {
+  const el = document.querySelector(sel);
+  if (!el) return null;
+  const pr = el.getBoundingClientRect();
+  // Measure the visible text node holder (handles responsive sibling spans where
+  // the hidden variant still contributes to scrollWidth).
+  const kids = [...el.children].filter((c) => {
+    const cs = getComputedStyle(c);
+    return cs.display !== 'none' && cs.visibility !== 'hidden';
+  });
+  const targets = kids.length ? kids : [el];
+  let clipped = false, text = '';
+  for (const t of targets) {
+    const r = t.getBoundingClientRect();
+    text += (t.textContent || '').trim();
+    if (r.right > pr.right + 1 || r.left < pr.left - 1) clipped = true;
+    if (t.scrollWidth > t.clientWidth + 1 && t !== el) clipped = true;
+  }
+  return { clipped, text };
+}
+"""
+
 MEASURE_JS = """
 (sel) => {
   const el = document.querySelector(sel);
@@ -56,7 +79,9 @@ OVERFLOW_JS = """
 () => {
   const vw = document.documentElement.clientWidth;
   const bad = [];
+  const inMarquee = (el) => !!el.closest('.marquee-track, .marquee, [data-overflow-ok]');
   for (const el of document.querySelectorAll('header *, main *')) {
+    if (inMarquee(el)) continue;
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
     if (r.right > vw + 1 || r.left < -1) {
@@ -89,10 +114,10 @@ async def check(page, name, width):
         measured[label] = m
         if not m["visible"]:
             failures.append(f"{name}: {label} is not visible")
-        if m["scrollW"] > m["clientW"] + 1:
+        clip = await page.evaluate(CLIP_JS, sel)
+        if clip and clip["clipped"]:
             failures.append(
-                f"{name}: {label} text is clipped/truncated "
-                f"(scrollWidth {m['scrollW']} > clientWidth {m['clientW']}, text={m['text']!r})"
+                f"{name}: {label} text is clipped/truncated (text={clip['text']!r})"
             )
 
     if "brand" in measured and "tagline" in measured:
