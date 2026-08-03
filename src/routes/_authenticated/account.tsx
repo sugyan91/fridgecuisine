@@ -10,6 +10,7 @@ import {
   createPortalSession,
 } from "@/lib/payments.functions";
 import { useSubscription } from "@/hooks/use-subscription";
+import { PlanSwitcher } from "@/components/account/PlanSwitcher";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Button } from "@/components/ui/button";
@@ -219,11 +220,6 @@ function AccountPage() {
                 <Link to="/pricing">See plans</Link>
               </Button>
             )}
-            {tier === "basic" && (
-              <Button asChild>
-                <Link to="/pricing">Upgrade to Unlimited</Link>
-              </Button>
-            )}
             <Button asChild variant="outline">
               <Link to="/earnings">Your earnings</Link>
             </Button>
@@ -252,6 +248,9 @@ function AccountPage() {
             ) : null}
           </div>
         </section>
+
+        {/* Self-serve upgrade / downgrade */}
+        {!loading && <PlanSwitcher />}
 
         {/* Today's usage — admin only */}
         {isAdmin && (
