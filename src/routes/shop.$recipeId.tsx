@@ -16,6 +16,8 @@ import { fakeRating, Stars } from "@/lib/fake-ratings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
+import { IapUnavailableNotice } from "@/components/native/IapUnavailableNotice";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { SafeImage } from "@/components/ui/safe-image";
