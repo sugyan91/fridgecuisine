@@ -169,7 +169,8 @@ function AccountPage() {
                     Unlimited · $19.99/mo
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Up to 50 recipes/day (fair use) ·{" "}
+                    {ENDPOINT_LIMITS.unlimited.recipes} recipes/day +{" "}
+                    {ENDPOINT_LIMITS.unlimited.helpers} helpers/day (fair use) ·{" "}
                     {pendingCancel
                       ? `Access ends on ${formatDate(periodEnd)}`
                       : periodEnd
@@ -183,7 +184,8 @@ function AccountPage() {
                     Basic · $5.99/mo
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    10 recipes per day ·{" "}
+                    {ENDPOINT_LIMITS.basic.recipes} recipes/day +{" "}
+                    {ENDPOINT_LIMITS.basic.helpers} helpers/day ·{" "}
                     {pendingCancel
                       ? `Access ends on ${formatDate(periodEnd)}`
                       : periodEnd
@@ -195,10 +197,14 @@ function AccountPage() {
                 <>
                   <p className="mt-1 text-lg font-semibold text-foreground">Free plan</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    2 recipes per day. Upgrade for 10/day or 50/day.
+                    {ENDPOINT_LIMITS.free.recipes} recipes/day +{" "}
+                    {ENDPOINT_LIMITS.free.helpers} helpers/day. Upgrade for{" "}
+                    {ENDPOINT_LIMITS.basic.recipes}/day or{" "}
+                    {ENDPOINT_LIMITS.unlimited.recipes}/day.
                   </p>
                 </>
               )}
+
             </div>
           </div>
 
