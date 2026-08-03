@@ -612,7 +612,8 @@ function Index() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-2 shrink-0">
-              <LanguagePicker />
+              <LanguagePicker variant="icon" className="lg:hidden" />
+              <LanguagePicker className="hidden lg:inline-flex" />
               <Link
                 to="/community"
                 className="text-sm font-medium text-foreground/80 hover:text-foreground px-3 py-2 rounded-full hover:bg-secondary transition-colors"
