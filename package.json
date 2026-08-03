@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:visual": "python3 tests/visual/landing_breakpoints.py"
+    "test:visual": "python3 tests/visual/landing_breakpoints.py",
+    "ios:icons": "capacitor-assets generate --ios --iosProject ios/App"
   },
   "dependencies": {
     "@capacitor/camera": "^8.2.0",
