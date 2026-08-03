@@ -216,6 +216,19 @@ function Index() {
     setLimitModalType(type);
     setLimitModalOpen(true);
   };
+
+  // One-time premium celebration: first successful generation for a paid member.
+  const maybeCelebrateFirstCook = () => {
+    if (!userId || !isPremium) return;
+    const key = `fc-first-cook-${userId}`;
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
+    } catch {
+      return;
+    }
+    setFirstCookReveal(true);
+  };
   const headerRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const pantryRef = useRef<HTMLElement | null>(null);
