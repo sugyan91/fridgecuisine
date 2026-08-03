@@ -415,6 +415,7 @@ function Index() {
       } else {
         setRecipes(res.recipes);
         logGeneration();
+        maybeCelebrateFirstCook();
       }
     } catch (err) {
       if (cancelGenerationRef.current) return;
@@ -447,6 +448,7 @@ function Index() {
       } else {
         setRecipes(res.recipes);
         logGeneration();
+        maybeCelebrateFirstCook();
       }
     } catch (err) {
       if (cancelGenerationRef.current) return;
