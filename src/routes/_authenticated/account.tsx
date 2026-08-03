@@ -223,7 +223,7 @@ function AccountPage() {
                 <Link to="/usage">Today's usage</Link>
               </Button>
             )}
-            {!isPremium && (
+            {!isPremium && purchasesEnabled && (
               <Button asChild>
                 <Link to="/pricing">See plans</Link>
               </Button>
