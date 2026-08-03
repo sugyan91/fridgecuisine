@@ -71,7 +71,7 @@ export function SiteFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               {purchasesEnabled && (
-                <li>
+                <li data-purchase-gated>
                   <Link to="/pricing" title="View pricing plans" aria-label="Pricing – view pricing plans" className="hover:text-white block">Pricing</Link>
                 </li>
               )}

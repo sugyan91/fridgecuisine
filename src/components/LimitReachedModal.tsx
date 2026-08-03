@@ -84,6 +84,7 @@ export function LimitReachedModal({ open, onClose, isSignedIn, countdown, tier, 
             <Link
               to={isUnlimited ? "/account" : "/pricing"}
               onClick={onClose}
+              data-purchase-gated
               className="w-full text-center px-4 py-3 rounded-full bg-primary text-primary-foreground font-display font-semibold text-sm hover:brightness-110 transition-all"
             >
               {ctaLabel}

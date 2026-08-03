@@ -226,7 +226,7 @@ function AccountPage() {
               </Button>
             )}
             {!isPremium && purchasesEnabled && (
-              <Button asChild>
+              <Button asChild data-purchase-gated>
                 <Link to="/pricing">See plans</Link>
               </Button>
             )}

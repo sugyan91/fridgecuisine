@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { isIOSNative } from "@/lib/platform";
 import { Button } from "@/components/ui/button";
 import { GraffitiCelebration } from "@/components/celebrate/GraffitiCelebration";
 import { useSubscription } from "@/hooks/use-subscription";
@@ -42,10 +43,18 @@ function CheckoutReturn() {
   const isSubscription = !isRecipe && !isCookbook && !isTip;
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { tier } = useSubscription(userId);
+  const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id));
   }, []);
+
+  // Option A: Stripe checkout is not available inside the native iOS app.
+  useEffect(() => {
+    if (isIOSNative()) {
+      router.navigate({ to: "/", replace: true });
+    }
+  }, [router]);
 
   useEffect(() => {
     let attempts = 0;
@@ -211,7 +220,7 @@ function CheckoutReturn() {
                     <Link to="/">Start cooking</Link>
                   </Button>
                   <Button asChild variant="outline">
-                    <Link to="/pricing">Manage subscription</Link>
+                    <Link to="/pricing" data-purchase-gated>Manage subscription</Link>
                   </Button>
                 </div>
               </>

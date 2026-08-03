@@ -34,6 +34,7 @@ function ChefDetailsUpsell() {
       {purchasesEnabled && (
         <Link
           to="/pricing"
+          data-purchase-gated
           className="block text-center bg-white text-cardamom py-2.5 rounded-xl font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
         >
           See plans
@@ -584,6 +585,7 @@ export function RecipeCard({
             ) : purchasesEnabled ? (
               <Link
                 to="/pricing"
+                data-purchase-gated
                 className="w-full block text-center bg-white/10 text-white py-3 rounded-xl font-black uppercase text-sm border border-white/25 hover:bg-white/15 transition-colors"
               >
                 🔒 PDF export — upgrade to unlock

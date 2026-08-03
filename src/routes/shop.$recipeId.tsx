@@ -238,7 +238,10 @@ function RecipeDetail() {
       </div>
 
       {!unlocked && purchasesEnabled && (
-        <div className="fixed bottom-16 md:hidden inset-x-0 z-30 p-3 bg-background/95 backdrop-blur border-t-2 border-border pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+        <div
+          data-purchase-gated
+          className="fixed bottom-16 md:hidden inset-x-0 z-30 p-3 bg-background/95 backdrop-blur border-t-2 border-border pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+        >
           {authed ? (
             <button
               type="button"
@@ -548,6 +551,7 @@ function LockedView({
         ) : authed ? (
           <button
             type="button"
+            data-purchase-gated
             onClick={onBuy}
             className="mt-4 bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
           >
@@ -556,6 +560,7 @@ function LockedView({
         ) : (
           <Link
             to="/login"
+            data-purchase-gated
             search={{ redirect: `/shop/${recipeId}` }}
             className="mt-4 inline-block bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
           >

@@ -244,7 +244,7 @@ function PricingPage() {
           </div>
 
           {/* Basic */}
-          <div className="rounded-2xl border-2 border-border bg-card p-6 shadow-[4px_4px_0px_0px_var(--border)]">
+          <div data-purchase-gated className="rounded-2xl border-2 border-border bg-card p-6 shadow-[4px_4px_0px_0px_var(--border)]">
             <h2 className="text-xl font-black uppercase tracking-tight">Basic</h2>
             <div className="mt-2 flex items-baseline gap-1">
               <span className="text-4xl font-black">$5.99</span>
@@ -266,7 +266,7 @@ function PricingPage() {
           </div>
 
           {/* Unlimited */}
-          <div className="relative rounded-2xl border-2 border-paprika bg-card p-6 shadow-[6px_6px_0px_0px_var(--border)]">
+          <div data-purchase-gated className="relative rounded-2xl border-2 border-paprika bg-card p-6 shadow-[6px_6px_0px_0px_var(--border)]">
             <div className="absolute -top-3 left-6 rounded-full bg-paprika px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
               Most popular
             </div>

@@ -153,6 +153,12 @@ How it works in code:
 - `src/hooks/use-purchases-enabled.ts` — returns `false` inside native iOS.
 - `src/components/native/IapUnavailableNotice.tsx` — replacement copy where a
   purchase CTA would appear.
+- `src/routes/__root.tsx` — injects an inline script that adds the `.ios-native`
+  class to `<html>` before React mounts.
+- `src/styles.css` — hides any element marked `data-purchase-gated` immediately
+  via CSS, preventing a flash of purchase UI on cold launch.
+- `src/routes/checkout.return.tsx` — redirects any native iOS user who lands on
+  the Stripe success route back to the home screen.
 
 Hidden inside the iOS app:
 - Pricing plan CTAs and Stripe embedded checkout (`/pricing`)

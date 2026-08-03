@@ -209,6 +209,22 @@ function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        {/* Inline iOS detection runs before styles/render so we can hide
+            Stripe purchase surfaces immediately and avoid a flash. */}
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: `
+(function(){
+  try {
+    var cap = window.Capacitor;
+    var platform = cap && (cap.getPlatform ? cap.getPlatform() : (cap.Platform && cap.Platform.getPlatform ? cap.Platform.getPlatform() : 'web'));
+    if (platform === 'ios') document.documentElement.classList.add('ios-native');
+  } catch (e) {}
+})();
+            `.trim(),
+          }}
+        />
         <HeadContent />
       </head>
       <body>
