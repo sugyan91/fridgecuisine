@@ -177,6 +177,7 @@ function CookbookDetailPage() {
           ) : authed ? (
             <button
               type="button"
+              data-purchase-gated
               onClick={() => setCheckoutOpen(true)}
               className="mt-4 bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
             >
@@ -185,6 +186,7 @@ function CookbookDetailPage() {
           ) : (
             <Link
               to="/login"
+              data-purchase-gated
               search={{ redirect: `/shop/cookbook/${cookbookId}` }}
               className="mt-4 inline-block bg-paprika text-white border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
             >

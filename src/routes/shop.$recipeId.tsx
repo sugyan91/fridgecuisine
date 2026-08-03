@@ -238,7 +238,10 @@ function RecipeDetail() {
       </div>
 
       {!unlocked && purchasesEnabled && (
-        <div className="fixed bottom-16 md:hidden inset-x-0 z-30 p-3 bg-background/95 backdrop-blur border-t-2 border-border pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+        <div
+          data-purchase-gated
+          className="fixed bottom-16 md:hidden inset-x-0 z-30 p-3 bg-background/95 backdrop-blur border-t-2 border-border pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+        >
           {authed ? (
             <button
               type="button"
