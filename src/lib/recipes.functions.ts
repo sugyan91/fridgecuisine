@@ -253,6 +253,7 @@ Return JSON shaped like:
         dietary: [...data.dietary].map((s) => s.toLowerCase().trim()).sort(),
         kidFriendly: !!data.kidFriendly,
         nutrition: includeNutrition,
+        detail: outputDetailLevel(tier as PlanTier),
         language: data.language,
       };
       const cacheKey = hashKey("recipes", norm);
