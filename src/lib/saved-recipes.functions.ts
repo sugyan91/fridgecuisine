@@ -4,7 +4,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sendTransactionalEmailServer } from "@/lib/email/send.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { TIER_FEATURES } from "@/lib/tier-features";
-import { resolveTier } from "@/lib/ai-quota.server";
 
 export type SavedRecipeData = {
   title: string;
@@ -132,6 +131,7 @@ export const saveRecipe = createServerFn({ method: "POST" })
 
     // Free plan: soft cap on the size of the cookbook. Re-saving a recipe the
     // user already has (upsert on user_id,title) never counts against the cap.
+    const { resolveTier } = await import("@/lib/ai-quota.server");
     const cap = TIER_FEATURES[await resolveTier(supabase, userId)].savedRecipeCap;
     if (cap !== null) {
       const [{ count }, { data: existing }] = await Promise.all([
