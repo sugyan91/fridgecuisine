@@ -44,10 +44,18 @@ function CheckoutReturn() {
   const isSubscription = !isRecipe && !isCookbook && !isTip;
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { tier } = useSubscription(userId);
+  const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id));
   }, []);
+
+  // Option A: Stripe checkout is not available inside the native iOS app.
+  useEffect(() => {
+    if (isIOSNative()) {
+      router.navigate({ to: "/", replace: true });
+    }
+  }, [router]);
 
   useEffect(() => {
     let attempts = 0;
