@@ -499,6 +499,15 @@ function Index() {
         toast("Removed from saved");
       } else {
         const res = await saveRecipeRpc({ data: { recipe: recipe } });
+        if (!res.ok) {
+          toast.error(res.error, {
+            action: {
+              label: "Upgrade",
+              onClick: () => navigate({ to: "/pricing" }),
+            },
+          });
+          return;
+        }
         setSaved((prev) => [res.row, ...prev.filter((s) => s.title !== recipe.title)]);
         toast.success("Saved!");
       }
