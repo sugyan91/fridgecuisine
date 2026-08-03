@@ -531,6 +531,7 @@ function Index() {
         isSignedIn={!!userId}
         countdown={countdown}
         tier={usageTier === "anon" ? "anon" : subTier}
+        type={limitModalType}
       />
       <SaveSignupModal
         open={saveModal.open}
