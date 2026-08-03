@@ -292,9 +292,10 @@ function PricingPage() {
             <div>
               <dt className="font-bold">What counts as one generation?</dt>
               <dd className="text-muted-foreground mt-1">
-                Each time you turn ingredients or a dish name into a recipe
-                counts as one. Browsing saved recipes and shopping lists don't
-                use your quota.
+                Recipe generations turn ingredients or a dish name into full
+                recipes. Helper tips include dish ideas, ingredient swaps,
+                substitutions, and AI-powered cooking advice. Browsing saved
+                recipes and shopping lists don't use your quota.
               </dd>
             </div>
             <div>
