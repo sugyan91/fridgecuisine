@@ -44,6 +44,7 @@ import { LimitReachedModal } from "@/components/LimitReachedModal";
 import { SaveSignupModal } from "@/components/SaveSignupModal";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
+import { FirstCookReveal } from "@/components/celebrate/FirstCookReveal";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
@@ -204,6 +205,7 @@ function Index() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [limitModalType, setLimitModalType] = useState<"recipes" | "helpers">("recipes");
+  const [firstCookReveal, setFirstCookReveal] = useState(false);
   const [saveModal, setSaveModal] = useState<{ open: boolean; recipe: Recipe | null }>({
     open: false,
     recipe: null,
@@ -213,6 +215,19 @@ function Index() {
   const limitToast = (type: "recipes" | "helpers" = "recipes") => {
     setLimitModalType(type);
     setLimitModalOpen(true);
+  };
+
+  // One-time premium celebration: first successful generation for a paid member.
+  const maybeCelebrateFirstCook = () => {
+    if (!userId || !isPremium) return;
+    const key = `fc-first-cook-${userId}`;
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
+    } catch {
+      return;
+    }
+    setFirstCookReveal(true);
   };
   const headerRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
@@ -400,6 +415,7 @@ function Index() {
       } else {
         setRecipes(res.recipes);
         logGeneration();
+        maybeCelebrateFirstCook();
       }
     } catch (err) {
       if (cancelGenerationRef.current) return;
@@ -432,6 +448,7 @@ function Index() {
       } else {
         setRecipes(res.recipes);
         logGeneration();
+        maybeCelebrateFirstCook();
       }
     } catch (err) {
       if (cancelGenerationRef.current) return;
@@ -534,6 +551,7 @@ function Index() {
       <Toaster />
       <WelcomeTour />
       <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
+      {firstCookReveal && <FirstCookReveal onDone={() => setFirstCookReveal(false)} />}
       <LimitReachedModal
         open={limitModalOpen}
         onClose={() => setLimitModalOpen(false)}
