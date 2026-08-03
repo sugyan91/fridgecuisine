@@ -340,8 +340,8 @@ function Index() {
   };
 
   const runDishByName = async (name: string) => {
-    if (limitBlocked) {
-      limitToast();
+    if (atHelperLimit) {
+      limitToast("helpers");
       return;
     }
     setDishQuery(name);
