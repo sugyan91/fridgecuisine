@@ -3,7 +3,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Loader2, CreditCard, AlertTriangle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ENDPOINT_LIMITS } from "@/lib/ai-quota";
 import { getStripeEnvironment } from "@/lib/stripe";
+
 import {
   cancelSubscription,
   reactivateSubscription,
