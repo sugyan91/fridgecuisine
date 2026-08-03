@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Check, Loader2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Loader2, ChefHat, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { ENDPOINT_LIMITS, type PlanTier } from "@/lib/ai-quota";
 import {
   type BillingOverview,
   type PaidPlanKey,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/payments.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
 import {
   AlertDialog,
   AlertDialogAction,
