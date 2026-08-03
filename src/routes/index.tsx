@@ -597,12 +597,8 @@ function Index() {
                 <span className="block font-display tracking-tight text-foreground leading-none text-lg sm:text-lg md:text-xl text-left lowercase truncate font-semibold">
                   fridge cuisine<span className="text-primary">.</span>
                 </span>
-                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight mt-1 uppercase tracking-[0.18em] font-medium overflow-hidden max-w-[55vw] sm:max-w-none tagline-mask sm:[mask-image:none] sm:[-webkit-mask-image:none]">
-                  <span
-                    className="tagline-sweep sm:!animate-none sm:!transform-none"
-                    onTouchStart={(e) => e.currentTarget.classList.add("tagline-paused")}
-                    onTouchEnd={(e) => e.currentTarget.classList.remove("tagline-paused")}
-                  >
+                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight mt-1 uppercase tracking-[0.18em] font-medium max-w-[55vw] sm:max-w-none">
+                  <span className="tagline-shimmer">
                     Your own AI powered personal chef
                   </span>
                 </p>
