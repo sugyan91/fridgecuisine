@@ -104,6 +104,8 @@ export function useRecipeUsage(userId: string | undefined) {
     remainingHelpers: Math.max(0, helperLimit - currentHelpers),
     usedRecipes: currentRecipes,
     usedHelpers: currentHelpers,
+    limitRecipes: recipeLimit,
+    limitHelpers: helperLimit,
     countdown,
     loaded: usedRecipes !== null,
     logGeneration,
