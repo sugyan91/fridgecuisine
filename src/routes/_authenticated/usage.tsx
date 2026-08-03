@@ -167,7 +167,7 @@ function UsagePage() {
                 : "Upgrade to Basic ($5.99/mo · 8 recipes + 20 helpers/day) or Unlimited ($19.99/mo · 30 recipes + 100 helpers/day)."}
             </p>
             {purchasesEnabled && (
-              <Button asChild className="mt-4">
+              <Button asChild className="mt-4" data-purchase-gated>
                 <Link to="/pricing">See plans</Link>
               </Button>
             )}
