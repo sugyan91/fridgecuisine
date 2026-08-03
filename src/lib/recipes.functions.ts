@@ -220,6 +220,19 @@ ${stepRule} cookTimeMinutes 5-90 realistic active time.
       ? `\nAvoid: ${data.exclude.slice(0, 20).join("; ")}`
       : "";
 
+    const extraKeys = [
+      features.pairing ? `      "pairing": "one sentence",` : "",
+      features.chefNote ? `      "chefNote": "one or two sentences",` : "",
+      features.difficulty ? `      "difficulty": "easy",\n      "fasterTip": "one sentence",` : "",
+      features.variations
+        ? `      "variations": [{"name":"Spicier","how":"one sentence"},{"name":"Vegan","how":"one sentence"}],`
+        : "",
+      features.storage ? `      "storage": "one or two sentences",` : "",
+      features.allergenFlags ? `      "allergens": ["Gluten"],` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
     const userPrompt = `Ingredients: ${hasIngredients ? data.ingredients.join(", ") : "(none)"}
 Cuisine preference: ${data.cuisine}
 Dietary: ${dietary}${excludeBlock}
@@ -238,7 +251,7 @@ Return JSON shaped like:
       "usedIngredients": ["2 cups rice"],
       "missingIngredients": ["1 tbsp ghee"],
       "steps": ["step 1","step 2"],
-      "dietary": ["Vegetarian"]
+${extraKeys ? `${extraKeys}\n` : ""}      "dietary": ["Vegetarian"]
     }
   ]
 }`;
