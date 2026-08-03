@@ -6,7 +6,6 @@ import { getStripeEnvironment } from "@/lib/stripe";
 import { isIOSNative } from "@/lib/platform";
 import { Button } from "@/components/ui/button";
 import { GraffitiCelebration } from "@/components/celebrate/GraffitiCelebration";
-import { IapUnavailableNotice } from "@/components/native/IapUnavailableNotice";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ENDPOINT_LIMITS } from "@/lib/ai-quota";
 
