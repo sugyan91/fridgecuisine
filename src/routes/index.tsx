@@ -499,6 +499,15 @@ function Index() {
         toast("Removed from saved");
       } else {
         const res = await saveRecipeRpc({ data: { recipe: recipe } });
+        if (!res.ok) {
+          toast.error(res.error, {
+            action: {
+              label: "Upgrade",
+              onClick: () => navigate({ to: "/pricing" }),
+            },
+          });
+          return;
+        }
         setSaved((prev) => [res.row, ...prev.filter((s) => s.title !== recipe.title)]);
         toast.success("Saved!");
       }
@@ -1226,6 +1235,7 @@ function Index() {
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
                   dietary={dietary}
+                  tier={subTier}
                   showMissing={false}
                   isAuthenticated={!!email}
                   pantry={ingredients}
@@ -1372,6 +1382,7 @@ function Index() {
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
                   dietary={dietary}
+                  tier={subTier}
                   showMissing={pantryMode && ingredients.length > 0}
                   isAuthenticated={!!email}
                   pantry={ingredients}

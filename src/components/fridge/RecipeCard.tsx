@@ -10,6 +10,34 @@ import { generateRecipeImage } from "@/lib/recipe-image.functions";
 import { downloadRecipePdf } from "@/lib/recipe-pdf";
 import { SafeImage } from "@/components/ui/safe-image";
 import { DietBadgeRow } from "./DietBadge";
+import { TIER_FEATURES, PAID_EXTRAS, type PlanTier } from "@/lib/tier-features";
+
+function ChefDetailsUpsell() {
+  return (
+    <div className="bg-white/10 p-4 rounded-2xl border border-dashed border-white/30">
+      <h5 className="font-black uppercase text-[10px] tracking-widest mb-2 text-turmeric">
+        Locked chef details
+      </h5>
+      <ul className="text-sm font-medium space-y-1.5 mb-3">
+        {PAID_EXTRAS.map((x) => (
+          <li key={x.label} className="flex items-start gap-2 opacity-90">
+            <span aria-hidden="true">🔒</span>
+            <span className="flex-1">{x.label}</span>
+            <span className="text-[10px] font-black uppercase tracking-wide opacity-70">
+              {x.plan}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        to="/pricing"
+        className="block text-center bg-white text-cardamom py-2.5 rounded-xl font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
+      >
+        See plans
+      </Link>
+    </div>
+  );
+}
 
 type Props = {
   recipe: Recipe;
@@ -21,6 +49,7 @@ type Props = {
   isAuthenticated?: boolean;
   pantry?: string[];
   onRecipeUpdate?: (next: Recipe) => void;
+  tier?: PlanTier;
 };
 
 export function RecipeCard({
@@ -33,7 +62,9 @@ export function RecipeCard({
   dietary: dietaryProp,
   pantry = [],
   onRecipeUpdate,
+  tier = "free",
 }: Props) {
+  const features = TIER_FEATURES[tier];
   const [open, setOpen] = useState(false);
   const [swapOpen, setSwapOpen] = useState<{ kind: "used" | "missing"; name: string } | null>(null);
   const [swapLoading, setSwapLoading] = useState(false);
@@ -460,6 +491,76 @@ export function RecipeCard({
                 </ul>
               </div>
             )}
+            {(recipe.pairing || recipe.chefNote || recipe.fasterTip) && (
+              <div className="bg-white/10 p-4 rounded-2xl border border-white/20 space-y-2.5">
+                <h5 className="font-black uppercase text-[10px] tracking-widest text-turmeric">
+                  Chef's details
+                </h5>
+                {recipe.chefNote && (
+                  <p className="text-sm font-medium leading-snug">{recipe.chefNote}</p>
+                )}
+                {recipe.pairing && (
+                  <p className="text-sm font-medium leading-snug">
+                    <span className="font-black uppercase text-[10px] tracking-widest text-turmeric mr-1.5">
+                      Pair with
+                    </span>
+                    {recipe.pairing}
+                  </p>
+                )}
+                {recipe.fasterTip && (
+                  <p className="text-sm font-medium leading-snug">
+                    <span className="font-black uppercase text-[10px] tracking-widest text-turmeric mr-1.5">
+                      Faster
+                    </span>
+                    {recipe.fasterTip}
+                  </p>
+                )}
+              </div>
+            )}
+            {recipe.variations && recipe.variations.length > 0 && (
+              <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
+                <h5 className="font-black uppercase text-[10px] tracking-widest mb-3 text-turmeric">
+                  Make it your way
+                </h5>
+                <ul className="text-sm space-y-2 font-medium">
+                  {recipe.variations.map((v, i) => (
+                    <li key={i}>
+                      <span className="font-black">{v.name}:</span> {v.how}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {(recipe.storage || (recipe.allergens && recipe.allergens.length > 0)) && (
+              <div className="bg-white/10 p-4 rounded-2xl border border-white/20 space-y-2.5">
+                {recipe.storage && (
+                  <div>
+                    <h5 className="font-black uppercase text-[10px] tracking-widest mb-1.5 text-turmeric">
+                      Make ahead & leftovers
+                    </h5>
+                    <p className="text-sm font-medium leading-snug">{recipe.storage}</p>
+                  </div>
+                )}
+                {recipe.allergens && recipe.allergens.length > 0 && (
+                  <div>
+                    <h5 className="font-black uppercase text-[10px] tracking-widest mb-1.5 text-turmeric">
+                      Contains
+                    </h5>
+                    <div className="flex flex-wrap gap-1.5">
+                      {recipe.allergens.map((a) => (
+                        <span
+                          key={a}
+                          className="text-[10px] font-black uppercase tracking-wide bg-white/15 border border-white/25 rounded-full px-2 py-0.5"
+                        >
+                          {a}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {tier === "free" && <ChefDetailsUpsell />}
             <button
               type="button"
               onClick={onToggleSave}
@@ -467,13 +568,22 @@ export function RecipeCard({
             >
               {saved ? "★ Saved" : "♡ Save Recipe"}
             </button>
-            <button
-              type="button"
-              onClick={() => downloadRecipePdf(recipe)}
-              className="w-full bg-turmeric text-foreground py-3 rounded-xl font-black uppercase text-sm border-2 border-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
-            >
-              ⬇ Download PDF
-            </button>
+            {features.pdfExport ? (
+              <button
+                type="button"
+                onClick={() => downloadRecipePdf(recipe)}
+                className="w-full bg-turmeric text-foreground py-3 rounded-xl font-black uppercase text-sm border-2 border-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
+              >
+                ⬇ Download PDF
+              </button>
+            ) : (
+              <Link
+                to="/pricing"
+                className="w-full block text-center bg-white/10 text-white py-3 rounded-xl font-black uppercase text-sm border border-white/25 hover:bg-white/15 transition-colors"
+              >
+                🔒 PDF export — upgrade to unlock
+              </Link>
+            )}
             <ShareButton
               recipe={recipe}
               isAuthenticated={isAuthenticated}
