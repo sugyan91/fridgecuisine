@@ -15,6 +15,8 @@ import {
 } from "@/lib/payments.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
+import { IapUnavailableNotice } from "@/components/native/IapUnavailableNotice";
 
 import {
   AlertDialog,
@@ -296,6 +298,8 @@ export function PlanSwitcher({ onChanged }: { onChanged?: () => void }) {
                   <Button variant="outline" className="w-full" disabled>
                     Your plan
                   </Button>
+                ) : !purchasesEnabled ? (
+                  <IapUnavailableNotice what="Plan changes" />
                 ) : !hasSub ? (
                   <Button asChild className="w-full">
                     <Link to="/pricing">Choose {plan.name}</Link>
