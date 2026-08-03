@@ -611,15 +611,43 @@ button:not(:disabled),
 
 .reveal-fade { animation: fade-in 240ms ease-out both; }
 
+/* Isolate celebration painting so animations don't force full-page repaints */
+.celebration-layer {
+  contain: layout paint style;
+}
+
+/* Low-end device / data-saver fallback: no blur, no infinite loops, no drips */
+.celebration-lite .spray-blob {
+  filter: none;
+  opacity: 0.28;
+  animation: none;
+}
+.celebration-lite .food-bit {
+  animation-iteration-count: 1;
+  animation-duration: 2600ms !important;
+}
+.celebration-lite .light-sweep { display: none; }
+.celebration-lite .graffiti-drip { display: none; }
+.celebration-lite .graffiti-tag {
+  animation:
+    drip-draw 900ms linear 100ms forwards,
+    tag-fill 400ms ease 900ms forwards;
+}
+.celebration-lite .graffiti-underline {
+  animation-duration: 500ms;
+  animation-delay: 500ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spray-blob { animation: none; opacity: 0.4; }
-  .food-bit { display: none; }
-  .light-sweep { animation: none; opacity: 0; }
+  .food-bit { display: none !important; }
+  .light-sweep { display: none; }
   .graffiti-tag {
-    animation: none;
+    animation: none !important;
     stroke-dashoffset: 0;
     fill: color-mix(in oklab, var(--primary) 88%, transparent);
   }
-  .graffiti-underline, .graffiti-drip { animation: none; stroke-dashoffset: 0; }
+  .graffiti-underline, .graffiti-drip { animation: none !important; stroke-dashoffset: 0; }
   .reveal-fade { animation: none; }
+  .celebration-layer * { animation: none !important; transition: none !important; }
 }

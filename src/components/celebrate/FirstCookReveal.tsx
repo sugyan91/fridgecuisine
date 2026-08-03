@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { pickFoodQuote } from "@/lib/food-quotes";
+import { useMotionProfile } from "@/hooks/use-motion-profile";
 
 /**
  * Cinematic one-time overlay shown the first time a paid member generates
@@ -13,11 +14,13 @@ export function FirstCookReveal({
   durationMs?: number;
 }) {
   const quote = useMemo(() => pickFoodQuote(), []);
+  const { reduceMotion, lite } = useMotionProfile();
+  const effectiveDuration = reduceMotion ? 1200 : lite ? 1600 : durationMs;
 
   useEffect(() => {
-    const t = setTimeout(onDone, durationMs);
+    const t = setTimeout(onDone, effectiveDuration);
     return () => clearTimeout(t);
-  }, [onDone, durationMs]);
+  }, [onDone, effectiveDuration]);
 
   return (
     <div
@@ -28,11 +31,13 @@ export function FirstCookReveal({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " " || e.key === "Escape") onDone();
       }}
-      className="fixed inset-0 z-[90] flex items-center justify-center overflow-hidden bg-background/92 backdrop-blur-sm reveal-fade"
+      className={`celebration-layer fixed inset-0 z-[90] flex items-center justify-center overflow-hidden reveal-fade ${
+        lite ? "celebration-lite bg-background" : "bg-background/92 backdrop-blur-sm"
+      }`}
     >
-      <span className="light-sweep" aria-hidden="true" />
+      {!lite && !reduceMotion && <span className="light-sweep" aria-hidden="true" />}
       <span className="spray-blob spray-blob-1" aria-hidden="true" />
-      <span className="spray-blob spray-blob-2" aria-hidden="true" />
+      {!lite && <span className="spray-blob spray-blob-2" aria-hidden="true" />}
 
       <div className="relative px-6 text-center">
         <svg viewBox="0 0 620 130" className="mx-auto w-[min(92vw,620px)]" aria-hidden="true">
