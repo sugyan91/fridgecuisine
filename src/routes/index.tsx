@@ -317,8 +317,8 @@ function Index() {
       toast.error("Tell me what dish you want to prepare.");
       return;
     }
-    if (limitBlocked) {
-      limitToast();
+    if (atHelperLimit) {
+      limitToast("helpers");
       return;
     }
     setDishLoading(true);
