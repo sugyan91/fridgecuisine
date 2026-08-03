@@ -580,14 +580,14 @@ export function RecipeCard({
               >
                 ⬇ Download PDF
               </button>
-            ) : (
+            ) : purchasesEnabled ? (
               <Link
                 to="/pricing"
                 className="w-full block text-center bg-white/10 text-white py-3 rounded-xl font-black uppercase text-sm border border-white/25 hover:bg-white/15 transition-colors"
               >
                 🔒 PDF export — upgrade to unlock
               </Link>
-            )}
+            ) : null}
             <ShareButton
               recipe={recipe}
               isAuthenticated={isAuthenticated}

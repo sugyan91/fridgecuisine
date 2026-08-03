@@ -518,10 +518,14 @@ function Index() {
         const res = await saveRecipeRpc({ data: { recipe: recipe } });
         if (!res.ok) {
           toast.error(res.error, {
-            action: {
-              label: "Upgrade",
-              onClick: () => navigate({ to: "/pricing" }),
-            },
+            ...(purchasesEnabled
+              ? {
+                  action: {
+                    label: "Upgrade",
+                    onClick: () => navigate({ to: "/pricing" }),
+                  },
+                }
+              : {}),
           });
           return;
         }
