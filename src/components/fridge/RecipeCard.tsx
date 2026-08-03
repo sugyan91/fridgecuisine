@@ -11,8 +11,10 @@ import { downloadRecipePdf } from "@/lib/recipe-pdf";
 import { SafeImage } from "@/components/ui/safe-image";
 import { DietBadgeRow } from "./DietBadge";
 import { TIER_FEATURES, PAID_EXTRAS, type PlanTier } from "@/lib/tier-features";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 
 function ChefDetailsUpsell() {
+  const purchasesEnabled = usePurchasesEnabled();
   return (
     <div className="bg-white/10 p-4 rounded-2xl border border-dashed border-white/30">
       <h5 className="font-black uppercase text-[10px] tracking-widest mb-2 text-turmeric">
@@ -29,12 +31,14 @@ function ChefDetailsUpsell() {
           </li>
         ))}
       </ul>
-      <Link
-        to="/pricing"
-        className="block text-center bg-white text-cardamom py-2.5 rounded-xl font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
-      >
-        See plans
-      </Link>
+      {purchasesEnabled && (
+        <Link
+          to="/pricing"
+          className="block text-center bg-white text-cardamom py-2.5 rounded-xl font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
+        >
+          See plans
+        </Link>
+      )}
     </div>
   );
 }
