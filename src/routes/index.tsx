@@ -604,8 +604,8 @@ function Index() {
                   data-testid="brand-tagline"
                   className="text-[8px] sm:text-[10px] text-muted-foreground leading-tight mt-0.5 sm:mt-1 uppercase tracking-[0.12em] sm:tracking-[0.18em] font-medium truncate max-w-[48vw] sm:max-w-none"
                 >
-                  <span className="tagline-shimmer inline-block lg:hidden">Your AI chef</span>
-                  <span className="tagline-shimmer hidden lg:inline-block">Your own AI powered personal chef</span>
+                  <span className="tagline-shimmer inline-block xl:hidden">Your AI chef</span>
+                  <span className="tagline-shimmer hidden xl:inline-block">Your own AI powered personal chef</span>
                 </p>
               </div>
             </Link>
