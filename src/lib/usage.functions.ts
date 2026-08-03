@@ -28,6 +28,7 @@ export const getRecipeUsage = createServerFn({ method: "POST" })
     const auth = await tryGetSupabaseUser();
     if (!auth) {
       // Anonymous — return server-tracked daily usage (1/day, per fingerprint AND per IP).
+      // Anonymous users share one bucket across recipes and helpers.
       try {
         const { used } = await getAnonUsage();
         return {
@@ -37,8 +38,8 @@ export const getRecipeUsage = createServerFn({ method: "POST" })
           lifetime: false,
           usedRecipes: used,
           limitRecipes: ANON_DAILY_LIMIT,
-          usedHelpers: 0,
-          limitHelpers: 0,
+          usedHelpers: used,
+          limitHelpers: ANON_DAILY_LIMIT,
         };
       } catch (err) {
         console.error("getAnonUsage failed", err);
@@ -50,7 +51,7 @@ export const getRecipeUsage = createServerFn({ method: "POST" })
           usedRecipes: 0,
           limitRecipes: ANON_DAILY_LIMIT,
           usedHelpers: 0,
-          limitHelpers: 0,
+          limitHelpers: ANON_DAILY_LIMIT,
         };
       }
     }
