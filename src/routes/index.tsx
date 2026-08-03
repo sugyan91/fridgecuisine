@@ -700,11 +700,11 @@ function Index() {
             </nav>
 
             {/* Mobile nav */}
-            <div className="flex md:hidden items-center gap-1.5 shrink-0">
+            <div className="flex md:hidden items-center gap-1 shrink-0">
               <LanguagePicker variant="icon" />
               <Link
                 to="/sell"
-                className="text-xs font-medium px-2.5 py-1.5 rounded-full text-primary-foreground shadow-[var(--shadow-warm)] hover:brightness-110 transition-all"
+                className="text-[10px] font-medium px-2 py-1 rounded-full text-primary-foreground shadow-[var(--shadow-warm)] hover:brightness-110 transition-all"
                 style={{ background: "var(--gradient-warm)" }}
               >
                 Sell
@@ -712,7 +712,7 @@ function Index() {
               {email ? (
                 <Link
                   to="/community/new"
-                  className="text-xs font-medium px-2.5 py-1.5 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                  className="text-[10px] font-medium px-2 py-1 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                 >
                   + Share
                 </Link>
@@ -720,18 +720,18 @@ function Index() {
                 <Link
                   to="/login"
                   search={{ mode: "signup" }}
-                  className="text-xs font-medium px-2.5 py-1.5 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
+                  className="text-[10px] font-medium px-2 py-1 rounded-full bg-foreground text-background hover:brightness-110 transition-all"
                 >
-                  Sign up
+                  Join
                 </Link>
               )}
               <button
                 type="button"
                 aria-label="Open menu"
                 onClick={() => setMobileMenuOpen((v) => !v)}
-                className="p-2 rounded-full border border-border hover:bg-secondary transition-colors"
+                className="p-1.5 rounded-full border border-border hover:bg-secondary transition-colors"
               >
-                {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+                {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
               </button>
             </div>
           </div>
