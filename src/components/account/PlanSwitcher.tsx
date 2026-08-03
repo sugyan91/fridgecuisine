@@ -191,6 +191,63 @@ export function PlanSwitcher({ onChanged }: { onChanged?: () => void }) {
         )}
       </div>
 
+      {/* Daily generation quota summary */}
+      <div className="mt-5 rounded-xl border border-border bg-muted/30 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Daily AI allowance
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {(["free", "basic", "unlimited"] as PlanTier[]).map((tier) => {
+            const isCurrent = currentPlan === tier;
+            return (
+              <div
+                key={tier}
+                className={`rounded-lg border p-3 ${
+                  isCurrent
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-card"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold capitalize text-foreground">
+                    {tier}
+                  </span>
+                  {isCurrent && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      You
+                    </Badge>
+                  )}
+                </div>
+                <div className="mt-2 space-y-1.5">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <ChefHat className="h-4 w-4 shrink-0 text-primary" />
+                    <span>
+                      <strong className="text-foreground">
+                        {ENDPOINT_LIMITS[tier].recipes}
+                      </strong>{" "}
+                      recipes/day
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Wand2 className="h-4 w-4 shrink-0 text-primary" />
+                    <span>
+                      <strong className="text-foreground">
+                        {ENDPOINT_LIMITS[tier].helpers}
+                      </strong>{" "}
+                      helpers/day
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Recipes = full recipe generations. Helpers = swaps, daily-dinner tweaks,
+          peek-with-AI, fridge-vision, and image generation.
+        </p>
+      </div>
+
       {scheduled && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
           <span className="text-foreground">
