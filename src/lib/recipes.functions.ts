@@ -8,6 +8,7 @@ import { tryGetSupabaseUser } from "./optional-auth.server";
 import { checkAnonQuota, recordAnonGeneration } from "./anon-tracking.server";
 import { logAiUsage } from "./ai-usage-logging.server";
 import { resolveAnonContext } from "./anon-tracking.server";
+import { TIER_FEATURES, outputDetailLevel, type PlanTier } from "./tier-features";
 
 const inputSchema = z.object({
   ingredients: z
@@ -44,6 +45,12 @@ export type Recipe = {
   dietary: string[];
   difficulty?: "easy" | "medium" | "hard";
   kidFriendly?: boolean;
+  pairing?: string;
+  chefNote?: string;
+  fasterTip?: string;
+  variations?: { name: string; how: string }[];
+  storage?: string;
+  allergens?: string[];
   nutrition?: {
     servings?: number;
     perServing?: {
@@ -85,6 +92,15 @@ const responseSchema = z.object({
         dietary: z.array(z.string().max(40)).max(6).default([]),
         difficulty: z.enum(["easy", "medium", "hard"]).optional(),
         kidFriendly: z.boolean().optional(),
+        pairing: z.string().max(400).optional(),
+        chefNote: z.string().max(800).optional(),
+        fasterTip: z.string().max(400).optional(),
+        variations: z
+          .array(z.object({ name: z.string().max(120), how: z.string().max(600) }))
+          .max(4)
+          .optional(),
+        storage: z.string().max(800).optional(),
+        allergens: z.array(z.string().max(60)).max(12).optional(),
         nutrition: z
           .object({
             servings: z.number().optional(),
