@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { pickFoodQuote } from "@/lib/food-quotes";
+import { useMotionProfile } from "@/hooks/use-motion-profile";
 
 const GLYPHS = ["🌶️", "🍋", "🌿", "🥑", "🧄", "🍅", "🥕", "🧀", "🍳", "🥂"];
 
@@ -9,9 +10,11 @@ const GLYPHS = ["🌶️", "🍋", "🌿", "🥑", "🧄", "🍅", "🥕", "🧀
  */
 export function GraffitiCelebration({ tag = "WELCOME TO THE KITCHEN" }: { tag?: string }) {
   const quote = useMemo(() => pickFoodQuote(), []);
+  const { reduceMotion, lite } = useMotionProfile();
+  const bitCount = reduceMotion ? 0 : lite ? 6 : 14;
   const bits = useMemo(
     () =>
-      Array.from({ length: 18 }, (_, i) => ({
+      Array.from({ length: bitCount }, (_, i) => ({
         glyph: GLYPHS[i % GLYPHS.length],
         left: 4 + ((i * 37) % 92),
         delay: (i % 9) * 0.18,
@@ -19,15 +22,18 @@ export function GraffitiCelebration({ tag = "WELCOME TO THE KITCHEN" }: { tag?: 
         size: 16 + ((i * 5) % 4) * 6,
         drift: ((i % 5) - 2) * 28,
       })),
-    [],
+    [bitCount],
   );
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+    <div
+      className={`pointer-events-none absolute inset-0 overflow-hidden celebration-layer${lite ? " celebration-lite" : ""}`}
+      aria-hidden="true"
+    >
       {/* Spray blobs */}
       <span className="spray-blob spray-blob-1" />
       <span className="spray-blob spray-blob-2" />
-      <span className="spray-blob spray-blob-3" />
+      {!lite && <span className="spray-blob spray-blob-3" />}
 
       {/* Hand-painted tag that draws itself on */}
       <svg
