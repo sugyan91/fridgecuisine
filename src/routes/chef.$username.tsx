@@ -6,6 +6,7 @@ import { recordStorefrontView } from "@/lib/storefront-analytics.functions";
 import { SafeImage } from "@/components/ui/safe-image";
 import { TipChefDialog } from "@/components/tips/TipChefDialog";
 import { FollowButton } from "@/components/chefs/FollowButton";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 
 export const Route = createFileRoute("/chef/$username")({
   loader: async ({ params }) => {
@@ -64,6 +65,7 @@ function ChefStorefrontPage() {
   const displayName = chef.display_name || chef.username;
   const initial = (displayName || "?").slice(0, 1).toUpperCase();
   const [tipOpen, setTipOpen] = useState(false);
+  const purchasesEnabled = usePurchasesEnabled();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -114,13 +116,15 @@ function ChefStorefrontPage() {
               <div className="mt-4">
                 <div className="flex flex-wrap items-center gap-2">
                 <FollowButton username={chef.username} />
-                <button
-                  type="button"
-                  onClick={() => setTipOpen(true)}
-                  className="inline-flex items-center gap-2 bg-turmeric text-foreground border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
-                >
-                  <Coffee className="size-4" /> Send a tip
-                </button>
+                {purchasesEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => setTipOpen(true)}
+                    className="inline-flex items-center gap-2 bg-turmeric text-foreground border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
+                  >
+                    <Coffee className="size-4" /> Send a tip
+                  </button>
+                )}
                 </div>
               </div>
             </div>

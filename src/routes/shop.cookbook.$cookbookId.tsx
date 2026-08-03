@@ -12,6 +12,8 @@ import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
+import { IapUnavailableNotice } from "@/components/native/IapUnavailableNotice";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { SafeImage } from "@/components/ui/safe-image";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +67,7 @@ function CookbookDetailPage() {
   const cookbook = loaded?.cookbook as CookbookDetail | null;
   const isMobile = useIsMobile();
   const startCheckout = useServerFn(createCookbookCheckout);
+  const purchasesEnabled = usePurchasesEnabled();
 
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -169,6 +172,8 @@ function CookbookDetailPage() {
             <span className="mt-4 inline-block bg-foreground text-background border-2 border-border px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide">
               You own this
             </span>
+          ) : !purchasesEnabled ? (
+            <IapUnavailableNotice what="Cookbook purchases" className="mt-4" />
           ) : authed ? (
             <button
               type="button"

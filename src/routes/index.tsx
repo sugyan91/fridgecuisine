@@ -4,6 +4,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 import { IngredientInput } from "@/components/fridge/IngredientInput";
 import { FilterPanel } from "@/components/fridge/FilterPanel";
 import { RecipeCard } from "@/components/fridge/RecipeCard";
@@ -190,6 +191,7 @@ function Index() {
   }, []);
 
   const navigate = useNavigate();
+  const purchasesEnabled = usePurchasesEnabled();
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium, isUnlimited, tier: subTier } = useSubscription(userId);
@@ -518,10 +520,14 @@ function Index() {
         const res = await saveRecipeRpc({ data: { recipe: recipe } });
         if (!res.ok) {
           toast.error(res.error, {
-            action: {
-              label: "Upgrade",
-              onClick: () => navigate({ to: "/pricing" }),
-            },
+            ...(purchasesEnabled
+              ? {
+                  action: {
+                    label: "Upgrade",
+                    onClick: () => navigate({ to: "/pricing" }),
+                  },
+                }
+              : {}),
           });
           return;
         }

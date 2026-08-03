@@ -142,3 +142,31 @@ When Apple asks about data collection, answer as follows based on current featur
 | Diagnostics | Yes | Crash reporting | No | No |
 
 Enable **App Tracking Transparency** only if you later add advertising; otherwise leave tracking disabled.
+
+## Payment path for v1 (Option A — free tier only on iOS)
+
+The iOS build ships without any in-app purchase surface, so Apple's IAP rule
+(3.1.1) is not triggered.
+
+How it works in code:
+- `src/lib/platform.ts` — detects the Capacitor iOS shell.
+- `src/hooks/use-purchases-enabled.ts` — returns `false` inside native iOS.
+- `src/components/native/IapUnavailableNotice.tsx` — replacement copy where a
+  purchase CTA would appear.
+
+Hidden inside the iOS app:
+- Pricing plan CTAs and Stripe embedded checkout (`/pricing`)
+- Plan upgrade/downgrade switcher in Account
+- Paid recipe unlocks and cookbook purchases (`/shop/*`)
+- Chef tipping
+- All "See plans" / "Upgrade" links (footer, banners, limit modal, usage,
+  account, recipe cards, PDF export upsell)
+
+Review notes to paste in App Store Connect:
+> This version offers the free tier only. No subscriptions, purchases, or
+> external payment links are presented in the app. Paid features are planned
+> for a future release using Apple In-App Purchase.
+
+Follow-up for v2: implement StoreKit IAP (subscriptions + consumable recipe
+unlocks) and flip `usePurchasesEnabled` to return true on iOS once the
+StoreKit flow is wired.

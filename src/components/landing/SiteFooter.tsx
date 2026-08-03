@@ -2,9 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
 import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
 import { useConsent } from "@/lib/consent";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 
 export function SiteFooter() {
   const consent = useConsentSafe();
+  const purchasesEnabled = usePurchasesEnabled();
   return (
     <footer className="bg-[var(--surface-dark)] text-white/85 mt-16">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 md:py-16">
@@ -68,9 +70,11 @@ export function SiteFooter() {
               Upgrade
             </p>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/pricing" title="View pricing plans" aria-label="Pricing – view pricing plans" className="hover:text-white block">Pricing</Link>
-              </li>
+              {purchasesEnabled && (
+                <li>
+                  <Link to="/pricing" title="View pricing plans" aria-label="Pricing – view pricing plans" className="hover:text-white block">Pricing</Link>
+                </li>
+              )}
               <li>
                 <Link to="/about" title="About FridgeCuisine" aria-label="About – learn about FridgeCuisine" className="hover:text-white block">About</Link>
               </li>

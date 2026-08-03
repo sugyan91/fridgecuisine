@@ -16,6 +16,8 @@ import { fakeRating, Stars } from "@/lib/fake-ratings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
+import { IapUnavailableNotice } from "@/components/native/IapUnavailableNotice";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { SafeImage } from "@/components/ui/safe-image";
@@ -90,6 +92,7 @@ function RecipeDetail() {
   const isMobile = useIsMobile();
 
   const [loading, setLoading] = useState(true);
+  const purchasesEnabled = usePurchasesEnabled();
   const [data, setData] = useState<Partial<PaidRecipeFull> | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -229,11 +232,12 @@ function RecipeDetail() {
             authed={!!authed}
             onBuy={() => setCheckoutOpen(true)}
             recipeId={recipeId}
+            purchasesEnabled={purchasesEnabled}
           />
         )}
       </div>
 
-      {!unlocked && (
+      {!unlocked && purchasesEnabled && (
         <div className="fixed bottom-16 md:hidden inset-x-0 z-30 p-3 bg-background/95 backdrop-blur border-t-2 border-border pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
           {authed ? (
             <button
@@ -395,11 +399,13 @@ function LockedView({
   authed,
   onBuy,
   recipeId,
+  purchasesEnabled,
 }: {
   priceCents: number;
   authed: boolean;
   onBuy: () => void;
   recipeId: string;
+  purchasesEnabled: boolean;
 }) {
   const fetchTeaser = useServerFn(getPaidRecipeTeaser);
   const [teaser, setTeaser] = useState<PaidRecipeTeaser | null>(null);
@@ -537,7 +543,9 @@ function LockedView({
           Ingredients and step-by-step method are available after purchase.
         </p>
         <p className="font-black text-2xl mt-3">${(priceCents / 100).toFixed(2)}</p>
-        {authed ? (
+        {!purchasesEnabled ? (
+          <IapUnavailableNotice what="Recipe purchases" className="mt-4" />
+        ) : authed ? (
           <button
             type="button"
             onClick={onBuy}

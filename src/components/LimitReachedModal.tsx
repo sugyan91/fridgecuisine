@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 
 type Props = {
   open: boolean;
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function LimitReachedModal({ open, onClose, isSignedIn, countdown, tier, type = "recipes" }: Props) {
+  const purchasesEnabled = usePurchasesEnabled();
   const resolvedTier = tier ?? (isSignedIn ? "free" : "anon");
   const isAnon = resolvedTier === "anon";
   const isBasic = resolvedTier === "basic";
@@ -78,13 +80,15 @@ export function LimitReachedModal({ open, onClose, isSignedIn, countdown, tier, 
               Sign up free — keep cooking
             </Link>
           )}
-          <Link
-            to={isUnlimited ? "/account" : "/pricing"}
-            onClick={onClose}
-            className="w-full text-center px-4 py-3 rounded-full bg-primary text-primary-foreground font-display font-semibold text-sm hover:brightness-110 transition-all"
-          >
-            {ctaLabel}
-          </Link>
+          {purchasesEnabled && (
+            <Link
+              to={isUnlimited ? "/account" : "/pricing"}
+              onClick={onClose}
+              className="w-full text-center px-4 py-3 rounded-full bg-primary text-primary-foreground font-display font-semibold text-sm hover:brightness-110 transition-all"
+            >
+              {ctaLabel}
+            </Link>
+          )}
           <p className="text-center text-xs text-muted-foreground mt-2">
             Daily limit resets in <span className="font-semibold text-foreground">{countdown}</span>
           </p>

@@ -7,6 +7,7 @@ import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { getMyAdminStatus } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 
 export const Route = createFileRoute("/_authenticated/usage")({
   head: () => ({
@@ -33,6 +34,7 @@ function nextMidnightLocal(): Date {
 
 function UsagePage() {
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const purchasesEnabled = usePurchasesEnabled();
   const [adminState, setAdminState] = useState<"loading" | "yes" | "no">("loading");
   const fetchAdmin = useServerFn(getMyAdminStatus);
 
@@ -164,9 +166,11 @@ function UsagePage() {
                 ? "Upgrade to Unlimited for $19.99/mo and get up to 30 recipes + 100 helper tips/day."
                 : "Upgrade to Basic ($5.99/mo · 8 recipes + 20 helpers/day) or Unlimited ($19.99/mo · 30 recipes + 100 helpers/day)."}
             </p>
-            <Button asChild className="mt-4">
-              <Link to="/pricing">See plans</Link>
-            </Button>
+            {purchasesEnabled && (
+              <Button asChild className="mt-4">
+                <Link to="/pricing">See plans</Link>
+              </Button>
+            )}
           </div>
         )}
       </div>
