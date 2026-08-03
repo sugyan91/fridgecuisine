@@ -44,6 +44,7 @@ import { LimitReachedModal } from "@/components/LimitReachedModal";
 import { SaveSignupModal } from "@/components/SaveSignupModal";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useSubscription } from "@/hooks/use-subscription";
+import { FirstCookReveal } from "@/components/celebrate/FirstCookReveal";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { AdminPanel } from "@/components/admin/AdminPanel";
 import { RecipeTimers } from "@/components/fridge/RecipeTimers";
@@ -204,6 +205,7 @@ function Index() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [limitModalType, setLimitModalType] = useState<"recipes" | "helpers">("recipes");
+  const [firstCookReveal, setFirstCookReveal] = useState(false);
   const [saveModal, setSaveModal] = useState<{ open: boolean; recipe: Recipe | null }>({
     open: false,
     recipe: null,
