@@ -176,3 +176,42 @@ Review notes to paste in App Store Connect:
 Follow-up for v2: implement StoreKit IAP (subscriptions + consumable recipe
 unlocks) and flip `usePurchasesEnabled` to return true on iOS once the
 StoreKit flow is wired.
+
+## App icon (fixes "None of the input catalogs contained ... AppIcon")
+
+Xcode fails the build when `ios/App/App/Assets.xcassets` has no populated
+`AppIcon.appiconset`. The source artwork lives in the repo at `resources/`:
+
+- `resources/icon.png` — 1024x1024, opaque, no rounded corners, no alpha
+- `resources/splash.png` / `resources/splash-dark.png` — 2732x2732 launch image
+
+Regenerate the native icon and splash sets from those files:
+
+```bash
+git pull                 # get resources/ + the ios:icons script
+npm install              # installs @capacitor/assets
+npm run build
+npx cap sync ios
+npm run ios:icons        # writes ios/App/App/Assets.xcassets/AppIcon.appiconset
+npx cap open ios
+```
+
+Then in Xcode: target **App → General → App Icons and Launch Screen** should
+show `AppIcon`. Clean the build folder (Shift+Cmd+K) and build again.
+
+## "Your team has no devices from which to generate a provisioning profile"
+
+This is an account-side requirement, not a code issue. Pick one:
+
+1. **Build for a Simulator** — no device or profile needed. Choose any iPhone
+   simulator in the run-destination dropdown and press Cmd+R. Enough to verify
+   that no purchase UI appears.
+2. **Register a real iPhone** — plug it in, unlock, tap *Trust*, then
+   Xcode → Window → Devices and Simulators → select it → *Use for Development*.
+3. **Add the UDID manually** at developer.apple.com → Certificates, Identifiers
+   & Profiles → Devices → **+**, then Xcode → Settings → Accounts →
+   *Download Manual Profiles*.
+
+For archiving/uploading to App Store Connect you need a **Distribution**
+profile, which does not require a registered device: set the run destination to
+**Any iOS Device (arm64)** and use Product → Archive.
