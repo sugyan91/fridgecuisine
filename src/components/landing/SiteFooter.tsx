@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
 import logoAsset from "@/assets/fridge-cuisine-logo.png.asset.json";
 import { useConsent } from "@/lib/consent";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 
 export function SiteFooter() {
   const consent = useConsentSafe();
@@ -69,9 +70,10 @@ export function SiteFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               {purchasesEnabled && (
-              <li>
-                <Link to="/pricing" title="View pricing plans" aria-label="Pricing – view pricing plans" className="hover:text-white block">Pricing</Link>
-              </li>
+                <li>
+                  <Link to="/pricing" title="View pricing plans" aria-label="Pricing – view pricing plans" className="hover:text-white block">Pricing</Link>
+                </li>
+              )}
               <li>
                 <Link to="/about" title="About FridgeCuisine" aria-label="About – learn about FridgeCuisine" className="hover:text-white block">About</Link>
               </li>
