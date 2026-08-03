@@ -551,6 +551,7 @@ function Index() {
       <Toaster />
       <WelcomeTour />
       <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
+      {firstCookReveal && <FirstCookReveal onDone={() => setFirstCookReveal(false)} />}
       <LimitReachedModal
         open={limitModalOpen}
         onClose={() => setLimitModalOpen(false)}
