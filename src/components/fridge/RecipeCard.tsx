@@ -69,6 +69,7 @@ export function RecipeCard({
   tier = "free",
 }: Props) {
   const features = TIER_FEATURES[tier];
+  const purchasesEnabled = usePurchasesEnabled();
   const [open, setOpen] = useState(false);
   const [swapOpen, setSwapOpen] = useState<{ kind: "used" | "missing"; name: string } | null>(null);
   const [swapLoading, setSwapLoading] = useState(false);

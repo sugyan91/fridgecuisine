@@ -190,6 +190,7 @@ function Index() {
   }, []);
 
   const navigate = useNavigate();
+  const purchasesEnabled = usePurchasesEnabled();
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium, isUnlimited, tier: subTier } = useSubscription(userId);
