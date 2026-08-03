@@ -6,6 +6,7 @@ import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 
 export function SiteFooter() {
   const consent = useConsentSafe();
+  const purchasesEnabled = usePurchasesEnabled();
   return (
     <footer className="bg-[var(--surface-dark)] text-white/85 mt-16">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 md:py-16">
