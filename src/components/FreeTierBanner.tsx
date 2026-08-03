@@ -70,6 +70,7 @@ export function FreeTierBanner({ isPremium, userId }: Props) {
           {purchasesEnabled && (
             <Link
               to="/pricing"
+              data-purchase-gated
               className="text-[11px] md:text-xs font-display font-semibold px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
             >
               See plans →

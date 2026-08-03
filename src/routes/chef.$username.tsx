@@ -118,6 +118,7 @@ function ChefStorefrontPage() {
                 <FollowButton username={chef.username} />
                 {purchasesEnabled && (
                   <button
+                    data-purchase-gated
                     type="button"
                     onClick={() => setTipOpen(true)}
                     className="inline-flex items-center gap-2 bg-turmeric text-foreground border-2 border-border px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wide shadow-[0px_3px_0px_0px_var(--border)] active:translate-y-0.5"
