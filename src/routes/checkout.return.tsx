@@ -220,7 +220,7 @@ function CheckoutReturn() {
                     <Link to="/">Start cooking</Link>
                   </Button>
                   <Button asChild variant="outline">
-                    <Link to="/pricing">Manage subscription</Link>
+                    <Link to="/pricing" data-purchase-gated>Manage subscription</Link>
                   </Button>
                 </div>
               </>

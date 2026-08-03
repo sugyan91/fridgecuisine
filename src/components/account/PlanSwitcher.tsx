@@ -264,7 +264,7 @@ export function PlanSwitcher({ onChanged }: { onChanged?: () => void }) {
         </div>
       )}
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div data-purchase-gated className="mt-5 grid gap-4 sm:grid-cols-2">
         {PLANS.map((plan) => {
           const isCurrent = currentPlan === plan.key;
           const isScheduled = scheduled?.plan === plan.key;
