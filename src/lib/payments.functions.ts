@@ -340,3 +340,381 @@ export const createRecipePurchaseCheckout = createServerFn({ method: "POST" })
 
     return { clientSecret: session.client_secret ?? "", alreadyPurchased: false as const };
   });
+/* ------------------------------------------------------------------ *
+ * Self-serve plan changes (upgrade / downgrade)
+ * ------------------------------------------------------------------ */
+
+export type PaidPlanKey = "basic" | "unlimited";
+
+/** Human-readable price lookup keys, stable across sandbox and live. */
+export const PLAN_PRICE_IDS: Record<PaidPlanKey, string> = {
+  basic: "premium_monthly",
+  unlimited: "unlimited_monthly",
+};
+
+const PLAN_BY_PRICE_ID: Record<string, PaidPlanKey> = {
+  premium_monthly: "basic",
+  unlimited_monthly: "unlimited",
+};
+
+const PLAN_RANK: Record<"free" | PaidPlanKey, number> = {
+  free: 0,
+  basic: 1,
+  unlimited: 2,
+};
+
+const planKeySchema = z.enum(["basic", "unlimited"]);
+const envSchema = z.enum(["sandbox", "live"]);
+
+/** Loads the caller's latest subscription row for the given environment. */
+async function loadSubRow(
+  supabase: { from: (t: string) => any },
+  userId: string,
+  environment: StripeEnv,
+) {
+  const { data } = await supabase
+    .from("subscriptions")
+    .select(
+      "stripe_subscription_id, stripe_customer_id, price_id, status, current_period_end, cancel_at_period_end",
+    )
+    .eq("user_id", userId)
+    .eq("environment", environment)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data as
+    | {
+        stripe_subscription_id: string;
+        stripe_customer_id: string;
+        price_id: string;
+        status: string;
+        current_period_end: string | null;
+        cancel_at_period_end: boolean | null;
+      }
+    | null;
+}
+
+function isChangeableStatus(status: string): boolean {
+  return status === "active" || status === "trialing" || status === "past_due";
+}
+
+export type BillingOverview =
+  | {
+      hasSubscription: false;
+      currentPlan: "free";
+    }
+  | {
+      hasSubscription: true;
+      currentPlan: PaidPlanKey;
+      status: string;
+      /** ISO date the current period ends — when scheduled changes take effect. */
+      renewsAt: string | null;
+      cancelAtPeriodEnd: boolean;
+      /** A downgrade already queued for the end of the period, if any. */
+      scheduledChange: { plan: PaidPlanKey; effectiveAt: string | null } | null;
+    };
+
+/**
+ * Everything the account plan switcher needs in one round trip: the live plan,
+ * its renewal date, and any downgrade already queued for the next period.
+ */
+export const getBillingOverview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ environment: envSchema }).parse(input))
+  .handler(async ({ data, context }): Promise<BillingOverview> => {
+    const { supabase, userId } = context;
+    const sub = await loadSubRow(supabase, userId, data.environment);
+    const currentPlan = sub ? PLAN_BY_PRICE_ID[sub.price_id] : undefined;
+    if (!sub || !currentPlan || !isChangeableStatus(sub.status)) {
+      return { hasSubscription: false, currentPlan: "free" };
+    }
+
+    let scheduledChange: { plan: PaidPlanKey; effectiveAt: string | null } | null = null;
+    try {
+      const stripe = createStripeClient(data.environment);
+      const live = await stripe.subscriptions.retrieve(sub.stripe_subscription_id, {
+        expand: ["schedule"],
+      });
+      const schedule = (live as { schedule?: unknown }).schedule;
+      if (schedule && typeof schedule === "object") {
+        const phases = (schedule as { phases?: any[] }).phases ?? [];
+        // The phase after the current one carries the queued plan.
+        const next = phases.length > 1 ? phases[phases.length - 1] : null;
+        const priceRef = next?.items?.[0]?.price;
+        const stripePriceId = typeof priceRef === "string" ? priceRef : priceRef?.id;
+        if (stripePriceId) {
+          const price = await stripe.prices.retrieve(stripePriceId);
+          const key = price.lookup_key ? PLAN_BY_PRICE_ID[price.lookup_key] : undefined;
+          if (key && key !== currentPlan) {
+            scheduledChange = {
+              plan: key,
+              effectiveAt: next?.start_date
+                ? new Date(next.start_date * 1000).toISOString()
+                : sub.current_period_end,
+            };
+          }
+        }
+      }
+    } catch {
+      // A Stripe read failure shouldn't blank the plan screen — the local row
+      // is still accurate for the current plan.
+    }
+
+    return {
+      hasSubscription: true,
+      currentPlan,
+      status: sub.status,
+      renewsAt: sub.current_period_end,
+      cancelAtPeriodEnd: !!sub.cancel_at_period_end,
+      scheduledChange,
+    };
+  });
+
+export type PlanChangePreview =
+  | {
+      direction: "upgrade" | "downgrade";
+      fromPlan: PaidPlanKey;
+      toPlan: PaidPlanKey;
+      /** ISO timestamp the new plan starts. Upgrades: now. Downgrades: renewal. */
+      effectiveAt: string | null;
+      /** Charged today, in cents (prorated). 0 for downgrades. */
+      amountDueCents: number;
+      currency: string;
+    }
+  | { error: string };
+
+/**
+ * Dry-run a plan change so the screen can state exactly what happens and when
+ * before the user commits. Upgrades are prorated and immediate; downgrades take
+ * effect at renewal so the user keeps what they already paid for.
+ */
+export const previewPlanChange = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ plan: planKeySchema, environment: envSchema }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<PlanChangePreview> => {
+    const { supabase, userId } = context;
+    const sub = await loadSubRow(supabase, userId, data.environment);
+    const fromPlan = sub ? PLAN_BY_PRICE_ID[sub.price_id] : undefined;
+    if (!sub || !fromPlan) return { error: "No active subscription found" };
+    if (!isChangeableStatus(sub.status)) {
+      return { error: "This subscription can't be changed right now" };
+    }
+    if (fromPlan === data.plan) return { error: "You're already on this plan" };
+
+    const direction =
+      PLAN_RANK[data.plan] > PLAN_RANK[fromPlan] ? "upgrade" : "downgrade";
+
+    try {
+      const stripe = createStripeClient(data.environment);
+      const prices = await stripe.prices.list({
+        lookup_keys: [PLAN_PRICE_IDS[data.plan]],
+      });
+      if (!prices.data.length) return { error: "Plan price not found" };
+      const targetPrice = prices.data[0];
+
+      if (direction === "downgrade") {
+        return {
+          direction,
+          fromPlan,
+          toPlan: data.plan,
+          effectiveAt: sub.current_period_end,
+          amountDueCents: 0,
+          currency: targetPrice.currency,
+        };
+      }
+
+      const live = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
+      const itemId = live.items.data[0]?.id;
+      if (!itemId) return { error: "Subscription has no billable item" };
+
+      const preview = await stripe.invoices.createPreview({
+        customer: sub.stripe_customer_id,
+        subscription: sub.stripe_subscription_id,
+        subscription_details: {
+          items: [{ id: itemId, price: targetPrice.id, quantity: 1 }],
+          proration_behavior: "always_invoice",
+        },
+      });
+
+      return {
+        direction,
+        fromPlan,
+        toPlan: data.plan,
+        effectiveAt: new Date().toISOString(),
+        amountDueCents: Math.max(0, preview.amount_due ?? 0),
+        currency: preview.currency ?? targetPrice.currency,
+      };
+    } catch (error) {
+      return { error: stripeErrorMessage(error) };
+    }
+  });
+
+export type PlanChangeResult =
+  | {
+      ok: true;
+      direction: "upgrade" | "downgrade";
+      toPlan: PaidPlanKey;
+      effectiveAt: string | null;
+    }
+  | { error: string };
+
+/**
+ * Apply a plan change.
+ *
+ * Upgrade: swap the price immediately and invoice the prorated difference, so
+ * the richer output is available the moment the user confirms.
+ * Downgrade: queue the new price on a subscription schedule that starts at the
+ * next renewal — the user keeps the plan they've already paid for until then.
+ */
+export const changeSubscriptionPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ plan: planKeySchema, environment: envSchema }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<PlanChangeResult> => {
+    const { supabase, userId } = context;
+    const sub = await loadSubRow(supabase, userId, data.environment);
+    const fromPlan = sub ? PLAN_BY_PRICE_ID[sub.price_id] : undefined;
+    if (!sub || !fromPlan) return { error: "No active subscription found" };
+    if (!isChangeableStatus(sub.status)) {
+      return { error: "This subscription can't be changed right now" };
+    }
+    if (fromPlan === data.plan) return { error: "You're already on this plan" };
+
+    const direction =
+      PLAN_RANK[data.plan] > PLAN_RANK[fromPlan] ? "upgrade" : "downgrade";
+
+    try {
+      const stripe = createStripeClient(data.environment);
+      const prices = await stripe.prices.list({
+        lookup_keys: [PLAN_PRICE_IDS[data.plan]],
+      });
+      if (!prices.data.length) return { error: "Plan price not found" };
+      const targetPrice = prices.data[0];
+
+      const live = await stripe.subscriptions.retrieve(sub.stripe_subscription_id, {
+        expand: ["schedule"],
+      });
+      const itemId = live.items.data[0]?.id;
+      if (!itemId) return { error: "Subscription has no billable item" };
+
+      if (direction === "upgrade") {
+        // Any queued downgrade is stale once the user moves up — release it so
+        // the schedule can't overwrite the plan at the next renewal.
+        const existing = (live as { schedule?: unknown }).schedule;
+        const existingId =
+          typeof existing === "string"
+            ? existing
+            : existing && typeof existing === "object"
+              ? (existing as { id?: string }).id
+              : undefined;
+        if (existingId) {
+          try {
+            await stripe.subscriptionSchedules.release(existingId);
+          } catch {
+            // Already released or completed — nothing to undo.
+          }
+        }
+
+        await stripe.subscriptions.update(sub.stripe_subscription_id, {
+          items: [{ id: itemId, price: targetPrice.id, quantity: 1 }],
+          proration_behavior: "always_invoice",
+          cancel_at_period_end: false,
+        });
+        await supabase
+          .from("subscriptions")
+          .update({ price_id: PLAN_PRICE_IDS[data.plan] })
+          .eq("user_id", userId)
+          .eq("environment", data.environment)
+          .eq("stripe_subscription_id", sub.stripe_subscription_id);
+
+        return {
+          ok: true,
+          direction,
+          toPlan: data.plan,
+          effectiveAt: new Date().toISOString(),
+        };
+      }
+
+      // Downgrade — queue it for the next renewal via a subscription schedule.
+      const existing = (live as { schedule?: unknown }).schedule;
+      let scheduleId =
+        typeof existing === "string"
+          ? existing
+          : existing && typeof existing === "object"
+            ? (existing as { id?: string }).id
+            : undefined;
+      if (!scheduleId) {
+        const created = await stripe.subscriptionSchedules.create({
+          from_subscription: sub.stripe_subscription_id,
+        });
+        scheduleId = created.id;
+      }
+
+      const schedule = await stripe.subscriptionSchedules.retrieve(scheduleId);
+      const currentPhase = schedule.phases[0];
+      if (!currentPhase) return { error: "Could not read the current billing period" };
+
+      const updated = await stripe.subscriptionSchedules.update(scheduleId, {
+        end_behavior: "release",
+        phases: [
+          {
+            items: currentPhase.items.map((i) => ({
+              price: typeof i.price === "string" ? i.price : i.price.id,
+              quantity: i.quantity ?? 1,
+            })),
+            start_date: currentPhase.start_date,
+            end_date: currentPhase.end_date,
+            proration_behavior: "none",
+          },
+          {
+            items: [{ price: targetPrice.id, quantity: 1 }],
+            duration: { interval: "month", interval_count: 1 },
+            proration_behavior: "none",
+          },
+        ],
+      });
+
+      const nextPhase = updated.phases[1];
+      return {
+        ok: true,
+        direction,
+        toPlan: data.plan,
+        effectiveAt: nextPhase?.start_date
+          ? new Date(nextPhase.start_date * 1000).toISOString()
+          : sub.current_period_end,
+      };
+    } catch (error) {
+      return { error: stripeErrorMessage(error) };
+    }
+  });
+
+/** Drop a queued downgrade so the current plan simply renews as-is. */
+export const cancelScheduledPlanChange = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ environment: envSchema }).parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    const { supabase, userId } = context;
+    const sub = await loadSubRow(supabase, userId, data.environment);
+    if (!sub?.stripe_subscription_id) return { error: "No subscription found" };
+    try {
+      const stripe = createStripeClient(data.environment);
+      const live = await stripe.subscriptions.retrieve(sub.stripe_subscription_id, {
+        expand: ["schedule"],
+      });
+      const existing = (live as { schedule?: unknown }).schedule;
+      const scheduleId =
+        typeof existing === "string"
+          ? existing
+          : existing && typeof existing === "object"
+            ? (existing as { id?: string }).id
+            : undefined;
+      if (!scheduleId) return { error: "No scheduled change to cancel" };
+      await stripe.subscriptionSchedules.release(scheduleId);
+      return { ok: true };
+    } catch (error) {
+      return { error: stripeErrorMessage(error) };
+    }
+  });
