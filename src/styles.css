@@ -5,6 +5,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Option A (App Store): hide Stripe purchase surfaces immediately on iOS
+   native before React can mount, so users never see a flash of paywalls. */
+.ios-native [data-purchase-gated] {
+  display: none !important;
+}
+
 /*
  * Metric-adjusted fallback fonts.
  *
