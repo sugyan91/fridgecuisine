@@ -41,22 +41,33 @@ CLIP_JS = """
 (sel) => {
   const el = document.querySelector(sel);
   if (!el) return null;
-  const pr = el.getBoundingClientRect();
-  // Measure the visible text node holder (handles responsive sibling spans where
-  // the hidden variant still contributes to scrollWidth).
-  const kids = [...el.children].filter((c) => {
+  const visibleParts = [...el.children].filter((c) => {
     const cs = getComputedStyle(c);
     return c.offsetParent !== null && cs.display !== 'none' && cs.visibility !== 'hidden';
   });
-  const targets = kids.length ? kids : [el];
-  let clipped = false, text = '';
+  const targets = visibleParts.length ? visibleParts : [el];
+  const clipper = (node) => {
+    for (let n = node; n && n !== document.body; n = n.parentElement) {
+      const cs = getComputedStyle(n);
+      if (cs.overflowX !== 'visible') return n;
+    }
+    return null;
+  };
+  let clipped = false;
+  const text = targets.map((t) => (t.textContent || '').trim()).join(' | ');
   for (const t of targets) {
-    const r = t.getBoundingClientRect();
-    text += (t.textContent || '').trim();
-    if (r.right > pr.right + 2 || r.left < pr.left - 2) clipped = true;
-    if (t.scrollWidth > t.clientWidth + 2) clipped = true;
+    const cs = getComputedStyle(t);
+    // ellipsis truncation of the element's own text
+    if (cs.textOverflow === 'ellipsis' && t.scrollWidth > t.clientWidth + 2) clipped = true;
+    const c = clipper(t);
+    if (c) {
+      const cr = c.getBoundingClientRect();
+      const tr = t.getBoundingClientRect();
+      if (tr.right > cr.right + 2 || tr.left < cr.left - 2) clipped = true;
+      if (c !== t && getComputedStyle(c).textOverflow === 'ellipsis' && c.scrollWidth > c.clientWidth + 2) clipped = true;
+    }
   }
-  return { clipped, text };
+  return { clipped, text, parts: targets.length };
 }
 """
 
