@@ -82,6 +82,7 @@ function formatMoney(cents: number, currency: string): string {
 }
 
 export function PlanSwitcher({ onChanged }: { onChanged?: () => void }) {
+  const purchasesEnabled = usePurchasesEnabled();
   const env = getStripeEnvironment();
   const [overview, setOverview] = useState<BillingOverview | null>(null);
   const [loading, setLoading] = useState(true);
