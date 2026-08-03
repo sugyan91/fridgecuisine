@@ -264,13 +264,14 @@ function PricingPage() {
               <span className="text-muted-foreground">/ month</span>
             </div>
             <ul className="mt-6 space-y-2 text-sm">
-              <Feature>Unlimited AI recipes*</Feature>
+              <Feature>30 AI recipe generations / day</Feature>
+              <Feature>100 AI helper tips / day</Feature>
               <Feature>Priority AI responses</Feature>
               <Feature>Cancel anytime — keep access until period ends</Feature>
               <Feature>Everything in Basic</Feature>
             </ul>
             <p className="mt-3 text-[11px] text-muted-foreground">
-              *Fair use: up to 30 recipes / day per account.
+              *Fair use: up to 30 recipes + 100 helper tips / day per account.
             </p>
             {cta("unlimited", true)}
           </div>
