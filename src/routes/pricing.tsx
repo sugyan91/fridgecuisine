@@ -211,7 +211,8 @@ function PricingPage() {
               <span className="text-muted-foreground">/ forever</span>
             </div>
             <ul className="mt-6 space-y-2 text-sm">
-              <Feature>1 AI recipe generation / day</Feature>
+              <Feature>3 AI recipe generations / day</Feature>
+              <Feature>5 AI helper tips / day</Feature>
               <Feature>Save & share recipes</Feature>
               <Feature>Browse the community</Feature>
               <Feature>Meal planner + shopping list</Feature>
