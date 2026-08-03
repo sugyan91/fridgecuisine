@@ -213,7 +213,8 @@ function PricingPage() {
             <ul className="mt-6 space-y-2 text-sm">
               <Feature>3 AI recipe generations / day</Feature>
               <Feature>5 AI helper tips / day</Feature>
-              <Feature>Save & share recipes</Feature>
+              <Feature>3 recipes per search, essential detail</Feature>
+              <Feature>Save up to 30 recipes</Feature>
               <Feature>Browse the community</Feature>
               <Feature>Meal planner + shopping list</Feature>
             </ul>
@@ -246,8 +247,13 @@ function PricingPage() {
             <ul className="mt-6 space-y-2 text-sm">
               <Feature>8 AI recipe generations / day</Feature>
               <Feature>20 AI helper tips / day</Feature>
+              <Feature>6 recipes per search</Feature>
+              <Feature>Nutrition per serving</Feature>
+              <Feature>Drink &amp; side pairings</Feature>
+              <Feature>Chef's note + key technique</Feature>
+              <Feature>Difficulty &amp; "make it faster" tips</Feature>
+              <Feature>Unlimited saves + PDF export</Feature>
               <Feature>Priority AI responses</Feature>
-              <Feature>Cancel anytime — keep access until period ends</Feature>
               <Feature>Everything in Free</Feature>
             </ul>
             {cta("basic", false)}
@@ -266,6 +272,10 @@ function PricingPage() {
             <ul className="mt-6 space-y-2 text-sm">
               <Feature>30 AI recipe generations / day</Feature>
               <Feature>100 AI helper tips / day</Feature>
+              <Feature>Recipe variations (spicier, vegan, kid-friendly)</Feature>
+              <Feature>Make-ahead, storage &amp; leftovers guidance</Feature>
+              <Feature>Detailed steps with timing cues</Feature>
+              <Feature>Allergen call-outs on every recipe</Feature>
               <Feature>Priority AI responses</Feature>
               <Feature>Cancel anytime — keep access until period ends</Feature>
               <Feature>Everything in Basic</Feature>
