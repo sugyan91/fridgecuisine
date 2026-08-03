@@ -4,6 +4,9 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
+import { GraffitiCelebration } from "@/components/celebrate/GraffitiCelebration";
+import { useSubscription } from "@/hooks/use-subscription";
+import { ENDPOINT_LIMITS } from "@/lib/ai-quota";
 
 export const Route = createFileRoute("/checkout/return")({
   validateSearch: (
@@ -36,6 +39,13 @@ function CheckoutReturn() {
   const isRecipe = type === "recipe" && !!recipeId;
   const isCookbook = type === "cookbook" && !!cookbookId;
   const isTip = type === "tip";
+  const isSubscription = !isRecipe && !isCookbook && !isTip;
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const { tier } = useSubscription(userId);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id));
+  }, []);
 
   useEffect(() => {
     let attempts = 0;
@@ -115,9 +125,14 @@ function CheckoutReturn() {
     };
   }, [isRecipe, recipeId, isCookbook, cookbookId, isTip]);
 
+  const celebrate = isSubscription && status === "active";
+  const planLabel = tier === "unlimited" ? "Unlimited" : tier === "basic" ? "Basic" : "Premium";
+  const limits = ENDPOINT_LIMITS[tier === "unlimited" ? "unlimited" : "basic"];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+      {celebrate && <GraffitiCelebration />}
+      <div className="relative max-w-md text-center">
         {status === "checking" && (
           <>
             <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
@@ -184,9 +199,12 @@ function CheckoutReturn() {
               </>
             ) : (
               <>
-                <h1 className="mt-6 text-3xl font-black">You're Premium! 🎉</h1>
+                <h1 className="mt-6 font-display text-3xl font-black">
+                  You're {planLabel}!
+                </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Unlimited AI recipes are unlocked. Time to cook.
+                  Richer AI recipes are unlocked — {limits.recipes} recipe generations and{" "}
+                  {limits.helpers} AI helpers every day. Time to cook.
                 </p>
                 <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
                   <Button asChild>
