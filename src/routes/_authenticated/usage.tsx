@@ -34,6 +34,7 @@ function nextMidnightLocal(): Date {
 
 function UsagePage() {
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const purchasesEnabled = usePurchasesEnabled();
   const [adminState, setAdminState] = useState<"loading" | "yes" | "no">("loading");
   const fetchAdmin = useServerFn(getMyAdminStatus);
 
