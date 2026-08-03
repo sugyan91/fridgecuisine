@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sendTransactionalEmailServer } from "@/lib/email/send.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { TIER_FEATURES } from "@/lib/tier-features";
+import { resolveTier } from "@/lib/ai-quota.server";
 
 export type SavedRecipeData = {
   title: string;
@@ -19,6 +21,12 @@ export type SavedRecipeData = {
   dietary?: string[];
   difficulty?: "easy" | "medium" | "hard";
   kidFriendly?: boolean;
+  pairing?: string;
+  chefNote?: string;
+  fasterTip?: string;
+  variations?: { name: string; how: string }[];
+  storage?: string;
+  allergens?: string[];
   nutrition?: {
     servings?: number;
     perServing?: {
@@ -57,6 +65,15 @@ const recipeSchema = z.object({
   dietary: z.array(z.string().max(40)).max(10).optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   kidFriendly: z.boolean().optional(),
+  pairing: z.string().max(400).optional(),
+  chefNote: z.string().max(800).optional(),
+  fasterTip: z.string().max(400).optional(),
+  variations: z
+    .array(z.object({ name: z.string().max(120), how: z.string().max(600) }))
+    .max(4)
+    .optional(),
+  storage: z.string().max(800).optional(),
+  allergens: z.array(z.string().max(60)).max(12).optional(),
   nutrition: z
     .object({
       servings: z.number().int().min(1).max(20).optional(),
@@ -102,12 +119,43 @@ export const getSavedRecipe = createServerFn({ method: "POST" })
     return { row: (row as unknown as SavedRecipeRow | null) ?? null };
   });
 
+export type SaveRecipeResult =
+  | { ok: true; row: SavedRecipeRow }
+  | { ok: false; error: string; requiresUpgrade: true; cap: number };
+
 export const saveRecipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ recipe: recipeSchema }).parse(input))
-  .handler(async ({ data, context }): Promise<{ row: SavedRecipeRow }> => {
+  .handler(async ({ data, context }): Promise<SaveRecipeResult> => {
     const { supabase, userId } = context;
     const r = data.recipe;
+
+    // Free plan: soft cap on the size of the cookbook. Re-saving a recipe the
+    // user already has (upsert on user_id,title) never counts against the cap.
+    const cap = TIER_FEATURES[await resolveTier(supabase, userId)].savedRecipeCap;
+    if (cap !== null) {
+      const [{ count }, { data: existing }] = await Promise.all([
+        supabase
+          .from("saved_recipes")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId),
+        supabase
+          .from("saved_recipes")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("title", r.title)
+          .maybeSingle(),
+      ]);
+      if (!existing && (count ?? 0) >= cap) {
+        return {
+          ok: false,
+          requiresUpgrade: true,
+          cap,
+          error: `Your free cookbook holds ${cap} recipes. Remove one, or upgrade for unlimited saves.`,
+        };
+      }
+    }
+
     const { data: row, error } = await supabase
       .from("saved_recipes")
       .upsert(
@@ -144,7 +192,7 @@ export const saveRecipe = createServerFn({ method: "POST" })
         console.error("recipe-saved email failed", e);
       }
     })();
-    return { row: typed };
+    return { ok: true, row: typed };
   });
 
 export const unsaveRecipe = createServerFn({ method: "POST" })
