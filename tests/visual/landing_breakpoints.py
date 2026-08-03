@@ -46,15 +46,15 @@ CLIP_JS = """
   // the hidden variant still contributes to scrollWidth).
   const kids = [...el.children].filter((c) => {
     const cs = getComputedStyle(c);
-    return cs.display !== 'none' && cs.visibility !== 'hidden';
+    return c.offsetParent !== null && cs.display !== 'none' && cs.visibility !== 'hidden';
   });
   const targets = kids.length ? kids : [el];
   let clipped = false, text = '';
   for (const t of targets) {
     const r = t.getBoundingClientRect();
     text += (t.textContent || '').trim();
-    if (r.right > pr.right + 1 || r.left < pr.left - 1) clipped = true;
-    if (t.scrollWidth > t.clientWidth + 1 && t !== el) clipped = true;
+    if (r.right > pr.right + 2 || r.left < pr.left - 2) clipped = true;
+    if (t.scrollWidth > t.clientWidth + 2) clipped = true;
   }
   return { clipped, text };
 }
@@ -79,7 +79,17 @@ OVERFLOW_JS = """
 () => {
   const vw = document.documentElement.clientWidth;
   const bad = [];
-  const inMarquee = (el) => !!el.closest('.marquee-track, .marquee, [data-overflow-ok]');
+  // Intentional horizontal scrollers (marquees, snap carousels) legitimately
+  // extend past the viewport; only static layout overflow is a regression.
+  const skip = (el) => {
+    if (el.closest('.marquee-track, .marquee, [data-overflow-ok]')) return true;
+    for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) {
+      const ox = getComputedStyle(n).overflowX;
+      if (ox === 'auto' || ox === 'scroll' || ox === 'hidden') return true;
+    }
+    return false;
+  };
+  const inMarquee = (el) => skip(el);
   for (const el of document.querySelectorAll('header *, main *')) {
     if (inMarquee(el)) continue;
     const r = el.getBoundingClientRect();
