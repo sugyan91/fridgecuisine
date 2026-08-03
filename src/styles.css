@@ -356,7 +356,6 @@ button:not(:disabled),
 }
 
 .tagline-shimmer {
-  display: inline-block;
   white-space: nowrap;
   background: linear-gradient(
     90deg,
