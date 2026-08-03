@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Check, Loader2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Loader2, ChefHat, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { ENDPOINT_LIMITS, type PlanTier } from "@/lib/ai-quota";
 import {
   type BillingOverview,
   type PaidPlanKey,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/payments.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +41,12 @@ const PLANS: PlanMeta[] = [
     name: "Basic",
     price: "$5.99/mo",
     blurb: "For weeknight cooking.",
-    perks: ["10 recipes per day", "Nutrition + pairings", "Chef's notes", "PDF export"],
+    perks: [
+      `${ENDPOINT_LIMITS.basic.recipes} AI recipes per day`,
+      `${ENDPOINT_LIMITS.basic.helpers} AI helpers per day`,
+      "Nutrition + pairings",
+      "Chef's notes + PDF export",
+    ],
   },
   {
     key: "unlimited",
@@ -47,13 +54,14 @@ const PLANS: PlanMeta[] = [
     price: "$19.99/mo",
     blurb: "For serious home cooks.",
     perks: [
-      "Up to 50 recipes per day",
-      "Recipe variations",
+      `${ENDPOINT_LIMITS.unlimited.recipes} AI recipes per day`,
+      `${ENDPOINT_LIMITS.unlimited.helpers} AI helpers per day`,
+      "Recipe variations + allergen call-outs",
       "Make-ahead + storage guidance",
-      "Allergen call-outs",
     ],
   },
 ];
+
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return "your next renewal";
@@ -181,6 +189,63 @@ export function PlanSwitcher({ onChanged }: { onChanged?: () => void }) {
             Renews {formatDate(renewsAt)}
           </p>
         )}
+      </div>
+
+      {/* Daily generation quota summary */}
+      <div className="mt-5 rounded-xl border border-border bg-muted/30 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Daily AI allowance
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {(["free", "basic", "unlimited"] as PlanTier[]).map((tier) => {
+            const isCurrent = currentPlan === tier;
+            return (
+              <div
+                key={tier}
+                className={`rounded-lg border p-3 ${
+                  isCurrent
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-card"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold capitalize text-foreground">
+                    {tier}
+                  </span>
+                  {isCurrent && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      You
+                    </Badge>
+                  )}
+                </div>
+                <div className="mt-2 space-y-1.5">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <ChefHat className="h-4 w-4 shrink-0 text-primary" />
+                    <span>
+                      <strong className="text-foreground">
+                        {ENDPOINT_LIMITS[tier].recipes}
+                      </strong>{" "}
+                      recipes/day
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Wand2 className="h-4 w-4 shrink-0 text-primary" />
+                    <span>
+                      <strong className="text-foreground">
+                        {ENDPOINT_LIMITS[tier].helpers}
+                      </strong>{" "}
+                      helpers/day
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Recipes = full recipe generations. Helpers = swaps, daily-dinner tweaks,
+          peek-with-AI, fridge-vision, and image generation.
+        </p>
       </div>
 
       {scheduled && (

@@ -1,40 +1,23 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logAbuseEvent } from "./abuse-logging.server";
+import {
+  ENDPOINT_LIMITS,
+  FREE_DAILY_LIMIT,
+  RATE_LIMIT_SECONDS,
+  TIER_LIMITS,
+  type PlanTier,
+  type QuotaBucket,
+} from "./ai-quota";
 
 export interface CallerSignals {
   ip?: string | null;
   userAgent?: string | null;
 }
 
-export type Tier = "free" | "basic" | "unlimited";
-export type QuotaBucket = "recipes" | "helpers";
+export type Tier = PlanTier;
+export { ENDPOINT_LIMITS, FREE_DAILY_LIMIT, TIER_LIMITS, RATE_LIMIT_SECONDS };
+export type { QuotaBucket };
 
-/**
- * Per-tier daily limits split by cost bucket.
- * - `recipes`: full/litte recipe generation (the expensive call).
- * - `helpers`: cheap AI features (dish helper, swaps, daily-dinner tweaks,
- *   paid-teaser peeks, fridge vision, recipe images).
- */
-export const ENDPOINT_LIMITS: Record<Tier, Record<QuotaBucket, number>> = {
-  free: { recipes: 3, helpers: 5 },
-  basic: { recipes: 8, helpers: 20 },
-  // "Unlimited" is marketed as unlimited but enforces a fair-use daily cap
-  // to protect against abuse / runaway AI cost from a single account.
-  unlimited: { recipes: 30, helpers: 100 },
-};
-
-/** Back-compat export — free tier recipe limit. */
-export const FREE_DAILY_LIMIT = ENDPOINT_LIMITS.free.recipes;
-
-/** Back-compat alias for the old combined limit. */
-export const TIER_LIMITS: Record<Tier, number> = {
-  free: ENDPOINT_LIMITS.free.recipes,
-  basic: ENDPOINT_LIMITS.basic.recipes,
-  unlimited: ENDPOINT_LIMITS.unlimited.recipes,
-};
-
-/** Minimum seconds between two AI generations for the same user (all tiers). */
-export const RATE_LIMIT_SECONDS = 8;
 
 const PRICE_TO_TIER: Record<string, Tier> = {
   premium_monthly: "basic",
