@@ -245,6 +245,7 @@ function PricingPage() {
             </div>
             <ul className="mt-6 space-y-2 text-sm">
               <Feature>8 AI recipe generations / day</Feature>
+              <Feature>20 AI helper tips / day</Feature>
               <Feature>Priority AI responses</Feature>
               <Feature>Cancel anytime — keep access until period ends</Feature>
               <Feature>Everything in Free</Feature>
