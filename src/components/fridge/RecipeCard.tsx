@@ -10,6 +10,7 @@ import { generateRecipeImage } from "@/lib/recipe-image.functions";
 import { downloadRecipePdf } from "@/lib/recipe-pdf";
 import { SafeImage } from "@/components/ui/safe-image";
 import { DietBadgeRow } from "./DietBadge";
+import { TIER_FEATURES, PAID_EXTRAS, type PlanTier } from "@/lib/tier-features";
 
 type Props = {
   recipe: Recipe;
@@ -21,6 +22,7 @@ type Props = {
   isAuthenticated?: boolean;
   pantry?: string[];
   onRecipeUpdate?: (next: Recipe) => void;
+  tier?: PlanTier;
 };
 
 export function RecipeCard({
@@ -33,7 +35,9 @@ export function RecipeCard({
   dietary: dietaryProp,
   pantry = [],
   onRecipeUpdate,
+  tier = "free",
 }: Props) {
+  const features = TIER_FEATURES[tier];
   const [open, setOpen] = useState(false);
   const [swapOpen, setSwapOpen] = useState<{ kind: "used" | "missing"; name: string } | null>(null);
   const [swapLoading, setSwapLoading] = useState(false);
