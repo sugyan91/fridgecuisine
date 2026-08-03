@@ -15,6 +15,7 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { PlanSwitcher } from "@/components/account/PlanSwitcher";
 import { useRecipeUsage } from "@/hooks/use-recipe-usage";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -59,6 +60,7 @@ function AccountPage() {
     });
   }, []);
 
+  const purchasesEnabled = usePurchasesEnabled();
   const { subscription, isPremium, loading, tier } = useSubscription(user?.id);
   const { used, limit, remaining, loaded: usageLoaded } = useRecipeUsage(user?.id);
   const isAdmin = useIsAdmin(user?.id);
