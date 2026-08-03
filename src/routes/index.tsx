@@ -594,10 +594,16 @@ function Index() {
                 </span>
               </span>
                 <div className="min-w-0 flex-1">
-                <span className="block font-display tracking-tight text-foreground leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold">
+                <span
+                  data-testid="brand-name"
+                  className="block font-display tracking-tight text-foreground leading-none text-base sm:text-lg md:text-xl text-left lowercase whitespace-nowrap font-semibold"
+                >
                   fridge cuisine<span className="text-primary">.</span>
                 </span>
-                <p className="text-[8px] sm:text-[10px] text-muted-foreground leading-tight mt-0.5 sm:mt-1 uppercase tracking-[0.12em] sm:tracking-[0.18em] font-medium truncate max-w-[48vw] sm:max-w-none">
+                <p
+                  data-testid="brand-tagline"
+                  className="text-[8px] sm:text-[10px] text-muted-foreground leading-tight mt-0.5 sm:mt-1 uppercase tracking-[0.12em] sm:tracking-[0.18em] font-medium truncate max-w-[48vw] sm:max-w-none"
+                >
                   <span className="tagline-shimmer sm:hidden">Your AI chef</span>
                   <span className="tagline-shimmer hidden sm:inline">Your own AI powered personal chef</span>
                 </p>
