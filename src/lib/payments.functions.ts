@@ -671,7 +671,7 @@ export const changeSubscriptionPlan = createServerFn({ method: "POST" })
           },
           {
             items: [{ price: targetPrice.id, quantity: 1 }],
-            iterations: 1,
+            duration: { interval: "month", interval_count: 1 },
             proration_behavior: "none",
           },
         ],
