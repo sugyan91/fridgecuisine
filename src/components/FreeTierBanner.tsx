@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
 
 const DISMISS_KEY = "fridge-banner-dismissed";
 const DISMISS_DAYS = 7;
@@ -10,6 +11,7 @@ type Props = { isPremium: boolean; userId: string | undefined };
 export function FreeTierBanner({ isPremium, userId }: Props) {
   const [visible, setVisible] = useState(false);
   const isAdmin = useIsAdmin(userId);
+  const purchasesEnabled = usePurchasesEnabled();
 
   useEffect(() => {
     if (isPremium) return;
@@ -65,12 +67,14 @@ export function FreeTierBanner({ isPremium, userId }: Props) {
               Sign up free
             </Link>
           )}
-          <Link
-            to="/pricing"
-            className="text-[11px] md:text-xs font-display font-semibold px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
-          >
-            See plans →
-          </Link>
+          {purchasesEnabled && (
+            <Link
+              to="/pricing"
+              className="text-[11px] md:text-xs font-display font-semibold px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all"
+            >
+              See plans →
+            </Link>
+          )}
         </div>
         <button
           type="button"
