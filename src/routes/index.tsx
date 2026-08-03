@@ -1235,7 +1235,7 @@ function Index() {
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
                   dietary={dietary}
-                  tier={subTier as any}
+                  tier={subTier}
                   showMissing={false}
                   isAuthenticated={!!email}
                   pantry={ingredients}
@@ -1382,7 +1382,7 @@ function Index() {
                   saved={isSaved(r.title)}
                   onToggleSave={() => toggleSave(r)}
                   dietary={dietary}
-                  tier={subTier as any}
+                  tier={subTier}
                   showMissing={pantryMode && ingredients.length > 0}
                   isAuthenticated={!!email}
                   pantry={ingredients}
