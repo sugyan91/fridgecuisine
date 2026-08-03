@@ -192,19 +192,26 @@ function Index() {
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { isPremium, isUnlimited, tier: subTier } = useSubscription(userId);
-  const { logGeneration, atLimit: usageAtLimit, countdown, tier: usageTier } =
-    useRecipeUsage(userId);
+  const {
+    logGeneration,
+    atRecipeLimit,
+    atHelperLimit,
+    countdown,
+    tier: usageTier,
+  } = useRecipeUsage(userId);
   const isAdmin = useIsAdmin(userId);
   const [adminOpen, setAdminOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [limitModalType, setLimitModalType] = useState<"recipes" | "helpers">("recipes");
   const [saveModal, setSaveModal] = useState<{ open: boolean; recipe: Recipe | null }>({
     open: false,
     recipe: null,
   });
   // Unlimited has a fair-use daily cap too — apply usage limit to all tiers.
-  const limitBlocked = usageAtLimit;
-  const limitToast = () => {
+  const limitBlocked = atRecipeLimit;
+  const limitToast = (type: "recipes" | "helpers" = "recipes") => {
+    setLimitModalType(type);
     setLimitModalOpen(true);
   };
   const headerRef = useRef<HTMLElement | null>(null);
@@ -310,8 +317,8 @@ function Index() {
       toast.error("Tell me what dish you want to prepare.");
       return;
     }
-    if (limitBlocked) {
-      limitToast();
+    if (atHelperLimit) {
+      limitToast("helpers");
       return;
     }
     setDishLoading(true);
@@ -333,8 +340,8 @@ function Index() {
   };
 
   const runDishByName = async (name: string) => {
-    if (limitBlocked) {
-      limitToast();
+    if (atHelperLimit) {
+      limitToast("helpers");
       return;
     }
     setDishQuery(name);
@@ -524,6 +531,7 @@ function Index() {
         isSignedIn={!!userId}
         countdown={countdown}
         tier={usageTier === "anon" ? "anon" : subTier}
+        type={limitModalType}
       />
       <SaveSignupModal
         open={saveModal.open}

@@ -110,9 +110,10 @@ export const generateRecipes = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data }): Promise<GenerateRecipesResult> => {
     // Support both signed-in users (full quota path) and anonymous callers
-    // (2 recipes/day, server-tracked by fingerprint AND per-IP).
+    // (1 recipe/day, server-tracked by fingerprint AND per-IP).
     const auth = await tryGetSupabaseUser();
     let anonFingerprint: string | null = null;
+    let tier: "free" | "basic" | "unlimited" = "free";
     if (auth) {
       const req = (() => { try { return getRequest(); } catch { return null; } })();
       const h = req?.headers;
@@ -124,21 +125,29 @@ export const generateRecipes = createServerFn({ method: "POST" })
           null,
         userAgent: h?.get("user-agent") ?? null,
       };
-      const quota = await checkAiQuota(auth.supabase, auth.userId, signals);
+      const quota = await checkAiQuota(auth.supabase, auth.userId, signals, "recipes");
       if (!quota.ok) return { ok: false, error: quota.error, code: quota.code };
+      tier = quota.tier;
     } else {
       const anon = await checkAnonQuota();
       if (!anon.ok) {
         return { ok: false, error: anon.error, code: anon.code, requiresSignIn: true };
       }
       anonFingerprint = anon.fingerprint;
+      tier = "free";
     }
     const hasIngredients = data.ingredients.length > 0;
+
+    // Lite mode for free/anon: fewer recipes and no nutrition to keep AI costs low.
+    const isFreeTier = tier === "free";
+    const RECIPE_COUNT = isFreeTier ? 3 : 6;
+    const includeNutrition = !isFreeTier && data.includeNutrition !== false;
+
     const cuisineGuidance =
       data.cuisine === "Any / Surprise Me"
         ? hasIngredients
-          ? "Pick cuisines that best match the ingredients provided — be creative and global. Mix up regions so the 10 recipes span different parts of the world."
-          : "Surprise the user with 10 iconic, beloved recipes from ALL OVER THE WORLD. Span different continents and cuisines (e.g. Asian, European, African, Latin American, Middle Eastern) — no two recipes from the same country."
+          ? "Pick cuisines that best match the ingredients provided — be creative and global. Mix up regions so the recipes span different parts of the world."
+          : "Surprise the user with iconic, beloved recipes from ALL OVER THE WORLD. Span different continents and cuisines (e.g. Asian, European, African, Latin American, Middle Eastern) — no two recipes from the same country."
         : `Use authentic techniques and flavor profiles for ${data.cuisine} cuisine.`;
 
     const dietary = data.dietary.length
@@ -147,18 +156,17 @@ export const generateRecipes = createServerFn({ method: "POST" })
 
     const ingredientRule = hasIngredients
       ? `Use as many of the user's ingredients as possible.\n- It's OK to require 1-3 missing pantry staples (oil, salt, common spices) - list them in missingIngredients.`
-      : `The user has not listed any pantry ingredients. Generate 10 classic, iconic, beloved recipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
+      : `The user has not listed any pantry ingredients. Generate ${RECIPE_COUNT} classic, iconic, beloved recipes for the selected cuisine using common pantry staples. List all ingredients in missingIngredients.`;
 
     const kidFriendlyRule = data.kidFriendly
       ? `\n- KID-FRIENDLY MODE: All recipes MUST be kid-approved. Prefer mild flavors, no chili heat, no strong funk (blue cheese, anchovy, fish sauce, strong fermented items), nothing raw (no tartare, no runny eggs unless cooked through), and avoid bitter greens. Hide vegetables in sauces/blends where possible. Favor familiar shapes (meatballs, pasta, pancakes, finger foods). Set "kidFriendly": true on every recipe.`
       : "";
 
-    const includeNutrition = data.includeNutrition !== false;
     const nutritionRule = includeNutrition
       ? `\n- Include "nutrition": {servings, perServing:{calories, proteinG, carbsG, fatG, sugarG, fiberG}} — integer approximate estimates.`
       : "";
 
-    const RECIPE_COUNT = 6;
+    const maxTokens = isFreeTier ? 1200 : includeNutrition ? 2400 : 1600;
     const systemPrompt = `You are an expert home cook. Generate ${RECIPE_COUNT} realistic, delicious recipes${hasIngredients ? " using mostly the user's ingredients" : " for the selected cuisine"}. ${cuisineGuidance}
 Rules:
 - ${ingredientRule}
@@ -211,7 +219,7 @@ Return JSON shaped like:
       const cacheKey = hashKey("recipes", norm);
       const cached = await getCached<{ recipes: Recipe[] }>("recipes", cacheKey);
       if (cached) {
-        if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+        if (auth) await recordAiGeneration(auth.supabase, auth.userId, "recipes");
         else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
         logAiUsage({
           endpoint: "recipes",
@@ -223,7 +231,7 @@ Return JSON shaped like:
         return { ok: true, recipes: cached.recipes };
       }
       const aiRes = await callChatJSON(systemPrompt, userPrompt, {
-        maxTokens: includeNutrition ? 2400 : 1600,
+        maxTokens,
         temperature: 0.5,
       });
       if (!aiRes.ok) {
@@ -239,7 +247,7 @@ Return JSON shaped like:
         };
       }
 
-      if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+      if (auth) await recordAiGeneration(auth.supabase, auth.userId, "recipes");
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
       // Pantry-agnostic queries are identical across users → cache longer.
       const ttlDays = hasIngredients ? 30 : 90;

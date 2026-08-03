@@ -58,7 +58,7 @@ export const getDishHelper = createServerFn({ method: "POST" })
     const auth = await tryGetSupabaseUser();
     let anonFingerprint: string | null = null;
     if (auth) {
-      const quota = await checkAiQuota(auth.supabase, auth.userId);
+      const quota = await checkAiQuota(auth.supabase, auth.userId, {}, "dish-helper");
       if (!quota.ok) return { ok: false, error: quota.error };
     } else {
       const anon = await checkAnonQuota();
@@ -79,7 +79,7 @@ export const getDishHelper = createServerFn({ method: "POST" })
     type CachedDish = z.infer<typeof responseSchema>;
     const cached = await getCached<CachedDish>("dish-helper", cacheKey);
     if (cached) {
-      if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+      if (auth) await recordAiGeneration(auth.supabase, auth.userId, "dish-helper");
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
       logAiUsage({
         endpoint: "dish-helper",
@@ -106,7 +106,7 @@ Rules: 4-10 ordered steps. Integer nutrition estimates. dietary tags from: Vegan
       if (!aiRes.ok) return { ok: false, error: aiRes.error };
       const result = responseSchema.safeParse(aiRes.json);
       if (!result.success) return { ok: false, error: "AI returned an unexpected format." };
-      if (auth) await recordAiGeneration(auth.supabase, auth.userId);
+      if (auth) await recordAiGeneration(auth.supabase, auth.userId, "dish-helper");
       else if (anonFingerprint) await recordAnonGeneration(anonFingerprint);
       await putCached("dish-helper", cacheKey, result.data, 180);
       logAiUsage({

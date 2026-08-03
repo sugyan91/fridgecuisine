@@ -36,7 +36,7 @@ export const swapIngredient = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data, context }): Promise<SwapIngredientResult> => {
     const { supabase, userId } = context;
-    const quota = await checkAiQuota(supabase, userId);
+    const quota = await checkAiQuota(supabase, userId, {}, "ingredient-swap");
     if (!quota.ok) return { ok: false, error: quota.error };
 
     const { hashKey, getCached, putCached } = await import("./ai-cache.server");
@@ -54,7 +54,7 @@ export const swapIngredient = createServerFn({ method: "POST" })
       cacheKey,
     );
     if (cached) {
-      await recordAiGeneration(supabase, userId);
+      await recordAiGeneration(supabase, userId, "ingredient-swap");
       logAiUsage({ endpoint: "ingredient-swap", userId, cacheHit: true });
       return { ok: true, swaps: cached.swaps };
     }
@@ -76,7 +76,7 @@ Dietary constraints (must respect): ${dietary}`;
       if (!parsed.success) {
         return { ok: false, error: "Couldn't read AI response. Try again." };
       }
-      await recordAiGeneration(supabase, userId);
+      await recordAiGeneration(supabase, userId, "ingredient-swap");
       await putCached("ingredient-swap", cacheKey, { swaps: parsed.data.swaps }, 90);
       logAiUsage({ endpoint: "ingredient-swap", userId, cacheHit: false });
       return { ok: true, swaps: parsed.data.swaps };

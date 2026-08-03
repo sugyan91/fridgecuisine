@@ -7,29 +7,48 @@ type Props = {
   isSignedIn: boolean;
   countdown: string;
   tier?: "anon" | "free" | "basic" | "unlimited";
+  /** Which quota bucket hit its limit. */
+  type?: "recipes" | "helpers";
 };
 
-export function LimitReachedModal({ open, onClose, isSignedIn, countdown, tier }: Props) {
+export function LimitReachedModal({ open, onClose, isSignedIn, countdown, tier, type = "recipes" }: Props) {
   const resolvedTier = tier ?? (isSignedIn ? "free" : "anon");
   const isAnon = resolvedTier === "anon";
   const isBasic = resolvedTier === "basic";
   const isUnlimited = resolvedTier === "unlimited";
+  const isHelpers = type === "helpers";
 
-  const title = isUnlimited
-    ? "You've hit today's fair-use cap 🔥"
-    : isBasic
-      ? "You've used your 10 recipes today 🔥"
-      : isAnon
-        ? "That's your free taste 🔥"
-        : "You've used your 2 free recipes today 🔥";
+  const title = isHelpers
+    ? isUnlimited
+      ? "You've hit today's helper cap 🔥"
+      : isBasic
+        ? "You've used your 20 helper tips today 🔥"
+        : isAnon
+          ? "That's your free helper taste 🔥"
+          : "You've used your 5 free helper tips today 🔥"
+    : isUnlimited
+      ? "You've hit today's fair-use cap 🔥"
+      : isBasic
+        ? "You've used your 8 recipes today 🔥"
+        : isAnon
+          ? "That's your free taste 🔥"
+          : "You've used your 3 free recipes today 🔥";
 
-  const description = isUnlimited
-    ? "Unlimited has a fair-use cap of 50 recipes/day to keep things sustainable. Resets at midnight."
-    : isBasic
-      ? "Upgrade to Unlimited ($19.99/mo · 50/day) or wait for the daily reset."
-      : isAnon
-        ? "Sign up free and get 2 recipes every day. Paid plans go up to 50/day."
-        : "Upgrade to Basic ($5.99/mo · 10/day) or Unlimited ($19.99/mo · 50/day).";
+  const description = isHelpers
+    ? isUnlimited
+      ? "Unlimited has a fair-use cap of 100 helper calls/day. Resets at midnight."
+      : isBasic
+        ? "Upgrade to Unlimited ($19.99/mo · 100 helpers/day) or wait for the daily reset."
+        : isAnon
+          ? "Sign up free and get 5 helper tips every day. Paid plans go up to 100/day."
+          : "Upgrade to Basic ($5.99/mo · 20/day) or Unlimited ($19.99/mo · 100/day) for more helper tips."
+    : isUnlimited
+      ? "Unlimited has a fair-use cap of 30 recipes/day to keep things sustainable. Resets at midnight."
+      : isBasic
+        ? "Upgrade to Unlimited ($19.99/mo · 30/day) or wait for the daily reset."
+        : isAnon
+          ? "Sign up free and get 1 recipe every day. Paid plans go up to 30/day."
+          : "Upgrade to Basic ($5.99/mo · 8/day) or Unlimited ($19.99/mo · 30/day).";
 
   const ctaLabel = isUnlimited
     ? "Manage plan"

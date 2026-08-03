@@ -238,6 +238,22 @@ function Dashboard() {
           />
         </section>
 
+        {/* Quota buckets */}
+        {(() => {
+          const recipes = data?.byEndpoint
+            .filter((r) => r.endpoint === "recipes")
+            .reduce((sum, r) => sum + r.total, 0) ?? 0;
+          const helpers = data?.byEndpoint
+            .filter((r) => r.endpoint !== "recipes")
+            .reduce((sum, r) => sum + r.total, 0) ?? 0;
+          return (
+            <section className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+              <Stat label="Recipe bucket" value={recipes} hint="Counts against recipe quota" />
+              <Stat label="Helper bucket" value={helpers} hint="Dish helper, swaps, vision" />
+            </section>
+          );
+        })()}
+
         {/* By endpoint */}
         <section className="mt-10">
           <h2 className="text-xl font-bold mb-3">By endpoint</h2>

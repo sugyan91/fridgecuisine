@@ -7,20 +7,34 @@ export interface CallerSignals {
 }
 
 export type Tier = "free" | "basic" | "unlimited";
+export type QuotaBucket = "recipes" | "helpers";
 
-export const TIER_LIMITS: Record<Tier, number> = {
-  free: 1,
-  basic: 8,
+/**
+ * Per-tier daily limits split by cost bucket.
+ * - `recipes`: full/litte recipe generation (the expensive call).
+ * - `helpers`: cheap AI features (dish helper, swaps, daily-dinner tweaks,
+ *   paid-teaser peeks, fridge vision, recipe images).
+ */
+export const ENDPOINT_LIMITS: Record<Tier, Record<QuotaBucket, number>> = {
+  free: { recipes: 3, helpers: 5 },
+  basic: { recipes: 8, helpers: 20 },
   // "Unlimited" is marketed as unlimited but enforces a fair-use daily cap
   // to protect against abuse / runaway AI cost from a single account.
-  unlimited: 30,
+  unlimited: { recipes: 30, helpers: 100 },
+};
+
+/** Back-compat export — free tier recipe limit. */
+export const FREE_DAILY_LIMIT = ENDPOINT_LIMITS.free.recipes;
+
+/** Back-compat alias for the old combined limit. */
+export const TIER_LIMITS: Record<Tier, number> = {
+  free: ENDPOINT_LIMITS.free.recipes,
+  basic: ENDPOINT_LIMITS.basic.recipes,
+  unlimited: ENDPOINT_LIMITS.unlimited.recipes,
 };
 
 /** Minimum seconds between two AI generations for the same user (all tiers). */
 export const RATE_LIMIT_SECONDS = 8;
-
-/** Back-compat export — free tier limit. */
-export const FREE_DAILY_LIMIT = TIER_LIMITS.free;
 
 const PRICE_TO_TIER: Record<string, Tier> = {
   premium_monthly: "basic",
@@ -63,32 +77,40 @@ export async function resolveTier(
   return "free";
 }
 
+function bucketForEndpoint(endpoint: string): QuotaBucket {
+  return endpoint === "recipes" ? "recipes" : "helpers";
+}
+
 export type QuotaCheck =
-  | { ok: true; tier: Tier }
+  | { ok: true; tier: Tier; bucket: QuotaBucket }
   | {
       ok: false;
       error: string;
       code: "rate_limit";
       tier: Tier;
+      bucket: QuotaBucket;
       requiresUpgrade?: true;
       suggestedPlan?: "basic" | "unlimited";
       retryAfterSeconds?: number;
     };
 
 /**
- * Server-side per-user daily quota check.
- * Counts rows inserted into `recipe_generations` in the last 24h for the
- * authenticated user and rejects when their tier's daily limit is reached.
+ * Server-side per-user daily quota check, now split by endpoint bucket.
+ * `endpoint` should be the actual feature name (e.g. "recipes",
+ * "dish-helper", "ingredient-swap"). Non-recipe endpoints share the
+ * cheaper "helpers" bucket.
  */
 export async function checkAiQuota(
   supabase: SupabaseClient,
   userId: string,
   signals: CallerSignals = {},
+  endpoint = "recipes",
 ): Promise<QuotaCheck> {
   const tier = await resolveTier(supabase, userId);
-  const limit = TIER_LIMITS[tier];
+  const bucket = bucketForEndpoint(endpoint);
+  const limit = ENDPOINT_LIMITS[tier][bucket];
 
-  // Rate limit: reject if last generation < RATE_LIMIT_SECONDS ago.
+  // Rate limit: reject if last generation < RATE_LIMIT_SECONDS ago (any bucket).
   const { data: last, error: lastErr } = await supabase
     .from("recipe_generations")
     .select("created_at")
@@ -106,25 +128,32 @@ export async function checkAiQuota(
         userId,
         ip: signals.ip ?? null,
         userAgent: signals.userAgent ?? null,
-        metadata: { elapsedMs, tier, retryAfterSeconds },
+        metadata: { elapsedMs, tier, retryAfterSeconds, bucket },
       });
       return {
         ok: false,
         error: `Slow down — try again in ${retryAfterSeconds}s.`,
         code: "rate_limit",
         tier,
+        bucket,
         retryAfterSeconds,
       };
     }
   }
 
-  // Daily quota — count rows in the last 24h.
+  // Daily quota — count rows in the helpers bucket or the recipes bucket.
   const sinceIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { count, error } = await supabase
+  let query = supabase
     .from("recipe_generations")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId)
     .gte("created_at", sinceIso);
+  if (bucket === "recipes") {
+    query = query.eq("endpoint", "recipes");
+  } else {
+    query = query.neq("endpoint", "recipes");
+  }
+  const { count, error } = await query;
   if (error) {
     console.error("checkAiQuota lookup failed", error);
     return {
@@ -132,6 +161,7 @@ export async function checkAiQuota(
       error: "Couldn't verify your daily usage. Please try again in a moment.",
       code: "rate_limit",
       tier,
+      bucket,
     };
   }
   if ((count ?? 0) >= limit) {
@@ -143,33 +173,41 @@ export async function checkAiQuota(
       userId,
       ip: signals.ip ?? null,
       userAgent: signals.userAgent ?? null,
-      metadata: { tier, limit, used: count ?? 0 },
+      metadata: { tier, bucket, limit, used: count ?? 0 },
     });
     const upgradeCopy =
-      tier === "unlimited"
-        ? `You've hit today's fair-use cap of ${limit} recipes. Resets at midnight.`
-        : tier === "basic"
-          ? `You've used your ${limit} recipes today. Upgrade to Unlimited for $19.99/mo.`
-          : `You've used your ${limit} free recipes today. Upgrade to Basic ($5.99/mo) or Unlimited ($19.99/mo).`;
+      bucket === "helpers"
+        ? tier === "unlimited"
+          ? `You've hit today's fair-use cap of ${limit} helper calls. Resets at midnight.`
+          : tier === "basic"
+            ? `You've used your ${limit} helper calls today. Upgrade to Unlimited for $19.99/mo.`
+            : `You've used your ${limit} free helper calls today. Upgrade to Basic ($5.99/mo) or Unlimited ($19.99/mo).`
+        : tier === "unlimited"
+          ? `You've hit today's fair-use cap of ${limit} recipes. Resets at midnight.`
+          : tier === "basic"
+            ? `You've used your ${limit} recipes today. Upgrade to Unlimited for $19.99/mo.`
+            : `You've used your ${limit} free recipes today. Upgrade to Basic ($5.99/mo) or Unlimited ($19.99/mo).`;
     return {
       ok: false,
       error: upgradeCopy,
       code: "rate_limit",
       tier,
+      bucket,
       ...(suggestedPlan ? { requiresUpgrade: true as const, suggestedPlan } : {}),
     };
   }
-  return { ok: true, tier };
+  return { ok: true, tier, bucket };
 }
 
 /** Records a successful AI generation against the user's daily quota. */
 export async function recordAiGeneration(
   supabase: SupabaseClient,
   userId: string,
+  endpoint = "recipes",
 ): Promise<void> {
   const { error } = await supabase
     .from("recipe_generations")
-    .insert({ user_id: userId });
+    .insert({ user_id: userId, endpoint });
   if (error) {
     console.error("recordAiGeneration insert failed", error);
   }
