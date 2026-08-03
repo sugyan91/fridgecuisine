@@ -41,7 +41,12 @@ const PLANS: PlanMeta[] = [
     name: "Basic",
     price: "$5.99/mo",
     blurb: "For weeknight cooking.",
-    perks: ["10 recipes per day", "Nutrition + pairings", "Chef's notes", "PDF export"],
+    perks: [
+      `${ENDPOINT_LIMITS.basic.recipes} AI recipes per day`,
+      `${ENDPOINT_LIMITS.basic.helpers} AI helpers per day`,
+      "Nutrition + pairings",
+      "Chef's notes + PDF export",
+    ],
   },
   {
     key: "unlimited",
@@ -49,13 +54,14 @@ const PLANS: PlanMeta[] = [
     price: "$19.99/mo",
     blurb: "For serious home cooks.",
     perks: [
-      "Up to 50 recipes per day",
-      "Recipe variations",
+      `${ENDPOINT_LIMITS.unlimited.recipes} AI recipes per day`,
+      `${ENDPOINT_LIMITS.unlimited.helpers} AI helpers per day`,
+      "Recipe variations + allergen call-outs",
       "Make-ahead + storage guidance",
-      "Allergen call-outs",
     ],
   },
 ];
+
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return "your next renewal";
