@@ -12,6 +12,33 @@ import { SafeImage } from "@/components/ui/safe-image";
 import { DietBadgeRow } from "./DietBadge";
 import { TIER_FEATURES, PAID_EXTRAS, type PlanTier } from "@/lib/tier-features";
 
+function ChefDetailsUpsell() {
+  return (
+    <div className="bg-white/10 p-4 rounded-2xl border border-dashed border-white/30">
+      <h5 className="font-black uppercase text-[10px] tracking-widest mb-2 text-turmeric">
+        Locked chef details
+      </h5>
+      <ul className="text-sm font-medium space-y-1.5 mb-3">
+        {PAID_EXTRAS.map((x) => (
+          <li key={x.label} className="flex items-start gap-2 opacity-90">
+            <span aria-hidden="true">🔒</span>
+            <span className="flex-1">{x.label}</span>
+            <span className="text-[10px] font-black uppercase tracking-wide opacity-70">
+              {x.plan}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        to="/pricing"
+        className="block text-center bg-white text-cardamom py-2.5 rounded-xl font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-0.5 active:shadow-none transition-all"
+      >
+        See plans
+      </Link>
+    </div>
+  );
+}
+
 type Props = {
   recipe: Recipe;
   index: number;
