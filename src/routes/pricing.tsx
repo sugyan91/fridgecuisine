@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { createCheckoutSession, createPortalSession } from "@/lib/payments.functions";
 import { useSubscription } from "@/hooks/use-subscription";
+import { usePurchasesEnabled } from "@/hooks/use-purchases-enabled";
+import { IapUnavailableNotice } from "@/components/native/IapUnavailableNotice";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -49,6 +51,7 @@ const PLAN_PRICE_ID: Record<PaidPlan, string> = {
 function PricingPage() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const purchasesEnabled = usePurchasesEnabled();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -119,6 +122,9 @@ function PricingPage() {
   const showLoading = signedIn && loading;
 
   const cta = (plan: PaidPlan, primary: boolean) => {
+    if (!purchasesEnabled) {
+      return <IapUnavailableNotice what="Premium plans" className="mt-6" />;
+    }
     if (!authChecked) {
       return (
         <Button className="mt-6 w-full" disabled>
